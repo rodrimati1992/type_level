@@ -1,0 +1,35 @@
+[package]
+name = "type_level_values"
+version = "0.1.0"
+authors = ["matias"]
+workspace = "../"
+
+[features]
+default = ["std"]
+large_tuples=[]
+std=[]
+
+
+[dependencies]
+num-traits={version="0.2"}
+typenum = {version="1.10.0",features=["no_std"]}
+derive_type_level={path="../derive_type_level"}
+
+
+[dependencies.core_extensions]
+path="../../shared_extensions/core_extensions"
+default-features=false
+features=["typenum"]
+
+[dependencies.serde]
+version = "1.0"
+default-features = false
+optional=true
+
+
+
+[build-dependencies]
+rustc_version = "0.2"
+
+
+# env RUSTFLAGS="--emit asm"

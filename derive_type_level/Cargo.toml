@@ -1,0 +1,16 @@
+[package]
+name = "derive_type_level"
+version = "0.1.0"
+authors = ["matias"]
+
+[dependencies]
+quote = "0.6"
+
+
+[dependencies.derive_type_level_lib]
+path="../derive_type_level_lib"
+
+
+
+[lib]
+proc-macro = true

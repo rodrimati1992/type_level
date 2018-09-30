@@ -1,0 +1,31 @@
+[package]
+name = "derive_type_level_lib"
+version = "0.1.0"
+authors = ["matias"]
+
+[dependencies]
+arrayvec = "0.4"
+quote = "0.6"
+proc-macro2 = "0.4"
+lazy_static = "1.0"
+typed-arena = "1.4"
+regex="1.0"
+
+[dependencies.syn]
+version = "0.14"
+features=["extra-traits","visit","visit-mut"]
+
+
+
+[dependencies.core_extensions]
+path="../../shared_extensions/core_extensions"
+default-features=false
+features=["std"]
+
+[dependencies.derive_ce_helpers]
+path="../../derive_ce_helpers/"
+
+
+
+[build-dependencies]
+rustc_version = "0.2"

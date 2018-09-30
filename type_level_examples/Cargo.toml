@@ -1,0 +1,24 @@
+[package]
+name = "type_level_examples"
+version = "0.1.0"
+authors = ["matias"]
+
+
+[features]
+priv_docs=[]
+
+
+[dependencies]
+typenum = {version="1.10.0"}
+num-traits={version="0.2"}
+serde_json={version="1.0"}
+serde={version="1.0"}
+serde_derive={version="1.0"}
+core_extensions={path="../../shared_extensions/core_extensions"}
+type_level_values={path="../type_level_values",features=["serde"]}
+derive_type_level={path="../derive_type_level"}
+take_mut="0.2"
+
+
+[build-dependencies]
+rustc_version = "0.2"
