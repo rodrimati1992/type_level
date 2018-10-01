@@ -1,9 +1,6 @@
-use type_level_values::core_extensions::{CallInto, TryFrom};
+use type_level_values::core_extensions::{CallInto, TryFrom,Void};
 use type_level_values::ops::Len_;
 use type_level_values::prelude::*;
-
-
-use type_level_values::core_extensions::utils::transmute_ignore_size;
 
 use ranged_usize::{RangedUsize, RangedUsizeBounds};
 use std::ops::Sub;
@@ -314,133 +311,6 @@ where
 
 ////////////////////////////////////////////////////////////////////
 
-pub trait GVAsRef_<'a>: VariantsTrait {
-    type Output;
-    type RemAR: TypeIdentity<Type = Self::Rem> + GVAsRef_<'a> + AsRefVariants;
-}
-
-pub type GVAsRef<'a, This> = <This as GVAsRef_<'a>>::Output;
-
-pub trait GVAsMut_<'a>: VariantsTrait {
-    type Output;
-    type RemAM: TypeIdentity<Type = Self::Rem> + GVAsMut_<'a> + AsMutVariants;
-}
-
-pub type GVAsMut<'a, This> = <This as GVAsMut_<'a>>::Output;
-
-type Ref<'a, T> = &'a T;
-
-type MutRef<'a, T> = &'a mut T;
-
-macro_rules! as_ref_mut {
-    ($ref_:ident, $trait_:ident, $as_rm_variants:ident, $rem_assoc:ident) => {
-        impl<'a> $trait_<'a> for Impossible {
-            type Output = Impossible;
-            type $rem_assoc = Impossible;
-        }
-
-        impl<'a, Len, V0: 'a, V1: 'a, V2: 'a, V3: 'a, Rem> $trait_<'a>
-            for GenericVariants<LenGt4<Len>, V0, V1, V2, V3, Rem>
-        where
-            Rem: $trait_<'a> + $as_rm_variants,
-        {
-            type Output = GenericVariants<
-                LenGt4<Len>,
-                $ref_<'a, V0>,
-                $ref_<'a, V1>,
-                $ref_<'a, V2>,
-                $ref_<'a, V3>,
-                <Rem as $trait_<'a>>::Output,
-            >;
-
-            type $rem_assoc = Rem;
-        }
-    };
-}
-
-as_ref_mut!{ Ref    , GVAsRef_ ,AsRefVariants, RemAR }
-as_ref_mut!{ MutRef , GVAsMut_ ,AsMutVariants, RemAM }
-
-pub trait AsRefVariants: VariantsTrait {
-    fn as_ref<'a>(&'a self) -> GVAsRef<'a, Self>
-    where
-        Self: GVAsRef_<'a>;
-}
-
-impl<Len, V0, V1, V2, V3, Rem> AsRefVariants for GenericVariants<LenGt4<Len>, V0, V1, V2, V3, Rem>
-where
-    Self: VariantsTrait<Rem = Rem>,
-    Rem: VariantsTrait,
-{
-    fn as_ref<'a>(&'a self) -> GVAsRef<'a, Self>
-    where
-        Self: GVAsRef_<'a>,
-    {
-        let ret = match self {
-            &GenericVariants::V0(ref v) => GenericVariants::V0(v),
-            &GenericVariants::V1(ref v) => GenericVariants::V1(v),
-            &GenericVariants::V2(ref v) => GenericVariants::V2(v),
-            &GenericVariants::V3(ref v) => GenericVariants::V3(v),
-            &GenericVariants::Rem { len, ref rem } => GenericVariants::Rem {
-                len,
-                rem: <Self as GVAsRef_<'a>>::RemAR::from_type_ref(rem).as_ref(),
-            },
-        };
-
-        unsafe { transmute_ignore_size(ret) }
-    }
-}
-
-pub trait AsMutVariants: VariantsTrait {
-    fn as_mut<'a>(&'a mut self) -> GVAsMut<'a, Self>
-    where
-        Self: GVAsMut_<'a>;
-}
-
-impl<Len, V0, V1, V2, V3, Rem> AsMutVariants for GenericVariants<LenGt4<Len>, V0, V1, V2, V3, Rem>
-where
-    Self: VariantsTrait<Rem = Rem>,
-    Rem: VariantsTrait,
-{
-    fn as_mut<'a>(&'a mut self) -> GVAsMut<'a, Self>
-    where
-        Self: GVAsMut_<'a>,
-    {
-        let ret = match self {
-            &mut GenericVariants::V0(ref mut v) => GenericVariants::V0(v),
-            &mut GenericVariants::V1(ref mut v) => GenericVariants::V1(v),
-            &mut GenericVariants::V2(ref mut v) => GenericVariants::V2(v),
-            &mut GenericVariants::V3(ref mut v) => GenericVariants::V3(v),
-            &mut GenericVariants::Rem { len, ref mut rem } => GenericVariants::Rem {
-                len,
-                rem: <Self as GVAsMut_<'a>>::RemAM::from_type_mut(rem).as_mut(),
-            },
-        };
-
-        unsafe { transmute_ignore_size(ret) }
-    }
-}
-
-impl AsRefVariants for Impossible {
-    fn as_ref<'a>(&'a self) -> GVAsRef<'a, Self>
-    where
-        Self: GVAsRef_<'a>,
-    {
-        unsafe { transmute_ignore_size(self) }
-    }
-}
-
-impl AsMutVariants for Impossible {
-    fn as_mut<'a>(&'a mut self) -> GVAsMut<'a, Self>
-    where
-        Self: GVAsMut_<'a>,
-    {
-        unsafe { transmute_ignore_size(self) }
-    }
-}
-
-////////////////////////////////////////////////////////////////////
-
 /// To access the values of GenericVariants in a generic context.
 pub trait VariantsTrait {
     type V0;
@@ -577,45 +447,6 @@ macro_rules! decl_map_variant {
         $len:ident;
         $($index:pat,$in_:ident,$out:ident;)*
     ) => {
-
-        impl<'a,$($in_:'a,)*> GVAsRef_<'a> for GenericVariants<$len,$($in_,)* > {
-            type Output=GenericVariants<$len,$(&'a $in_,)*>;
-            type RemAR=Impossible;
-        }
-
-        impl<'a,$($in_:'a,)*> GVAsMut_<'a> for GenericVariants<$len,$($in_,)* > {
-            type Output=GenericVariants<$len,$(&'a mut $in_,)*>;
-            type RemAM=Impossible;
-        }
-
-        impl<$($in_,)*> AsRefVariants for GenericVariants<$len,$($in_,)* > {
-            fn as_ref<'a>(&'a self)->GVAsRef<'a,Self>
-            where
-                Self:GVAsRef_<'a>
-            {
-                let ret:GenericVariants<$len, $(&'a $in_, )* >=match self {
-                    $( &GenericVariants::$in_(ref v)=>GenericVariants::$in_(v), )*
-                    _=>unreachable!(),
-                };
-
-                unsafe { transmute_ignore_size(ret) }
-            }
-        }
-
-        impl<$($in_,)*> AsMutVariants for GenericVariants<$len,$($in_,)* > {
-            fn as_mut<'a>(&'a mut self)->GVAsMut<'a,Self>
-            where
-                Self:GVAsMut_<'a>
-            {
-                let ret:GenericVariants<$len, $(&'a mut $in_, )* >=match self {
-                    $( &mut GenericVariants::$in_(ref mut v)=>GenericVariants::$in_(v), )*
-                    _=>unreachable!()
-                };
-
-                unsafe { transmute_ignore_size(ret) }
-            }
-        }
-
 
         impl<$($in_,)*> Len_ for GenericVariants<$len,$($in_,)*>{
             type Output=$len;

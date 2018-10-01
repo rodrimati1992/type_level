@@ -1,4 +1,5 @@
-use field_traits::{GetField_, SetField_};
+use crate_::field_traits::{GetField_, SetField_};
+use crate_::user_traits::const_traits;
 use prelude::*;
 
 use core_extensions::type_level_bool::{False, True};

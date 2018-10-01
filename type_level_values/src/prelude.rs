@@ -22,28 +22,40 @@ pub use core_extensions::type_level_bool::{Boolean, BooleanType, False, True};
 ////                        Regular Prelude
 ////////////////////////////////////////////////////////////////////////////////////
 
-
-
-pub use user_traits::*;
+pub use user_traits::{
+    allowed_conversions,
+    MCPBounds,
+    MutConstParam,
+};
 
 #[cfg(rust_1_22)]
 pub use runtime_value::IntoConstant;
+
 pub use runtime_value::{
-    AssertConstType, ConstType, ConstTypeOf, ConstTypeOf_, ConstValue, FromRuntime, IntoConstType_,
-    IntoRuntime,
+    ConstTypeOf_,ConstType,ConstValue, IntoConstType_,IntoRuntime,
 };
 
 pub use enum_stuff::GetDiscriminant;
 
-pub use ops::{ConstEq_, ConstOrd_, TypeFn_};
+pub use ops::{
+    ConstEq_, 
+    ConstOrd_, 
+    TypeFn_,
+    TypeFn,
+};
 
 pub use const_wrapper::{
     AsConstWrapper, AsRuntime, ConstWrapper, ConstWrapperFromTrait, GetConstValue, GetWrapperKind,
     PhantomWrapper, WrapperTrait,
 };
 
-pub use core_extensions::prelude::*;
-pub use core_extensions::{MarkerType, TypePanic, VariantPhantom, Void};
+pub use core_extensions::{
+    SelfOps,
+    MarkerType,
+    TypeIdentity,
+    TIdentity,
+    VariantPhantom,
+};
 
 pub use std_::marker::PhantomData;
 

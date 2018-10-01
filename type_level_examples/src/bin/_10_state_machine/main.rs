@@ -23,8 +23,6 @@ pub mod user_input;
 // use type_level_values::ops::{IfEager, TypeFn, TypeFn_};
 use type_level_values::prelude::*;
 
-
-use type_level_values::core_extensions::prelude::*;
 use type_level_values::core_extensions::TryInto;
 
 use self::generic_variant::*;
