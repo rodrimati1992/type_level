@@ -17,8 +17,8 @@ use std::sync::mpsc::{self, Receiver as MPSCReceiver, RecvError, SendError, Send
 use core_extensions::ResultLike;
 
 use type_level_values::field_traits::*;
-use type_level_values::ops::fn_adaptors::*;
-use type_level_values::ops::fn_types::*;
+use type_level_values::fn_adaptors::*;
+use type_level_values::fn_types::*;
 use type_level_values::ops::*;
 use type_level_values::prelude::*;
 

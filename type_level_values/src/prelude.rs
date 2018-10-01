@@ -37,11 +37,13 @@ pub use runtime_value::{
 
 pub use enum_stuff::GetDiscriminant;
 
+pub use type_fn::{
+    TypeFn_,
+    TypeFn,
+};
 pub use ops::{
     ConstEq_, 
     ConstOrd_, 
-    TypeFn_,
-    TypeFn,
 };
 
 pub use const_wrapper::{

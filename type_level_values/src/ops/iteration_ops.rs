@@ -5,12 +5,10 @@ use prelude::*;
 use crate_::field_traits::{
     GetField, GetFieldOp, MapField, MapFieldOp, MapIntoField, MapIntoFieldOp, SetField,
 };
-use crate_::ops::{fn_adaptors as op_a, fn_types as op_t, TypeFn, TypeFn_};
+use crate_::fn_adaptors::*;
+use crate_::fn_types::*;
 
 use core_extensions::type_level_bool::{BooleanType, False, True};
-
-use self::op_a::*;
-use self::op_t::*;
 
 type_fn!{define_trait
     /// An iterator function that processes the collection incrementally from the start,

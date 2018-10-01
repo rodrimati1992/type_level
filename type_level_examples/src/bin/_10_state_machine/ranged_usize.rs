@@ -1,5 +1,5 @@
 use type_level_values::core_extensions::{TryFrom, TryInto};
-use type_level_values::ops::fn_types::ConstLEOp;
+use type_level_values::fn_types::ConstLEOp;
 use type_level_values::prelude::*;
 
 

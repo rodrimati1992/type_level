@@ -1,4 +1,4 @@
-use crate_::ops::TypeFn_;
+use crate_::type_fn::TypeFn_;
 
 impl<R> TypeFn_<R> for () {
     type Output = R;

@@ -5,7 +5,7 @@ requires `.value()` to recover the uncompressed number.
 */
 
 use core_extensions::{TryFrom, TryInto};
-use crate_::ops::fn_types::ConstLEOp;
+use crate_::fn_types::ConstLEOp;
 use crate_::prelude::*;
 
 use std_::cmp;

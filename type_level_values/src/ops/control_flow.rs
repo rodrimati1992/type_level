@@ -1,9 +1,8 @@
 use prelude::*;
 
 use crate_::field_traits::MapField;
-use crate_::ops::fn_adaptors::*;
-use crate_::ops::fn_types::*;
-use crate_::ops::{fn_adaptors, fn_types, TypeFn, TypeFn_};
+use crate_::fn_adaptors::*;
+use crate_::fn_types::*;
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_};
 
 use std_::ops::Add;

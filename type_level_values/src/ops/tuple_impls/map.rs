@@ -1,5 +1,5 @@
 use crate_::ops::Map_;
-use crate_::ops::TypeFn_;
+use crate_::type_fn::TypeFn_;
 
 impl<Op> Map_<Op> for () where {
     type Output = ();

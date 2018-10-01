@@ -1,9 +1,9 @@
 use super::*;
 
-use crate_::ops::type_fn::fn_types::SubOp;
+use crate_::fn_types::SubOp;
 
 use crate_::field_traits::{GetField, SetField};
-use crate_::ops::{ConstInto, PopBack, PopFront, PushBack, PushFront, TypeFn};
+use crate_::ops::{ConstInto, PopBack, PopFront, PushBack, PushFront};
 
 #[test]
 fn the_macro() {

@@ -9,7 +9,7 @@ use type_level_values::prelude::*;
 
 #[allow(unused_imports)]
 use type_level_values::core_extensions::TryInto;
-use type_level_values::core_extensions::{Void,CallInto, TryFrom};
+use type_level_values::core_extensions::{Void,CallInto, TryFrom,TypePanic};
 
 use generic_variant::{Impossible, MapVariants, VariantsTrait};
 

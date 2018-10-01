@@ -74,7 +74,6 @@ extern crate derive_type_level;
 use std::ops::Add;
 
 use type_level_values::field_traits::*;
-use type_level_values::ops::TypeFn;
 use type_level_values::ops::ConstNE_;
 use type_level_values::prelude::*;
 

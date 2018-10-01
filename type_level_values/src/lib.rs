@@ -52,9 +52,16 @@ extern crate serde;
 extern crate num_traits;
 
 #[macro_use]
+pub mod type_fn;
+pub mod fn_types;
+pub mod fn_adaptors;
+
+
+#[macro_use]
 pub mod ops;
 #[macro_use]
 pub mod macros;
+
 
 pub mod enum_stuff;
 #[macro_use]
@@ -66,6 +73,7 @@ pub mod runtime_value;
 pub mod std_types;
 pub mod user_traits;
 pub mod util_types;
+pub mod initialization;
 
 #[path = "../docs/mod.rs"]
 pub mod docs;
@@ -93,9 +101,12 @@ pub mod reexports {
     }
 
     pub use enum_stuff::{Discriminant, DiscriminantFor, GetDiscriminant};
-    pub use ops::fn_adaptors::IgnoreFirst;
+    pub use fn_adaptors::IgnoreFirst;
+    pub use type_fn::{
+        TypeFn,TypeFn_,
+    };
     pub use ops::{
-        AsTList, AsTList_, ConstEq as __CEq, ConstEq_, ConstOrd as __COrd, ConstOrd_, TypeFn,
+        AsTList, AsTList_, ConstEq as __CEq, ConstEq_, ConstOrd as __COrd, ConstOrd_,
         VariantAsTList, VariantAsTList_,
     };
 
@@ -110,7 +121,7 @@ pub mod reexports {
     };
 
     pub use field_traits::{Field_, GetFieldRuntime_, GetField_, SetField_};
-    pub use field_traits::initialization as __initialization;
+    pub use initialization as __initialization;
 
     pub use new_types::{TList, TNil};
 

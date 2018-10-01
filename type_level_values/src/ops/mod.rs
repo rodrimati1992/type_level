@@ -1,5 +1,3 @@
-#[macro_use]
-pub mod type_fn;
 
 pub mod as_tlist;
 pub mod const_eq;
@@ -9,9 +7,6 @@ pub mod control_flow;
 pub mod iteration_ops;
 pub mod tuple_impls;
 pub mod wrapper_ops;
-
-#[doc(inline)]
-pub use self::type_fn::{fn_adaptors, fn_types, TypeFn, TypeFn_};
 
 #[doc(inline)]
 pub use self::as_tlist::{

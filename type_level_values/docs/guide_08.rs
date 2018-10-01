@@ -169,8 +169,8 @@ extern crate type_level_values;
 
 
 use type_level_values::prelude::*;
-use type_level_values::ops::fn_types::{ConstLEOp};
-use type_level_values::ops::fn_adaptors::ApplyNonSelf;
+use type_level_values::fn_types::{ConstLEOp};
+use type_level_values::fn_adaptors::ApplyNonSelf;
 use type_level_values::field_traits::{SetField,SetField_,SetFieldOp};
 
 use std::ops::{Add,Sub};

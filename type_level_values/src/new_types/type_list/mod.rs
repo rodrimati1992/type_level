@@ -7,12 +7,12 @@ use core_extensions::type_level_bool::{Boolean, False, True};
 use crate_::extern_types::typenum::UnsignedInteger;
 use crate_::field_traits::{GetField_, SetField_};
 use crate_::ops::control_flow::{If, Lazy};
-use crate_::ops::fn_adaptors::*;
-use crate_::ops::fn_types::{AddOp, ConstEqOp, ConstLtOp, ConstOrdOp, NotOp};
+use crate_::fn_adaptors::*;
+use crate_::fn_types::{AddOp, ConstEqOp, ConstLtOp, ConstOrdOp, NotOp};
 use crate_::ops::{
     ConstEq, ConstFrom_, ConstNE_, ConstOrd, Filter_, FoldL, FoldL_, FoldR, FoldR_, Insert,
     Insert_, Len, Len_, Map, Map_, Pop, PopBack_, PopFront_, Pop_, Push, PushBack_, PushFront_,
-    PushOp, Push_, Remove, Remove_, Repeat, Repeat_, Reverse_, TypeFn, TypeFn_,
+    PushOp, Push_, Remove, Remove_, Repeat, Repeat_, Reverse_, 
 };
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_, OrderingTrait};
 use crate_::std_types::option::{None_, Some_};

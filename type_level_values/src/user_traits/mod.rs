@@ -43,7 +43,7 @@ pub use self::const_traits::ConstConstructor;
 
 pub use self::allowed_conversions_type::allowed_conversions;
 
-use crate_::ops::fn_adaptors::*;
+use crate_::fn_adaptors::*;
 use crate_::ops::*;
 use prelude::*;
 

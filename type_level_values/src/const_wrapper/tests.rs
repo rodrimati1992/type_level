@@ -2,8 +2,8 @@ use self::type_level_Dim2d::fields;
 use super::*;
 
 use crate_::field_traits::{GetFieldOp, MapFieldOp};
-use crate_::ops::fn_adaptors::*;
-use crate_::ops::fn_types::*;
+use crate_::fn_adaptors::*;
+use crate_::fn_types::*;
 
 use core_extensions::type_level_bool::False;
 use typenum::consts::{

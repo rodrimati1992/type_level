@@ -9,7 +9,7 @@ pub trait ConstEq_<Rhs> {
 /// Compares L with R for equality,returning True/False.
 pub type ConstEq<L, R> = <L as ConstEq_<R>>::Output;
 
-pub use crate_::ops::fn_types::ConstEqOp;
+pub use crate_::fn_types::ConstEqOp;
 
 pub trait ConstNE_<Rhs> {
     type Output: Boolean;

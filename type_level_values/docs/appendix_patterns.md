@@ -60,8 +60,8 @@ Let's implement a TypeFn_ that compares two 8-ary tuples.
 # use type_level_values::prelude::*;
 # use type_level_values::std_types::cmp_ordering::OrderingTrait;
 # use type_level_values::ops::*;
-# use type_level_values::ops::fn_types::*;
-# use type_level_values::ops::fn_adaptors::*;
+# use type_level_values::fn_types::*;
+# use type_level_values::fn_adaptors::*;
 
 
 struct Compare8Tuple;
@@ -130,7 +130,7 @@ fn main(){
 
 # use type_level_values::prelude::*;
 
-use type_level_values::field_traits::initialization::Construct_;
+use type_level_values::initialization::Construct_;
 
 #[derive(TypeLevel)]
 #[typelevel(reexport(Struct))]

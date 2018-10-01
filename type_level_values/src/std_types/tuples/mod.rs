@@ -1,9 +1,9 @@
 use core_extensions::SelfOps;
 
 use crate_::new_types::TListType;
-use crate_::ops::fn_adaptors::ApplyRhs;
+use crate_::fn_adaptors::ApplyRhs;
 use crate_::ops::{
-    ConstInto, ConstInto_, Filter_, FoldL_, FoldR_, Insert_, Len_, Map_, Remove_, Repeat_, TypeFn_,
+    ConstInto, ConstInto_, Filter_, FoldL_, FoldR_, Insert_, Len_, Map_, Remove_, Repeat_,
 };
 
 use crate_::field_traits::{GetField_, SetField_};

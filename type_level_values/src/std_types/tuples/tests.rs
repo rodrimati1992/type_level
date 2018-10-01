@@ -1,7 +1,7 @@
 use super::*;
 
-use crate_::ops::type_fn::fn_adaptors::*;
-use crate_::ops::type_fn::fn_types::*;
+use crate_::fn_adaptors::*;
+use crate_::fn_types::*;
 
 use crate_::field_traits::{GetField, SetField};
 use crate_::ops::*;

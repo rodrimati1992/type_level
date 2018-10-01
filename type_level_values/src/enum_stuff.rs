@@ -1,6 +1,6 @@
 use prelude::*;
 
-use field_traits::initialization::InitializationValues;
+use initialization::InitializationValues;
 
 use extern_types::typenum::UnsignedInteger;
 

@@ -1,9 +1,9 @@
 use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
-use crate_::ops::fn_adaptors::ApplyRhs;
-use crate_::ops::fn_types::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
-use crate_::ops::{FoldL, FoldL_, FoldR, FoldR_, Len_, Map, Map_, TypeFn, TypeFn_, Unwrap_};
+use crate_::fn_adaptors::ApplyRhs;
+use crate_::fn_types::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
+use crate_::ops::{FoldL, FoldL_, FoldR, FoldR_, Len_, Map, Map_,Unwrap_};
 use prelude::*;
 
 use std_::fmt::Debug;

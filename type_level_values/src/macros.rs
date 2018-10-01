@@ -124,7 +124,7 @@ construct!( <constructor> =>
 ```
 
 \<constructor> is a type implementing 
-type_level_values::field_traits::initialization::InitializationValues.
+type_level_values::initialization::InitializationValues.
 
 Valid constructors are:
     
@@ -270,14 +270,14 @@ fn main(){
 */
 macro_rules! construct {
     ($name:ty)=>{
-        $crate::field_traits::initialization::Construct<$name,tlist![]>
+        $crate::initialization::Construct<$name,tlist![]>
     };
     (
         $name:ty =>
         $( $field_name:ty = $field_ty:ty ),*
         $(,)*
     ) => (
-        $crate::field_traits::initialization::Construct<
+        $crate::initialization::Construct<
             $name,
             tlist![
                 $( ( $field_name,$field_ty ) ,)*
