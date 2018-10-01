@@ -1,5 +1,5 @@
 use crate_::enum_stuff::GetDiscriminant;
-use new_types::type_list::{TList, TypeLevelListTrait, TListType};
+use new_types::type_list::{TList, TListType, TypeLevelListTrait};
 use prelude::*;
 
 /// Converts a type to a tlist.

@@ -1,16 +1,14 @@
 use core_extensions::SelfOps;
 
-use crate_::new_types::{TListType};
+use crate_::new_types::TListType;
 use crate_::ops::fn_adaptors::ApplyRhs;
 use crate_::ops::{
-     ConstInto, ConstInto_, Filter_, Len_, Map_, Repeat_, TypeFn_,Insert_,Remove_,
-     FoldL_,FoldR_,
+    ConstInto, ConstInto_, Filter_, FoldL_, FoldR_, Insert_, Len_, Map_, Remove_, Repeat_, TypeFn_,
 };
 
-use crate_::field_traits::{SetField_,GetField_};
+use crate_::field_traits::{GetField_, SetField_};
 
 use prelude::*;
-
 
 #[cfg(test)]
 mod tests;
@@ -81,7 +79,7 @@ macro_rules! impl_tuple_trait {
                 type Output=var0::Output;
             }
 
-            impl<$($tparams,)* list,Index> GetField_<Index> for ($($tparams,)*) 
+            impl<$($tparams,)* list,Index> GetField_<Index> for ($($tparams,)*)
             where
                 Self:ConstInto_<TListType,Output=list>,
                 list:GetField_<Index>,
@@ -89,8 +87,8 @@ macro_rules! impl_tuple_trait {
                 type Output=list::Output;
             }
 
-            impl<$($tparams,)* list,Index,Value,new_list,Out> 
-                SetField_<Index,Value> for ($($tparams,)*) 
+            impl<$($tparams,)* list,Index,Value,new_list,Out>
+                SetField_<Index,Value> for ($($tparams,)*)
             where
                 Self:ConstInto_<TListType,Output=list>,
                 list:SetField_<Index,Value,Output=new_list>,
@@ -100,8 +98,8 @@ macro_rules! impl_tuple_trait {
             }
 
 
-            impl<$($tparams,)* Index,Value,list,Out> 
-                Insert_<Index, Value> for ($($tparams,)*)  
+            impl<$($tparams,)* Index,Value,list,Out>
+                Insert_<Index, Value> for ($($tparams,)*)
             where
                 Self:ConstInto_<TListType,Output=list>,
                 list:Insert_<Index,Value>,
@@ -111,7 +109,7 @@ macro_rules! impl_tuple_trait {
             }
 
 
-            impl<$($tparams,)* Index,list,Out> Remove_<Index> for ($($tparams,)*)  
+            impl<$($tparams,)* Index,list,Out> Remove_<Index> for ($($tparams,)*)
             where
                 Self:ConstInto_<TListType,Output=list>,
                 list:Remove_<Index>,
@@ -121,7 +119,7 @@ macro_rules! impl_tuple_trait {
             }
 
 
-            impl<$($tparams,)* lista,listb,Other> ConstOrd_<Other> for ($($tparams,)*) 
+            impl<$($tparams,)* lista,listb,Other> ConstOrd_<Other> for ($($tparams,)*)
             where
                 Self :ConstInto_<TListType,Output=lista>,
                 Other:ConstInto_<TListType,Output=listb>,
@@ -130,7 +128,7 @@ macro_rules! impl_tuple_trait {
                 type Output=lista::Output;
             }
 
-            impl<$($tparams,)* lista,listb,Other> ConstEq_<Other> for ($($tparams,)*) 
+            impl<$($tparams,)* lista,listb,Other> ConstEq_<Other> for ($($tparams,)*)
             where
                 Self :ConstInto_<TListType,Output=lista>,
                 Other:ConstInto_<TListType,Output=listb>,
@@ -139,8 +137,8 @@ macro_rules! impl_tuple_trait {
                 type Output=lista::Output;
             }
 
-            
-            impl<$($tparams,)* lista,Default,Op> FoldL_<Default,Op> for ($($tparams,)*) 
+
+            impl<$($tparams,)* lista,Default,Op> FoldL_<Default,Op> for ($($tparams,)*)
             where
                 Self :ConstInto_<TListType,Output=lista>,
                 lista:FoldL_<Default,Op>,
@@ -148,8 +146,8 @@ macro_rules! impl_tuple_trait {
                 type Output=lista::Output;
             }
 
-            
-            impl<$($tparams,)* lista,Default,Op> FoldR_<Default,Op> for ($($tparams,)*) 
+
+            impl<$($tparams,)* lista,Default,Op> FoldR_<Default,Op> for ($($tparams,)*)
             where
                 Self :ConstInto_<TListType,Output=lista>,
                 lista:FoldR_<Default,Op>,
@@ -224,4 +222,3 @@ impl_tuple_trait!{repeated;
     (U15)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
     (U16)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
 }
-

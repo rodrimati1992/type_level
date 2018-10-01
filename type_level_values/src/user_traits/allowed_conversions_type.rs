@@ -18,11 +18,11 @@ use prelude::*;
     "
 )]
 pub struct AllowedConversions {
-    #[typelevel(doc="If True:enables `mutparam_ref`,`mutparam_rc`,`mutparam_arc` ")]
+    #[typelevel(doc = "If True:enables `mutparam_ref`,`mutparam_rc`,`mutparam_arc` ")]
     pub by_ref: bool,
-    #[typelevel(doc="If True:enables `mutparam_mut` ")]
+    #[typelevel(doc = "If True:enables `mutparam_mut` ")]
     pub by_mut: bool,
-    #[typelevel(doc="If True:enables `mutparam` , `mutparam_box` ")]
+    #[typelevel(doc = "If True:enables `mutparam` , `mutparam_box` ")]
     pub by_val: bool,
 }
 
@@ -31,7 +31,6 @@ pub struct AllowedConversions {
 /// Contains aliases for different values of
 /// [ConstAllowedConversions](../struct.ConstAllowedConversions.html).
 pub mod allowed_conversions {
-
 
     use super::type_level_AllowedConversions::{
         fields, AllowedConversionsType, ConstAllowedConversions,

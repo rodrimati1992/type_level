@@ -8,6 +8,10 @@ members = [
 ]
 
 
+
+[profile.dev]
+debug=false
+
 # to emit assembly 
 #
 # env RUSTFLAGS="--emit asm  --C codegen-units=1" cargo run --release --bin

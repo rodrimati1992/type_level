@@ -1,9 +1,8 @@
 use prelude::*;
 
-use crate_::ops::{FoldL_, Map_, TypeFn, TypeFn_,};
+use crate_::ops::{FoldL_, Map_, TypeFn, TypeFn_};
 
 /////////////////////////////////////////////////////////////////////////////////////////
-
 
 /// Gets the value of the fields of a ConstValue.
 pub trait GetField_<Field>: Sized {
@@ -42,7 +41,6 @@ pub trait GetField_<Field>: Sized {
         MarkerType::markertype_ref()
     }
 }
-
 
 /// Gets the runtime value of a field of a ConstValue.
 pub trait GetFieldRuntime_<Field, RuntimeType>: GetField_<Field> {
@@ -103,7 +101,6 @@ type_fn!{
     { let Out;Out }
 }
 
-
 type_fn!{
     /// Sets the fields of Struc with the `FVPairs` list of (FieldAccessor,Value) pairs.
     pub fn SetFieldValuePairs[Struc,FVPairs](Struc,FVPairs)
@@ -117,7 +114,6 @@ type_fn!{
     where [ Struc:SetField_<Field,Value,Output=Out> ]
     { let Out;Out }
 }
-
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -166,7 +162,6 @@ type_fn!{
 /// Type-level equivalent of "|This, Field, Mapper|{ This[Field]=Mapper(This); This }".
 pub type MapIntoField<This, Field, Mapper> = TypeFn<MapIntoFieldOp, (This, Field, Mapper)>;
 
-
 type_fn!{
     /// Type-level equivalent of "|This, Field, Mapper|{ This[Field]=Mapper(This); This }".
     pub fn MapIntoFieldOp[This, Field, Mapper](This, Field, Mapper)
@@ -182,7 +177,7 @@ type_fn!{
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /// Trait used by the `constructor` macro to construct a fully initialized version of a value.
-/// 
+///
 /// This is automatically implemented by the `TypeLevel` derive macro.
 pub trait InitializationValues {
     /// Each field of this must be IsInitField< a type containing the field name >.
@@ -252,17 +247,6 @@ pub mod construct_helpers {
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-/// Represents a `field=value` pair.
-pub trait FieldValue {
-    type Field;
-    type Value;
-}
-
-impl<FieldName, Value> FieldValue for (FieldName, Value) {
-    type Field = FieldName;
-    type Value = Value;
-}
-
 /// Allows setting a field of a type-level struct.
 pub trait SetField_<Field, Value: ?Sized>: Sized {
     type Output;
@@ -278,12 +262,10 @@ pub type GetFieldRuntime<This, FieldName, RuntimeTy> =
 /// Changes the compile-time value of a field,returning a new struct.
 pub type SetField<This, FieldName, Value> = <This as SetField_<FieldName, Value>>::Output;
 
-
-
 /// Sets the values of fields in This initializing all the fields with FVPairs.
 ///
 /// `FVPairs` example:tlist![ (field::x,U10), (field::y,U5) ] .
-pub type SetFields<This, FVPairs> = TypeFn<SetFieldValuePairs,(This,FVPairs)>;
+pub type SetFields<This, FVPairs> = TypeFn<SetFieldValuePairs, (This, FVPairs)>;
 
 /// Macro for more conveniently setting the fields of a compile-time struct.
 ///
@@ -298,5 +280,3 @@ macro_rules! set_fields {
         >
     };
 }
-
-

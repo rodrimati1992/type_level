@@ -1,12 +1,11 @@
 use super::*;
 
-use crate_::ops::type_fn::fn_types::*;
 use crate_::ops::type_fn::fn_adaptors::*;
+use crate_::ops::type_fn::fn_types::*;
 
-use crate_::std_types::{Less_,Equal_,Greater_};
 use crate_::field_traits::{GetField, SetField};
 use crate_::ops::*;
-
+use crate_::std_types::{Equal_, Greater_, Less_};
 
 macro_rules! tuple_ {
     (
@@ -15,7 +14,6 @@ macro_rules! tuple_ {
         ($( $type_ ,)*)
     )
 }
-
 
 #[test]
 fn insert() {
@@ -118,8 +116,8 @@ fn fold_l() {
     let _: (U0, U1) = FoldL::<tuple_![U0, U1], (), PushOp>::MTVAL;
     let _: (U0, U1, U2) = FoldL::<tuple_![U0, U1, U2], (), PushOp>::MTVAL;
     let _: (U0, U1, U2, U3) = FoldL::<tuple_![U0, U1, U2, U3], (), PushOp>::MTVAL;
-    let _:U80=FoldL::<Repeat<TupleType,U1,U16>,U96,SubOp>::MTVAL;
-    let _:U50=FoldL::<Repeat<TupleType,U1,U16>,U66,SubOp>::MTVAL;
+    let _: U80 = FoldL::<Repeat<TupleType, U1, U16>, U96, SubOp>::MTVAL;
+    let _: U50 = FoldL::<Repeat<TupleType, U1, U16>, U66, SubOp>::MTVAL;
 }
 
 #[test]
@@ -130,8 +128,8 @@ fn fold_r() {
     let _: (U2, U1, U0) = FoldR::<tuple_![U0, U1, U2], (), PushOp>::MTVAL;
     let _: (U3, U2, U1, U0) = FoldR::<tuple_![U0, U1, U2, U3], (), PushOp>::MTVAL;
 
-    let _:U80=FoldR::<Repeat<TupleType,U1,U16>,U96,SubOp>::MTVAL;
-    let _:U50=FoldR::<Repeat<TupleType,U1,U16>,U66,SubOp>::MTVAL;
+    let _: U80 = FoldR::<Repeat<TupleType, U1, U16>, U96, SubOp>::MTVAL;
+    let _: U50 = FoldR::<Repeat<TupleType, U1, U16>, U66, SubOp>::MTVAL;
 }
 
 #[test]
@@ -142,13 +140,8 @@ fn map() {
     let _: tuple_![U1, U2] = Map::<tuple_![U0, U1], AddOne>::MTVAL;
     let _: tuple_![U1, U2, U3] = Map::<tuple_![U0, U1, U2], AddOne>::MTVAL;
     let _: tuple_![U1, U2, U3, U4] = Map::<tuple_![U0, U1, U2, U3], AddOne>::MTVAL;
-    let _: Repeat<TupleType,False,U16>=Map::<
-        Repeat<TupleType,True,U16>,
-        Const<False>,
-    >::MTVAL;
-        
+    let _: Repeat<TupleType, False, U16> = Map::<Repeat<TupleType, True, U16>, Const<False>>::MTVAL;
 }
-
 
 #[test]
 fn repeat() {
@@ -174,7 +167,6 @@ fn pop_back() {
     let _: Some_<(U2, tuple_![U0, U1])> = PopBack::<tuple_![U0, U1, U2]>::MTVAL;
     let _: Some_<(U3, tuple_![U0, U1, U2])> = PopBack::<tuple_![U0, U1, U2, U3]>::MTVAL;
 }
-
 
 #[test]
 fn get_field() {
@@ -205,18 +197,17 @@ fn set_field() {
 }
 
 #[test]
-fn type_fn_(){
-    let _:U0 =TypeFn::< tuple_![] , U0>::MTVAL;
-    let _:U1 =TypeFn::< tuple_![ApplyRhs<AddOp,U1>] , U0>::MTVAL;
-    let _:U2 =TypeFn::< tuple_![ApplyRhs<AddOp,U1>,ApplyRhs<AddOp,U1 >] , U0>::MTVAL;
-    let _:U21=TypeFn::< tuple_![ApplyRhs<AddOp,U1>,ApplyRhs<AddOp,U10>] , U10>::MTVAL;
-    let _:U41=TypeFn::< 
+fn type_fn_() {
+    let _: U0 = TypeFn::<tuple_![], U0>::MTVAL;
+    let _: U1 = TypeFn::<tuple_![ApplyRhs<AddOp,U1>], U0>::MTVAL;
+    let _: U2 = TypeFn::<tuple_![ApplyRhs<AddOp,U1>,ApplyRhs<AddOp,U1 >], U0>::MTVAL;
+    let _: U21 = TypeFn::<tuple_![ApplyRhs<AddOp,U1>,ApplyRhs<AddOp,U10>], U10>::MTVAL;
+    let _: U41 = TypeFn::<
         tuple_![
             ApplyRhs<AddOp,U1>,
             ApplyRhs<AddOp,U10>,
             ApplyRhs<AddOp,U20>
-        ] , 
-        U10
+        ],
+        U10,
     >::MTVAL;
 }
-

@@ -33,7 +33,7 @@ This is the reference for topics not coverred in api documentation:
 #[macro_use]
 pub mod doc_code_snippets_macro;
 
-#[path = "introduction.md" ]
+#[path = "introduction.md"]
 pub mod introduction;
 
 #[path = "attribute_typelevel.md"]
@@ -76,4 +76,3 @@ include!{"./guide_10.rs"}
 include!{"./guide_11.rs"}
 
 include!{"./guide_12.rs"}
-

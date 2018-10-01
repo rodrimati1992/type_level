@@ -1,6 +1,5 @@
 use prelude::*;
 
-
 /// An example type which uses a Const-parameter and allows extension methods.
 #[derive(ConstConstructor)]
 #[cconstructor(

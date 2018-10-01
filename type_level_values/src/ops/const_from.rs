@@ -24,7 +24,7 @@ pub trait ConstInto_<Other> {
 
 impl<S, O> ConstInto_<S> for O
 where
-    S: ConstFrom_<O>+ConstType,
+    S: ConstFrom_<O> + ConstType,
 {
     type Output = S::Output;
 }

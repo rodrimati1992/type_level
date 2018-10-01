@@ -70,7 +70,6 @@ pub mod util_types;
 #[path = "../docs/mod.rs"]
 pub mod docs;
 
-
 pub mod prelude;
 
 pub(crate) mod type_level_values {
@@ -110,9 +109,7 @@ pub mod reexports {
         FromRuntime, IntoConstType_, IntoRuntime,
     };
 
-    pub use field_traits::{
-        Field_, GetFieldRuntime_, GetField_, InitializationValues, SetField_,
-    };
+    pub use field_traits::{Field_, GetFieldRuntime_, GetField_, InitializationValues, SetField_};
 
     pub use new_types::{TList, TNil};
 

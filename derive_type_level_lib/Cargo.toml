@@ -20,7 +20,6 @@ features=["extra-traits","visit","visit-mut"]
 [dependencies.core_extensions]
 path="../../shared_extensions/core_extensions"
 default-features=false
-features=["std"]
 
 [dependencies.derive_ce_helpers]
 path="../../derive_ce_helpers/"

@@ -37,7 +37,7 @@ pub mod const_traits;
 pub mod example_const_user;
 pub mod mut_const_param;
 
-pub use self::mut_const_param::{MutConstParam,MCPBounds};
+pub use self::mut_const_param::{MCPBounds, MutConstParam};
 
 pub use self::const_traits::ConstConstructor;
 

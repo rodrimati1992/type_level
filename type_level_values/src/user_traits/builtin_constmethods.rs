@@ -5,7 +5,6 @@ Contains all the built-in ExtensionConstMethods .
 
 use prelude::*;
 
-
 const_method!{
     type ConstConstructor[]=( T )
     type AllowedConversions=( allowed_conversions::All )

@@ -11,9 +11,7 @@ pub mod tuple_impls;
 pub mod wrapper_ops;
 
 #[doc(inline)]
-pub use self::type_fn::{
-    fn_adaptors, fn_types,TypeFn, TypeFn_,
-};
+pub use self::type_fn::{fn_adaptors, fn_types, TypeFn, TypeFn_};
 
 #[doc(inline)]
 pub use self::as_tlist::{
@@ -21,16 +19,15 @@ pub use self::as_tlist::{
 };
 
 pub use self::iteration_ops::{
-    ContainsOp,AllOp,AnyOp,All, Any, Contains, 
-    Filter, FilterOp, Filter_, FoldL, FoldLOp, FoldL_, FoldR,
-    FoldROp, FoldR_, Insert, InsertOp, Insert_, Len, LenOp, Len_, Map, MapOp, Map_, Pop, PopBack,
-    PopBackOp, PopBack_, PopOp, Pop_, Push, PushBack, PushBackOp, PushBack_, PushOp, Push_,
-    PopFront,PopFrontOp, PopFront_,PushFront, PushFrontOp, PushFront_,
-    ReduceL, ReduceLOp, ReduceL_, ReduceR, ReduceROp, ReduceR_, Remove, RemoveOp, Remove_, Repeat,
-    RepeatOp, Repeat_, Reverse, ReverseOp, Reverse_,
+    All, AllOp, Any, AnyOp, Contains, ContainsOp, Filter, FilterOp, Filter_, FoldL, FoldLOp,
+    FoldL_, FoldR, FoldROp, FoldR_, Insert, InsertOp, Insert_, Len, LenOp, Len_, Map, MapOp, Map_,
+    Pop, PopBack, PopBackOp, PopBack_, PopFront, PopFrontOp, PopFront_, PopOp, Pop_, Push,
+    PushBack, PushBackOp, PushBack_, PushFront, PushFrontOp, PushFront_, PushOp, Push_, ReduceL,
+    ReduceLOp, ReduceL_, ReduceR, ReduceROp, ReduceR_, Remove, RemoveOp, Remove_, Repeat, RepeatOp,
+    Repeat_, Reverse, ReverseOp, Reverse_,
 };
 
-pub use self::const_eq::{ConstEq, ConstEq_,ConstNE_,ConstNE};
+pub use self::const_eq::{ConstEq, ConstEq_, ConstNE, ConstNE_};
 pub use self::const_ord::{ConstOrd, ConstOrd_};
 
 pub use self::const_from::{ConstFrom, ConstFrom_};

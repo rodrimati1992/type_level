@@ -1,7 +1,14 @@
 use prelude::*;
 
+use crate_::enum_stuff::{
+    Discriminant,
+};
+use crate_::runtime_value::{
+    DerivedTraits,
+};
 use crate_::field_traits::{
     GetField, GetFieldRuntime, GetFieldRuntime_, GetField_, SetField, SetField_,
+    InitializationValues,
 };
 use crate_::ops::TypeFn_;
 use std_types::cmp_ordering::OrderingTrait;
@@ -77,17 +84,7 @@ type_fn!{
 //////////////////////////////////////////////////////////////////////////////////////
 
 /// Trait used to access the type parameters of ConstWrapper in a generic context.
-pub trait WrapperTrait:
-    Sealed
-    + Copy
-    + Clone
-    + Default
-    + MarkerType
-    + Send
-    + Sync
-    + Sized
-    + ConstTypeOf_<Type = WrapperType>
-    + ConstValue
+pub trait WrapperTrait: Sealed + DerivedTraits<Type = WrapperType>
 {
     type ConstValue;
     type Kind;
@@ -97,6 +94,17 @@ impl<T, Kind> WrapperTrait for ConstWrapper<T, Kind> {
     type ConstValue = T;
     type Kind = Kind;
 }
+
+impl<T,K> GetDiscriminant for ConstWrapper<T,K>{
+    type Discriminant=Discriminant<names::ConstWrapper_Type,WrapperType, U0>;
+
+    type Variant=names::ConstWrapper_Type;
+}
+
+mod names{
+    pub struct ConstWrapper_Type;
+}
+
 
 impl<T, Kind> Sealed for ConstWrapper<T, Kind> {}
 
@@ -394,6 +402,15 @@ where
 {
     const VALUE: R = T::VALUE;
 }
+
+
+impl<T,K> InitializationValues for ConstWrapper<T,K>
+where T:InitializationValues
+{
+    type Uninitialized = ConstWrapper<T::Uninitialized,K>;
+    type Initialized = ConstWrapper<T::Initialized,K>;
+}
+
 
 impl<T> ConstWrapper<T, PhantomKind> {
     #[inline(always)]
@@ -705,15 +722,6 @@ where
     }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
-
-impl<T, Kind> GetDiscriminant for ConstWrapper<T, Kind>
-where
-    T: GetDiscriminant,
-{
-    type Discriminant = T::Discriminant;
-    type Variant = Kind;
-}
 
 /////////////////////////////////////////////////////////////////////////////////////
 

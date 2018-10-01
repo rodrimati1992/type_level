@@ -2,7 +2,7 @@ use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
 use crate_::ops::fn_types::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
-use crate_::ops::{ FoldL_, FoldR_, Map_, TypeFn, TypeFn_, Unwrap_};
+use crate_::ops::{FoldL_, FoldR_, Map_, TypeFn, TypeFn_, Unwrap_};
 use prelude::*;
 
 use std_::ops::{BitAnd, BitOr};
@@ -67,7 +67,6 @@ impl<E, O> BitAnd<O> for Err_<E> {
 }
 
 /////////////////////////////
-
 
 type_fn!{
     pub fn IsOk[V](Ok_<V>){True}

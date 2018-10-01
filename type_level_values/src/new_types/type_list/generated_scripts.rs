@@ -2,6 +2,59 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
+////                    TypeFn_
+////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+
+use std::fmt::Write;
+
+fn main(){
+    let recursive_case=8;
+    
+    for i in 0..=recursive_case {
+        let mut buffer=String::new();
+        let _=write!(buffer,"impl<");
+        for j in 0..i {
+            let _=write!(buffer,"L{0},OrRes{0},",j);
+        }
+        let _=write!(buffer,"OrRes{},",i);
+        if i==recursive_case {
+            let _=write!(buffer,"OrRes{},Rem,",i+1);
+        }
+        let _=writeln!(buffer,">\n    TypeFn_<OrRes0>");
+        let _=write!(buffer,"for tlist![");
+        for j in 0..i {
+            let _=write!(buffer,"L{0},",j);
+        }
+        if i==recursive_case {
+            let _=write!(buffer,"..Rem");
+        }
+        let _=writeln!(buffer,"]");
+        let _=writeln!(buffer,"where");
+        for j in 0..i {
+            let _=writeln!(buffer,"\tL{0}:TypeFn_<OrRes{0},Output=OrRes{1}>,",j,j+1);
+        }
+        if i==recursive_case {
+            let _=writeln!(buffer,"\tRem:TypeFn_<OrRes{},Output=OrRes{}>,",
+                recursive_case,
+                recursive_case+1
+            );
+        }
+        let returned=if i==recursive_case { i+1 }else{ i };
+        let _=writeln!(buffer,"{{\n\ttype Output=OrRes{0};\n}}",returned);
+        println!("{}",buffer );
+    }
+    
+}
+
+
+
+*/
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////
 ////                    FoldL_ 
 ////////////////////////////////////////////////////////////////////////////////////////
 

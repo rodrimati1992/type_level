@@ -3,9 +3,7 @@ use prelude::*;
 use crate_::field_traits::MapField;
 use crate_::ops::fn_adaptors::*;
 use crate_::ops::fn_types::*;
-use crate_::ops::{
-    fn_adaptors, fn_types,TypeFn, TypeFn_,
-};
+use crate_::ops::{fn_adaptors, fn_types, TypeFn, TypeFn_};
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_};
 
 use std_::ops::Add;
@@ -36,8 +34,8 @@ type_fn!{
     /**
     An if expression that takes lazily evaluated Then and Else branches,
     only evaluating the branch that was taken.
-    
-    Equivalent to 
+
+    Equivalent to
     ```text
     for<State> | State |{
         if Pred(State) {
@@ -80,9 +78,9 @@ type_fn!{
 type_fn!{
     /**
     Logical or,which only evaluates the second parameter if the first parameter is False.
-    
-    Equivalent to 
-    ```
+
+    Equivalent to
+    ```ignore
     |lhs:impl()->bool, rhs:bool|{
         if lhs { true }else{ rhs() }
     }
@@ -100,9 +98,9 @@ type_fn!{
 type_fn!{
     /**
     Logical and,which only evaluates the second parameter if the first parameter is True.
-    
-    Equivalent to 
-    ```
+
+    Equivalent to
+    ```ignore
     |lhs:bool, rhs:impl()->bool|{
         if lhs { rhs() }else{ false }
     }

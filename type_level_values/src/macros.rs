@@ -1,3 +1,5 @@
+
+
 /**
 
 Type macro for a type-level-list.
@@ -30,6 +32,11 @@ macro_rules! tlist {
     };
 }
 
+
+
+
+
+
 /** 
 
 Instantiates a type-level-list,
@@ -52,6 +59,12 @@ macro_rules! tlist_val {
         < tlist!($($all)*) as $crate::core_extensions::MarkerType >::MTVAL
     };
 }
+
+
+
+
+
+
 
 #[macro_export]
 /**
@@ -233,6 +246,13 @@ macro_rules! construct {
         >
     )
 }
+
+
+
+
+
+
+
 
 
 #[macro_export]

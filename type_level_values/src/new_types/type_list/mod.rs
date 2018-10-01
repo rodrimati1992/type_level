@@ -1,42 +1,34 @@
+mod generated_impls;
 #[cfg(test)]
 mod tests;
-mod generated_impls;
 
 use core_extensions::type_level_bool::{Boolean, False, True};
 
+use crate_::extern_types::typenum::UnsignedInteger;
 use crate_::field_traits::{GetField_, SetField_};
 use crate_::ops::control_flow::{If, Lazy};
 use crate_::ops::fn_adaptors::*;
-use crate_::ops::fn_types::{AddOp, ConstEqOp,ConstLtOp, ConstOrdOp, NotOp};
+use crate_::ops::fn_types::{AddOp, ConstEqOp, ConstLtOp, ConstOrdOp, NotOp};
 use crate_::ops::{
-    ConstEq, ConstNE_, ConstFrom_, ConstOrd, Filter_, FoldL, FoldL_, FoldR, FoldR_, Insert,
-    Insert_, Len, Len_, Map, Map_, Pop, PopBack_, Pop_, Push, PushBack_, PushOp, Push_,
-    PopFront_, PushFront_, Remove,
-    Remove_, Repeat, Repeat_, Reverse_, TypeFn_,TypeFn,
+    ConstEq, ConstFrom_, ConstNE_, ConstOrd, Filter_, FoldL, FoldL_, FoldR, FoldR_, Insert,
+    Insert_, Len, Len_, Map, Map_, Pop, PopBack_, PopFront_, Pop_, Push, PushBack_, PushFront_,
+    PushOp, Push_, Remove, Remove_, Repeat, Repeat_, Reverse_, TypeFn, TypeFn_,
 };
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_, OrderingTrait};
 use crate_::std_types::option::{None_, Some_};
 use crate_::std_types::tuples::TupleType;
-use crate_::extern_types::typenum::UnsignedInteger;
 use prelude::*;
 
-
-
-use std_::ops::{Add, BitAnd, BitOr, Sub,Index};
-
+use std_::ops::{Add, BitAnd, BitOr, Index, Sub};
 
 #[derive(TypeLevel)]
-#[typelevel(
-    reexport(Variants,Traits),
-    rename_consttype="TListType",
-
-)]
-pub enum TypeLevelList<Current,Remaining>{
+#[typelevel(reexport(Variants, Traits), rename_consttype = "TListType",)]
+pub enum TypeLevelList<Current, Remaining> {
     TNil,
-    TList{
+    TList {
         current: VariantPhantom<Current>,
         remaining: VariantPhantom<Remaining>,
-    }
+    },
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -81,53 +73,51 @@ where
     type Output = out;
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////
 
-
-impl<T0,Rem,index,is_lt8,Out> GetField_<index> for TList<T0,Rem>
-where 
-    ConstLtOp:TypeFn_<(index,U8),Output=is_lt8>,
-    GetFieldHelper:TypeFn_<(is_lt8,index,Self),Output=Out>,
+impl<T0, Rem, index, is_lt8, Out> GetField_<index> for TList<T0, Rem>
+where
+    ConstLtOp: TypeFn_<(index, U8), Output = is_lt8>,
+    GetFieldHelper: TypeFn_<(is_lt8, index, Self), Output = Out>,
 {
-    type Output=Out;
+    type Output = Out;
 }
 
 type_fn!{
     #[doc(hidden)]
-    pub fn 
+    pub fn
         GetFieldHelper[Rem,T0]
         (True,U0,tlist![T0,..Rem])
         {T0}
-        
+
         GetFieldHelper[Rem,T0,T1]
         (True,U1,tlist![T0,T1,..Rem])
         {T1}
-        
+
         GetFieldHelper[Rem,T0,T1,T2]
         (True,U2,tlist![T0,T1,T2,..Rem])
         {T2}
-        
+
         GetFieldHelper[Rem,T0,T1,T2,T3]
         (True,U3,tlist![T0,T1,T2,T3,..Rem])
         {T3}
-        
+
         GetFieldHelper[Rem,T0,T1,T2,T3,T4]
         (True,U4,tlist![T0,T1,T2,T3,T4,..Rem])
         {T4}
-        
+
         GetFieldHelper[Rem,T0,T1,T2,T3,T4,T5]
         (True,U5,tlist![T0,T1,T2,T3,T4,T5,..Rem])
         {T5}
-        
+
         GetFieldHelper[Rem,T0,T1,T2,T3,T4,T5,T6]
         (True,U6,tlist![T0,T1,T2,T3,T4,T5,T6,..Rem])
         {T6}
-        
+
         GetFieldHelper[Rem,T0,T1,T2,T3,T4,T5,T6,T7]
         (True,U7,tlist![T0,T1,T2,T3,T4,T5,T6,T7,..Rem])
         {T7}
-        
+
         GetFieldHelper[Rem,index,T0,T1,T2,T3,T4,T5,T6,T7]
         (False,index,tlist![T0,T1,T2,T3,T4,T5,T6,T7,..Rem])
         where[
@@ -136,57 +126,55 @@ type_fn!{
             Self:TypeFn_<(is_lt8,sub8,Rem),Output=Out>,
         ]{
             let sub8;let is_lt8;let Out;
-            Out  
+            Out
         }
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 
-
-impl<T0,Rem,index,value,is_lt8,Out> SetField_<index,value> for TList<T0,Rem>
-where 
-    ConstLtOp:TypeFn_<(index,U8),Output=is_lt8>,
-    SetFieldHelper:TypeFn_<(is_lt8,index,value,Self),Output=Out>,
+impl<T0, Rem, index, value, is_lt8, Out> SetField_<index, value> for TList<T0, Rem>
+where
+    ConstLtOp: TypeFn_<(index, U8), Output = is_lt8>,
+    SetFieldHelper: TypeFn_<(is_lt8, index, value, Self), Output = Out>,
 {
-    type Output=Out;
+    type Output = Out;
 }
-
 
 type_fn!{
     #[doc(hidden)]
-    pub fn 
+    pub fn
         SetFieldHelper[Rem,val,T0]
         (True,U0,val,tlist![T0,..Rem])
         {tlist![val,..Rem]}
-        
+
         SetFieldHelper[Rem,val,T0,T1]
         (True,U1,val,tlist![T0,T1,..Rem])
         {tlist![T0,val,..Rem]}
-        
+
         SetFieldHelper[Rem,val,T0,T1,T2]
         (True,U2,val,tlist![T0,T1,T2,..Rem])
         {tlist![T0,T1,val,..Rem]}
-        
+
         SetFieldHelper[Rem,val,T0,T1,T2,T3]
         (True,U3,val,tlist![T0,T1,T2,T3,..Rem])
         {tlist![T0,T1,T2,val,..Rem]}
-        
+
         SetFieldHelper[Rem,val,T0,T1,T2,T3,T4]
         (True,U4,val,tlist![T0,T1,T2,T3,T4,..Rem])
         {tlist![T0,T1,T2,T3,val,..Rem]}
-        
+
         SetFieldHelper[Rem,val,T0,T1,T2,T3,T4,T5]
         (True,U5,val,tlist![T0,T1,T2,T3,T4,T5,..Rem])
         {tlist![T0,T1,T2,T3,T4,val,..Rem]}
-        
+
         SetFieldHelper[Rem,val,T0,T1,T2,T3,T4,T5,T6]
         (True,U6,val,tlist![T0,T1,T2,T3,T4,T5,T6,..Rem])
         {tlist![T0,T1,T2,T3,T4,T5,val,..Rem]}
-        
+
         SetFieldHelper[Rem,val,T0,T1,T2,T3,T4,T5,T6,T7]
         (True,U7,val,tlist![T0,T1,T2,T3,T4,T5,T6,T7,..Rem])
         {tlist![T0,T1,T2,T3,T4,T5,T6,val,..Rem]}
-        
+
         SetFieldHelper[Rem,val,index,T0,T1,T2,T3,T4,T5,T6,T7]
         (False,index,val,tlist![T0,T1,T2,T3,T4,T5,T6,T7,..Rem])
         where[
@@ -201,55 +189,53 @@ type_fn!{
 
 //////////////////////////////////////////////////////////////////////////////////
 
-
 impl<Value> Insert_<U0, Value> for TNil {
     type Output = tlist![Value];
 }
 
-impl<T0,Rem,index,value,is_lt8,Out> Insert_<index,value> for TList<T0,Rem>
-where 
-    ConstLtOp:TypeFn_<(index,U8),Output=is_lt8>,
-    InsertHelper:TypeFn_<(is_lt8,index,value,Self),Output=Out>,
+impl<T0, Rem, index, value, is_lt8, Out> Insert_<index, value> for TList<T0, Rem>
+where
+    ConstLtOp: TypeFn_<(index, U8), Output = is_lt8>,
+    InsertHelper: TypeFn_<(is_lt8, index, value, Self), Output = Out>,
 {
-    type Output=Out;
+    type Output = Out;
 }
-
 
 type_fn!{
     #[doc(hidden)]
-    pub fn 
+    pub fn
         InsertHelper[Rem,val]
         (True,U0,val,Rem)
         {tlist![val,..Rem]}
-        
+
         InsertHelper[Rem,val,T0]
         (True,U1,val,tlist![T0,..Rem])
         {tlist![T0,val,..Rem]}
-        
+
         InsertHelper[Rem,val,T0,T1]
         (True,U2,val,tlist![T0,T1,..Rem])
         {tlist![T0,T1,val,..Rem]}
-        
+
         InsertHelper[Rem,val,T0,T1,T2]
         (True,U3,val,tlist![T0,T1,T2,..Rem])
         {tlist![T0,T1,T2,val,..Rem]}
-        
+
         InsertHelper[Rem,val,T0,T1,T2,T3]
         (True,U4,val,tlist![T0,T1,T2,T3,..Rem])
         {tlist![T0,T1,T2,T3,val,..Rem]}
-        
+
         InsertHelper[Rem,val,T0,T1,T2,T3,T4]
         (True,U5,val,tlist![T0,T1,T2,T3,T4,..Rem])
         {tlist![T0,T1,T2,T3,T4,val,..Rem]}
-        
+
         InsertHelper[Rem,val,T0,T1,T2,T3,T4,T5]
         (True,U6,val,tlist![T0,T1,T2,T3,T4,T5,..Rem])
         {tlist![T0,T1,T2,T3,T4,T5,val,..Rem]}
-        
+
         InsertHelper[Rem,val,T0,T1,T2,T3,T4,T5,T6]
         (True,U7,val,tlist![T0,T1,T2,T3,T4,T5,T6,..Rem])
         {tlist![T0,T1,T2,T3,T4,T5,T6,val,..Rem]}
-        
+
         InsertHelper[Rem,val,index,T0,T1,T2,T3,T4,T5,T6,T7]
         (False,index,val,tlist![T0,T1,T2,T3,T4,T5,T6,T7,..Rem])
         where[
@@ -262,55 +248,51 @@ type_fn!{
         }
 }
 
-
-
 //////////////////////////////////////////////////////////////////////////////////
 
-
-impl<T0,Rem,index,is_lt8,Out> Remove_<index> for TList<T0,Rem>
-where 
-    ConstLtOp:TypeFn_<(index,U8),Output=is_lt8>,
-    RemoveHelper:TypeFn_<(is_lt8,index,Self),Output=Out>,
+impl<T0, Rem, index, is_lt8, Out> Remove_<index> for TList<T0, Rem>
+where
+    ConstLtOp: TypeFn_<(index, U8), Output = is_lt8>,
+    RemoveHelper: TypeFn_<(is_lt8, index, Self), Output = Out>,
 {
-    type Output=Out;
+    type Output = Out;
 }
-
 
 type_fn!{
     #[doc(hidden)]
-    pub fn 
+    pub fn
         RemoveHelper[Rem,T0]
         (True,U0,tlist![T0,..Rem])
         {Rem}
-        
+
         RemoveHelper[Rem,T0,T1]
         (True,U1,tlist![T0,T1,..Rem])
         {tlist![T0,..Rem]}
-        
+
         RemoveHelper[Rem,T0,T1,T2]
         (True,U2,tlist![T0,T1,T2,..Rem])
         {tlist![T0,T1,..Rem]}
-        
+
         RemoveHelper[Rem,T0,T1,T2,T3]
         (True,U3,tlist![T0,T1,T2,T3,..Rem])
         {tlist![T0,T1,T2,..Rem]}
-        
+
         RemoveHelper[Rem,T0,T1,T2,T3,T4]
         (True,U4,tlist![T0,T1,T2,T3,T4,..Rem])
         {tlist![T0,T1,T2,T3,..Rem]}
-        
+
         RemoveHelper[Rem,T0,T1,T2,T3,T4,T5]
         (True,U5,tlist![T0,T1,T2,T3,T4,T5,..Rem])
         {tlist![T0,T1,T2,T3,T4,..Rem]}
-        
+
         RemoveHelper[Rem,T0,T1,T2,T3,T4,T5,T6]
         (True,U6,tlist![T0,T1,T2,T3,T4,T5,T6,..Rem])
         {tlist![T0,T1,T2,T3,T4,T5,..Rem]}
-        
+
         RemoveHelper[Rem,T0,T1,T2,T3,T4,T5,T6,T7]
         (True,U7,tlist![T0,T1,T2,T3,T4,T5,T6,T7,..Rem])
         {tlist![T0,T1,T2,T3,T4,T5,T6,..Rem]}
-        
+
         RemoveHelper[Rem,index,T0,T1,T2,T3,T4,T5,T6,T7]
         (False,index,tlist![T0,T1,T2,T3,T4,T5,T6,T7,..Rem])
         where[
@@ -323,13 +305,11 @@ type_fn!{
         }
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 
 impl<DefaultVal, Func> FoldL_<DefaultVal, Func> for tlist![] {
     type Output = DefaultVal;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -394,7 +374,6 @@ impl Pop_ for TNil {
     type Output = None_;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 
 impl<Value> PushFront_<Value> for TNil {
@@ -412,7 +391,6 @@ impl<T, Rem> PopFront_ for TList<T, Rem> {
 impl PopFront_ for TNil {
     type Output = None_;
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -483,15 +461,13 @@ type_fn!{
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
-impl<V,L,Out> Repeat_<V,L> for TListType
-where 
-    L:ConstEq_<U0>,
-    RepeatHelper<V>:TypeFn_<(L::Output,L),Output=Out>
+impl<V, L, Out> Repeat_<V, L> for TListType
+where
+    L: ConstEq_<U0>,
+    RepeatHelper<V>: TypeFn_<(L::Output, L), Output = Out>,
 {
-    type Output=Out;
+    type Output = Out;
 }
-
 
 type_fn!{
     #[doc(hidden)]
@@ -509,27 +485,9 @@ type_fn!{
         let OutRec;
         let is0;
         let Subbed;
-        TList<Value,OutRec>  
+        TList<Value,OutRec>
     }
 }
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-
-
-impl<Current,Rem,Param,Out> TypeFn_<Param> for TList<Current,Rem>
-where 
-    Self:FoldL_<Param,EvalRhsOp,Output=Out>,
-{
-    type Output=Out;
-}
-
-impl<Param> TypeFn_<Param> for TNil{
-    type Output=Param;
-}
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -542,11 +500,11 @@ macro_rules! fixed_size_impls {
             impl<$($tparams),*> ConstFrom_<tlist![$($tparams),*]> for TupleType{
                 type Output=($($tparams,)*);
             }
-            
+
             impl<$($tparams),*> ConstFrom_<($($tparams,)*)> for TListType{
                 type Output=tlist![$($tparams),*];
             }
-            
+
             impl<$($tparams,)* $($runtparams,)*>
                 IntoRuntime<($($runtparams,)*)>
             for tlist![$($tparams),*]

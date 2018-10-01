@@ -1,14 +1,10 @@
 use super::*;
 
 use user_traits::const_traits::{
-    SetConstParam_,
-    SetConstParam,
-    GetConstConstructor_,
-    ConstLayoutIndependent,
-    AllowOp,
+    AllowOp, ConstLayoutIndependent, GetConstConstructor_, SetConstParam, SetConstParam_,
 };
 
-use user_traits::const_methods::{ComputeConstParam_,OpAttrs};
+use user_traits::const_methods::{ComputeConstParam_, OpAttrs};
 
 use user_traits::allowed_conversions_type::type_level_AllowedConversions::fields as fields_ac;
 use user_traits::allowed_conversions_type::AllowedConversionsTrait;
@@ -34,11 +30,7 @@ use std_::sync::Arc;
 pub trait MutConstParam: GetConstConstructor_ {
     /// Mutates the Const-parameter of Self.
     #[inline(always)]
-    fn mutparam<Op, Msg>(
-        self,
-        _const_method: Op,
-        _msg: VariantPhantom<Msg>
-    ) -> Self::NextSelf
+    fn mutparam<Op, Msg>(self, _const_method: Op, _msg: VariantPhantom<Msg>) -> Self::NextSelf
     where
         Self: Sized + MutConstParamConstraints<Op, Msg, fields_ac::by_val>,
         Self::NextSelf: Sized,
@@ -121,20 +113,18 @@ impl<This> MutConstParam for This where This: GetConstConstructor_ {}
 
 /// Trait used to alias the constraints for every MutConstParam method,
 /// which are on the blanket impl of this trait.
-pub trait MutConstParamConstraints<Op, Msg, Pointerness>:MCPBounds<Op, Msg> {}
+pub trait MutConstParamConstraints<Op, Msg, Pointerness>: MCPBounds<Op, Msg> {}
 
-impl<This: ?Sized, Op, Msg, Pointerness>
-    MutConstParamConstraints<Op, Msg, Pointerness> for This
+impl<This: ?Sized, Op, Msg, Pointerness> MutConstParamConstraints<Op, Msg, Pointerness> for This
 where
-    This:MCPBounds<Op,Msg>,
+    This: MCPBounds<Op, Msg>,
     Op: OpAttrs,
     Op::Conversions: AllowedConversionsTrait,
     Op::Conversions: GetField_<Pointerness, Output = True>,
 {}
 
-
 /// The constraints for calling any MutConstParam methods.
-pub trait MCPBounds<Op,Msg>{
+pub trait MCPBounds<Op, Msg> {
     /// The mutated Const-parameter.
     type NextConst;
 
@@ -142,7 +132,7 @@ pub trait MCPBounds<Op,Msg>{
     type NextSelf: ?Sized;
 }
 
-impl<This: ?Sized,NextConst, Op, Msg> MCPBounds<Op, Msg> for This
+impl<This: ?Sized, NextConst, Op, Msg> MCPBounds<Op, Msg> for This
 where
     This: GetConstConstructor_,
     Op: ComputeConstParam_<This::Const, Msg, Output = NextConst>,

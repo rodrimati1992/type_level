@@ -92,12 +92,21 @@ where
 
 /// Traits derived in the TypeLevel macro.
 pub trait DerivedTraits:
-    Copy + Clone + MarkerType + ConstValue + ConstTypeOf_ + GetDiscriminant
+    Copy + Clone + 
+    Send + Sync + 
+    Sized + Default + 
+    MarkerType + ConstValue + 
+    ConstTypeOf_ + GetDiscriminant
 {
 }
 
 impl<This> DerivedTraits for This where
-    This: Copy + Clone + MarkerType + ConstValue + ConstTypeOf_ + GetDiscriminant
+    This: 
+        Copy + Clone + 
+        Send + Sync + 
+        Sized + Default + 
+        MarkerType + ConstValue + 
+        ConstTypeOf_ + GetDiscriminant
 {}
 
 /////////////////////////////////////////////////////////////////////////////

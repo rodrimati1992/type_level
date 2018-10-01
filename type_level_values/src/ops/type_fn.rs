@@ -6,7 +6,7 @@ use std_::ops::{
 };
 
 use crate_::field_traits::{MapFieldOp, SetField_};
-use crate_::ops::{ConstFrom_, ConstInto_, Insert_,ConstNE_};
+use crate_::ops::{ConstFrom_, ConstInto_, ConstNE_, Insert_};
 
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_};
 
@@ -21,7 +21,7 @@ Type-level functions is what this library calls every implementor of this trait.
 
 The preferred way to implement this trait is using the type_fn macro.
 
-# Example
+### Example
 
 Implementing a multiply add operation.
 
@@ -83,7 +83,7 @@ fn main(){
 ```
 
 
-# Example
+### Example
 
 Emulating type constructors with a TypeFn_.
 
@@ -116,7 +116,7 @@ fn main(){
 
 ```
 
-# Example 
+### Example 
 
 Implementing a function which unwraps a type-level Option<_>
 or else returns the value from the `default` function.
@@ -174,12 +174,13 @@ impl ConstType for TypeFnType {}
 
 /**
 
-A macro for declaring a struct which implements TypeFn_ .
+A macro for implementing TypeFn_ .
 
-For usage examples please look at the 
+For usage examples of declaring a new TypeFn_  please look at the 
 [documentation for the TypeFn_ trait](./ops/trait.TypeFn_.html)
 
-# Syntax
+
+# Syntax for declaring a new TypeFn_
 
 `$( ... )*` means repeated 0 or more times.
 
@@ -212,11 +213,126 @@ generated struct.
 The `<visibility_specifier>` gets translated to the visibility of the constructor for the 
 generated struct.
 
+
+# Declaring a TypeFn_ alias for a pre-existing trait
+
+# Syntax
+
+```ignore
+
+$(#[<attribute>])*
+alias <function_name> 
+[<self_identifier> $( ,<type_param> )*] $( ::$assoc_ty:ident )? =<trait_name> 
+$( where[ <where_predicates> ] )?
+
+```
+
+### Example
+
+```
+#[macro_use]
+extern crate type_level_values;
+
+use std::ops::{Add,Deref};
+use type_level_values::runtime_value::ConstTypeOf_;
+use type_level_values::ops::*;
+use type_level_values::prelude::*;
+use type_level_values::extern_types::typenum::UnsignedInteger;
+
+type_fn!{alias AdditionOp[This,Rhs]=Add}
+
+type_fn!{alias DerefOp[This]::Target=Deref}
+
+type_fn!{alias ConstTypeOfOp[This]::Type = ConstTypeOf_}
+
+fn main(){
+    let _:U10=TypeFn::<AdditionOp,(U2,U8)>::MTVAL;
+    let _:U16=TypeFn::<AdditionOp,(U2,U14)>::MTVAL;
+    
+    let _:VariantPhantom<usize> =
+        TypeFn::<DerefOp,Box<usize>>::T;
+    let _:VariantPhantom<String>=
+        TypeFn::<DerefOp,&'static String>::T;
+
+    let _:VariantPhantom<BooleanType>=
+        TypeFn::<ConstTypeOfOp, True >::T;
+    let _:VariantPhantom<BooleanType>=
+        TypeFn::<ConstTypeOfOp, False >::T;
+    let _:VariantPhantom<UnsignedInteger>=
+        TypeFn::<ConstTypeOfOp, U0 >::T;
+
+}
+
+```
+
+# Defining a new trait ,type alias and TypeFn_ for that trait 
+
+This is the way to define a trait for type-level values,
+defining a type alias for the trait,
+and defining a TypeFn_ which delegates to the trait.
+
+### Syntax
+
+```text
+
+define_trait
+
+$( #[ <attribute_for_trait> ] )*
+trait= <name_of_trait> [ $( <type_parameter_of_trait> ),* ]
+$( where[ <where_predicates> ] )?
+
+$( #[ <attribute_for_type_alias> ] )*
+type= <name_of_type_alias> t
+    
+$( #[ <attribute_for_TypeFn_impl_block> ] )*
+fn_type=$op_name:ident
+
+```
+
+### Example
+
+```
+#[macro_use]
+extern crate type_level_values;
+
+use type_level_values::prelude::*;
+use type_level_values::ops::*;
+use std::ops::*;
+
+type_fn!{define_trait
+    trait=Rotate_[By]
+    type=Rotate
+    fn_type=RotateOp
+}
+
+impl<This,By,Res0,Res1> Rotate_<By> for This
+where
+    This:Add<By,Output=Res0>,
+    Res0:Rem<U16,Output=Res1>,
+{
+    type Output=Res1;
+}
+
+fn main(){
+
+    let _:U8=Rotate::<U2,U6>::MTVAL;
+    let _:U1=Rotate::<U11,U6>::MTVAL;
+
+    let _:U8=TypeFn::<RotateOp,(U2,U6)>::MTVAL;
+    let _:U1=TypeFn::<RotateOp,(U11,U6)>::MTVAL;
+
+}
+
+
+```
+
+
+
 */
 #[macro_export]
 macro_rules! type_fn {
     (   $(#[$attr_op:meta])*
-        alias $op_name:ident[$lhs:ident$(,$param:ident)*]=$trait_name:ident
+        alias $op_name:ident[$lhs:ident$(,$param:ident)*] $(::$assoc_ty:ident)* =$trait_name:ident
         $(where[$($bound:tt)*])*
     ) => {
         ///
@@ -226,21 +342,31 @@ macro_rules! type_fn {
 
         #[allow(non_camel_case_types)]
         impl<$lhs$(,$param)*> $crate::ops::TypeFn_<($lhs $(,$param)*)> for $op_name
-        where $lhs:$trait_name< $($param),* >,
-              $lhs::Output:Sized,
-              $($($bound)*)*
+        where
+            $lhs:$trait_name< $($param),* >,
+            type_fn!( inner_alias_associated_type; $lhs $(::$assoc_ty)* ):Sized,
+            $($($bound)*)*
         {
-            type Output=$lhs::Output;
+            type Output=type_fn!( inner_alias_associated_type; $lhs $(::$assoc_ty)* );
         }
     };
-    (define-trait
-        $(#[$attr_op:meta])*
-        fn_type=$op_name:ident
+    (inner_alias_associated_type; $lhs:ident :: $assoc:ident )=>{
+        $lhs::$assoc
+    };
+    (inner_alias_associated_type; $lhs:ident )=>{
+        $lhs::Output
+    };
+    (define_trait
+
         $(#[$attr_trait:meta])*
         trait=$trait_name:ident[$($param:ident),*]
         $(where[$($bound:tt)*])*
+
         $(#[$attr_type:meta])*
         type=$type_alias_name:ident
+
+        $(#[$attr_op:meta])*
+        fn_type=$op_name:ident
     ) => {
 
         type_fn!{
@@ -469,7 +595,6 @@ pub mod fn_types {
 pub mod fn_adaptors {
     use super::*;
 
-
     type_fn!{
         captures(Op,Rhs)
         /// Type-level version of "|x|Op(x,Rhs)"
@@ -477,7 +602,6 @@ pub mod fn_adaptors {
         where [ Op: TypeFn_<(Lhs, Rhs)> ]
         { Op::Output }
     }
-
 
     type_fn!{
         captures(Op,Lhs)
@@ -530,7 +654,6 @@ pub mod fn_adaptors {
     /// Applies every parameter except the self parameter,which is by convention the first.
     pub type ApplyNonSelf<Op, Params> = ApplyNonNth<Op, U0, Params>;
 
-
     type_fn!{
         captures(Op, Mapper)
         /// Type-level version of "|l,r|Op(Mapper(l),r)"
@@ -543,7 +666,6 @@ pub mod fn_adaptors {
             Op::Output
         }
     }
-
 
     type_fn!{
         captures(Op, Mapper)
@@ -558,11 +680,10 @@ pub mod fn_adaptors {
         }
     }
 
-
     type_fn!{
         captures(Op, Nth, Mapper)
         /// Maps the nth parameter using Mapper and then passes it to Op.
-        /// 
+        ///
         /// Note:This does not work with unary functions because they don't use tuples.
         pub fn MapNth[Params](Params)
         where[
@@ -601,7 +722,7 @@ pub mod fn_adaptors {
         captures(Value)
         /// Type-level version of "|_| Value ".
         pub fn Const[Params](Params){ Value }
-    }   
+    }
 
     type_fn!{
         captures(T)

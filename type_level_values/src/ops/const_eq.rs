@@ -11,22 +11,19 @@ pub type ConstEq<L, R> = <L as ConstEq_<R>>::Output;
 
 pub use crate_::ops::fn_types::ConstEqOp;
 
-
-
-pub trait ConstNE_<Rhs>{
+pub trait ConstNE_<Rhs> {
     type Output: Boolean;
 }
 
-impl<Lhs,Rhs> ConstNE_<Rhs> for Lhs
+impl<Lhs, Rhs> ConstNE_<Rhs> for Lhs
 where
-    Lhs:ConstEq_<Rhs>
+    Lhs: ConstEq_<Rhs>,
 {
-    type Output=<ConstEq<Lhs,Rhs> as Boolean>::Not;
+    type Output = <ConstEq<Lhs, Rhs> as Boolean>::Not;
 }
 
 /// Compares L with R for inequality,returning True/False.
 pub type ConstNE<L, R> = <L as ConstNE_<R>>::Output;
-
 
 mod ord_for_numtype {
     use super::*;

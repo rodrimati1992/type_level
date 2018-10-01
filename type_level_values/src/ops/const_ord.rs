@@ -4,7 +4,6 @@ use crate_::ops::{ConstEq, Contains, TypeFn, VariantAsTList, VariantAsTList_};
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_, OrderingTrait, OrderingType};
 use prelude::*;
 
-
 use std_::cmp::Ordering;
 
 /// Compares Self with Rhs,returning whether Self is Less_/Equal_/Greater_ than Rhs
@@ -36,7 +35,6 @@ pub type ConstGt<L, R> = TypeFn<ConstGtOp, (L, R)>;
 ///
 /// Equivalent to L >= R.
 pub type ConstGE<L, R> = TypeFn<ConstGEOp, (L, R)>;
-
 
 mod numtype_impls {
     use super::*;
