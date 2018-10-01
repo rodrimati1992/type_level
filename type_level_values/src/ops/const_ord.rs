@@ -13,7 +13,7 @@ pub trait ConstOrd_<Rhs> {
 
 /// Compares L to R,returning an Ordering_.
 ///
-/// Equivalent to ::std::cmp::Ord::cmp.
+/// Equivalent to ::std_::cmp::Ord::cmp.
 pub type ConstOrd<L, R> = TypeFn<ConstOrdOp, (L, R)>;
 
 /// Returns whether L is less than R.

@@ -14,6 +14,24 @@ this example is equivalent to TList<U0,TList<U1,TList<U2,TList<U3,Nil>>>>.
 Repeats the same type 3 times,
 this example is equivalent to TList<False,TList<False,TList<False,Nil>>>.
 
+# Example 
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+
+use std::borrow::Cow;
+
+type FirstPrimes=tlist![ U1,U2,U3,U5,U7,U11,U13,U17,U19,U23 ];
+
+type Strings<'a>=tlist![ String,&'a str,Cow<'a,str> ];
+
+# fn main(){}
+
+```
+
 */
 #[macro_export]
 macro_rules! tlist {
@@ -51,6 +69,26 @@ this is equivalent to <tlist![U0,U1,U2,U3]>::MTVAL.
 this is equivalent to <tlist![False;3]>::MTVAL.
 
 
+# Example 
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+
+use std::borrow::Cow;
+
+fn main(){
+
+    let first_primes=tlist_val![ U1,U2,U3,U5,U7,U11,U13,U17,U19,U23 ];
+
+    let strings=tlist_val![ String,&str,Cow<str> ];
+
+}
+
+```
+
 
 */
 #[macro_export]
@@ -85,7 +123,8 @@ construct!( <constructor> =>
 )
 ```
 
-\<constructor> is a type implementing type_level_values::field_traits::InitializationValues.
+\<constructor> is a type implementing 
+type_level_values::field_traits::initialization::InitializationValues.
 
 Valid constructors are:
     
@@ -231,14 +270,14 @@ fn main(){
 */
 macro_rules! construct {
     ($name:ty)=>{
-        $crate::field_traits::Construct<$name,tlist![]>
+        $crate::field_traits::initialization::Construct<$name,tlist![]>
     };
     (
         $name:ty =>
         $( $field_name:ty = $field_ty:ty ),*
         $(,)*
     ) => (
-        $crate::field_traits::Construct<
+        $crate::field_traits::initialization::Construct<
             $name,
             tlist![
                 $( ( $field_name,$field_ty ) ,)*
@@ -272,9 +311,7 @@ Go to the documentation of the `construct` macro for more details on the syntax 
 # #[macro_use]
 # extern crate type_level_values;
 
-
 # use type_level_values::prelude::*;
-
 
 #[derive(TypeLevel)]
 #[typelevel(reexport(Struct))]

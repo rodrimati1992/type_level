@@ -370,18 +370,22 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                 impl<#generics> Sealed for #struct_name<#generics #priv_suffix> {}
                 
                 
-                impl InitializationValues for variants::#variant_marker_ident{
+                impl __initialization::InitializationValues for variants::#variant_marker_ident{
                     type Uninitialized=
-                        <#uninitialized_value as InitializationValues>::Uninitialized;
+                        <#uninitialized_value as 
+                            __initialization::InitializationValues
+                        >::Uninitialized;
                     type Initialized=
-                        <#uninitialized_value as InitializationValues>::Initialized;
+                        <#uninitialized_value as 
+                            __initialization::InitializationValues
+                        >::Initialized;
                 }
 
-                impl<#generics> InitializationValues 
+                impl<#generics> __initialization::InitializationValues 
                 for #struct_name<#generics #priv_suffix> 
                 {
                     type Uninitialized=#struct_name<
-                        #( ::type_level_values::field_traits::UninitField<
+                        #( __initialization::UninitField<
                                 fields::#field_accessor_a 
                             >, 
                         )*
@@ -389,7 +393,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                     >;
                    
                     type Initialized=#struct_name<
-                        #( ::type_level_values::field_traits::IsInitField< 
+                        #( __initialization::IsInitField< 
                                 fields::#field_accessor_b 
                             >, 
                         )*
@@ -404,16 +408,16 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                 self.decls.relative_field_priv()==RelativePriv::Inherited
             {
                 tokens.append_all(quote!{
-                    impl ::type_level_values::field_traits::InitializationValues 
+                    impl __initialization::InitializationValues 
                     for #type_marker_struct
                     {
                         type Uninitialized=
                             <#uninitialized_value as 
-                                ::type_level_values::field_traits::InitializationValues
+                                __initialization::InitializationValues
                             >::Uninitialized;
                         type Initialized=
                             <#uninitialized_value as 
-                                ::type_level_values::field_traits::InitializationValues
+                                __initialization::InitializationValues
                             >::Initialized;
                     }                
                 });

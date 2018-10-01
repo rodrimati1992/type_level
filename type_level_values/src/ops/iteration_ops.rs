@@ -3,7 +3,7 @@ use std_::ops::Sub;
 use prelude::*;
 
 use crate_::field_traits::{
-    GetField, GetFieldFn, MapField, MapFieldOp, MapIntoField, MapIntoFieldOp, SetField, SetFieldFn,
+    GetField, GetFieldOp, MapField, MapFieldOp, MapIntoField, MapIntoFieldOp, SetField,
 };
 use crate_::ops::{fn_adaptors as op_a, fn_types as op_t, TypeFn, TypeFn_};
 
@@ -197,7 +197,7 @@ type_fn!{
     pub fn LastOrDefaultOp[Collection,Defaultval](Collection,Defaultval)
     where[ Collection:FoldL_<Defaultval,GetRhs,Output=Out> ]
     {
-        let GetRhs=ApplyRhs<GetFieldFn, U1>;
+        let GetRhs=ApplyRhs<GetFieldOp, U1>;
         let Out;
         Out
     }

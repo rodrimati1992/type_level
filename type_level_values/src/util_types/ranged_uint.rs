@@ -8,11 +8,11 @@ use core_extensions::{TryFrom, TryInto};
 use crate_::ops::fn_types::ConstLEOp;
 use crate_::prelude::*;
 
-use std::cmp;
-use std::fmt::Debug;
-use std::mem::size_of;
-use std::ops::{Add, Range, Shr, Sub};
-use std::str::FromStr;
+use std_::cmp;
+use std_::fmt::Debug;
+use std_::mem::size_of;
+use std_::ops::{Add, Range, Shr, Sub};
+use std_::str::FromStr;
 
 use num_traits::cast::AsPrimitive;
 
@@ -93,6 +93,7 @@ where
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         s.parse::<R::Decompressed>()
             .map_err(|_| RangedUIntParseError::InvalidUInt {
+                #[cfg(feature="std")]
                 str_: s.into(),
                 range: R::get_runt(),
             })?
@@ -109,7 +110,11 @@ pub struct UIntOutsideRange<N> {
 
 #[derive(Debug, Clone)]
 pub enum RangedUIntParseError<N> {
-    InvalidUInt { str_: String, range: Range<N> },
+    InvalidUInt { 
+        #[cfg(feature="std")]
+        str_: String, 
+        range: Range<N> 
+    },
     OutsideRange(UIntOutsideRange<N>),
 }
 

@@ -74,7 +74,8 @@ fn main(){
 
     let mut wrapper_b=Wrapper::new("what ".to_string(),Immutable);
     
-    // Can't compile the next line.
+    // Can't compile the next line of code because the wrapper only 
+    // allows immutable access to its contents.
     // wrapper_b.push_str("in the world.");
 
     println!("{}",&*wrapper_b);

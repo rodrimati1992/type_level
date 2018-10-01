@@ -8,8 +8,9 @@ use crate_::runtime_value::{
 };
 use crate_::field_traits::{
     GetField, GetFieldRuntime, GetFieldRuntime_, GetField_, SetField, SetField_,
-    InitializationValues,
 };
+use crate_::field_traits::initialization::InitializationValues;
+
 use crate_::ops::TypeFn_;
 use std_types::cmp_ordering::OrderingTrait;
 

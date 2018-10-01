@@ -109,7 +109,8 @@ pub mod reexports {
         FromRuntime, IntoConstType_, IntoRuntime,
     };
 
-    pub use field_traits::{Field_, GetFieldRuntime_, GetField_, InitializationValues, SetField_};
+    pub use field_traits::{Field_, GetFieldRuntime_, GetField_, SetField_};
+    pub use field_traits::initialization as __initialization;
 
     pub use new_types::{TList, TNil};
 

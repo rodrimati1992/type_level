@@ -170,6 +170,7 @@ extern crate type_level_values;
 
 use type_level_values::prelude::*;
 use type_level_values::ops::fn_types::{ConstLEOp};
+use type_level_values::ops::fn_adaptors::ApplyNonSelf;
 use type_level_values::field_traits::{SetField,SetField_,SetFieldOp};
 
 use std::ops::{Add,Sub};
@@ -253,20 +254,26 @@ type_fn!{
     GameActionHelper[G,S](G,S,Continue)
     where[ 
         S:GameOverTrait,
-        (TakeCoins<U1>,SetFieldOp<game_f::state,Playing>) :TypeFn_<G,Output=NewGame> 
+        (
+            TakeCoins<U1>,
+            ApplyNonSelf<SetFieldOp,(game_f::state,Playing)>,
+        ):TypeFn_<G,Output=NewGame> 
     ]{ let NewGame;NewGame }
 
     GameActionHelper[G,S](G,S,StartGame)
     where[ 
         S:DemoTrait,
-        (TakeCoins<U1>,SetFieldOp<game_f::state,Playing>) :TypeFn_<G,Output=NewGame> 
+        (
+            TakeCoins<U1>,
+            ApplyNonSelf<SetFieldOp,(game_f::state,Playing)>,
+        ):TypeFn_<G,Output=NewGame> 
     ]{ let NewGame;NewGame }
 
 
     GameActionHelper[G,S](G,S,LoseGame)
     where[ 
         S:PlayingTrait,
-        SetFieldOp<game_f::state,GameOver> :TypeFn_<G,Output=NewGame> 
+        G:SetField_<game_f::state,GameOver,Output=NewGame>,
     ]{ let NewGame;NewGame }
 
 

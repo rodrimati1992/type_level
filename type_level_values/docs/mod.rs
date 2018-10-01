@@ -7,7 +7,7 @@ using that type as a parameter to a struct/function.
 
 # Introduction 
 
-[For the introduction to this library go here.](./introduction.html)
+[For the introduction to this library go here.](./introduction/index.html)
 
 # Guide
 

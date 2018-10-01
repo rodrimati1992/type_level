@@ -3,10 +3,12 @@
 This appendix describes some of the patterns in this library.
 
 
-# Pattern:Generic types as type aliases.
+# Pattern:Generic type as type alias.
 
 This library uses generic types both on impl blocks and functions to alias types/associated types.
 
+In the case of functions the convention is to prefix type aliases with an underscore `"_"`
+,eg:`"_Out"`.
 
 #### Impl Example 1
 
@@ -86,8 +88,84 @@ here to create an alias for `OriginalType`,
 note that because TypeIdentity::Type has no constraints 
 it forgets all traits implemented by `OriginalType`.
 
-ConstOrd_ is an example where the generic type as type alias pattern has downsides,
+ConstOrd_ is an example where the `generic type as type alias` pattern has downsides,
 since one has to repeat the OrderingTrait constraint .
+
+
+#### Function example 1
+
+```
+
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+
+use std::ops::Add;
+
+pub fn add<L,R,_Out>(l:VariantPhantom<L>,r:VariantPhantom<R>)->_Out
+where 
+    L:Add<R,Output=_Out>,
+    _Out:ConstValue,
+{
+    _Out::MTVAL
+}
+
+fn main(){
+    let _    =add(U10::T,U20::T);
+    let _:U30=add(U10::T,U20::T);
+}
+
+
+```
+
+
+#### Function example 2
+
+```
+
+# #[macro_use]
+# extern crate derive_type_level;
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+
+use type_level_values::field_traits::initialization::Construct_;
+
+#[derive(TypeLevel)]
+#[typelevel(reexport(Struct))]
+pub struct Rectangle{
+    pub x:u32,
+    pub y:u32,
+    pub w:u32,
+    pub h:u32,
+}
+
+use self::type_level_Rectangle::fields;
+
+
+pub fn construct<Constr,FieldValues,_Out>(_constr:Constr,_field_values:FieldValues)->_Out
+where 
+    Constr:Construct_<FieldValues,Output=_Out>,
+    _Out:ConstValue,
+{
+    _Out::MTVAL
+}
+
+fn main(){
+    let rectangle=construct(Rectangle_Uninit::MTVAL,tlist_val![
+        (fields::x,U0),
+        (fields::y,U1),
+        (fields::w,U50),
+        (fields::h,U100),
+    ]);
+
+    let _:ConstRectangle<U0,U1,U50,U100>=rectangle;
+}
+
+
+```
+
 
 
 

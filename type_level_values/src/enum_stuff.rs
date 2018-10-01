@@ -1,6 +1,6 @@
 use prelude::*;
 
-use field_traits::InitializationValues;
+use field_traits::initialization::InitializationValues;
 
 use extern_types::typenum::UnsignedInteger;
 
@@ -79,11 +79,11 @@ where
 
 /// Returns the discriminant of an enum variant.
 pub trait GetDiscriminant {
-    /// enum_stuff::Discriminant.Implements many traits,including ConstOrd and ConstEq.
+    /// The discriminant for this CosntValue.
     ///     
     type Discriminant;
 
-    /// The marker type used to have the name of the variant in error messages.
+    /// The marker type used to have the name of the variant of this CosntValue in error messages.
     ///
     /// Used in the `construct` macro since it implements InitializationValues.
     type Variant;

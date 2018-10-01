@@ -17,7 +17,7 @@ derive_type_level={path="../derive_type_level"}
 
 
 [dependencies.core_extensions]
-path="../../shared_extensions/core_extensions"
+version="0.1"
 default-features=false
 features=["typenum"]
 

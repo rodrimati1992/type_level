@@ -1,7 +1,7 @@
 use self::type_level_Dim2d::fields;
 use super::*;
 
-use crate_::field_traits::{GetFieldFn, GetFieldOp, MapFieldOp};
+use crate_::field_traits::{GetFieldOp, MapFieldOp};
 use crate_::ops::fn_adaptors::*;
 use crate_::ops::fn_types::*;
 
@@ -71,7 +71,7 @@ fn map_all_to() {
     let v0 = Wrapper0::NEW;
 
     {
-        let v0 = v0.map_to(fields::width, <GetFieldOp<fields::height>>::PW);
+        let v0 = v0.map_to(fields::width, <ApplyRhs<GetFieldOp,fields::height>>::PW);
         assert_eq!(v0.width.get_as(u32::T), 5);
         assert_eq!(v0.height.get_as(u32::T), 5);
         let _: U5 = *v0.width;

@@ -158,7 +158,7 @@ pub struct RectangleInner<I, P> {
 # extern crate type_level_values;
 # fn main(){}
 
-# use type_level_values::std_::marker::PhantomData;
+# use type_level_values::prelude::*;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Ord, PartialOrd,ConstConstructor)]
 #[cconstructor(
