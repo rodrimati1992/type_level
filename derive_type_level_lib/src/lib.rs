@@ -1,9 +1,8 @@
-// #![deny(unused_imports)]
-// #![deny(unused_attributes)]
+#![deny(unused_imports)]
+#![deny(unused_attributes)]
 #![recursion_limit = "512"]
 
 extern crate arrayvec;
-extern crate derive_ce_helpers;
 #[macro_use]
 extern crate core_extensions;
 #[macro_use]
@@ -26,6 +25,7 @@ pub(crate) mod tlist_tokens;
 pub(crate) mod token_suffixed;
 pub(crate) mod submod_visibility;
 pub(crate) mod self_removed_bound;
+pub(crate) mod data_structure;
 pub mod typelevel;
 pub mod const_constructor;
 pub mod doc_code_snippets;

@@ -29,16 +29,16 @@ impl<'alloc,I> ItemMetaData<'alloc,I> {
         }
     }
 
-    pub(crate) fn map<F,U>(self,f:F)->ItemMetaData<'alloc,U>
-    where F:FnOnce(I)->U
-    {
-        ItemMetaData{
-            inner:f(self.inner),
-            bounds:self.bounds,
-            attrs:self.attrs,
-            docs:self.docs,
-        }
-    }
+    // pub(crate) fn map<F,U>(self,f:F)->ItemMetaData<'alloc,U>
+    // where F:FnOnce(I)->U
+    // {
+    //     ItemMetaData{
+    //         inner:f(self.inner),
+    //         bounds:self.bounds,
+    //         attrs:self.attrs,
+    //         docs:self.docs,
+    //     }
+    // }
 
     pub(crate) fn impl_annotations(&self) -> AnnotationTokens {
         AnnotationTokens {
@@ -102,7 +102,7 @@ where
                     self.attrs.push(elem);
                 }
             }
-            (_, value) => self.inner.update_with_meta(meta, arenas)?,
+            (_, _value) => self.inner.update_with_meta(meta, arenas)?,
         }
         Ok(())
     }

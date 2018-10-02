@@ -1,11 +1,11 @@
 // use std::cmp::max;
-use std::iter;
+// use std::iter;
 
 use std::collections::{HashSet};
 
 
 use super::{
-    attribute_detection,
+    // attribute_detection,
     Arenas,
     // ArenasRef,
 };
@@ -15,14 +15,7 @@ use attribute_detection::const_constructor::{
     TypeDeclVariant,
 };
 
-use derive_ce_helpers::data_structure::{
-    self,
-    DataStructure,
-    FieldIdent,
-    Struct,
-    StructKind,
-    EnumOrStruct,
-};
+use data_structure::DataStructure;
 
 use syn::{
     self,
@@ -38,7 +31,7 @@ use quote::{
 };
 
 // use core_extensions::IterCloner;
-use core_extensions::{SelfOps,BoolExt};
+use core_extensions::SelfOps;
 // use core_extensions::iterators::ReplaceNth;
 
 use proc_macro2::{TokenStream};
@@ -131,7 +124,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     let const_constructor_ident=const_constructor.ident();
 
     let const_param_for_alias=new_ident(format!("__ConstParam"));
-    let const_param_for_alias_rep=iter::repeat(const_param_for_alias);
+    // let const_param_for_alias_rep=iter::repeat(const_param_for_alias);
     let const_param_ident=attrs.const_param.unwrap_or_else(||{
         panic!("must pass the 'ConstParam' parameter.\n{}",help_message);
     });
@@ -164,7 +157,6 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
 
 
     let type_params_wrapped=ToTokenFnMut::new(|t_s|{
-        use syn::token::{Lt,Gt};
         for tparam in type_param_idents {
             if *tparam==const_param_ident{
                 t_s.append_all(quote!{

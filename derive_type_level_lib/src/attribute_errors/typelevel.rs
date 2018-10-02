@@ -8,9 +8,9 @@ use super::{
     AttrShape,
     AttrKind,
     SHARED_METADATA,
-    SHARED_BOUND,
-    SHARED_ATTR,
-    SHARED_DOC,
+    // SHARED_BOUND,
+    // SHARED_ATTR,
+    // SHARED_DOC,
 };
 
 pub static RENAME_CONSTTYPE:AttrShape<'static>=AttrShape{

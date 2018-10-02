@@ -18,13 +18,8 @@ features=["extra-traits","visit","visit-mut"]
 
 
 [dependencies.core_extensions]
-path="../../shared_extensions/core_extensions"
+version="0.1"
 default-features=false
-
-[dependencies.derive_ce_helpers]
-path="../../derive_ce_helpers/"
-
-
 
 [build-dependencies]
 rustc_version = "0.2"

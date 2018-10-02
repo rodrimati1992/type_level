@@ -17,7 +17,7 @@ impl<'a> ToTokens for VariantsMod<'a>{
     fn to_tokens(&self,tokens:&mut TokenStream){
         let decls=self.decls;
         
-        let type_marker_struct=&decls.type_marker_struct;
+        // let type_marker_struct=&decls.type_marker_struct;
         let const_type=iter::repeat(&decls.type_marker_struct);
         let discriminant_idents_b=decls.declarations.iter().map(|x| &x.name );
         
@@ -39,9 +39,7 @@ impl<'a> ToTokens for VariantsMod<'a>{
         let variant_generics_1=variant_generics_fn();
         let discriminant_name_0=decls.declarations.iter().map(|x| &x.discriminant_ident );
         let discriminant_name_1=decls.declarations.iter().map(|x| &x.discriminant_ident );
-        let discriminant_name_2=decls.declarations.iter().map(|x| &x.discriminant_ident );
-        let discriminant_name_3=decls.declarations.iter().map(|x| &x.discriminant_ident );
-
+        
         let variant_indices=(0..decls.declarations.len())
             .map(|index|Ident::new(&format!("U{}",index),decls.original_name.span()));
             

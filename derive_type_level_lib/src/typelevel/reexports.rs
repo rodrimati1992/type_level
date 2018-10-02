@@ -1,13 +1,8 @@
 use super::*;
-use super::struct_declarations::{RelativePriv,RelativePriv as RP};
 
-use submod_visibility::MyVisibility;
 use ::attribute_detection::typelevel::{ReExports,ReExportCfg,ImplIndex};
 
-use syn::{
-    self,
-    Visibility,
-};
+use syn::Visibility;
 
 
 #[derive(Debug,Clone,Copy)]
@@ -36,13 +31,8 @@ impl<'a> ToTokens for ReExportPrinter<'a>{
 
         let mut pub_top_reexports   =Vec::<&'a Ident>::new();
         let mut priv_top_reexports  =Vec::<&'a Ident>::new();
-        let mut pub_variants_reexports =Vec::<&'a Ident>::new();
+        // let mut pub_variants_reexports =Vec::<&'a Ident>::new();
         let mut priv_variants_reexports=Vec::<&'a Ident>::new();
-
-        let mut to_ts=move|ident:&Ident,tokens:&mut TokenStream|{
-            ident.to_tokens(tokens);
-            c_t.comma.to_tokens(tokens);
-        };
 
         if ReExports::none_reexported()!=cfg.reexported {
             if let Some(v)=sd.enum_trait{
@@ -103,7 +93,7 @@ impl<'a> ToTokens for ReExportPrinter<'a>{
         use_mod_with_vis( priv_field_vis,&[self.created_module],priv_top_reexports,c_t,tokens );
 
         let field_mod_tokens=&[self.created_module,&c_t.variants_mod][..];
-        use_mod_with_vis( vis           ,field_mod_tokens,pub_variants_reexports,c_t,tokens );
+        // use_mod_with_vis( vis           ,field_mod_tokens,pub_variants_reexports,c_t,tokens );
         use_mod_with_vis( priv_field_vis,field_mod_tokens,priv_variants_reexports,c_t,tokens );
     }
 }

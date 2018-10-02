@@ -9,7 +9,8 @@ pub(crate) mod reexports;
 // use std::cmp::max;
 use std::iter;
 
-use std::collections::{BTreeSet};
+
+// use std::collections::{BTreeSet};
 
 
 use super::{
@@ -18,8 +19,7 @@ use super::{
     ArenasRef,
 };
 
-use derive_ce_helpers::data_structure::{
-    self,
+use data_structure::{
     DataStructure,
     FieldIdent,
     Struct,
@@ -32,11 +32,9 @@ use syn::{
     DeriveInput,
     Ident,
 };
-
-use quote::{
-    TokenStreamExt,
-    ToTokens,
-};
+#[allow(unused_imports)]
+use quote::TokenStreamExt;
+use quote::ToTokens;
 
 // use core_extensions::IterCloner;
 use core_extensions::SelfOps;
@@ -53,7 +51,7 @@ use self::attribute_detection::typelevel::{
     ImplVariant,
     ImplIndex,
     ReExportVis,
-    ImplVariantMethods,
+    // ImplVariantMethods,
 };
 
 use self::compiletime_traits::CompiletimeTraits;
@@ -72,7 +70,7 @@ use ::to_token_fn::{
 
 use common_tokens::CommonTokens;
 
-use submod_visibility::VisibilityKind;
+// use submod_visibility::VisibilityKind;
 
 use ::print_derive_tokens;
 

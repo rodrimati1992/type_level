@@ -23,7 +23,7 @@ impl<'a> ToTokens for FieldTraits<'a>{
     fn to_tokens(&self,tokens:&mut TokenStream){
         let value_ident=&self.value_ident;
         let original_generics=&self.decls.original_generics.params;
-        let original_name=&self.decls.original_name;
+        // let original_name=&self.decls.original_name;
         let where_preds=&self.decls.original_where_preds;
 
         let priv_suffix=self.decls.priv_param_suffix();
@@ -49,7 +49,7 @@ impl<'a> ToTokens for FieldTraits<'a>{
                 let generic    =&field.generic;
                 
                 let generics_set=ReplaceNth::new(generics_fn(),field_i,value_ident);
-                let generics_0=generics_fn();
+                // let generics_0=generics_fn();
                 
                 tokens.append_all(quote!{
 

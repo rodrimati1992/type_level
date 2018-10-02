@@ -166,11 +166,12 @@ macro_rules! declare_indexable_struct {
         impl<T> $indexable_struct<T>
         where Self:Default,
         {
-            #[inline]
-            pub(crate) fn new()->Self{
-                Default::default()
-            }
+            // #[inline]
+            // pub(crate) fn new()->Self{
+            //     Default::default()
+            // }
 
+            #[allow(dead_code)]
             pub(crate) fn map<F,U>(self,mut f:F)->$indexable_struct<U>
             where F:FnMut($enum_index,T)->U
             {

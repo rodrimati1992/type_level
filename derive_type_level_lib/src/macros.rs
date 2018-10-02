@@ -10,12 +10,12 @@ macro_rules! annotations_and_bounds {
             $annotations = decls
                 .declarations
                 .iter()
-                .map(move |struct_| outer.chain_impl_annotations(inner));
+                .map(move |_| outer.chain_impl_annotations(inner));
 
             $bounds = decls
                 .declarations
                 .iter()
-                .map(move |struct_| outer.chain_bound_tokens(inner));
+                .map(move |_| outer.chain_bound_tokens(inner));
         }
     };
     (outer; $decls:expr, $impl_ind:expr,let($annotations:ident, $bounds:ident) $(,)*) => {
@@ -33,7 +33,7 @@ macro_rules! annotations_and_bounds {
 #[macro_export]
 macro_rules! to_stream {
     ( $stream:ident ; $($expr:expr),* $(,)* ) => {{
-        use quote::TokenStreamExt;
+        // use quote::TokenStreamExt;
 
         $( $expr.to_tokens($stream); )*
     }}

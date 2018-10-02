@@ -14,7 +14,7 @@ num-traits={version="0.2"}
 serde_json={version="1.0"}
 serde={version="1.0"}
 serde_derive={version="1.0"}
-core_extensions={path="../../shared_extensions/core_extensions"}
+core_extensions={version="0.1"}
 type_level_values={path="../type_level_values",features=["serde"]}
 derive_type_level={path="../derive_type_level"}
 take_mut="0.2"

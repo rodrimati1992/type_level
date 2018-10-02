@@ -17,14 +17,14 @@ use syn::punctuated::Punctuated;
 use core_extensions::BoolExt;
 
 use std::borrow::Cow;
-use std::cmp::max;
+// use std::cmp::max;
 use std::collections::{
     BTreeMap,
     HashSet,
     HashMap,
 };
 
-use to_token_fn::ToTokenFnMut;
+// use to_token_fn::ToTokenFnMut;
 
 use common_tokens::CommonTokens;
 
@@ -497,13 +497,11 @@ impl<'a> ToTokens for StructDeclarations<'a>{
         let type_marker_struct=&self.type_marker_struct;
         let type_marker_struct_rep_a=iter::repeat(&self.type_marker_struct);
         let type_marker_struct_rep_b=iter::repeat(&self.type_marker_struct);
-        let type_marker_struct_rep_c=iter::repeat(&self.type_marker_struct);
+        // let type_marker_struct_rep_c=iter::repeat(&self.type_marker_struct);
         let enum_trait=self.enum_trait.as_ref();
         let enum_trait_doc=self.enum_trait_doc;
 
         let type_docs=&self.attribute_settings.attrs.docs;
-
-        let c_tokens=self.tokens;
 
         let priv_suffix=self.priv_param_suffix();
 
@@ -511,7 +509,6 @@ impl<'a> ToTokens for StructDeclarations<'a>{
             .map(|acc|acc.doc_hidden_attr(self.tokens));
         let fields_1=self.field_accessors.keys();
         let fields_2=self.field_accessors.keys();
-        let fields_3=self.field_accessors.keys();
         let pub_fields=self.field_accessors.iter()
             .filter(|&(_,v)| v.public_instances != 0 )
             .map(|t|t.0);
@@ -521,8 +518,7 @@ impl<'a> ToTokens for StructDeclarations<'a>{
 
         let vis= self.vis_kind.submodule_level(1);        
         let vis_rep_a=iter::repeat(vis);
-        let vis_rep_b=iter::repeat(vis);
-
+        
         let vis_kind_submod=self.vis_kind.submodule_level(2);
         let vis_kind_submod_rep=iter::repeat(vis_kind_submod);
         
@@ -609,12 +605,11 @@ impl<'a> ToTokens for StructDeclarations<'a>{
 
         let additional_derives_outer=&self.attribute_settings.additional_derives;
         for declaration in &self.declarations {
-            let enum_attrs=self.enum_attrs;
             let trait_ident=&declaration.trait_ident;
             // let attrs=declaration.variant.attrs;
             let s_name=&declaration.name;
-            let s_name=&declaration.name;
-            let s_name_rep=iter::repeat(s_name);
+            // let s_name=&declaration.name;
+            // let s_name_rep=iter::repeat(s_name);
             let uninitialized_ident=declaration.uninitialized_ident;
             let generics_fn=||declaration.fields.iter().map(|x|x.generic);
             let generics=&declaration.generics;
@@ -622,8 +617,6 @@ impl<'a> ToTokens for StructDeclarations<'a>{
             let generics_1=generics_fn();
             
             let generics_voided=iter::repeat(self.void_ident).take(declaration.fields.len());
-            let generics_2a=generics_fn();
-            let generics_2b=generics_fn();
             let additional_derives_inner=&declaration.attribute_settings.additional_derives;
             
             let item_attrs=self.attribute_settings.attrs

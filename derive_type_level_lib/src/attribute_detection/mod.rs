@@ -1,6 +1,6 @@
 use super::*;
 
-
+#[allow(unused_imports)]
 use core_extensions::IteratorExt;
 
 
@@ -75,8 +75,8 @@ pub(crate) mod shared {
         #[inline]
         fn update_with_meta(
             &mut self,
-            meta: &MyMeta<'alloc>,
-            arenas: ArenasRef<'alloc>,
+            _meta: &MyMeta<'alloc>,
+            _arenas: ArenasRef<'alloc>,
         ) -> Result<(), NotUpdated> {
             Err(NotUpdated)
         }

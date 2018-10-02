@@ -73,15 +73,7 @@ pub(crate) struct CodeBlock<'a>{
 }
 
 
- #[derive(Debug,Clone,Eq,PartialEq,Ord,PartialOrd,Hash)]
-pub(crate) enum UserLineType<'a>{
-    Marker{name:&'a str},
-    Line(&'a str),
-}
-
-
-
-
+ 
 fn classify_lines<'a>(text:&'a str)->Vec<CodeLineType<'a>>{
     text.lines()
         .enumerate()
@@ -238,7 +230,7 @@ fn expand_template(module_name:&str,code:&str,template:&str)->String{
 }
 
 
-pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
+pub fn derive_from_derive_input(ast:DeriveInput) -> TokenStream {
     let mut code       =None::<String>;
     let mut module_name=None::<String>;
     let mut template   =None::<String>;
@@ -295,7 +287,7 @@ pub fn derive_from_token_stream(input: TokenStream) -> TokenStream {
 
 
 
-fn string_alternatives<'a,I>(mut iter:I)->String
+fn string_alternatives<'a,I>(iter:I)->String
 where 
     I:Iterator<Item=&'a str>
 {

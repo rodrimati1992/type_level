@@ -7,7 +7,7 @@ use core_extensions::OptionExt;
 
 use attribute_detection::typelevel::ImplVariantMethods;
 
-use token_suffixed::TokenSuffixed;
+// use token_suffixed::TokenSuffixed;
 
 use syn::token;
 
@@ -34,15 +34,12 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
         let original_generics_b=&self.decls.original_generics.params;
         let original_generics_c=&self.decls.original_generics.params;
         let original_generics_d=&self.decls.original_generics.params;
-        let original_generics_e=&self.decls.original_generics.params;
-        let original_generics_f=&self.decls.original_generics.params;
         let original_gen_params=&self.decls.original_gen_params;
         let original_type=&self.decls.type_;
-        let original_name=&self.decls.original_name;
         let original_path=&self.decls.original_path;
         let type_marker_struct=&self.decls.type_marker_struct;
-        let type_marker_struct_rep=iter::repeat(type_marker_struct);
-        let all_types=&self.decls.all_types;
+        // let type_marker_struct_rep=iter::repeat(type_marker_struct);
+        // let all_types=&self.decls.all_types;
         let where_preds=&self.decls.original_where_preds;
 
         let priv_suffix=self.decls.priv_param_suffix();
@@ -67,7 +64,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                         unreachable!("because of Void"),
                     ImplVariant::DefaultImpls=>
                         original_type.to_tokens(tstream),
-                    ImplVariant::Remote{type_,..}=>
+                    ImplVariant::Remote{..}=>
                         type_marker_struct.to_tokens(tstream),
                     ImplVariant::Internal{type_,..}=>
                         to_stream!( tstream; type_,token.lt, original_gen_params ,token.gt ),
@@ -86,7 +83,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                         to_stream!(tstream;type_,token.lt, original_gen_params ,token.gt)
                     }))),
             };
-            if let Some(into_consttype)=tmp.filter_(|v| derived.is_derived() ) {
+            if let Some(into_consttype)=tmp.filter_(|_| derived.is_derived() ) {
                 annotations_and_bounds!(outer;
                     self.decls,ImplIndex::IntoConstType,let (from_runtime_attrs,from_runtime_bounds)
                 );
@@ -111,7 +108,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
 
             let original_variant_name=struct_.variant.name;
             let struct_name=&struct_.name;
-            let struct_name_rep=iter::repeat(&struct_.name);
+            // let struct_name_rep=iter::repeat(&struct_.name);
             let trait_ident=&struct_.trait_ident;
             // let trait_ident=struct_.fields.is_empty().if_false(||&struct_.trait_ident);
             let trait_ident_rep=iter::repeat(&struct_.trait_ident);
@@ -120,24 +117,24 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
 
 
             let enum_path=self.decls.enum_path;
-            let original_where=self.decls.original_generics.where_clause.as_ref()
-                .map(|x| &x.predicates );
+            // let original_where=self.decls.original_generics.where_clause.as_ref()
+                // .map(|x| &x.predicates );
 
 
-            let generics_a=generics_fn();
-            let generics_b=generics_fn();
+            // let generics_a=generics_fn();
+            // let generics_b=generics_fn();
             let generics_c=generics_fn();
             let generics_d=generics_fn();
             let generics_e=generics_fn();
             let generics_f=generics_fn();
-            let generics_g=generics_fn();
+            // let generics_g=generics_fn();
             let generics_h=generics_fn();
-            let generics_j=generics_fn();
-            let generics_k=generics_fn();
+            // let generics_j=generics_fn();
+            // let generics_k=generics_fn();
 
             let generics  =&struct_.generics;
-            let generics_rep=iter::repeat(generics);
-            let field_names_b=struct_.fields.iter().map(|x|&x.name_ident);
+            // let generics_rep=iter::repeat(generics);
+            // let field_names_b=struct_.fields.iter().map(|x|&x.name_ident);
 
             let field_mod_c=struct_.fields.iter().map(|x|{
                 match x.relative_priv {
@@ -170,8 +167,8 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
             let original_types_a=struct_.fields.iter().map(|x|&x.original_ty);
             let original_types_b=struct_.fields.iter().map(|x|&x.original_ty);
             let original_types_d=struct_.fields.iter().map(|x|&x.original_ty);
-            let original_types_e=struct_.fields.iter().map(|x|&x.original_ty);
-            let original_types_f=struct_.fields.iter().map(|x|&x.original_ty);
+            // let original_types_e=struct_.fields.iter().map(|x|&x.original_ty);
+            // let original_types_f=struct_.fields.iter().map(|x|&x.original_ty);
 
             
             let specified_ir_iv=derived.into_runtime.inner.to_specified();
@@ -207,7 +204,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                 }
             });
 
-            if let Some(ir_type_ident)=ir_type_ident.filter_(|v| specified_ir_iv.is_derived() )  {
+            if let Some(ir_type_ident)=ir_type_ident.filter_(|_| specified_ir_iv.is_derived() )  {
                 annotations_and_bounds!(outer;
                     self.decls,ImplIndex::IntoRuntime,let (variant_attrs,variant_bounds)
                 );
@@ -308,16 +305,16 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
 
             let field_names_rt_a=struct_.fields.iter().map(|x|&x.rt_assoc_type);
             let field_names_rt_b=struct_.fields.iter().map(|x|&x.rt_assoc_type);
-            let field_names_rt_c=struct_.fields.iter().map(|x|&x.rt_assoc_type);
-            let field_names_rt_d=struct_.fields.iter().map(|x|&x.rt_assoc_type);
+            // let field_names_rt_c=struct_.fields.iter().map(|x|&x.rt_assoc_type);
+            // let field_names_rt_d=struct_.fields.iter().map(|x|&x.rt_assoc_type);
 
             let const_bounds_wclause=c_or_r_bound_wclause(ConstOrRuntime::Const);
             let const_bounds_b=struct_.fields.iter().map(|f| &f.const_bound );
-            let const_bounds_c=struct_.fields.iter().map(|f| &f.const_bound );
+            // let const_bounds_c=struct_.fields.iter().map(|f| &f.const_bound );
 
             let runt_bounds_wclause=c_or_r_bound_wclause(ConstOrRuntime::Runtime);
             let runt_bounds_b=struct_.fields.iter().map(|f| &f.runt_bound );
-            let runt_bounds_c=struct_.fields.iter().map(|f| &f.runt_bound );
+            // let runt_bounds_c=struct_.fields.iter().map(|f| &f.runt_bound );
 
             let field_accessor_a=struct_.fields.iter().map(|f| &f.accessor_ident );
             let field_accessor_b=struct_.fields.iter().map(|f| &f.accessor_ident );
@@ -423,7 +420,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                 });
             }
 
-            if let Some(ir_type_ident)=ir_type_ident {
+            if let Some(_)=ir_type_ident {
                 let with_runtime_docs=&struct_.with_runtime_docs;
 
                 tokens.append_all(quote!{

@@ -3,8 +3,7 @@
 pub(crate) mod typelevel;
 
 
-use attribute_detection::typelevel::ImplIndex;
-
+#[allow(unused_imports)]
 use core_extensions::prelude::*;
 
 use std::fmt;

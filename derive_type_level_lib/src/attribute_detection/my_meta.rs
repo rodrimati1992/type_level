@@ -26,9 +26,6 @@ pub(crate) enum MyNested<'alloc> {
 
 impl<'alloc> FromWith<&'alloc Meta,ArenasRef<'alloc>> for MyMeta<'alloc>{
     fn from_with(meta:&'alloc Meta,arenas:ArenasRef<'alloc>) -> Self {
-        let alloc_str=|s:String|->&'alloc str{
-            arenas.strings.alloc(s)
-        };
         match meta {
             &Meta::Word(ref word) => MyMeta {
                 word: word.into(),

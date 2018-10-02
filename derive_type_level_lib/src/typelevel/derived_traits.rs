@@ -1,11 +1,6 @@
 use super::*;
-use super::EnumOrStruct as EOS;
+// use super::EnumOrStruct as EOS;
 use tlist_tokens::TListFrom;
-
-
-use syn::token::Gt;
-
-
 
 
 pub(crate)struct DerivedTraits<'a>{
@@ -23,26 +18,21 @@ impl<'a> ToTokens for DerivedTraits<'a>{
     fn to_tokens(&self,tokens:&mut TokenStream){
         let decls=self.decls;
 
-        let gt_token=Gt::new(decls.original_name.span());
+        
 
         let d_attr_cfg=decls.attribute_settings;
 
-        let original_generics=&self.decls.original_generics.params;
-        let original_name=&self.decls.original_name;
-        let where_preds=&self.decls.original_where_preds;
 
         let priv_suffix=self.decls.priv_param_suffix();
 
-        let type_marker_struct=&self.decls.type_marker_struct;
+        // let type_marker_struct=&self.decls.type_marker_struct;
         for struct_ in &self.decls.declarations {
             let struct_name=&struct_.name;
             
-            let original_ty_fn=||struct_.fields.iter().map(|x|x.original_ty);
+            
 
             let generics_1=&struct_.generics;
-            let generics_2=&struct_.generics_2;
-
-            let generics_1a=struct_.fields.iter().map(|x|&x.generic);
+            
             let generics_1b=struct_.fields.iter().map(|x|&x.generic);
 
             tokens.append_all(quote!{

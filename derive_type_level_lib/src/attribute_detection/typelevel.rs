@@ -125,8 +125,6 @@ impl<'a> Default for ReExportVis<'a> {
 
 ////////////////////////////////////////////////////////////////////////////
 
-#[derive(Debug)]
-pub(crate) struct InvalidImplIndex;
 
 macro_rules! derived_traits {
     (
@@ -331,7 +329,7 @@ impl<'ar> UpdateWithMeta<'ar> for ImplVariant<'ar> {
                     _=>unreachable!(),
                 }
             }
-            (_, my_n) => return Err(NotUpdated),
+            (_, _) => return Err(NotUpdated),
         };
         Ok(())
     }
@@ -441,7 +439,7 @@ fn attr_settings_new_attr<'alloc>(
 
 
 fn new_attr_nested_meta<'alloc>(
-    attr: &'alloc Attribute,
+    _attr: &'alloc Attribute,
     settings: &mut TLAttributes<'alloc>,
     word: &str,
     list: &'alloc Punctuated<NestedMeta, Comma>,
@@ -468,7 +466,7 @@ fn new_attr_nested_meta<'alloc>(
             list,
             arenas,
             move |value, impl_index| {
-                value.list_to_mylist(arenas);
+                value.list_to_mylist(arenas).unwrap();
 
                 let impl_ = &mut settings.derived[impl_index];
                 impl_.inner = impl_.inner.specified_or(ImplVariant::DefaultImpls);
@@ -571,7 +569,6 @@ pub(crate) struct FieldAttrs<'a> {
     pub(crate) const_bound:Punctuated<TypeParamBound, Add>,
     /// the bounds for the field in the <Type>IntoRuntime trait.
     pub(crate) runt_bound:Punctuated<TypeParamBound, Add>,
-    pub(crate) runtime_conv: Option<&'a syn::Type>,
     pub(crate) pub_trait_accessor:bool,
     pub(crate) docs:Vec<&'a str>,
 }

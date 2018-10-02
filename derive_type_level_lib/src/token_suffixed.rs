@@ -1,11 +1,15 @@
-use quote::{ToTokens,TokenStreamExt};
-use proc_macro2::{TokenStream,Span};
-use syn::token::Gt;
+#![allow(dead_code)]
 
-use std::iter;
+use quote::ToTokens;
+use proc_macro2::TokenStream;
+// use syn::token::Gt;
+
+// use std::iter;
 use std::cell::Cell;
 
 
+/// ToTokens implementor which outputs every element of the iterator suffixed 
+/// by the `suffixed` token.
 pub struct TokenSuffixed<'a,I,Token:'a>{
     iter:Cell<Option<I>>,
     suffixed:&'a Token,

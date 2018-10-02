@@ -1,6 +1,3 @@
-use super::*;
-
-use syn;
 use syn::Visibility;
 use syn::Path;
 use quote::ToTokens;

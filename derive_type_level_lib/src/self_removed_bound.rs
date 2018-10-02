@@ -7,7 +7,7 @@ use quote::ToTokens;
 use proc_macro2::TokenStream;
 
 use std::mem;
-use std::fmt::Write;
+
 
 
 #[derive(Debug,Clone)]

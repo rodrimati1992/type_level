@@ -43,19 +43,19 @@ macro_rules! declare_common_tokens {
 
 impl Eq for CommonTokens{}
 impl PartialEq for CommonTokens{
-    fn eq(&self,other:&Self)->bool{
+    fn eq(&self,_other:&Self)->bool{
         true
     }
 }
 
 impl PartialOrd for CommonTokens{
-    fn partial_cmp(&self,other:&Self)->Option<Ordering>{
+    fn partial_cmp(&self,_other:&Self)->Option<Ordering>{
         Some(Ordering::Equal)
     }
 }
 
 impl Ord for CommonTokens{
-    fn cmp(&self,other:&Self)->Ordering{
+    fn cmp(&self,_other:&Self)->Ordering{
         Ordering::Equal
     }
 }

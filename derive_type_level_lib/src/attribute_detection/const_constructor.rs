@@ -94,7 +94,7 @@ impl<'alloc> UpdateWithMeta<'alloc> for ExtMethodIA{
     fn update_with_meta(
         &mut self,
         meta: &MyMeta<'alloc>,
-        arenas: ArenasRef<'alloc>,
+        _arenas: ArenasRef<'alloc>,
     ) -> Result<(), NotUpdated> {
         if meta.word.str=="allow" {
             self.update_with_nested(&meta.value)
@@ -118,9 +118,6 @@ pub(crate) struct TypeDecl<'alloc>{
 }
 
 impl<'alloc> TypeDecl<'alloc>{
-    fn new()->Self{
-        Default::default()
-    }
     fn alloc_ident(ident:&'alloc str,arenas:ArenasRef<'alloc>)->&'alloc Ident{
         let ident=syn::parse_str::<Ident>(ident).unwrap_or_else(|e|{
             panic!("expected valid identifier '{}':{:#?}",ident,e )
@@ -229,7 +226,7 @@ fn constructor_inner<'alloc>(
                             panic!("Unsupported nested attribute:{:#?}", e)
                         });
                         for param in list {
-                            this.extension_methods.update_with_meta(param,arenas);
+                            let _=this.extension_methods.update_with_meta(param,arenas);
                         }
                     }
                 }
@@ -261,7 +258,7 @@ fn constructor_inner<'alloc>(
                             for param in value.list_to_mylist(arenas).into_iter().flat_map(|v|v) {
                                 impl_
                                     .update_with_meta(param, arenas)
-                                    .unwrap_or_else(|x| panic!("Invalid parameter:{:#?}", param) );
+                                    .unwrap_or_else(|_| panic!("Invalid parameter:{:#?}", param) );
                             }
                         },
                         |_,e| panic!("not valid inside items( ... ):'{}'", e.0),
@@ -305,7 +302,7 @@ fn update_ident_and_metadata<'alloc>(
             for param in list_2{
                 let param: MyMeta = param.into_with(arenas);
                 item.update_with_meta(&param,arenas)
-                    .unwrap_or_else(|x| panic!("Invalid parameter:{:#?}", param) );
+                    .unwrap_or_else(|_| panic!("Invalid parameter:{:#?}", param) );
             }
         },
         &MyNested::Value(ref name)=>{
