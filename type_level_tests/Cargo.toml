@@ -5,15 +5,7 @@ authors = ["matias"]
 workspace = "../"
 
 [dependencies]
-type_level_values={path="../type_level_values"}
-derive_type_level={path="../derive_type_level"}
-
-[dependencies.core_extensions]
-version="0.1"
-default-features=false
-
 
 [build-dependencies]
 derive_type_level_lib={path="../derive_type_level_lib"}
 core_extensions={version="0.1"}
-regex="1.0"

@@ -28,10 +28,15 @@ pub(crate) mod shared {
 
     use ArenasRef;
 
+    use std::fmt;
+
     use syn::punctuated::Punctuated;
     use syn::token::Comma;
-    use syn::NestedMeta;
-    use syn::TypeParamBound;
+    use syn::{
+        NestedMeta,
+        TypeParamBound,
+        Ident,
+    };
 
     pub(crate) fn foreach_nestedmeta_index<'alloc,I, WI, WE>(
         list: &'alloc Punctuated<NestedMeta, Comma>,
@@ -83,16 +88,43 @@ pub(crate) mod shared {
     }
 
 
+    fn error_msg<T,E>(invalid_msg:&str,str_:&str,e:E)->T
+    where
+        E:fmt::Debug
+    {
+        panic!("\n\n{}:\n    '{}'\n\nerror:{:#?}\n\n",invalid_msg,str_,e )
+    }
+
+
+    use syn::WherePredicate;
+
+    pub(crate) fn parse_where_pred(str_:&str)->WherePredicate{
+        syn::parse_str(str_).unwrap_or_else(|e|error_msg("Invalid where predicate",str_,e))
+    }
+
+    pub(crate) fn parse_ident(str_:&str)->Ident{
+        syn::parse_str(str_).unwrap_or_else(|e|error_msg("Invalid identifier",str_,e))
+    }
+
+    pub(crate) fn parse_type(str_:&str)->syn::Type{
+        syn::parse_str(str_).unwrap_or_else(|e|error_msg("Invalid type",str_,e))
+    }
+
+    pub(crate) fn parse_visibility(str_:&str)->syn::Visibility{
+        syn::parse_str(str_).unwrap_or_else(|e|error_msg("Invalid syn::Visibility",str_,e))
+    }
+
+    pub(crate) fn parse_syn_path(str_:&str)->syn::Path{
+        syn::parse_str(str_).unwrap_or_else(|e|error_msg("Invalid syn::Path",str_,e))
+    }
+
+
     pub(crate) fn ident_from_nested<'a>(
         new_ident: &MyNested<'a>,
         arenas: ArenasRef<'a>
     ) -> &'a syn::Ident {
         match new_ident {
-            &MyNested::Value(ref val) => {
-                let x = syn::parse_str(val);
-                let x = x.unwrap_or_else(|_| panic!("must be parsable as an Ident:'{}'", val));
-                arenas.idents.alloc(x)
-            }
+            &MyNested::Value(ref val) => arenas.idents.alloc(parse_ident(val)),
             v => panic!("cannot be parsed as an identifier:{:#?}", v),
         }
     }
@@ -104,11 +136,7 @@ pub(crate) mod shared {
         arenas: ArenasRef<'a>
     ) -> &'a syn::Type {
         match new_ident {
-            &MyNested::Value(ref val) => {
-                let x = syn::parse_str(val);
-                let x = x.unwrap_or_else(|_| panic!("must be parsable as a type:'{}'", val));
-                arenas.types.alloc(x)
-            }
+            &MyNested::Value(ref val) => arenas.types.alloc(parse_type(val)),
             v => panic!("cannot be parsed as a type:{:#?}", v),
         }
     }

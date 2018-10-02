@@ -19,9 +19,7 @@ For more details on the user_traits module look [here](../user_traits/index.html
 This macro generates 2 items by default (this can be overriden):
 
 - \<ConstConstructor>:
-    A type with all the generic parameters of the deriving types except for the ConstType parameter,
-    which when provided a ConstType parameter 
-    (user_traits::ApplyConstParam_) returns the deriving type.<br>
+    A type representing the deriving type without the ConstValue-parameter.
     Eg:the ConstConstructor RectangleCC<T> for the type Rectangle<T,Const>.
 
 - \<TypeAlias>:
@@ -61,16 +59,10 @@ This macro generates 2 items by default (this can be overriden):
 [- The metadata attributes:](../attribute_shared.index#metadata-attributes)
     `bound`/`attr`/`doc`.
 
-[- Attributes on a Type/Variant:](../attribute_shared.index#attributes-on-a-typevariant)
-    `skip_derive`/`print_derive`/`impls`.
+[- Attributes on a Type:](../attribute_shared.index#attributes-on-a-typevariant)
+    `skip_derive`/`print_derive`/`items`.
 
 # Attributes
-
-- extension_methods (optional attribute) :
-    Determines whether extension ConstMethods are allowed to mutate the Const-parameter <br>
-    of the derived type.<br>
-    Of the form `extension_methods="false"|"true"`.<br>
-    Default value is `false`.
 
 - Type (required attribute) :
     Determines the name and other optional properties of \<TypeAlias>.
@@ -80,20 +72,31 @@ This macro generates 2 items by default (this can be overriden):
     where the string must be a valid identifier.
     
     Or of the form `Type(use_="ident"  $(, <metadata_attribute> )* )"`,
-    where the string must be a valid identifier,
-    to use a pre-existing \<TypeAlias>.<br>
+    where the string must be the identifier of a pre-existing \<TypeAlias>.<br>
 
 - ConstParam (required attribute) :
     The identifier of the Const-parameter of this type.<br>
     Of the form `ConstParam="ident"`,
     where the string must be the identifier of one of the type type parameters.
 
+- ConstConstructor (optional attribute) :
+    Determines the name and other optional properties of <ConstConstructor>.
+    
+    The minimal form is `ConstConstructor="ident"`,where the string must be a valid identifier.<br>
+    The expanded form is `ConstConstructor(name="ident" $(, <metadata_attribute> )* )`,
+    where the string must be a valid identifier.
+    
+    Or of the form `ConstConstructor(use_="ident"  $(, <metadata_attribute> )* )"`,
+    where the string must be the identifier of a pre-existing <ConstConstructor>.<br>
+
 
 - extension_methods (optional attribute) :
-    Of the form `extension_methods="ident"`,where the string must parse as a valid identifier,<br>
-    Default value is `<TypeAlias>CC`.
+    Determines whether extension ConstMethods are allowed to mutate the Const-parameter <br>
+    of the derived type.<br>
+    Of the form `extension_methods="false"|"true"`.<br>
+    Default value is `false`.
 
-- impls  (optional attribute) : 
+- items  (optional attribute) : 
     Allows specifying the metadata attributes for the generated impls.<br>
     [The impls being the ones mentioned here.](#generated-impls)
 

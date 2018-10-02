@@ -49,8 +49,7 @@ and can be used before their declaration.
 
 //@use_codeblock:game-action-helper-fn,ignore
 
-This is a type-level function equivalent to `fn(Game,State,Action)->Game`
-where the function signature is pattern matching on the Action.
+This helper function changes the current state of the state machine.
 
 Every one of the function branches follows the pattern of 
 declaring the `NewGame` variable,
@@ -62,8 +61,10 @@ use function composition where a tuple composed of TypeFn_ is itself
 a TypeFn_ that passes its parameter to the first function,
 and then passes the return value of each function as the parameter to the next,
 returning the return value of the last function.
-
-This helper function changes the current state of the state machine.
+<br>
+They also use the ApplyNonSelf function adaptor,which allows us to
+adapt any function (with 3 or more parameters) taking Game as the first parameter 
+to only take Game as a parameter by `partially applying` the rest of the parameters.
 
 
 The `S:GameOverTrait`/`S:DemoTrait`/`S:PlayingTrait`  constraints were used instead of 

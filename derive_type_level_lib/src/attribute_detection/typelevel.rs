@@ -7,7 +7,12 @@ use super::shared::{
     ident_from_nested,
     foreach_nestedmeta_index,
     bounds_from_str,
+    parse_syn_path,
+    parse_ident,
+    parse_visibility,
 };
+
+use super::indexable_struct::GetEnumIndices;
 
 use attribute_errors::typelevel as attribute_errors;
 
@@ -174,22 +179,6 @@ macro_rules! derived_traits {
                 }
             }
         }
-
-
-        impl ImplIndex{
-            #[inline]
-            pub fn indices_message()->String{
-                let mut buffer=String::new();
-                for key in Self::indices_map().keys(){
-                    buffer.push_str(key);
-                    buffer.push(' ');
-                    buffer.push('/');
-                }
-                buffer.pop();
-                buffer
-            }
-        }
-
     }
 }
 
@@ -287,10 +276,7 @@ impl<'ar> UpdateWithMeta<'ar> for ImplVariant<'ar> {
     fn update_with_meta(
         &mut self, meta: &MyMeta<'ar>, arenas: ArenasRef<'ar>
     ) -> Result<(), NotUpdated> {
-        let new_type=|str_|{
-            let x = syn::parse_str::<SynPath>(str_).unwrap();
-            arenas.paths.alloc(x)
-        };
+        let new_type=|str_| arenas.paths.alloc(parse_syn_path(str_)) ;
 
         *self = match (&*meta.word.str, &meta.value) {
             ("NoImpls", _) => ImplVariant::NoImpls,
@@ -425,8 +411,7 @@ fn attr_settings_new_attr<'alloc>(
                         new_attr_nested_meta(attr, settings, &nested0.word.str, list, arenas);
                     } else {
                         panic!("\
-                            attribute 'typelevel({})' not recognized.\
-                            \n\n\nExpected one of:\n\n{}", 
+                            attribute 'typelevel({})' not recognized.{}", 
                             nested0.word,
                             &*attribute_errors::VARIANT_ATTRS);
                     }
@@ -457,8 +442,7 @@ fn new_attr_nested_meta<'alloc>(
                     *variant = variant.specified_or(ImplVariant::DefaultImpls);
                 },
                 move |_,word| {
-                    let additional = syn::parse_str(&word.0).unwrap();
-                    additional_derives.push(additional);
+                    additional_derives.push(parse_ident(&word.0));
                 },
             );
         }
@@ -475,16 +459,21 @@ fn new_attr_nested_meta<'alloc>(
                     for param in list_1 {
                         impl_
                             .update_with_meta(param, arenas)
-                            .unwrap_or_else(|_| panic!("Invalid parameter:{:#?}", param));
+                            .unwrap_or_else(|_|{
+                                panic!("Invalid parameter:{:#?} {}", 
+                                    param,
+                                    &*attribute_errors::ITEM_ATTRS
+                                )
+                            });
                     }
                 }
             },
-            |_,e| panic!("not valid inside items( ... ):'{}'\n\nMust be one of:{}\n\n", 
+            |_,e| panic!("\n\nnot valid inside items( ... ):'{}'\n\nMust be one of:{}\n\n", 
                 e.0,
                 ImplIndex::indices_message()
             ),
         ),
-        word => panic!("Unsupported nested attribute:{:#?}\n\nMust be one of:{}\n", 
+        word => panic!("Unsupported nested attribute:{:#?}{}", 
             word,
             &*attribute_errors::VARIANT_ATTRS
         ),
@@ -508,7 +497,7 @@ fn reexport_attribute<'alloc>(
                 &MyNested::Word=>
                     ReExportVis::WithDeriveVis,
                 &MyNested::Value(ref val) => 
-                    syn::parse_str::<Visibility>(&val).unwrap()
+                    parse_visibility(&val)
                         .piped(|v| &*arenas.visibilities.alloc(v) )
                         .piped(ReExportVis::WithVis),
                 _=>return,
@@ -533,13 +522,13 @@ fn reexport_attribute<'alloc>(
                     let value=&*value;
                     match (word.0,value) {
                         ( "Visibility" , &MyNested::Value(ref val) )=> {
-                            let vis=arenas.visibilities.alloc(syn::parse_str(&val).unwrap());
+                            let vis=arenas.visibilities.alloc(parse_visibility(&val));
                             *r_visibility = ReExportVis::WithVis(vis);
                         }
                         _=>panic!(
                             "inside reexports(...):\
                              subattribute not supported:{} {:?}\
-                             \n\n{}\n\n",
+                             {}",
                             word.0,
                             value,
                             attribute_errors::REEXPORT
@@ -643,7 +632,7 @@ fn field_attrs_helper<'a>(
                     }
                 }
                 word => {
-                    panic!("Unsupported nested attribute:{:#?}\n\n{}\n\n", 
+                    panic!("Unsupported nested attribute:{:#?}{}", 
                         word,
                         &*attribute_errors::FIELD_ATTRS
                     );

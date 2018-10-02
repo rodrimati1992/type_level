@@ -5,8 +5,14 @@ use syn::{self, Ident, Lit, Meta, NestedMeta};
 use std::borrow::Cow;
 use std::fmt::{self, Debug, Display};
 
-use core_extensions::*;
+#[allow(unused_imports)]
+use core_extensions::prelude::*;
 use ::*;
+
+use attribute_detection::shared::{
+    parse_ident,
+};
+
 
 #[derive(Clone,Debug,PartialEq)]
 pub(crate) struct MyMeta<'alloc> {
@@ -65,13 +71,7 @@ impl<'alloc> FromWith<&'alloc NestedMeta,ArenasRef<'alloc>> for MyMeta<'alloc>{
                         lit
                     ),
                 };
-                let ident=syn::parse_str::<Ident>(&str_)
-                    .unwrap_or_else(|x|panic!(
-                        "Literals must be a string contain a valid identifier \
-                         when converting to MyMeta:{:#?}",
-                         x
-                    ))
-                    .piped(|x| arenas.idents.alloc(x) );
+                let ident=arenas.idents.alloc(parse_ident(&str_));
 
                 MyMeta {
                     word: MyWord{ident,str:str_},

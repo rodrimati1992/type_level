@@ -36,6 +36,8 @@ use submod_visibility::{
 
 use attribute_detection::typelevel::ImplIndex;
 
+use attribute_detection::shared::parse_type;
+
 
 #[derive(Debug)]
 pub(crate) struct FieldAccessor{
@@ -251,8 +253,7 @@ impl<'a> StructDeclarations<'a>{
                     };
 
                     let parse_alloc=|suffix:&str|->&'a Type{
-                        let x=format!("{}{}",v.pattern_ident,suffix);
-                        let x=syn::parse_str(&x).unwrap();
+                        let x=parse_type(&format!("{}{}",v.pattern_ident,suffix));
                         arenas.types.alloc(x)
                     };
 
@@ -421,7 +422,7 @@ impl<'a> StructDeclarations<'a>{
 
         Self{
             tokens:c_tokens,
-            void_ident:ident_from("Void"),
+            void_ident:ident_from("_core_Void"),
             vis_kind,
             priv_field_vis,
             type_:quote!{ #name <#original_gen_params> },

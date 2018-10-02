@@ -1,4 +1,4 @@
-use syn::{self, NestedMeta, WherePredicate};
+use syn::{NestedMeta, WherePredicate};
 
 use quote::{ToTokens, TokenStreamExt};
 
@@ -7,7 +7,11 @@ use proc_macro2::{Span, TokenStream};
 use syn::token::Comma;
 
 use super::{MyMeta, MyNested};
-use super::shared::{NotUpdated, UpdateWithMeta};
+use super::shared::{
+    NotUpdated,
+    UpdateWithMeta,
+    parse_where_pred,
+};
 
 use ArenasRef;
 
@@ -94,7 +98,7 @@ where
     ) -> Result<(), NotUpdated> {
         match (&*meta.word.str, &meta.value) {
             ("bound", &MyNested::Value(ref str_)) => 
-                self.bounds.push(syn::parse_str(str_).unwrap()),
+                self.bounds.push(parse_where_pred(str_)),
             ("doc", &MyNested::Value(str_)) => 
                 self.docs.push(str_),
             ("attr", &MyNested::List(list)) => {

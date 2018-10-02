@@ -33,6 +33,9 @@ pub(crate) trait GetEnumIndices: Debug + Copy + PartialEq + Eq + 'static {
     /// Gets the indices for `string`,
     /// returns InvalidMultiIndex on an invalid index.
     fn many_from_str(string: &str) -> Result<&'static [Self], InvalidMultiIndex<&str>>;
+
+    /// A message listing all the indices.
+    fn indices_message()->String;
 }
 
 #[doc(hidden)]
@@ -147,6 +150,17 @@ macro_rules! declare_indexable_struct {
                     .get(string)
                     .cloned()
                     .ok_or($crate::attribute_detection::indexable_struct::InvalidMultiIndex(string))
+            }
+
+            fn indices_message()->String{
+                let mut buffer=String::new();
+                for key in Self::indices_map().keys() {
+                    buffer.push_str(key);
+                    buffer.push(' ');
+                    buffer.push('/');
+                }
+                buffer.pop();
+                buffer
             }
         }
 

@@ -1,5 +1,8 @@
 use super::*;
 
+use attribute_detection::shared::{
+    parse_type,
+};
 
 pub(crate)struct FieldTraits<'a>{
     pub(crate)decls:&'a StructDeclarations<'a>,
@@ -12,7 +15,7 @@ impl<'a> FieldTraits<'a>{
     pub(crate)fn new(decls:&'a StructDeclarations<'a>)->Self{
         Self{
             decls,
-            value_ident:syn::parse_str("NewValue").unwrap(),
+            value_ident:parse_type("NewValue"),
         }
 
     }

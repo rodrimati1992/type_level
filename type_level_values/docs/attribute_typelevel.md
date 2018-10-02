@@ -48,7 +48,7 @@ All Attributes are written inside #[typelevel(  )] .
     `bound`/`attr`/`doc`.
 
 [- Attributes on a Type/Variant:](../attribute_shared.index#attributes-on-a-typevariant)
-    `skip_derive`/`print_derive`/`impls`.
+    `skip_derive`/`print_derive`/`items`.
 
 <br>
 

@@ -1,10 +1,15 @@
 use super::item_metadata::ItemMetaData;
 use super::my_meta::{MyMeta, MyNested};
+use super::indexable_struct::GetEnumIndices;
+
+use attribute_errors::const_constructor as attribute_errors;
+
 use super::shared::{
     NotUpdated,
     UpdateWithMeta,
     ident_from_nested,
     foreach_nestedmeta_index,
+    parse_ident,
 };
 use ArenasRef;
 
@@ -17,7 +22,9 @@ use ::*;
 // use syn::punctuated::Punctuated;
 // use syn::token::Comma;
 use syn::{
-    self, Attribute, Ident, Meta,
+    Attribute, 
+    Ident,
+    Meta,
 };
 
 use std::str::FromStr;
@@ -37,6 +44,12 @@ pub(crate)struct CCAttributes<'alloc>{
     pub(crate) skip_derive: bool,
 }
 
+
+#[derive(Debug,Copy,Clone,PartialEq,Eq)]
+pub enum TypeOrCConstr{
+    Type,
+    ConstConstructor,
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -119,10 +132,7 @@ pub(crate) struct TypeDecl<'alloc>{
 
 impl<'alloc> TypeDecl<'alloc>{
     fn alloc_ident(ident:&'alloc str,arenas:ArenasRef<'alloc>)->&'alloc Ident{
-        let ident=syn::parse_str::<Ident>(ident).unwrap_or_else(|e|{
-            panic!("expected valid identifier '{}':{:#?}",ident,e )
-        });
-        arenas.idents.alloc(ident)
+        arenas.idents.alloc(parse_ident(ident))
     }
     fn set_name(&mut self,ident:&'alloc str,arenas:ArenasRef<'alloc>){
         self.decl=Some(TypeDeclVariant::Name( Self::alloc_ident(ident,arenas) ));
@@ -232,11 +242,21 @@ fn constructor_inner<'alloc>(
                 }
                 "ConstConstructor" =>{
                     let item=&mut this.const_constructor;
-                    update_ident_and_metadata(&nested0.value,item,arenas);
+                    update_ident_and_metadata(
+                        &nested0.value,
+                        item,
+                        TypeOrCConstr::ConstConstructor,
+                        arenas
+                    );
                 } 
                 "Type" =>{
                     let item=&mut this.type_alias;
-                    update_ident_and_metadata(&nested0.value,item,arenas);
+                    update_ident_and_metadata(
+                        &nested0.value,
+                        item,
+                        TypeOrCConstr::Type,
+                        arenas
+                    );
                 } 
                 "ConstParam" => {
                     this.const_param = Some(ident_from_nested(&nested0.value,arenas));
@@ -255,18 +275,28 @@ fn constructor_inner<'alloc>(
                         |value, ind| {
                             let impl_=&mut this.impls[ind];
                             
-                            for param in value.list_to_mylist(arenas).into_iter().flat_map(|v|v) {
+                            //for param in value.list_to_mylist(arenas).into_iter().flat_map(|v|v) {
+                            for param in value.list_to_mylist(arenas).unwrap() {
                                 impl_
                                     .update_with_meta(param, arenas)
                                     .unwrap_or_else(|_| panic!("Invalid parameter:{:#?}", param) );
                             }
                         },
-                        |_,e| panic!("not valid inside items( ... ):'{}'", e.0),
+                        |_,e|{
+                            panic!(
+                                "\n\nnot valid inside items( ... ):'{}'\n\nMust be one of:{}\n\n", 
+                                e.0,
+                                ImplsIndex::indices_message()
+                            )
+                        }
                     );
 
                 }
                 word=>{
-                    panic!("Unsupported attribute:'{}'", word);
+                    panic!("Unsupported attribute:'{}'{}", 
+                        word,
+                        &*attribute_errors::CCONSTRUCTOR_ATTRS
+                    );
                 }
             }
             
@@ -295,21 +325,33 @@ fn constructor_inner<'alloc>(
 fn update_ident_and_metadata<'alloc>(
     meta:&MyNested<'alloc>,
     item:&mut ItemMetaData<'alloc,TypeDecl<'alloc>>,
+    type_or_cconstr:TypeOrCConstr,
     arenas: ArenasRef<'alloc>,
 ){
     match meta {
         &MyNested::List(list_2)=>{
             for param in list_2{
                 let param: MyMeta = param.into_with(arenas);
-                item.update_with_meta(&param,arenas)
-                    .unwrap_or_else(|_| panic!("Invalid parameter:{:#?}", param) );
+                item.update_with_meta(&param,arenas).unwrap_or_else(|_|{
+                    let error_msg=match type_or_cconstr {
+                        TypeOrCConstr::Type=> 
+                            &*attribute_errors::TYPE_SUBATTRS,
+                        TypeOrCConstr::ConstConstructor=>
+                            &*attribute_errors::CONSTCONSTRUCTOR_SUBATTRS,
+                    };
+                    panic!("Invalid parameter:{:#?}{}", param,error_msg) 
+                });
             }
         },
         &MyNested::Value(ref name)=>{
             item.inner.set_name(name,arenas);
         }
         word=>{
-            panic!("Unsupported attribute:{:#?}", word);
+            let error_msg=match type_or_cconstr {
+                TypeOrCConstr::Type=> &*attribute_errors::TYPE_ATTR,
+                TypeOrCConstr::ConstConstructor=>&attribute_errors::CONSTCONSTRUCTOR_ATTR,
+            };
+            panic!("Unsupported nested attribute:{:#?}{}", word,error_msg);
         }
     }
 }

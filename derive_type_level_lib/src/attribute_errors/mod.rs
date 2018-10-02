@@ -1,6 +1,10 @@
 //! This module contains data structures for error reporting when parsing attributes.
 
 pub(crate) mod typelevel;
+pub(crate) mod const_constructor;
+
+
+use attribute_detection::indexable_struct::GetEnumIndices;
 
 
 #[allow(unused_imports)]
@@ -72,8 +76,9 @@ pub struct AttrShape<'a>{
 
 impl<'a> fmt::Display for ValidAttrs<'a>{
     fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{
+        writeln!(f,"\nMust be one of:\n");
         for attr in &self.valid_attrs {
-            writeln!(f,"{}",attr)?;
+            writeln!(f,"{}",attr);
         }
         Ok(())
     }
@@ -85,7 +90,7 @@ where F:Fn(&str)->bool,
 {
     fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{
         for attr in self.valid_attrs.iter().filter(|as_| (self.filter)(as_.word) ) {
-            writeln!(f,"{}",attr)?;
+            write!(f,"{}",attr)?;
         }
         Ok(())
     }
@@ -94,21 +99,29 @@ where F:Fn(&str)->bool,
 
 impl<'a> fmt::Display for AttrShape<'a>{
     fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{
-        write!(f,"{}",self.word)?;
-        writeln!(f,":{}",self.description )?;
+        use std::fmt::Write;
+
+        writeln!(f,"\n{S}{S}\n'{}' attribute:",self.word,S="--------------------")?;
+        write!(f,"{}\n",self.description )?;
+        let mut buffer=String::new();
         for variant in self.variants{
-            write!(f,"usage `{}",self.word)?;
+            write!(buffer,"\nusage `{}",self.word)?;
             match variant.kind {
                 AttrKind::Word=>Ok(()),
-                AttrKind::NameValue{value}=>write!(f,"=\"{}\"",value),
-                AttrKind::List{value}=>write!(f,"({})",value),
+                AttrKind::NameValue{value}=>write!(buffer,"=\"{}\"",value),
+                AttrKind::List{value}=>write!(buffer,"({})",value),
             }?;
-            writeln!(f,"`.")?;
-            if let Some(clarification)=variant.clarification {
-                writeln!(f,"clarification:{}", clarification)?;
+            writeln!(buffer,"`.")?;
+            if let Some(clarif)=variant.clarification {
+                if clarif.chars().count() <= 60 && clarif.lines().count()<=1 {
+                    writeln!(buffer,"clarification:{}", clarif)?;
+                }else{
+                    writeln!(buffer,"clarification:\n{}", clarif.to_string().left_pad(2))?;
+                }
             }
-            write!(f,"\n\n")?;
         }
+        writeln!(f,"{}",buffer.left_pad(4))?;
+
         Ok(())
     }
 }
@@ -121,6 +134,34 @@ impl<'a> fmt::Display for AttrShape<'a>{
 
 ////////////////////////////////////////////////////////////////////////
 
+
+fn new_items<I>(
+    _indices:VariantPhantom<I>,
+    description:&'static str
+)->AttrShape<'static>
+where
+    I:GetEnumIndices
+{
+    use utils::{leak_string,leak_vec};
+
+    let items_clarification:&'static str=format!(
+        "NameOfImpls can be one of:{}",
+        I::indices_message()
+    ).piped(leak_string);
+        
+    let item_variants:&'static [AttrVariant<'static>]=vec![
+        AttrVariant{
+            kind:AttrKind::List{value:" NameOfImpls0(..),NameOfImpls1(..), ... "} ,
+            clarification:Some(items_clarification),
+        }
+    ].piped(leak_vec);
+
+    AttrShape{
+        variants:item_variants,
+        word:"item",
+        description,
+    }
+}
 
 
 pub static SHARED_METADATA:&'static [AttrShape<'static>]=&[
@@ -145,8 +186,8 @@ pub static SHARED_BOUND:AttrShape<'static>=AttrShape{
 pub static SHARED_ATTR:AttrShape<'static>=AttrShape{
     variants:&[
         AttrVariant{
-            kind:AttrKind::List{ value:" \\<attributes> " },
-            clarification:Some("\\<attributes> must be a valid attribute,eg:\"doc(hidden)\"."),
+            kind:AttrKind::List{ value:" <attributes> " },
+            clarification:Some("<attributes> must be a valid attribute,eg:\"doc(hidden)\"."),
         }
     ],
     word:"attr",

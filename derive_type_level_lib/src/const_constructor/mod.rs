@@ -79,16 +79,16 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     let new_ident=&|s:String|{
         &*arenas.idents.alloc(Ident::new(&s,name.span())) 
     };
-    let help_message=r#"\n\
+    let help_message="\n\
         Help:\n\
         \n\
         Required parameters:\n\t\
-            #[cconstructor(Type="Foo",ConstParam="Const")]\n\
+            #[cconstructor(Type=\"Foo\",ConstParam=\"Const\")]\n\
         \n\
         Optional parameters:\n\t\
-            #[cconstructor(ConstConstructor="FooCC")]\n\
+            #[cconstructor(ConstConstructor=\"FooCC\")]\n\
         \n\
-    "#;
+    ";
 
     let ref attrs_cc_impl =attrs.impls.const_constructor.impl_annotations();
     let ref bounds_cc_impl =attrs.impls.const_constructor.bound_tokens();
