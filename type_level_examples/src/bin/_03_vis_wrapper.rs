@@ -136,7 +136,7 @@ pub struct RectangleAcessible {
 }
 
 use self::type_level_RectangleAcessible::{
-    fields as ra, ConstRectangleAcessible, RectangleAcessibleTrait,
+    fields as ra, RectangleAcessibleTrait,
     RectangleAcessibleTrait as RectAT, RectangleAcessible_Uninit,
 };
 

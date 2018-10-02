@@ -29,24 +29,9 @@ type_fn!{
 type_fn!{
     /// Applies a parameter of a TypeFn_< SomeTuple > ,
     /// reducing the arity of the resulting TypeFn_<> by 1.
-    ///
-    /// # Example
-    ///
-    /// FoldLOp is a TypeFn<(Collection,Default,Op)>
-    ///
-    /// type PartialA=ApplyNth<FoldLOp,U2,IgnoreFirst>;
-    ///
-    /// PartialA impls TypeFn<(Collection,Default)>
-    ///
-    ///
-    /// type PartialB=ApplyNth<FoldLOp,U1,True>;
-    ///
-    /// PartialB impls TypeFn<(Collection,Op)>
-    ///
-    ///
-    /// type PartialC=ApplyNth<FoldLOp,U0,(U100,U30,U50)>;
-    ///
-    /// PartialC impls TypeFn<(Default,Op)>
+    /// 
+    /// This only works with functions that take at least 3 parameters.
+    /// 
     captures(Op,Nth,Value)
     pub fn ApplyNth[Input](Input)
     where[
@@ -58,6 +43,9 @@ type_fn!{
 type_fn!{
     /// Applies every parameter to Op except for the nth,creating a unary function
     /// that takes that parameter and evaluates Op.
+    /// 
+    /// This only works with functions that take at least 3 parameters.
+    /// 
     captures(Op,Nth,Value)
     pub fn ApplyNonNth[Input](Input)
     where[
@@ -66,7 +54,69 @@ type_fn!{
     ]{ Op::Output }
 }
 
-/// Applies every parameter except the self parameter,which is by convention the first.
+/**
+Applies every parameter except the self parameter,which is by convention the first.
+
+This only works with functions that take at least 2 parameters other than Self.
+
+# Example
+
+```
+# #[macro_use]
+# extern crate derive_type_level;
+
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+
+use type_level_values::field_traits::{SetField,SetFieldOp};
+use type_level_values::fn_adaptors::ApplyNonSelf;
+
+#[derive(TypeLevel)]
+#[typelevel(reexport(Struct,Traits))]
+pub struct Rectangle{
+    pub x:u32,
+    pub y:u32,
+    pub w:u32,
+    pub h:u32,
+}
+use self::type_level_Rectangle::fields;
+
+type InitialRectangle=SetField<
+    Rectangle_Uninit,
+    fields::All,
+    U0
+>;
+
+
+type SetX<X>=ApplyNonSelf<SetFieldOp,(fields::x,X)>;
+
+type SetY<Y>=ApplyNonSelf<SetFieldOp,(fields::y,Y)>;
+
+type SetW<W>=ApplyNonSelf<SetFieldOp,(fields::w,W)>;
+
+type SetH<H>=ApplyNonSelf<SetFieldOp,(fields::h,H)>;
+
+
+fn main(){
+    let _:ConstRectangle<U0,U0,U0,U0>=InitialRectangle::MTVAL;
+
+    let _:ConstRectangle<U5,U10,U20,U0>=TypeFn::<
+        (SetX<U5>,SetY<U10>,SetW<U20>),
+        InitialRectangle
+    >::MTVAL;
+
+    let _:ConstRectangle<U0,U0,U1024,U128>=TypeFn::<
+        (SetW<U1024>,SetH<U128>),
+        InitialRectangle,
+    >::MTVAL;
+}
+
+```
+
+
+*/
 pub type ApplyNonSelf<Op, Params> = ApplyNonNth<Op, U0, Params>;
 
 type_fn!{

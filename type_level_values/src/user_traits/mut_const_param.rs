@@ -15,18 +15,142 @@ use std_::rc::Rc;
 #[cfg(feature = "std")]
 use std_::sync::Arc;
 
-/// Extension trait to
-/// mutate the Const-parameter of Self (these methods are side-effect free).
-///
-/// The parameters of the methods in this trait follow this pattern:
-///
-/// - self/this: the receiver of the method,the type whose Const-parameter will change.
-///
-/// - ConstMethod : the ConstMethod being called .
-///
-/// - Msg : the type of the parameter to the ConstMethod .
-///
-///
+
+/**
+Extension trait to
+mutate the Const-parameter of Self (these methods are side-effect free).
+
+The parameters of the methods in this trait follow this pattern:
+
+- self/this: the receiver of the method,the type whose Const-parameter will change.
+
+- ConstMethod : the ConstMethod being called .
+
+- Msg : the type of the parameter to the ConstMethod .
+
+
+# Example
+
+```
+
+# #[macro_use]
+# extern crate derive_type_level;
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+
+fn main(){
+    let mut admin=User::new(AdminLevel);
+    {
+        let regular:&mut User<UserLevel>=
+            admin.mutparam_mut(DowngradePrivilege,Default::default());
+        regular.run_command("cat -r ./");
+        
+        // The next line wont compile because the User does not have the privileges.
+        // regular.restart_servers();
+
+        // We can upgrade from a regular user to an admin by passing 
+        // an UpgradeKey to upgrade_mut.
+        let key=UpgradeKey::new(127).unwrap();
+        regular
+            .upgrade_mut(key)
+            .restart_servers();
+    }
+    admin.run_command("close_everything");
+    admin.restart_servers();
+}
+
+
+mod user{
+    use super::*;
+
+    #[derive(TypeLevel)]
+    #[typelevel(reexport(Variants,Traits))]
+    pub enum Privilege{
+        AdminLevel,
+        UserLevel,
+    }
+
+    #[derive(ConstConstructor)]
+    #[cconstructor(Type = "User",ConstParam = "P")]
+    pub struct UserInner<P> {
+        _privilege: PhantomWrapper<P>,
+    }
+
+    impl<P> User<P> {
+        pub fn new(privilege:P) -> Self {
+            Self {
+                _privilege: PhantomWrapper::NEW,
+            }
+        }
+        pub fn run_command(&mut self,command:&str){
+            println!("running command:{:?}",command);
+        }
+
+        pub fn upgrade_mut(&mut self,_upgrade_key:UpgradeKey)->&mut User<AdminLevel>{
+            self.mutparam_mut(UpgradePrivilege::new(),Default::default())
+        }
+
+        pub fn upgrade(self,_upgrade_key:UpgradeKey)->User<AdminLevel>{
+            self.mutparam(UpgradePrivilege::new(),Default::default())
+        }
+    }
+
+    impl<P> User<P>
+    where P:AdminLevelTrait
+    {
+        pub fn restart_servers(&mut self){
+            println!("shutting down servers");
+            println!("starting up servers");
+        }
+    }
+
+    const_method!{
+        type ConstConstructor[]=( UserCC )
+        type AllowedConversions=( allowed_conversions::All )
+
+        pub fn DowngradePrivilege[P](P,()){ UserLevel }
+    }
+
+    const_method!{
+        type ConstConstructor[]=( UserCC )
+        type AllowedConversions=( allowed_conversions::All )
+
+        fn UpgradePrivilege[P](P,()){ AdminLevel }
+    }
+
+
+    //////////////////////////////////////////////////////////////////////
+    
+    
+    pub struct UpgradeKey(());
+
+    impl UpgradeKey{
+        pub fn new(key:u64)->Option<Self>{
+            if key==127 {
+                Some(UpgradeKey(()))
+            }else{
+                None
+            }
+        }
+    }
+
+
+}
+pub use self::user::*;
+
+
+
+```
+
+
+
+
+
+
+
+*/
 pub trait MutConstParam: GetConstConstructor_ {
     /// Mutates the Const-parameter of Self.
     #[inline(always)]

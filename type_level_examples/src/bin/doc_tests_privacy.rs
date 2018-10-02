@@ -1,11 +1,10 @@
-#![deny(unnameable_types, private_bounds, private_interfaces)]
-
+#[allow(unused_imports)]
 #[macro_use]
 extern crate type_level_values;
 #[macro_use]
 extern crate derive_type_level;
 
-use type_level_values::field_traits::*;
+#[allow(unused_imports)]
 use type_level_values::prelude::*;
 
 
@@ -16,6 +15,7 @@ pub mod submod {
         // print_derive,
         // skip_derive,
     )]
+    #[allow(dead_code)]
     pub struct Rect {
         x: u32,
         pub(crate) y: u32,

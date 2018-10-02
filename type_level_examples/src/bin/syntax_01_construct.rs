@@ -102,7 +102,7 @@ fn constructing_new_types() {
         Point { x: 0, y: 3 }
     );
 
-    let entity0: ConstEntity<
+    let _entity0: ConstEntity<
         Some_<construct!(PointType=> point_f::x = U1, point_f::y = U2,)>,
         Up,
         True,
@@ -119,7 +119,7 @@ fn constructing_new_types() {
         is_alive: True.to_pw(),
     }.assert_zst();
 
-    let entity2 = <construct!(EntityType=>
+    let _entity2 = <construct!(EntityType=>
         entity_f::position = None_,
         entity_f::facing = Up,
         entity_f::is_alive = False,

@@ -2,6 +2,7 @@
 //!
 //!
 
+#[allow(unused_imports)]
 #[macro_use]
 extern crate type_level_values;
 #[macro_use]
@@ -9,9 +10,6 @@ extern crate derive_type_level;
 
 use type_level_values::field_traits::*;
 use type_level_values::prelude::*;
-use type_level_values::std_types::option::fields as option_f;
-use type_level_values::std_types::*;
-
 
 use std::fmt::Debug;
 

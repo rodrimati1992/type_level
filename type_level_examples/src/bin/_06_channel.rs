@@ -14,18 +14,18 @@ extern crate core_extensions;
 use std::ops::*;
 use std::sync::mpsc::{self, Receiver as MPSCReceiver, RecvError, SendError, Sender as MPSCSender};
 
-use core_extensions::ResultLike;
+// use core_extensions::ResultLike;
 
 use type_level_values::field_traits::*;
 use type_level_values::fn_adaptors::*;
-use type_level_values::fn_types::*;
+// use type_level_values::fn_types::*;
 use type_level_values::ops::*;
 use type_level_values::prelude::*;
 
 
 use type_level_values::new_types::TList;
-use type_level_values::new_types::TListType;
-use type_level_values::std_types::cmp_ordering::{Equal_, Greater_, Less_};
+// use type_level_values::new_types::TListType;
+// use type_level_values::std_types::cmp_ordering::{Equal_, Greater_, Less_};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, TypeLevel)]
 // #[typelevel(print_derive)]
@@ -34,7 +34,7 @@ pub enum State {
     Closed,
 }
 
-use type_level_State::{fields as s_f, Closed, Open, OpenTrait};
+use type_level_State::{Closed, Open, OpenTrait};
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -44,6 +44,7 @@ use type_level_State::{fields as s_f, Closed, Open, OpenTrait};
 #[cconstructor(Type = "ChannelEnd", ConstParam = "S")]
 pub struct ChannelEndInner<Chan, S: WrapperTrait> {
     channel: Chan,
+    #[allow(dead_code)]
     state: ConstWrapperFromTrait<S>,
 }
 
@@ -117,20 +118,11 @@ const_method!{
     }
 }
 
-fn send_4_open(tx: Sender<&'static str, Open<U10>>) -> Sender<&'static str, Open<U6>> {
-    tx.send("hello")
-        .unwrap()
-        .send("hello")
-        .unwrap()
-        .send("hello")
-        .unwrap()
-        .send("hello")
-        .unwrap()
-}
 
 fn main() {
     let (tx, rx) = channel::<&'static str, U4>();
 
+    #[allow(unused_variables)]
     let tx: Sender<_, Closed> = tx
         .send("hello")
         .unwrap()
@@ -146,6 +138,7 @@ fn main() {
 
     macro_rules! receive {
         ($rx:ident) => {
+            #[allow(unused_variables)]
             let $rx = {
                 let (rx, val) = $rx.recv().unwrap();
                 println!("{}", val);

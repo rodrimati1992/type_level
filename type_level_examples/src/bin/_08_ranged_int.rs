@@ -120,6 +120,7 @@ where
         self.n.into() + R::get_runt().start
     }
 
+    #[allow(dead_code)]
     fn range(self) -> Range<R::Returned> {
         R::get_runt()
     }

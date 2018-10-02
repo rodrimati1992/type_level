@@ -38,7 +38,7 @@ pub struct Capabilities {
 }
 
 use self::type_level_Capabilities::{
-    fields as cap_fields, CapabilitiesTrait, Capabilities_Uninit, ConstCapabilities,
+    fields as cap_fields, CapabilitiesTrait, Capabilities_Uninit,
 };
 
 pub type AllCapabilities = SetField<Capabilities_Uninit, cap_fields::All, EnabledCap>;

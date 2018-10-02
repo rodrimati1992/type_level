@@ -9,8 +9,8 @@ extern crate type_level_values;
 #[macro_use]
 extern crate derive_type_level;
 
-use std::fmt;
-use std::fmt::Debug;
+// use std::fmt;
+// use std::fmt::Debug;
 use std::mem::{self, ManuallyDrop};
 use std::ptr;
 
@@ -42,8 +42,8 @@ pub struct AnimalInitialization {
 }
 
 use self::type_level_AnimalInitialization::{
-    fields as ai_field, AnimalInitializationTrait, AnimalInitializationTrait as AnimalIT,
-    AnimalInitialization_Uninit, ConstAnimalInitialization,
+    fields as ai_field, AnimalInitializationTrait,
+    AnimalInitialization_Uninit,
 };
 
 pub type AnimalUninitialized = SetField<AnimalInitialization_Uninit, ai_field::All, Uninitialized>;

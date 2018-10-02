@@ -60,6 +60,7 @@ where
     R: WrapperTrait,
     Marker: GetCubed<R::ConstValue>,
 {
+    #[allow(dead_code)]
     type_: <Marker as GetCubed<R::ConstValue>>::GetCubed,
 }
 
@@ -70,7 +71,7 @@ where
     Marker: GetCubed<R>,
     <Marker as GetCubed<R>>::GetCubed: Default,
 {
-    fn new(range: R) -> Self {
+    fn new(_range: R) -> Self {
         Self {
             type_: Default::default(),
         }

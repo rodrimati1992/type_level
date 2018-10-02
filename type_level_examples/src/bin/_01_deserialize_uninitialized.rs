@@ -9,8 +9,8 @@ extern crate type_level_values;
 #[macro_use]
 extern crate derive_type_level;
 extern crate serde;
-#[macro_use]
-extern crate serde_derive;
+// #[macro_use]
+// extern crate serde_derive;
 extern crate serde_json;
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};

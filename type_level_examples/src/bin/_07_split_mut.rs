@@ -28,7 +28,7 @@ use type_level_values::ops::{
 use type_level_values::prelude::*;
 // use type_level_values::reexports::type_level_bool::False;
 
-use std::cmp::{self, PartialEq, PartialOrd};
+use std::cmp::{self, PartialOrd};
 use std::mem;
 
 fn main() {
