@@ -76,9 +76,9 @@ pub struct AttrShape<'a>{
 
 impl<'a> fmt::Display for ValidAttrs<'a>{
     fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{
-        writeln!(f,"\nMust be one of:\n");
+        writeln!(f,"\nMust be one of:\n")?;
         for attr in &self.valid_attrs {
-            writeln!(f,"{}",attr);
+            writeln!(f,"{}",attr)?;
         }
         Ok(())
     }
@@ -164,14 +164,14 @@ where
 }
 
 
-pub static SHARED_METADATA:&'static [AttrShape<'static>]=&[
+pub const SHARED_METADATA:&'static [AttrShape<'static>]=&[
     SHARED_BOUND,
     SHARED_ATTR,
     SHARED_DOC,
 ];
 
 
-pub static SHARED_BOUND:AttrShape<'static>=AttrShape{
+pub const SHARED_BOUND:AttrShape<'static>=AttrShape{
     variants:&[
         AttrVariant{
             kind:AttrKind::NameValue{value:"Type:Bound"} ,
@@ -183,7 +183,7 @@ pub static SHARED_BOUND:AttrShape<'static>=AttrShape{
 };
 
 
-pub static SHARED_ATTR:AttrShape<'static>=AttrShape{
+pub const SHARED_ATTR:AttrShape<'static>=AttrShape{
     variants:&[
         AttrVariant{
             kind:AttrKind::List{ value:" <attributes> " },
@@ -195,7 +195,7 @@ pub static SHARED_ATTR:AttrShape<'static>=AttrShape{
 };
 
 
-pub static SHARED_DOC:AttrShape<'static>=AttrShape{
+pub const SHARED_DOC:AttrShape<'static>=AttrShape{
     variants:&[
         AttrVariant{
             kind:AttrKind::NameValue{value:"documentation"},

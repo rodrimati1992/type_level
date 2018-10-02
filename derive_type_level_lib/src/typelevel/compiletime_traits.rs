@@ -33,7 +33,6 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
         let original_generics=&self.decls.original_generics.params;
         let original_generics_b=&self.decls.original_generics.params;
         let original_generics_c=&self.decls.original_generics.params;
-        let original_generics_d=&self.decls.original_generics.params;
         let original_gen_params=&self.decls.original_gen_params;
         let original_type=&self.decls.type_;
         let original_path=&self.decls.original_path;
@@ -128,7 +127,6 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
             let generics_e=generics_fn();
             let generics_f=generics_fn();
             // let generics_g=generics_fn();
-            let generics_h=generics_fn();
             // let generics_j=generics_fn();
             // let generics_k=generics_fn();
 
@@ -160,13 +158,11 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
             let field_names_e=struct_.fields.iter().map(|x|&x.assoc_type);
             let field_names_f=struct_.fields.iter().map(|x|&x.assoc_type);
 
-
-            let field_names_y=struct_.fields.iter().map(|x|&x.original_name);
             let field_names_z=struct_.fields.iter().map(|x|&x.original_name);
 
             let original_types_a=struct_.fields.iter().map(|x|&x.original_ty);
             let original_types_b=struct_.fields.iter().map(|x|&x.original_ty);
-            let original_types_d=struct_.fields.iter().map(|x|&x.original_ty);
+
             // let original_types_e=struct_.fields.iter().map(|x|&x.original_ty);
             // let original_types_f=struct_.fields.iter().map(|x|&x.original_ty);
 
@@ -211,8 +207,6 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
 
                 let field_runt_conv_a=struct_.fields.iter().map(|x|&x.delegated.into_runtime);
                 let field_runt_conv_b=struct_.fields.iter().map(|x|&x.delegated.into_runtime);
-                let field_runt_conv_d=struct_.fields.iter().map(|x|&x.delegated.into_runtime);
-                let field_runt_conv_e=struct_.fields.iter().map(|x|&x.delegated.into_runtime);
 
                 tokens.append_all(quote!{
                     #variant_attrs
@@ -239,6 +233,13 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
 
                 #[cfg(rust_1_22)]
                 {
+                    let original_generics_d=&self.decls.original_generics.params;
+                    let generics_h=generics_fn();
+                    let field_names_y=struct_.fields.iter().map(|x|&x.original_name);
+                    let original_types_d=struct_.fields.iter().map(|x|&x.original_ty);
+                    let field_runt_conv_d=struct_.fields.iter().map(|x|&x.delegated.into_runtime);
+                    let field_runt_conv_e=struct_.fields.iter().map(|x|&x.delegated.into_runtime);
+
                     tokens.append_all(quote!{
                         #variant_attrs
                         impl<#(#original_generics,)* #generics > 
@@ -290,7 +291,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                                 );
                                 removed_self.to_tokens(t_s);
                                 token.add.to_tokens(t_s);
-                            }   
+                            },
                             ConstOrRuntime::Runtime=> 
                                 bounds.to_tokens(t_s),
                         }

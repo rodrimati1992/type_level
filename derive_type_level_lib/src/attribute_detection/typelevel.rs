@@ -413,7 +413,7 @@ fn attr_settings_new_attr<'alloc>(
                         panic!("\
                             attribute 'typelevel({})' not recognized.{}", 
                             nested0.word,
-                            &*attribute_errors::VARIANT_ATTRS);
+                            &*attribute_errors::TYPE_ATTRS);
                     }
                 }
             }
@@ -475,7 +475,7 @@ fn new_attr_nested_meta<'alloc>(
         ),
         word => panic!("Unsupported nested attribute:{:#?}{}", 
             word,
-            &*attribute_errors::VARIANT_ATTRS
+            &*attribute_errors::TYPE_ATTRS
         ),
     }
 }

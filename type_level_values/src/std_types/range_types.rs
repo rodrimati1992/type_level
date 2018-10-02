@@ -226,7 +226,8 @@ pub mod range_to_inclusive {
 ////////////                Constructors
 //////////////////////////////////////////////////////////////////////////////////
 
-#[macro_export]
+
+#[allow(unused_macros)]
 macro_rules! rangei_ {
     (value,$($rest:tt)*)=>{ <rangei_!($($rest)*) as $crate::RuntimeValue>::MTVAL };
     ($start:ty => $end:ty) =>($crate::std_types::range_inclusive::ConstRangeInclusive<$start,$end>);
@@ -234,7 +235,8 @@ macro_rules! rangei_ {
     ($start:ty =>        ) =>($crate::std_types::range_from::ConstRangeFrom<$start> );
     (                    ) =>($crate::std_types::range_full::ConstRangeFull );
 }
-#[macro_export]
+
+#[allow(unused_macros)]
 macro_rules! range_ {
     (value,$($rest:tt)*)=>{ <range_!($($rest)*) as $crate::RuntimeValue>::MTVAL };
     ($start:ty => $end:ty) => ( $crate::std_types::range::ConstRange<$start,$end> );
@@ -251,6 +253,7 @@ mod test_eq {
     use super::*;
 
     #[test]
+    #[cfg(rust_1_26)]
     fn test_eq_range() {
         let _: True = ConstEq::<range_!(U0=>U0), range_!(U0=>U0)>::MTVAL;
         let _: True = ConstEq::<rangei_!(U0=>U0), rangei_!(U0=>U0)>::MTVAL;

@@ -16,22 +16,17 @@ use super::{
 
 
 lazy_static!{
-    pub static ref VARIANT_ATTRS:ValidAttrs<'static>={
+    pub static ref TYPE_ATTRS:ValidAttrs<'static>={
         [
             RENAME,
             RENAME_TRAIT,
             DERIVE,
             *ITEMS,
-        ].iter()
-            .chain( SHARED_METADATA.iter() ).cloned()
-            .collect::<Vec<_>>().piped(ValidAttrs::new)
-    };
-
-    pub static ref TYPE_VARIANT:ValidAttrs<'static>={
-        VARIANT_ATTRS.valid_attrs.iter().chain(&[
             RENAME_CONSTTYPE,
             REEXPORT,
-        ]).cloned().collect::<Vec<_>>().piped(ValidAttrs::new)
+        ].iter().chain( SHARED_METADATA.iter() ).cloned()
+            .collect::<Vec<_>>()
+            .piped(ValidAttrs::new)
     };
 
     pub static ref FIELD_ATTRS:ValidAttrs<'static>=vec![
