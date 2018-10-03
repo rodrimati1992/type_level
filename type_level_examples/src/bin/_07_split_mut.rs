@@ -245,7 +245,7 @@ pub mod rectangle {
 
     impl Rectangle<RectangleAcessibleDefault, IsValue> {
         pub fn new() -> Self {
-            Self::default()
+            Rectangle::default()
         }
     }
 

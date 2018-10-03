@@ -34,12 +34,12 @@ pub mod rectangle {
         y: u32,
         w: u32,
         h: u32,
-        marker: I,
+        marker: PhantomWrapper<I>,
     }
 
     impl Rectangle<RectangleAcessibleDefault> {
         pub fn new() -> Self {
-            Self::default()
+            Rectangle::<RectangleAcessibleDefault>::default()
         }
     }
 

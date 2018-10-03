@@ -193,7 +193,7 @@ pub struct TetrisBuilderInner<C>{
 
 impl TetrisBuilder< AllUninitialized >{
     fn new()->Self{
-        Self::default()
+        TetrisBuilder::default()
     }
 }
 
