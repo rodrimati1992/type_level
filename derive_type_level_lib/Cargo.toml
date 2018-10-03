@@ -1,11 +1,12 @@
 [package]
 name = "derive_type_level_lib"
-version = "0.0.20"
+version = "0.0.21"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 license = "MIT/Apache-2.0"
-description = "implementation of the macro 1.1 for the type_level package."
+description = "macros 1.1 derive macros for type-level values and users of them."
 readme="../readme.md"
-keywords = ["typelevel", "no_std"]
+keywords = ["typelevel", "no-std"]
+categories = ["no-std"]
 repository = "https://github.com/rodrimati1992/type_level"
 include = [
     "Cargo.toml", 
@@ -14,6 +15,10 @@ include = [
     "../readme.md", 
     "../APACHE_license", "../MIT_license"
 ]
+
+
+[badges]
+travis-ci = { repository =  "rodrimati1992/type_level/" }
 
 
 [dependencies]

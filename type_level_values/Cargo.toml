@@ -1,11 +1,12 @@
 [package]
 name = "type_level_values"
-version = "0.0.20"
+version = "0.0.21"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 license = "MIT/Apache-2.0"
-description = "Crate for using type level values and functions."
+description = "Crate for using type-level values and functions."
 readme="../readme.md"
-keywords = ["typelevel", "no_std"]
+keywords = ["typelevel", "no-std"]
+categories = ["no-std"]
 repository = "https://github.com/rodrimati1992/type_level"
 include = [
     "Cargo.toml", 
@@ -18,6 +19,9 @@ include = [
     "../MIT_license"
 ]
 
+[badges]
+travis-ci = { repository =  "rodrimati1992/type_level/" }
+
 [features]
 default = ["std","serde"]
 large_tuples=[]
@@ -27,7 +31,7 @@ std=[]
 [dependencies]
 num-traits={version="0.2"}
 typenum = {version="1.10.0",features=["no_std"]}
-derive_type_level={path="../derive_type_level",version="0.0.20"}
+derive_type_level={path="../derive_type_level",version="0.0.21"}
 
 
 [dependencies.core_extensions]

@@ -1,6 +1,6 @@
 Package for declaring and using type level values and functions.
 
-**Work in progress.**
+**Work in progress.This will be ready for consumption in "0.1.0" .**
 **Please create issues for any problem.**
 
 ### Documentation
