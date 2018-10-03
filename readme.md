@@ -12,6 +12,10 @@ For documentation outside of the API of type_level_values itself,
 including the `TypeLevel` and `ConstConstructor` derive macros,
 go to the `docs` submodule (in the documentation for type_level_values).
 
+### Examples crate
+
+For examples of using the type_level libraries look at 
+[`type_level_examples`](https://crates.io/crates/type_level_examples)
 
 ### Minimum supported Rust version
 

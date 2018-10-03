@@ -12,6 +12,7 @@ include = [
     "build.rs", 
     "src/**/*.rs", 
     "docs/**/*.rs", 
+    "docs/**/*.md", 
     "../readme.md", 
     "../APACHE_license", 
     "../MIT_license"
@@ -26,7 +27,7 @@ std=[]
 [dependencies]
 num-traits={version="0.2"}
 typenum = {version="1.10.0",features=["no_std"]}
-derive_type_level={path="../derive_type_level"}
+derive_type_level={path="../derive_type_level",version="0.0.20"}
 
 
 [dependencies.core_extensions]

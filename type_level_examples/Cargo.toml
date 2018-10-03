@@ -27,9 +27,9 @@ serde_json={version="1.0"}
 serde={version="1.0"}
 serde_derive={version="1.0"}
 core_extensions={version="0.1"}
-type_level_values={path="../type_level_values",features=["serde"]}
-derive_type_level={path="../derive_type_level"}
-derive_type_level_lib={path="../derive_type_level_lib"}
+type_level_values={path="../type_level_values",features=["serde"],version="0.0.20"}
+derive_type_level={path="../derive_type_level",version="0.0.20"}
+derive_type_level_lib={path="../derive_type_level_lib",version="0.0.20"}
 take_mut="0.2"
 
 

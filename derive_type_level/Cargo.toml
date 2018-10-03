@@ -11,6 +11,7 @@ include = ["Cargo.toml", "src/**/*.rs", "../readme.md", "../APACHE_license", "..
 
 [dependencies.derive_type_level_lib]
 path="../derive_type_level_lib"
+version="0.0.20"
 
 
 
