@@ -1,11 +1,24 @@
 [package]
 name = "type_level_values"
-version = "0.1.0"
-authors = ["matias"]
-workspace = "../"
+version = "0.0.20"
+authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
+license = "MIT/Apache-2.0"
+description = "Crate for using type level values and functions."
+readme="../readme.md"
+keywords = ["typelevel", "no_std"]
+repository = "https://github.com/rodrimati1992/type_level"
+include = [
+    "Cargo.toml", 
+    "build.rs", 
+    "src/**/*.rs", 
+    "docs/**/*.rs", 
+    "../readme.md", 
+    "../APACHE_license", 
+    "../MIT_license"
+]
 
 [features]
-default = ["std"]
+default = ["std","serde"]
 large_tuples=[]
 std=[]
 

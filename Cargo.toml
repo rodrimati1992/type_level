@@ -2,7 +2,6 @@
 members = [
     "derive_type_level_lib",
     "derive_type_level",
-    "type_level_tests",
     "type_level_examples",
     "type_level_values"
 ]

@@ -1,31 +1,27 @@
-//!
-//! This crate contains types/traits/macros related to Compiletime types and their users.
-//!
-//! # Documentation
-//!
-//! For documentation outside of the API docs of type_level_values go [here](./docs/index.html).
-//!
-//! # Minimum supported Rust version
-//!
-//! This package support rust back to 1.20 .
-//! Using a build script to enable features after Rust 1.20.
-//!
-//! # no-std support
-//!
-//! To use this crate in no_std contexts disable the default-feature.
-//!
-//! # Cargo Features
-//!
-//! "std":Enables standard library support.Enabled by default.
-//!
-//! "serde":Enables serde support.Disabled by default.
-//!
-//! # Documentation
-//!
-//! The documentation of this crate is in
-//!
-//!
-//!
+/*!
+
+Crate for using type level values and functions.
+
+# Documentation
+
+For documentation outside of API docs go [here](./docs/index.html).
+
+# Minimum supported Rust version
+
+This package support rust back to 1.20 .
+Using a build script to enable features after Rust 1.20.
+
+# no-std support
+
+To use this crate in no_std contexts disable the default-feature.
+
+# Cargo Features
+
+"std":Enables standard library support.Enabled by default.
+
+"serde":Enables serde support.Enabled by default.
+
+*/
 
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
