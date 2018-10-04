@@ -1,5 +1,3 @@
-extern crate core_extensions;
-extern crate derive_type_level_lib;
 
 #[allow(unused_imports)]
 use derive_type_level_lib::typelevel as derive_typelevel;
@@ -8,7 +6,7 @@ use derive_type_level_lib::const_constructor as derive_cconstr;
 #[allow(unused_imports)]
 use core_extensions::{measure_time, SelfOps};
 
-fn main() {
+pub fn main_() {
     let struct_decl = r##"
 
 // #[derive(Clone,Copy,Debug)]

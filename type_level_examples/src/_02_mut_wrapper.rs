@@ -4,9 +4,6 @@
 //! if Mutability==Mutable,otherwise T is only accessible immutably.
 //!
 
-extern crate type_level_values;
-#[macro_use]
-extern crate derive_type_level;
 
 use type_level_values::prelude::*;
 
@@ -80,7 +77,7 @@ impl<T> DerefMut for MutabilityWrapper<T, Mutable> {
 
 /////////////////////////////////////////////////////////////////////
 
-fn main() {
+pub fn main_ () {
     let mut wrapper: MutabilityWrapper<_, Mutable> = MutabilityWrapper::new(100, Mutable {});
     assert_eq!(*wrapper, 100);
     *wrapper = 200;

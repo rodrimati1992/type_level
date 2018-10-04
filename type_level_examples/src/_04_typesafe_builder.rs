@@ -4,10 +4,6 @@
 //!
 //!
 
-#[macro_use]
-extern crate type_level_values;
-#[macro_use]
-extern crate derive_type_level;
 
 // use std::fmt;
 // use std::fmt::Debug;
@@ -163,7 +159,7 @@ pub struct Animal {
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-fn main() {
+pub fn main_ () {
     let animal = AnimalBuilder::new()
         .children(2)
         .years_lived(10)

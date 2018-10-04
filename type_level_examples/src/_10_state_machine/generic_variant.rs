@@ -2,7 +2,7 @@ use type_level_values::core_extensions::{CallInto, TryFrom,Void};
 use type_level_values::ops::Len_;
 use type_level_values::prelude::*;
 
-use ranged_usize::{RangedUsize, RangedUsizeBounds};
+use super::ranged_usize::{RangedUsize, RangedUsizeBounds};
 use std::ops::Sub;
 
 /**
@@ -54,7 +54,7 @@ g_variants!{match ( <expression> ) {
 # Example of matching
 ```
 
-# fn main(){
+# pub fn main_ (){
 
 type NaturalNumber=g_variant!( u8,u16,u32,u64,usize );
 
@@ -91,7 +91,7 @@ for elem in list {
 */
 macro_rules! g_variants {
     ()=>{
-        $crate::generic_variant::GenericVariants<
+        $crate::_10_state_machine::generic_variant::GenericVariants<
             U0,
             Impossible,
             Impossible,
@@ -100,7 +100,7 @@ macro_rules! g_variants {
         >
     };
     ( $ty0:ty, )=>{
-        $crate::generic_variant::GenericVariants<
+        $crate::_10_state_machine::generic_variant::GenericVariants<
             U1,
             $ty0,
             Impossible,
@@ -109,7 +109,7 @@ macro_rules! g_variants {
         >
     };
     ( $ty0:ty,$ty1:ty, )=>{
-        $crate::generic_variant::GenericVariants<
+        $crate::_10_state_machine::generic_variant::GenericVariants<
             U2,
             $ty0,
             $ty1,
@@ -118,7 +118,7 @@ macro_rules! g_variants {
         >
     };
     ( $ty0:ty,$ty1:ty,$ty2:ty, )=>{
-        $crate::generic_variant::GenericVariants<
+        $crate::_10_state_machine::generic_variant::GenericVariants<
             U3,
             $ty0,
             $ty1,
@@ -127,7 +127,7 @@ macro_rules! g_variants {
         >
     };
     ( $ty0:ty,$ty1:ty,$ty2:ty,$ty3:ty, )=>{
-        $crate::generic_variant::GenericVariants<
+        $crate::_10_state_machine::generic_variant::GenericVariants<
             U4,
             $ty0,
             $ty1,
@@ -136,7 +136,7 @@ macro_rules! g_variants {
         >
     };
     ( $ty0:ty,$ty1:ty,$ty2:ty,$ty3:ty, $($rest:tt)* )=>{
-        $crate::generic_variant::GenericVariants<
+        $crate::_10_state_machine::generic_variant::GenericVariants<
             LenGt4<<U4 as Add<Len<g_variants!($($rest)*)>>>::Output>,
             $ty0,
             $ty1,
@@ -151,7 +151,7 @@ macro_rules! g_variants {
 
 
     ( match ($val:expr) {$patt0:pat=> $expr0:expr,}  ) => {{
-        use $crate::generic_variant::{Impossible,GenericVariants};
+        use $crate::_10_state_machine::generic_variant::{Impossible,GenericVariants};
         let __val:GenericVariants<_,_,Impossible,Impossible,Impossible,Impossible>=$val;
         match __val {
              GenericVariants::V0($patt0)=>$expr0,
@@ -168,7 +168,7 @@ macro_rules! g_variants {
             $patt1:pat=> $expr1:expr,
         }
     ) => {{
-        use $crate::generic_variant::{Impossible,GenericVariants};
+        use $crate::_10_state_machine::generic_variant::{Impossible,GenericVariants};
         let __val:GenericVariants<_,_,_,Impossible,Impossible,Impossible>=$val;
         match __val {
              GenericVariants::V0($patt0)=>$expr0,
@@ -185,7 +185,7 @@ macro_rules! g_variants {
             $patt2:pat=> $expr2:expr,
         }
     ) => {{
-        use $crate::generic_variant::{Impossible,GenericVariants};
+        use $crate::_10_state_machine::generic_variant::{Impossible,GenericVariants};
         let __val:GenericVariants<_,_,_,_,Impossible,Impossible>=$val;
         match __val {
              GenericVariants::V0($patt0)=>$expr0,
@@ -204,7 +204,7 @@ macro_rules! g_variants {
 
         }
     ) => {{
-        use $crate::generic_variant::{Impossible,GenericVariants};
+        use $crate::_10_state_machine::generic_variant::{Impossible,GenericVariants};
         let __val:GenericVariants<_,_,_,_,_,Impossible>=$val;
         match __val {
             GenericVariants::V0($patt0)=>$expr0,
@@ -223,7 +223,7 @@ macro_rules! g_variants {
 
         }
     ) => {{
-        use $crate::generic_variant::{Impossible,GenericVariants};
+        use $crate::_10_state_machine::generic_variant::{Impossible,GenericVariants};
         let __val:GenericVariants<LenGt4<_>,_,_,_,_,_>=$val;
         match __val {
             GenericVariants::V0($patt0)=>$expr0,

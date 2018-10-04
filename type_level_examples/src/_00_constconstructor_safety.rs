@@ -8,14 +8,6 @@
 //!
 //!
 
-#[macro_use]
-extern crate type_level_values;
-
-#[macro_use]
-extern crate derive_type_level;
-extern crate num_traits;
-extern crate take_mut;
-
 use type_level_values::prelude::*;
 
 
@@ -85,7 +77,7 @@ const_method!{
     pub fn ChangeConst[C,C2](C,C2){ C2 }
 }
 
-fn main() {
+pub fn main_ () {
     {
         Value::new(True)
             .mutparam(ChangeConst, True::T)

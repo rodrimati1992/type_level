@@ -2,10 +2,6 @@
 //! and converted to a runtime value.
 //!
 
-#[macro_use]
-extern crate type_level_values;
-#[macro_use]
-extern crate derive_type_level;
 
 use type_level_values::field_traits::*;
 use type_level_values::prelude::*;
@@ -136,7 +132,7 @@ fn constructing_new_types() {
     println!("{}:{:?}", line!(), wrap3);
 }
 
-fn main() {
+pub fn main_ () {
     constructing_std_types();
     constructing_types_from_type_level_values();
     constructing_new_types();
@@ -154,7 +150,7 @@ pub mod privacies {
     pub struct Privacies {
         pub a: u32,
         pub(crate) b: u32,
-        pub(in privacies) c: u32,
+        pub(in syntax_01_construct::privacies) c: u32,
         pub(super) d: u32,
         pub(self) e: u32,
         f: u32,

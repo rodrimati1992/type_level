@@ -1,4 +1,8 @@
+[![Build Status](https://travis-ci.org/rodrimati1992/type_level.svg?branch=master)](https://travis-ci.org/rodrimati1992/type_level)
+
 Examples of using type-level values and functions.
+
+To run the examples do `cargo run -- ` and then add one of the arguments from the help message.
 
 **Work in progress.**
 **Please create issues for any problem.**

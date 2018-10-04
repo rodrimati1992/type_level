@@ -9,13 +9,6 @@
 //!
 //!
 
-#[macro_use]
-extern crate type_level_values;
-
-#[macro_use]
-extern crate derive_type_level;
-extern crate num_traits;
-extern crate take_mut;
 
 use type_level_values::prelude::*;
 
@@ -26,7 +19,7 @@ use std::fmt::Debug;
 use std::mem::size_of;
 use std::ops::{Add, Range, Shr, Sub};
 
-fn main() {
+pub fn main_ () {
     type U65535 = <U65536 as Sub<U1>>::Output;
 
     assert_eq!(size_of::<u8>(), size_of::<RangedUInt<U0, U0>>());

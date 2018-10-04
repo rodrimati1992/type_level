@@ -1,13 +1,9 @@
 //! This example demonstrates a struct that uses a const-struct to
 //! configure which fields are accessible.
 //!
-//! Rectangle<I> is a rectangle with a Const-parameter that determines what fields are accessible.
+//! Rectangle\<I> is a rectangle with a Const-parameter that determines what fields are accessible.
 //!
 
-#[macro_use]
-extern crate type_level_values;
-#[macro_use]
-extern crate derive_type_level;
 
 use type_level_values::field_traits::*;
 use type_level_values::prelude::*;
@@ -126,7 +122,7 @@ pub mod rectangle {
 
 }
 
-pub use rectangle::*;
+pub use self::rectangle::*;
 
 #[derive(Clone, Copy, Debug, TypeLevel)]
 #[typelevel(derive(ConstEq, ConstOrd))]
@@ -151,7 +147,7 @@ pub enum Accessibility {
 
 use self::type_level_Accessibility::{Accessible, Inaccessible};
 
-fn main() {
+pub fn main_ () {
     let mut rect = Rectangle::new();
     let rect_a = Rectangle::new().mutated(|r| {
         r.set_x(0);
