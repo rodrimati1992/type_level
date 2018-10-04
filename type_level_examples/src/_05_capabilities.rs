@@ -4,11 +4,6 @@
 //!
 //!
 
-#[macro_use]
-extern crate type_level_values;
-#[macro_use]
-extern crate derive_type_level;
-
 use type_level_values::field_traits::*;
 use type_level_values::prelude::*;
 
@@ -198,7 +193,7 @@ where
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-fn main() {
+pub fn main_ () {
     let side_effects =
         SideEffectful::new(FakeFileSystemOps, FakeExecuteCommand, AllCapabilities::PW);
 

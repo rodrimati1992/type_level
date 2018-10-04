@@ -5,21 +5,13 @@
 
 #![deny(overflowing_literals)]
 
-#[macro_use]
-extern crate type_level_values;
-
-#[macro_use]
-extern crate derive_type_level;
-extern crate num_traits;
-extern crate take_mut;
-
 // use type_level_values::ops::{IfEager, TypeFn, TypeFn_};
 use type_level_values::prelude::*;
 
 use type_level_values::core_extensions::Void;
 
 
-fn main() {
+pub fn main_ () {
     main_0();
     main_1();
     main_2();
@@ -103,7 +95,7 @@ pub struct CFParams {
     pub func: (),
 }
 
-pub use type_level_CFParams::{CFParamsTrait, ConstCFParams};
+pub use self::type_level_CFParams::{CFParamsTrait, ConstCFParams};
 
 #[derive(Debug, Copy, Clone, ConstConstructor)]
 #[cconstructor(

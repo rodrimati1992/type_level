@@ -4,14 +4,6 @@
 //! taking some configuration/state,which fully initializes the type.
 //!
 
-// #[macro_use]
-extern crate type_level_values;
-#[macro_use]
-extern crate derive_type_level;
-extern crate serde;
-// #[macro_use]
-// extern crate serde_derive;
-extern crate serde_json;
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -114,9 +106,9 @@ impl<T> Deref for SortedList<T> {
 
 /////////////////////////////////////////////////////////////////////
 
-fn main() {
+pub fn main_ () {
     let reversed = Reversed(true);
-    let list = serde_json::from_str::<DeserializeSortedList<u64>>("[0,10,5,1,4]")
+    let list = ::serde_json::from_str::<DeserializeSortedList<u64>>("[0,10,5,1,4]")
         .unwrap()
         .initialize(reversed);
 

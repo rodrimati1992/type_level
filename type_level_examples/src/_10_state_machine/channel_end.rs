@@ -11,9 +11,9 @@ use type_level_values::prelude::*;
 use type_level_values::core_extensions::TryInto;
 use type_level_values::core_extensions::{Void,CallInto, TryFrom,TypePanic};
 
-use generic_variant::{Impossible, MapVariants, VariantsTrait};
+use super::generic_variant::{Impossible, MapVariants, VariantsTrait};
 
-use ranged_usize::{RangedUsize, RangedUsizeBounds, UsizeOutsideRange};
+use super::ranged_usize::{RangedUsize, RangedUsizeBounds, UsizeOutsideRange};
 
 pub type CEResult<T> = ::std::result::Result<T, ProtocolViolation>;
 

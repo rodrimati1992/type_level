@@ -11,13 +11,6 @@
 //!
 //!
 
-#[macro_use]
-extern crate type_level_values;
-
-#[macro_use]
-extern crate derive_type_level;
-extern crate take_mut;
-
 use type_level_values::field_traits::*;
 use type_level_values::new_types::{TList, TNil};
 use type_level_values::ops::{
@@ -31,7 +24,7 @@ use type_level_values::prelude::*;
 use std::cmp::{self, PartialOrd};
 use std::mem;
 
-fn main() {
+pub fn main_ () {
     let mut rect = Rectangle::new().mutated(|r| {
         r.set_x(50);
         r.set_y(60);
@@ -261,7 +254,7 @@ pub mod rectangle {
                 )*
             }
 
-            /// Defining methods for Rectangle<I> and PinnedMut<'a,Rectangle<I>>
+            /// Defining methods for Rectangle\<I> and PinnedMut\<'a,Rectangle\<I>>
             pub trait RectangleMutAccessors<I,P>:DerefMutPin<PinnedTarget=Rectangle<I,P>>{
                 $(
                     fn $setter(&mut self, $field: $field_ty)
@@ -385,7 +378,7 @@ pub mod rectangle {
     }
 }
 
-/// Defining methods for Rectangle<I> and PinnedMut<'a,Rectangle<I>>
+/// Defining methods for Rectangle\<I> and PinnedMut\<'a,Rectangle\<I>>
 pub trait RectangleMutMethods<I, P>: RectangleMutAccessors<I, P> {
     fn set_position(&mut self, x: u32, y: u32)
     where
@@ -421,7 +414,7 @@ impl<I, P> Rectangle<I, P> {
     }
 }
 
-pub use rectangle::*;
+pub use self::rectangle::*;
 
 #[derive(Clone, Copy, Debug, TypeLevel, PartialEq)]
 #[typelevel(derive(ConstEq, ConstOrd))]

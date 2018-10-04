@@ -1,12 +1,13 @@
 [package]
 name = "type_level_examples"
-version = "0.0.21"
+version = "0.0.22"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Examples of using type-level values and functions."
+documentation = "https://docs.rs/type_level_examples/"
 readme="./readme.md"
-keywords = ["typelevel", "no-std"]
-categories = ["no-std"]
+keywords = ["typelevel"]
+categories = []
 repository = "https://github.com/rodrimati1992/type_level"
 include = [
     "Cargo.toml", 

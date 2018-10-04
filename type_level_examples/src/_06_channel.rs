@@ -5,11 +5,7 @@
 //! does not provide a way to sequence Const-methods.
 //!
 
-#[macro_use]
-extern crate type_level_values;
-#[macro_use]
-extern crate derive_type_level;
-extern crate core_extensions;
+
 
 use std::ops::*;
 use std::sync::mpsc::{self, Receiver as MPSCReceiver, RecvError, SendError, Sender as MPSCSender};
@@ -34,7 +30,7 @@ pub enum State {
     Closed,
 }
 
-use type_level_State::{Closed, Open, OpenTrait};
+use self::type_level_State::{Closed, Open, OpenTrait};
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -119,7 +115,7 @@ const_method!{
 }
 
 
-fn main() {
+pub fn main_ () {
     let (tx, rx) = channel::<&'static str, U4>();
 
     #[allow(unused_variables)]

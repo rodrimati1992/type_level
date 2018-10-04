@@ -7,14 +7,6 @@
 #![deny(overflowing_literals)]
 
 #[macro_use]
-extern crate type_level_values;
-
-#[macro_use]
-extern crate derive_type_level;
-extern crate num_traits;
-extern crate take_mut;
-
-#[macro_use]
 pub mod generic_variant;
 pub mod channel_end;
 pub mod ranged_usize;
@@ -73,7 +65,7 @@ pub type ExampleOperations = tlist!(
     TransferTo<Server,StopPlaying>,
 );
 
-fn main() {
+pub fn main_ () {
     let operations = ExampleOperations::MTVAL;
 
     let (client, server) = Channel::new(operations);
