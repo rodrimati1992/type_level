@@ -24,7 +24,7 @@ pub use ops::{
 
 pub use user_traits;
 
-pub use const_wrapper::{AsConstWrapper, PhantomWrapper};
+pub use const_wrapper::{AsConstWrapper, ConstWrapper};
 #[cfg(rust_1_22)]
 pub use runtime_value::IntoConstant;
 pub use runtime_value::{

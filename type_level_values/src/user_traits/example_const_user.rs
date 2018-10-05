@@ -9,13 +9,13 @@ use prelude::*;
 )]
 pub struct ConstUserExtMethInner<C> {
     #[allow(dead_code)]
-    const_: PhantomWrapper<C>,
+    const_: ConstWrapper<C>,
 }
 
 impl<C> ConstUserExtMeth<C> {
     pub fn new() -> Self {
         Self {
-            const_: PhantomWrapper::NEW,
+            const_: ConstWrapper::NEW,
         }
     }
 }

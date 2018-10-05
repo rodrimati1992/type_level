@@ -666,8 +666,8 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                 StructKind::Tuple=>{
                     quote!{ 
                         ( 
-                            #(#field_vis PhantomWrapper<#generics_1>,)* 
-                            #(#opt_priv_field_vis PhantomWrapper<__IsPriv>,)*
+                            #(#field_vis ConstWrapper<#generics_1>,)* 
+                            #(#opt_priv_field_vis ConstWrapper<__IsPriv>,)*
                         ); 
                     }
                 }
@@ -675,8 +675,8 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                     let names=declaration.fields.iter().map(|x| &x.name_ident );
                     quote!{ 
                         { 
-                            #(#field_vis #names:PhantomWrapper<#generics_1>,)* 
-                            #(#opt_priv_field_vis priv_:PhantomWrapper<__IsPriv>,)*
+                            #(#field_vis #names:ConstWrapper<#generics_1>,)* 
+                            #(#opt_priv_field_vis priv_:ConstWrapper<__IsPriv>,)*
                         } 
                     }
                 }

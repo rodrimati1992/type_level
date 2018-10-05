@@ -30,8 +30,8 @@ pub fn main_ () {
     {
         type UsedRange = ConstRange<U0, U10>;
         let range = ConstRange {
-            start: U0::PW,
-            end: U10::PW,
+            start: U0::CW,
+            end: U10::CW,
         };
         let ranged_int = |n| RangedUIntR::with_range(n, range).unwrap().value();
 
@@ -44,8 +44,8 @@ pub fn main_ () {
     {
         type UsedRange = ConstRange<U0, U100>;
         let range = ConstRange {
-            start: U0::PW,
-            end: U100::PW,
+            start: U0::CW,
+            end: U100::CW,
         };
         let ranged_int = |n| RangedUIntR::with_range(n, range).unwrap().value();
 
@@ -83,10 +83,10 @@ pub type RangedUInt<Start, End> = RangedUIntR<ConstRange<Start, End>>;
 pub struct RangedUIntInner<R>
 where
     R: WrapperTrait,
-    GetConstValue<R>: RangeTypes,
+    UnwrapConst<R>: RangeTypes,
 {
-    range: PhantomWrapper<R>,
-    n: <GetConstValue<R> as RangeTypes>::Stored,
+    range: ConstWrapper<R>,
+    n: <UnwrapConst<R> as RangeTypes>::Stored,
 }
 
 impl<R> RangedUIntR<R>
@@ -98,7 +98,7 @@ where
         if range_.start <= n && n < range_.end {
             Some(Self {
                 n: (n - range_.start).as_(),
-                range: PhantomWrapper::NEW,
+                range: ConstWrapper::NEW,
             })
         } else {
             None

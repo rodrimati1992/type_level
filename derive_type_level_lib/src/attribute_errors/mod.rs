@@ -11,30 +11,33 @@ use attribute_detection::indexable_struct::GetEnumIndices;
 use core_extensions::prelude::*;
 
 use std::fmt;
+use std::borrow::Cow;
 
+
+pub type CowStr=Cow<'static,str>;
 
 
 #[derive(Debug)]
-pub struct ValidAttrs<'a>{
-    pub valid_attrs:Vec<AttrShape<'a>>,
+pub struct ValidAttrs{
+    pub valid_attrs:Vec<AttrShape>,
 }
 
 
 #[derive(Debug)]
 pub struct FilteredAttrs<'a,F>{
-    pub valid_attrs:&'a [AttrShape<'a>],
+    pub valid_attrs:&'a [AttrShape],
     filter:F
 }
 
 
-impl<'a> ValidAttrs<'a>{
-    pub fn new(valid_attrs:Vec<AttrShape<'a>>)->Self{
+impl ValidAttrs{
+    pub fn new(valid_attrs:Vec<AttrShape>)->Self{
         Self{
             valid_attrs,
         }
     }
 
-    pub fn with_filter<F>(&'a self,filter:F)->FilteredAttrs<'a,F>
+    pub fn with_filter<'a,F>(&'a self,filter:F)->FilteredAttrs<'a,F>
     where 
         F:Fn(&str)->bool
     {
@@ -46,35 +49,35 @@ impl<'a> ValidAttrs<'a>{
 }
 
 
-#[derive(Debug,Copy,Clone)]
-pub enum AttrKind<'a>{
+#[derive(Debug,Clone)]
+pub enum AttrKind{
     Word,
     NameValue{
-        value:&'a str,
+        value:CowStr,
     },
     List{
-        value:&'a str,
+        value:CowStr,
     },
 }
 
 
-#[derive(Debug,Copy,Clone)]
-pub struct AttrVariant<'a>{
-    pub kind:AttrKind<'a>,
-    pub clarification:Option<&'a str>,
+#[derive(Debug,Clone)]
+pub struct AttrVariant{
+    pub kind:AttrKind,
+    pub clarification:Option<CowStr>,
 }
 
 
-#[derive(Debug,Copy,Clone)]
-pub struct AttrShape<'a>{
-    pub variants:&'a [AttrVariant<'a>],
-    pub word:&'a str,
-    pub description:&'a str,
+#[derive(Debug,Clone)]
+pub struct AttrShape{
+    pub variants:Vec<AttrVariant>,
+    pub word:&'static str,
+    pub description:CowStr,
 }
 
 
 
-impl<'a> fmt::Display for ValidAttrs<'a>{
+impl fmt::Display for ValidAttrs{
     fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{
         writeln!(f,"\nMust be one of:\n")?;
         for attr in &self.valid_attrs {
@@ -97,22 +100,22 @@ where F:Fn(&str)->bool,
 }
 
 
-impl<'a> fmt::Display for AttrShape<'a>{
+impl fmt::Display for AttrShape{
     fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{
         use std::fmt::Write;
 
         writeln!(f,"\n{S}{S}\n'{}' attribute:",self.word,S="--------------------")?;
         write!(f,"{}\n",self.description )?;
         let mut buffer=String::new();
-        for variant in self.variants{
+        for variant in &self.variants {
             write!(buffer,"\nusage `{}",self.word)?;
             match variant.kind {
                 AttrKind::Word=>Ok(()),
-                AttrKind::NameValue{value}=>write!(buffer,"=\"{}\"",value),
-                AttrKind::List{value}=>write!(buffer,"({})",value),
+                AttrKind::NameValue{ref value}=>write!(buffer,"=\"{}\"",value),
+                AttrKind::List{ref value}=>write!(buffer,"({})",value),
             }?;
             writeln!(buffer,"`.")?;
-            if let Some(clarif)=variant.clarification {
+            if let Some(ref clarif)=variant.clarification {
                 if clarif.chars().count() <= 60 && clarif.lines().count()<=1 {
                     writeln!(buffer,"clarification:{}", clarif)?;
                 }else{
@@ -137,72 +140,75 @@ impl<'a> fmt::Display for AttrShape<'a>{
 
 fn new_items<I>(
     _indices:VariantPhantom<I>,
-    description:&'static str
-)->AttrShape<'static>
+    description:CowStr
+)->AttrShape
 where
     I:GetEnumIndices
 {
-    use utils::{leak_string,leak_vec};
-
-    let items_clarification:&'static str=format!(
-        "NameOfImpls can be one of:{}",
-        I::indices_message()
-    ).piped(leak_string);
-        
-    let item_variants:&'static [AttrVariant<'static>]=vec![
-        AttrVariant{
-            kind:AttrKind::List{value:" NameOfImpls0(..),NameOfImpls1(..), ... "} ,
-            clarification:Some(items_clarification),
-        }
-    ].piped(leak_vec);
-
     AttrShape{
-        variants:item_variants,
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::List{value:" NameOfImpls0(..),NameOfImpls1(..), ... ".into()} ,
+                clarification:Some(format!(
+                    "NameOfImpls can be one of:{}",
+                    I::indices_message()
+                ).into()),
+            }
+        ],
         word:"item",
         description,
     }
 }
 
 
-pub const SHARED_METADATA:&'static [AttrShape<'static>]=&[
-    SHARED_BOUND,
-    SHARED_ATTR,
-    SHARED_DOC,
-];
+pub fn shared_metadata()->Vec<AttrShape>{
+    vec![
+        shared_bound(),
+        shared_attr(),
+        shared_doc(),
+    ]
+}
+
+pub fn shared_bound()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"Type:Bound".into()} ,
+                clarification:Some("the string has to be a single where predicate.".into()),
+            }
+        ],
+        word:"bound",
+        description:"Bounds added to the generated item.".into(),
+    }
+}
 
 
-pub const SHARED_BOUND:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::NameValue{value:"Type:Bound"} ,
-            clarification:Some("the string has to be a single where predicate."),
-        }
-    ],
-    word:"bound",
-    description:"Bounds added to the generated item.",
-};
+pub fn shared_attr()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::List{ value:" <attributes> " .into()},
+                clarification:Some("\
+                    <attributes> must be a valid attribute,eg:\"doc(hidden)\".\
+                ".into()),
+            }
+        ],
+        word:"attr",
+        description:"Attributes that will be added to the generated item.".into(),
+    }
+}
 
 
-pub const SHARED_ATTR:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::List{ value:" <attributes> " },
-            clarification:Some("<attributes> must be a valid attribute,eg:\"doc(hidden)\"."),
-        }
-    ],
-    word:"attr",
-    description:"Attributes that will be added to the generated item."
-};
-
-
-pub const SHARED_DOC:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::NameValue{value:"documentation"},
-            clarification:Some("the string can span multiple lines"),
-        }
-    ],
-    word:"doc",
-    description:"A documentation attribute the will be added to the generated item."
-};
+pub fn shared_doc()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"documentation".into()},
+                clarification:Some("the string can span multiple lines".into()),
+            }
+        ],
+        word:"doc",
+        description:"A documentation attribute the will be added to the generated item.".into(),
+    }
+}
 

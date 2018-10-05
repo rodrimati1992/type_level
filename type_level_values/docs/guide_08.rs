@@ -344,7 +344,7 @@ pub type InitialGame=construct!(GameType=>
 
 #[derive(Copy,Clone,Debug,ConstConstructor)]
 #[cconstructor(Type="ArcadeMachine",ConstParam="G")]
-pub struct ArcadeMachineInner<G>(pub PhantomWrapper<G>);
+pub struct ArcadeMachineInner<G>(pub ConstWrapper<G>);
 
 //@codeblock-end  :arcade-machine-struct
 
@@ -352,7 +352,7 @@ pub struct ArcadeMachineInner<G>(pub PhantomWrapper<G>);
 
 impl ArcadeMachine<InitialGame>{
     pub fn new()->Self{
-        ArcadeMachineInner(PhantomWrapper::NEW)
+        ArcadeMachineInner(ConstWrapper::NEW)
     }
 }
 
@@ -366,7 +366,7 @@ impl<Game> ArcadeMachine<Game>{
     where 
         GameAction:TypeFn_<(Game,Action),Output=__NewGame>
     {
-        ArcadeMachineInner(PhantomWrapper::NEW)
+        ArcadeMachineInner(ConstWrapper::NEW)
     }
 }
 
@@ -377,12 +377,12 @@ fn main(){
     //@codeblock-start:main
     
     ArcadeMachine::new()
-        .action(InputCoins(U1::PW))
+        .action(InputCoins(U1::CW))
         .action(StartGame)
-        .action(InputCoins(U1::PW))
-        .action(InputCoins(U1::PW))
+        .action(InputCoins(U1::CW))
+        .action(InputCoins(U1::CW))
         .action(LoseGame)
-        .action(InputCoins(U1::PW))
+        .action(InputCoins(U1::CW))
         .action(Continue)
         .action(QuitGame);
 

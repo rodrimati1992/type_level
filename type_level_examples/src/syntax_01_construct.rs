@@ -5,7 +5,7 @@
 
 use type_level_values::field_traits::*;
 use type_level_values::prelude::*;
-use type_level_values::std_types::option::fields as option_f;
+// use type_level_values::std_types::option::fields as option_f;
 use type_level_values::std_types::*;
 
 
@@ -37,15 +37,15 @@ fn constructing_std_types() {
     let _: Less_ = cmp_ordering::Less_.assert_zst();
     let _: Less_ = Less_.assert_zst();
 
-    let _: Some_<U1> = Some_(U1::PW.assert_zst());
-    let _ = Some_(U1::PW.assert_zst());
+    let _: Some_<U1> = Some_(U1::CW.assert_zst());
+    let _ = Some_(U1::CW.assert_zst());
     let _ = None_.assert_zst();
 
-    let _ = Ok_(False::PW.assert_zst());
+    let _ = Ok_(False::CW.assert_zst());
     // this is equivalent to the previous line for instantiated values.
     let _: Ok_<False> = Ok_(False.into()).assert_zst();
 
-    let _ = Err_(True::PW.assert_zst());
+    let _ = Err_(True::CW.assert_zst());
     // this is equivalent to the previous line for instantiated values.
     let _: Err_<True> = Err_(True.into()).assert_zst();
 }
@@ -89,8 +89,8 @@ use self::type_level_Entity::fields as entity_f;
 
 fn constructing_new_types() {
     let point0: ConstPoint<U0, U3> = ConstPoint {
-        x: U0::PW,
-        y: U3::PW,
+        x: U0::CW,
+        y: U3::CW,
     }.assert_zst();
 
     assert_eq!(
@@ -104,15 +104,15 @@ fn constructing_new_types() {
         True,
     > = ConstEntity::MTVAL.assert_zst();
 
-    let entity1 = ConstEntity {
+    let _entity1 = ConstEntity {
         position: Some_(
             ConstPoint {
-                x: U0::PW,
-                y: U0::PW,
-            }.to_pw(),
-        ).to_pw(),
-        facing: Up.to_pw(),
-        is_alive: True.to_pw(),
+                x: U0::CW,
+                y: U0::CW,
+            }.to_cw(),
+        ).to_cw(),
+        facing: Up.to_cw(),
+        is_alive: True.to_cw(),
     }.assert_zst();
 
     let _entity2 = <construct!(EntityType=>
@@ -121,15 +121,6 @@ fn constructing_new_types() {
         entity_f::is_alive = False,
     )>::MTVAL
         .assert_zst();
-
-    let wrap0 = entity1.to_ar::<Entity>();
-    println!("{}:{:?}", line!(), wrap0);
-    let wrap1 = wrap0[entity_f::position];
-    println!("{}:{:?}", line!(), wrap1);
-    let wrap2 = wrap1[option_f::field_0];
-    println!("{}:{:?}", line!(), wrap2);
-    let wrap3 = wrap2[point_f::x];
-    println!("{}:{:?}", line!(), wrap3);
 }
 
 pub fn main_ () {

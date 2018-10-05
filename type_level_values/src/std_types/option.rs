@@ -132,10 +132,10 @@ mod tests {
 
     #[test]
     fn construct_option() {
-        let _: Some_<U0> = Some_(U0::PW);
+        let _: Some_<U0> = Some_(U0::CW);
         let _: None_ = None_;
 
-        assert_eq!(Some_(U0::PW).into_runtime(), Some(0));
+        assert_eq!(Some_(U0::CW).into_runtime(), Some(0));
         assert_eq!(None_.into_runtime(), None::<Void>);
     }
 
@@ -154,14 +154,14 @@ mod tests {
     #[test]
     fn option_operators() {
         let _: None_ = None_ | None_;
-        let _: Some_<U1> = None_ | Some_(U1::PW);
-        let _: Some_<U2> = Some_(U2::PW) | None_;
-        let _: Some_<U2> = Some_(U2::PW) | Some_(U1::PW);
+        let _: Some_<U1> = None_ | Some_(U1::CW);
+        let _: Some_<U2> = Some_(U2::CW) | None_;
+        let _: Some_<U2> = Some_(U2::CW) | Some_(U1::CW);
 
         let _: None_ = None_ & None_;
-        let _: None_ = None_ & Some_(U1::PW);
-        let _: None_ = Some_(U2::PW) & None_;
-        let _: Some_<U1> = Some_(U2::PW) & Some_(U1::PW);
+        let _: None_ = None_ & Some_(U1::CW);
+        let _: None_ = Some_(U2::CW) & None_;
+        let _: Some_<U1> = Some_(U2::CW) & Some_(U1::CW);
     }
 
     #[test]

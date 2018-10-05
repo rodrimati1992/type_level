@@ -75,13 +75,13 @@ mod user{
     #[derive(ConstConstructor)]
     #[cconstructor(Type = "User",ConstParam = "P")]
     pub struct UserInner<P> {
-        _privilege: PhantomWrapper<P>,
+        _privilege: ConstWrapper<P>,
     }
 
     impl<P> User<P> {
         pub fn new(privilege:P) -> Self {
             Self {
-                _privilege: PhantomWrapper::NEW,
+                _privilege: ConstWrapper::NEW,
             }
         }
         pub fn run_command(&mut self,command:&str){

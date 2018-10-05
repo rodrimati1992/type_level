@@ -34,9 +34,9 @@ using the MTVAL associated constant of ConstRectangle.
 
 The PW associated constant comes from the AsConstWrapper trait,
 part of this library's prelude,
-wrapping Self in a PhantomWrapper.
+wrapping Self in a ConstWrapper.
 <br>
-Every field of a type-level value is a PhantomWrapper<_>.
+Every field of a type-level value is a ConstWrapper<_>.
 
 <br><br><br><br><br><br><br><br><br><br>
 <hr>
@@ -114,10 +114,10 @@ fn main_struct(){
     //@codeblock-start:struct-main
 
     let rectangle1:ConstRectangle<U0,U1,U2,U3>=ConstRectangle{
-        x:U0::PW, 
-        y:U1::PW,
-        w:U2::PW,
-        h:U3::PW,
+        x:U0::CW, 
+        y:U1::CW,
+        w:U2::CW,
+        h:U3::CW,
     };
 
     let rectangle2:construct!{Rectangle_Uninit=>

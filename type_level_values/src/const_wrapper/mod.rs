@@ -27,122 +27,63 @@ mod sealed {
 }
 use self::sealed::Sealed;
 
-/// Type-level enum which represents which kind of ConstWrapper [ConstWrapper] is.
-pub trait WrapperKindType: Sealed {}
-
-impl<R> Sealed for RuntimeKind<R> {}
-impl<R> WrapperKindType for RuntimeKind<R> {}
-
-impl Sealed for PhantomKind {}
-impl WrapperKindType for PhantomKind {}
-
-/// Requires that ConstWrapper uses the runtime value of the type whenever possible.
-pub struct RuntimeKind<R>(R);
-
-/// Requires that ConstWrapper act as a PhantomData.
-pub struct PhantomKind;
-
-/// A ConstWrapper alias,used for compile-time values, which implements many traits.
-/// <br>
-/// Some impls for this are on [ConstWrapper<Compiletime,PhantomKind>](./struct.ConstWrapper.html).
-///
-/// # Construction
-///
-/// When constructing a PhantomWrapper inside a function
-/// that returns it prefer using PhantomWrapper::NEW.
-///
-/// When constructing a PhantomWrapper whose type can't be inferred use Type::PW or <Type>::PW.
-///
-/// When there is a value that needs to be converted to a PhantomWrapper
-/// either use value.to_pw() or
-/// value.into() (if the type is Copy and the target type is PhantomWrapper<_>),
-///
-///
-///
-pub type PhantomWrapper<Compiletime> = ConstWrapper<Compiletime, PhantomKind>;
-
-/// A ConstWrapper type for compile-time values which implements many traits
-/// using the runtime type.
-pub type AsRuntime<Compiletime, Runtime> = ConstWrapper<Compiletime, RuntimeKind<Runtime>>;
-
-/// Creates a ConstWrapper from a generic type which implements WrapperTrait.
+/// Creates a ConstWrapper from a type implementing WrapperTrait.
 pub type ConstWrapperFromTrait<ConstParam> =
-    ConstWrapper<GetConstValue<ConstParam>, GetWrapperKind<ConstParam>>;
+    ConstWrapper<UnwrapConst<ConstParam>>;
 
 //////////////////////////////////////////////////////////////////////////////////////
 
 /// Const-type of all ConstWrapper values.
 #[derive(Debug, Copy, Clone, Default)]
-pub struct WrapperType;
+pub struct ConstWrapperType;
 
-impl ConstType for WrapperType {}
-
-type_fn!{
-    pub fn AssertValidKind(PhantomKind){()}
-           AssertValidKind[R](RuntimeKind<R>){()}
-}
+impl ConstType for ConstWrapperType {}
 
 //////////////////////////////////////////////////////////////////////////////////////
 
 /// Trait used to access the type parameters of ConstWrapper in a generic context.
-pub trait WrapperTrait: Sealed + DerivedTraits<Type = WrapperType>
+pub trait WrapperTrait: Sealed + DerivedTraits<Type = ConstWrapperType>
 {
     type ConstValue;
-    type Kind;
 }
 
-impl<T, Kind> WrapperTrait for ConstWrapper<T, Kind> {
+impl<T> WrapperTrait for ConstWrapper<T> {
     type ConstValue = T;
-    type Kind = Kind;
 }
 
-impl<T,K> GetDiscriminant for ConstWrapper<T,K>{
-    type Discriminant=Discriminant<names::ConstWrapper_Type,WrapperType, U0>;
+impl<T> GetDiscriminant for ConstWrapper<T>{
+    type Discriminant=Discriminant<ConstWrapperType,ConstWrapperType, U0>;
 
-    type Variant=names::ConstWrapper_Type;
+    type Variant=ConstWrapperType;
 }
 
-mod names{
-    pub struct ConstWrapper_Type;
-}
-
-
-impl<T, Kind> Sealed for ConstWrapper<T, Kind> {}
+impl<T> Sealed for ConstWrapper<T> {}
 
 /// Gets the `ConstValue` associated type from a WrapperTrait implementor.
-pub type GetConstValue<ConstWrapper> = <ConstWrapper as WrapperTrait>::ConstValue;
-
-/// Gets the `Kind` associated type from a WrapperTrait implementor.
-pub type GetWrapperKind<ConstWrapper> = <ConstWrapper as WrapperTrait>::Kind;
+pub type UnwrapConst<ConstWrapper> = <ConstWrapper as WrapperTrait>::ConstValue;
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-/// ConstWrapper type for compiletime-values.
+/// ConstWrapper type for compiletime-values,which as like a PhantomData, 
+/// and delegates many trait impls to the wrapped Constant.
 ///
-/// This Type has 2 flavours:
-///
-/// -[PhantomWrapper]:Which as like a PhantomData
-///
-/// -[AsRuntime]:Which acts like the runtime version of the value.
-///
-///
-pub struct ConstWrapper<Compiletime, WrapperKind>(VariantPhantom<(Compiletime, WrapperKind)>);
+pub struct ConstWrapper<Compiletime>(VariantPhantom<Compiletime>);
 
-unsafe impl<T, K> MarkerType for ConstWrapper<T, K> {}
+unsafe impl<T> MarkerType for ConstWrapper<T> {}
 
-unsafe impl<Compiletime, WrapperKind> Send for ConstWrapper<Compiletime, WrapperKind> {}
-unsafe impl<Compiletime, WrapperKind> Sync for ConstWrapper<Compiletime, WrapperKind> {}
+unsafe impl<Compiletime> Send for ConstWrapper<Compiletime> {}
+unsafe impl<Compiletime> Sync for ConstWrapper<Compiletime> {}
 
-impl<T, Kind> Default for ConstWrapper<T, Kind> {
+impl<T> Default for ConstWrapper<T> {
     #[inline(always)]
     fn default() -> Self {
         ConstWrapper(PhantomData)
     }
 }
 
-impl<T, Kind> Copy for ConstWrapper<T, Kind> {}
+impl<T> Copy for ConstWrapper<T> {}
 
-impl<T, Kind> Clone for ConstWrapper<T, Kind> {
+impl<T> Clone for ConstWrapper<T> {
     #[inline(always)]
     fn clone(&self) -> Self {
         *self
@@ -152,25 +93,15 @@ impl<T, Kind> Clone for ConstWrapper<T, Kind> {
 //////////////////////////////////////////////////////////////////////////////////////
 
 pub trait AsConstWrapper: Sized {
-    const PW: PhantomWrapper<Self> = ConstWrapper::NEW;
+    const CW: ConstWrapper<Self> = ConstWrapper::NEW;
 
     #[inline(always)]
-    fn to_pw(&self) -> PhantomWrapper<Self> {
+    fn to_cw(&self) -> ConstWrapper<Self> {
         ConstWrapper::NEW
     }
 
     #[inline(always)]
-    fn to_ar<R>(&self) -> AsRuntime<Self, R> {
-        ConstWrapper::NEW
-    }
-
-    #[inline(always)]
-    fn pw_(&self) -> PhantomWrapper<Self> {
-        ConstWrapper::NEW
-    }
-
-    #[inline(always)]
-    fn ar_<R>(&self) -> AsRuntime<Self, R> {
+    fn pw_(&self) -> ConstWrapper<Self> {
         ConstWrapper::NEW
     }
 }
@@ -179,112 +110,46 @@ impl<This> AsConstWrapper for This {}
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-impl<T, R> fmt::Display for ConstWrapper<T, RuntimeKind<R>>
-where
-    T: IntoRuntime<R>,
-    R: fmt::Display,
-{
+impl<T> fmt::Display for ConstWrapper<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Display::fmt(&T::to_runtime(), f)
+        fmt::Display::fmt(&"ConstWrapper(T)", f)
     }
 }
 
-impl<T> fmt::Display for ConstWrapper<T, PhantomKind> {
+impl<T> fmt::Debug for ConstWrapper<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Display::fmt(&"ConstWrapper(T,R,PhantomKind)", f)
-    }
-}
-
-impl<T, R> fmt::Debug for ConstWrapper<T, RuntimeKind<R>>
-where
-    T: IntoRuntime<R>,
-    R: fmt::Debug,
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Debug::fmt(&T::to_runtime(), f)
-    }
-}
-
-impl<T> fmt::Debug for ConstWrapper<T, PhantomKind> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Display::fmt(&"ConstWrapper(T,R,PhantomKind)", f)
+        fmt::Display::fmt(&"ConstWrapper(T)", f)
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-impl<T> Eq for PhantomWrapper<T> {}
+impl<T> Eq for ConstWrapper<T> {}
 
-impl<T> PartialEq for PhantomWrapper<T> {
+impl<T> PartialEq for ConstWrapper<T> {
     #[inline(always)]
     fn eq(&self, _: &Self) -> bool {
         true
     }
 }
-impl<T> Ord for PhantomWrapper<T> {
+impl<T> Ord for ConstWrapper<T> {
     #[inline(always)]
     fn cmp(&self, _: &Self) -> cmp::Ordering {
         cmp::Ordering::Equal
     }
 }
-impl<T> PartialOrd for PhantomWrapper<T> {
+impl<T> PartialOrd for ConstWrapper<T> {
     #[inline(always)]
     fn partial_cmp(&self, _: &Self) -> Option<cmp::Ordering> {
         Some(cmp::Ordering::Equal)
     }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-impl<T, R> Eq for AsRuntime<T, R> where Self: PartialEq<Self> {}
-
-impl<T1, T2, R1, R2> PartialEq<AsRuntime<T2, R2>> for AsRuntime<T1, R1>
-where
-    T1: IntoRuntime<R1>,
-    T2: IntoRuntime<R2>,
-    R1: PartialEq<R2>,
-{
-    fn eq(&self, _: &AsRuntime<T2, R2>) -> bool {
-        T1::to_runtime().eq(&T2::to_runtime())
-    }
-}
-impl<T, R> Ord for AsRuntime<T, R>
-where
-    T: IntoRuntime<R>,
-    R: Ord,
-{
-    #[inline(always)]
-    fn cmp(&self, _: &Self) -> cmp::Ordering {
-        cmp::Ordering::Equal
-    }
-}
-impl<T1, T2, R1, R2> PartialOrd<AsRuntime<T2, R2>> for AsRuntime<T1, R1>
-where
-    T1: IntoRuntime<R1>,
-    T2: IntoRuntime<R2>,
-    R1: PartialOrd<R2>,
-{
-    fn partial_cmp(&self, _: &AsRuntime<T2, R2>) -> Option<cmp::Ordering> {
-        T1::to_runtime().partial_cmp(&T2::to_runtime())
-    }
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-impl<T> hash::Hash for ConstWrapper<T, PhantomKind> {
+impl<T> hash::Hash for ConstWrapper<T> {
     fn hash<H: hash::Hasher>(&self, state: &mut H) {
         ().hash(state)
-    }
-}
-
-impl<T, R> hash::Hash for ConstWrapper<T, RuntimeKind<R>>
-where
-    T: IntoRuntime<R>,
-    R: hash::Hash,
-{
-    fn hash<H: hash::Hasher>(&self, state: &mut H) {
-        let v = T::to_runtime();
-        v.hash(state)
     }
 }
 
@@ -293,32 +158,7 @@ mod serde_impl {
     use super::*;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-    impl<'de, T, R> Deserialize<'de> for ConstWrapper<T, RuntimeKind<R>>
-    where
-        R: Deserialize<'de>,
-    {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
-        {
-            let _ = R::deserialize(deserializer)?;
-            Ok(Default::default())
-        }
-    }
-    impl<T, R> Serialize for ConstWrapper<T, RuntimeKind<R>>
-    where
-        T: IntoRuntime<R>,
-        R: Serialize,
-    {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-        {
-            T::to_runtime().serialize(serializer)
-        }
-    }
-
-    impl<'de, T> Deserialize<'de> for PhantomWrapper<T> {
+    impl<'de, T> Deserialize<'de> for ConstWrapper<T> {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where
             D: Deserializer<'de>,
@@ -326,7 +166,7 @@ mod serde_impl {
             <()>::deserialize(deserializer).map(|_| Default::default())
         }
     }
-    impl<T> Serialize for PhantomWrapper<T> {
+    impl<T> Serialize for ConstWrapper<T> {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
@@ -336,39 +176,20 @@ mod serde_impl {
     }
 }
 
-impl<T> From<T> for ConstWrapper<T, PhantomKind> {
+impl<T> From<T> for ConstWrapper<T> {
     #[inline(always)]
     fn from(_: T) -> Self {
         ConstWrapper::NEW
     }
 }
-impl<T, R> From<T> for ConstWrapper<T, RuntimeKind<R>> {
-    #[inline(always)]
-    fn from(_: T) -> Self {
-        ConstWrapper::NEW
-    }
-}
-impl<T, R> From<ConstWrapper<T, RuntimeKind<R>>> for ConstWrapper<T, PhantomKind> {
-    #[inline(always)]
-    fn from(_: ConstWrapper<T, RuntimeKind<R>>) -> Self {
-        ConstWrapper::NEW
-    }
-}
-impl<T, R> From<ConstWrapper<T, PhantomKind>> for ConstWrapper<T, RuntimeKind<R>> {
-    #[inline(always)]
-    fn from(_: ConstWrapper<T, PhantomKind>) -> Self {
-        ConstWrapper::NEW
-    }
-}
-
-impl<T, K> Into<VariantPhantom<T>> for ConstWrapper<T, K> {
+impl<T> Into<VariantPhantom<T>> for ConstWrapper<T> {
     #[inline(always)]
     fn into(self) -> VariantPhantom<T> {
         PhantomData
     }
 }
 
-impl<T, R> IntoRuntime<R> for PhantomWrapper<T>
+impl<T, R> IntoRuntime<R> for ConstWrapper<T>
 where
     T: IntoRuntime<R>,
 {
@@ -377,43 +198,23 @@ where
         T::to_runtime()
     }
 }
-
-impl<T, R> IntoRuntime<R> for AsRuntime<T, R>
-where
-    T: IntoRuntime<R>,
-{
-    #[inline(always)]
-    fn to_runtime() -> R {
-        T::to_runtime()
-    }
-}
-
 #[cfg(rust_1_20)]
-impl<T, R> IntoConstant<R> for PhantomWrapper<T>
+impl<T, R> IntoConstant<R> for ConstWrapper<T>
 where
     T: IntoConstant<R>,
 {
     const VALUE: R = T::VALUE;
 }
 
-#[cfg(rust_1_20)]
-impl<T, R> IntoConstant<R> for AsRuntime<T, R>
-where
-    T: IntoConstant<R>,
-{
-    const VALUE: R = T::VALUE;
-}
-
-
-impl<T,K> InitializationValues for ConstWrapper<T,K>
+impl<T> InitializationValues for ConstWrapper<T>
 where T:InitializationValues
 {
-    type Uninitialized = ConstWrapper<T::Uninitialized,K>;
-    type Initialized = ConstWrapper<T::Initialized,K>;
+    type Uninitialized = ConstWrapper<T::Uninitialized>;
+    type Initialized = ConstWrapper<T::Initialized>;
 }
 
 
-impl<T> ConstWrapper<T, PhantomKind> {
+impl<T> ConstWrapper<T> {
     #[inline(always)]
     pub fn to_runtime<R>(self) -> R
     where
@@ -423,16 +224,8 @@ impl<T> ConstWrapper<T, PhantomKind> {
     }
 }
 
-impl<T, R> AsRuntime<T, R> {
-    pub fn get_runt(self) -> R
-    where
-        T: IntoRuntime<R>,
-    {
-        T::to_runtime()
-    }
-}
 
-impl<T> PhantomWrapper<T> {
+impl<T> ConstWrapper<T> {
     pub fn get_runt<Runtime>(self) -> Runtime
     where
         T: IntoRuntime<Runtime>,
@@ -441,19 +234,10 @@ impl<T> PhantomWrapper<T> {
     }
 }
 
-impl<T, Kind> ConstWrapper<T, Kind> {
+impl<T> ConstWrapper<T> {
     pub const NEW: Self = MarkerType::MTVAL;
 
     #[inline(always)]
-    pub fn as_runtime<R>(self) -> AsRuntime<T, R> {
-        AsRuntime::NEW
-    }
-
-    #[inline(always)]
-    pub fn as_phantom(self) -> ConstWrapper<T, PhantomKind> {
-        PhantomWrapper::NEW
-    }
-
     pub fn get(self) -> T
     where
         T: MarkerType,
@@ -522,13 +306,13 @@ impl<T, Kind> ConstWrapper<T, Kind> {
 
     #[inline(always)]
     /// Changes the compile-time value being wrapped.
-    pub fn set<T2>(self) -> ConstWrapper<T2, Kind> {
+    pub fn set<T2>(self) -> ConstWrapper<T2> {
         ConstWrapper::NEW
     }
 
     #[inline(always)]
     /// Changes the compile-time value being wrapped.
-    pub fn set_val<T2>(self, _: T2) -> ConstWrapper<T2, Kind> {
+    pub fn set_val<T2>(self, _: T2) -> ConstWrapper<T2> {
         ConstWrapper::NEW
     }
 
@@ -552,7 +336,7 @@ macro_rules! impl_map_methods {
         $(#[$map_all_attr:meta])*
         map_all($map_all:ident constraint=[$($map_all_c:tt)*])
     ) => {
-        impl<T,Kind> ConstWrapper<T,Kind>{
+        impl<T> ConstWrapper<T>{
 
             #[inline(always)]
             $(#[$map_attr])*
@@ -579,10 +363,10 @@ macro_rules! impl_map_methods {
 
             #[inline(always)]
             $(#[$map_all_attr])*
-            pub fn $map_all<T2,F>(self,_:F)->ConstWrapper<T2,Kind>
+            pub fn $map_all<T2,F>(self,_:F)->ConstWrapper<T2>
             where
                 F:$($map_all_c)*,
-                ConstWrapper<T2,Kind>:WrapperTrait,
+                ConstWrapper<T2>:WrapperTrait,
             {
                 MarkerType::MTVAL
             }
@@ -601,63 +385,56 @@ impl_map_methods!{
 impl_map_methods!{
     /// Maps the `Field` field using the CallInto `F`.
     ///
-    /// CallInto is implemented by PhantomWrapper<impl TypeFn_>,which allows using any unary TypeFn_ in this function.
+    /// CallInto is implemented by ConstWrapper<impl TypeFn_>,which allows using any unary TypeFn_ in this function.
     map       (map_field    constraint=[CallInto<GetField<T,Field>,Returns=_Value>])
     /// Maps the `Field` field using the CallInto `F`,which takes the entire value.
     ///
-    /// CallInto is implemented by PhantomWrapper<impl TypeFn_>,which allows using any unary TypeFn_ in this function.
+    /// CallInto is implemented by ConstWrapper<impl TypeFn_>,which allows using any unary TypeFn_ in this function.
     map_all_to(map_to constraint=[CallInto<T,Returns=_Value>])
     /// Maps the entire value using the CallInto `F`.
     ///
-    /// CallInto is implemented by PhantomWrapper<impl TypeFn_>,which allows using any unary TypeFn_ in this function.
+    /// CallInto is implemented by ConstWrapper<impl TypeFn_>,which allows using any unary TypeFn_ in this function.
     map_all   (map    constraint=[CallInto<T,Returns=T2>])
 }
 
-impl<T, Kind> ConstTypeOf_ for ConstWrapper<T, Kind> {
-    type Type = WrapperType;
+impl<T> ConstTypeOf_ for ConstWrapper<T> {
+    type Type = ConstWrapperType;
 }
-impl<T, Kind> IntoConstType_ for ConstWrapper<T, Kind> {
-    type ToConst = WrapperType;
+impl<T> IntoConstType_ for ConstWrapper<T> {
+    type ToConst = ConstWrapperType;
 }
 
-impl<T, Kind, Field> GetField_<Field> for ConstWrapper<T, Kind>
+impl<T, Field> GetField_<Field> for ConstWrapper<T>
 where
     T: GetField_<Field>,
 {
     type Output = T::Output;
 }
 
-impl<T, Runtime, Field> GetFieldRuntime_<Field, Runtime> for AsRuntime<T, Runtime>
+impl<T, Runtime, Field> GetFieldRuntime_<Field, Runtime> for ConstWrapper<T>
 where
     T: GetFieldRuntime_<Field, Runtime>,
 {
     type Runtime = T::Runtime;
 }
 
-impl<T, Runtime, Field> GetFieldRuntime_<Field, Runtime> for PhantomWrapper<T>
-where
-    T: GetFieldRuntime_<Field, Runtime>,
-{
-    type Runtime = T::Runtime;
-}
-
-impl<T, Kind, Field, Value> SetField_<Field, Value> for ConstWrapper<T, Kind>
+impl<T, Field, Value> SetField_<Field, Value> for ConstWrapper<T>
 where
     T: SetField_<Field, Value>,
 {
-    type Output = ConstWrapper<T::Output, Kind>;
+    type Output = ConstWrapper<T::Output>;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-impl<T, Kind, Params> TypeFn_<Params> for ConstWrapper<T, Kind>
+impl<T, Params> TypeFn_<Params> for ConstWrapper<T>
 where
     T: TypeFn_<Params>,
 {
     type Output = T::Output;
 }
 
-impl<F, Params> CallRef<Params> for PhantomWrapper<F>
+impl<F, Params> CallRef<Params> for ConstWrapper<F>
 where
     F: TypeFn_<Params>,
     F::Output: ConstValue,
@@ -668,7 +445,7 @@ where
     }
 }
 
-impl<F, Params> CallMut<Params> for PhantomWrapper<F>
+impl<F, Params> CallMut<Params> for ConstWrapper<F>
 where
     F: TypeFn_<Params>,
     F::Output: ConstValue,
@@ -679,7 +456,7 @@ where
     }
 }
 
-impl<F, Params> CallInto<Params> for PhantomWrapper<F>
+impl<F, Params> CallInto<Params> for ConstWrapper<F>
 where
     F: TypeFn_<Params>,
     F::Output: ConstValue,
@@ -692,41 +469,10 @@ where
     }
 }
 
-impl<F, FR, Params> CallRef<Params> for AsRuntime<F, FR>
-where
-    F: IntoRuntime<FR>,
-    FR: CallRef<Params>,
-{
-    fn call_ref(&self, params: Params) -> FR::Returns {
-        F::to_runtime().call_ref(params)
-    }
-}
-
-impl<F, FR, Params> CallMut<Params> for AsRuntime<F, FR>
-where
-    F: IntoRuntime<FR>,
-    FR: CallMut<Params>,
-{
-    fn call_mut(&mut self, params: Params) -> FR::Returns {
-        F::to_runtime().call_mut(params)
-    }
-}
-
-impl<F, FR, Params> CallInto<Params> for AsRuntime<F, FR>
-where
-    F: IntoRuntime<FR>,
-    FR: CallInto<Params>,
-{
-    type Returns = FR::Returns;
-    fn call_into(self, params: Params) -> FR::Returns {
-        F::to_runtime().call_into(params)
-    }
-}
-
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-impl<T, Kind> Deref for ConstWrapper<T, Kind>
+impl<T> Deref for ConstWrapper<T>
 where
     T: MarkerType,
 {
@@ -738,24 +484,11 @@ where
     }
 }
 
-impl<T, Field> Index<Field> for PhantomWrapper<T>
+impl<T, Field> Index<Field> for ConstWrapper<T>
 where
     T: GetField_<Field>,
 {
-    type Output = PhantomWrapper<GetField<T, Field>>;
-
-    #[inline(always)]
-    fn index(&self, _: Field) -> &Self::Output {
-        MarkerType::markertype_ref()
-    }
-}
-
-impl<T, R, Field> Index<Field> for AsRuntime<T, R>
-where
-    T: GetField_<Field>,
-    T: GetFieldRuntime_<Field, R>,
-{
-    type Output = AsRuntime<GetField<T, Field>, GetFieldRuntime<T, Field, R>>;
+    type Output = ConstWrapper<GetField<T, Field>>;
 
     #[inline(always)]
     fn index(&self, _: Field) -> &Self::Output {
@@ -766,19 +499,19 @@ where
 /////////////////////////////////////////////////////////////////////////////////////
 
 /// The ConstConstructor for a ConstWrapper.
-pub struct ConstWrapperCC<K>(VariantPhantom<K>);
+pub struct ConstWrapperCC;
 
-impl<T, K> const_traits::GetConstParam_ for ConstWrapper<T, K> {
+impl<T> const_traits::GetConstParam_ for ConstWrapper<T> {
     type Const = T;
 }
-impl<T, K> const_traits::GetConstConstructor_ for ConstWrapper<T, K> {
-    type Constructor = ConstWrapperCC<K>;
+impl<T> const_traits::GetConstConstructor_ for ConstWrapper<T> {
+    type Constructor = ConstWrapperCC;
 }
 
-impl<K> const_traits::ConstConstructor for ConstWrapperCC<K> {}
+impl const_traits::ConstConstructor for ConstWrapperCC {}
 
-impl<T, K> const_traits::ApplyConstParam_<T> for ConstWrapperCC<K> {
-    type Applied = ConstWrapper<T, K>;
+impl<T> const_traits::ApplyConstParam_<T> for ConstWrapperCC {
+    type Applied = ConstWrapper<T>;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////

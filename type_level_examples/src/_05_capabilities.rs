@@ -96,7 +96,7 @@ where
     EC: ExecuteCommand,
     Caps: CapabilitiesTrait,
 {
-    pub fn new(filesystem: FS, execute_command: EC, _capabilities: PhantomWrapper<Caps>) -> Self {
+    pub fn new(filesystem: FS, execute_command: EC, _capabilities: ConstWrapper<Caps>) -> Self {
         Self {
             filesystem,
             execute_command,
@@ -195,7 +195,7 @@ where
 
 pub fn main_ () {
     let side_effects =
-        SideEffectful::new(FakeFileSystemOps, FakeExecuteCommand, AllCapabilities::PW);
+        SideEffectful::new(FakeFileSystemOps, FakeExecuteCommand, AllCapabilities::CW);
 
     let fs = side_effects.access_ref(cap_fields::filesystem);
     fs.create_file("./insults.txt".as_ref()).unwrap();

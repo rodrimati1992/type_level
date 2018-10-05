@@ -94,14 +94,14 @@ pub enum Mutability{
 #[cconstructor(Type="Wrapper",ConstParam="Mut")]
 pub struct WrapperInner<T,Mut>{
     value:T,
-    mutability:PhantomWrapper<Mut>,
+    mutability:ConstWrapper<Mut>,
 }
 
 impl<T, M> Wrapper<T, M> {
     pub fn new(value: T, _mutability: M) -> Self {
         Self {
             value,
-            mutability: PhantomWrapper::NEW,
+            mutability: ConstWrapper::NEW,
         }
     }
 }

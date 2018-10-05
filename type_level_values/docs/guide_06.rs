@@ -187,7 +187,7 @@ pub struct TetrisBuilderInner<C>{
     z_pieces:Option<usize>,
     s_pieces:Option<usize>,
     o_pieces:Option<usize>,
-    initialization:PhantomWrapper<C>,
+    initialization:ConstWrapper<C>,
 }
 
 

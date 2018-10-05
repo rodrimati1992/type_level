@@ -258,7 +258,7 @@ pub enum GenericVariants<
     V1(V1),
     V2(V2),
     V3(V3),
-    Rem { len: PhantomWrapper<Len>, rem: Rem },
+    Rem { len: ConstWrapper<Len>, rem: Rem },
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -303,7 +303,7 @@ where
             &GV::V3(_) => GV::V3(Default::default()),
             &GV::Rem { ref rem, .. } => GV::Rem {
                 rem: rem.default_same_variant(),
-                len: PhantomWrapper::NEW,
+                len: ConstWrapper::NEW,
             },
         }
     }
@@ -382,7 +382,7 @@ where
                     value.saturating_sub(4).piped(RangedUsize::new).unwrap();
 
                 GenericVariants::Rem {
-                    len: PhantomWrapper::NEW,
+                    len: ConstWrapper::NEW,
                     rem: Rem::from(rem_range),
                 }
             }
@@ -574,7 +574,7 @@ where
             GV::V3(v) => GV::V3(f.call_into(v)),
             GV::Rem { rem, .. } => GV::Rem {
                 rem: rem.map_variants(f),
-                len: PhantomWrapper::NEW,
+                len: ConstWrapper::NEW,
             },
         }
     }

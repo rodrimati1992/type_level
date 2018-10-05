@@ -28,7 +28,7 @@ pub enum ExtensionMethodKind {
                for a regular extension ConstMethod,defined anywhere.\
                "
     )]
-    RegularExt,
+    Extension,
 }
 
 /// Marker trait for Const-methods.
@@ -85,8 +85,8 @@ let value:ConstUserExtMeth<((),())>=value.mutparam(PairUp,Default::default());
 
 ```
 */
-pub trait ConstMethod_RegularExt:
-    ExtensionConstMethod<MethodKind = type_level_ExtensionMethodKind::RegularExt>
+pub trait ConstMethod_Extension:
+    ExtensionConstMethod<MethodKind = type_level_ExtensionMethodKind::Extension>
 {
 }
 
@@ -126,7 +126,7 @@ use type_level_values::user_traits::builtin_constmethods::Ext_SetConstParam;
     extension_methods="false",
 )]
 pub struct ConstUserInner<C>{
-    const_:PhantomWrapper<C>,
+    const_:ConstWrapper<C>,
 }
 
 # fn main(){
@@ -163,9 +163,9 @@ type_fn!{
         Op:ConstMethod_BuiltinExt,
     ]{ () }
 
-    AllowHelper[ThisCC,Op](ThisCC,Op,type_level_ExtensionMethodKind::RegularExt)
+    AllowHelper[ThisCC,Op](ThisCC,Op,type_level_ExtensionMethodKind::Extension)
     where [
-        Op:ConstMethod_RegularExt,
+        Op:ConstMethod_Extension,
         ThisCC:AllowedOps<ExtensionMethods=True>
     ]{ () }
 }

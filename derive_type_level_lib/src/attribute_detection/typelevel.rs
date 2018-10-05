@@ -413,7 +413,7 @@ fn attr_settings_new_attr<'alloc>(
                         panic!("\
                             attribute 'typelevel({})' not recognized.{}", 
                             nested0.word,
-                            &*attribute_errors::TYPE_ATTRS);
+                            attribute_errors::type_attrs());
                     }
                 }
             }
@@ -462,7 +462,7 @@ fn new_attr_nested_meta<'alloc>(
                             .unwrap_or_else(|_|{
                                 panic!("Invalid parameter:{:#?} {}", 
                                     param,
-                                    &*attribute_errors::ITEM_ATTRS
+                                    attribute_errors::item_attrs()
                                 )
                             });
                     }
@@ -475,7 +475,7 @@ fn new_attr_nested_meta<'alloc>(
         ),
         word => panic!("Unsupported nested attribute:{:#?}{}", 
             word,
-            &*attribute_errors::TYPE_ATTRS
+            attribute_errors::type_attrs()
         ),
     }
 }
@@ -531,7 +531,7 @@ fn reexport_attribute<'alloc>(
                              {}",
                             word.0,
                             value,
-                            attribute_errors::REEXPORT
+                            attribute_errors::reexport()
                         ),
                     }
                 }
@@ -634,7 +634,7 @@ fn field_attrs_helper<'a>(
                 word => {
                     panic!("Unsupported nested attribute:{:#?}{}", 
                         word,
-                        &*attribute_errors::FIELD_ATTRS
+                        attribute_errors::field_attrs()
                     );
                 }
             }

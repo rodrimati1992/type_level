@@ -134,7 +134,7 @@ pub struct TetrisBuilderInner<C>{
     z_pieces:Option<usize>,
     s_pieces:Option<usize>,
     o_pieces:Option<usize>,
-    initialization:PhantomWrapper<C>,
+    initialization:ConstWrapper<C>,
 }
 
 impl TetrisBuilder< AllUninitialized >{
@@ -153,7 +153,7 @@ where AllUninitialized:TypeIdentity<Type=I>
             z_pieces:None,
             s_pieces:None,
             o_pieces:None,
-            initialization:PhantomWrapper::NEW,
+            initialization:ConstWrapper::NEW,
         }
     }
 }

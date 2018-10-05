@@ -2,8 +2,6 @@ use attribute_detection::const_constructor::{
     ImplsIndex,
 };
 
-use utils::{leak_string,leak_vec};
-
 use core_extensions::prelude::*;
 
 use super::{
@@ -11,158 +9,165 @@ use super::{
     AttrVariant,
     AttrShape,
     AttrKind,
-    SHARED_METADATA,
+    shared_metadata,
     new_items,
+    CowStr,
 };
 
 
 
-pub static EXTENSION_METHODS_ATTR:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{ kind:AttrKind::NameValue{value:"false"} , clarification:None },
-        AttrVariant{ kind:AttrKind::NameValue{value:"true"} , clarification:None },
-    ],
-    word:"extension_methods",
-    description:"\
-        Determines whether extension ConstMethods are allowed to mutate 
-        the Const-parameter of the derived type.\n\
-        Default value is `false`.\
-    ",
-};
+pub fn extension_methods_attr()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{ kind:AttrKind::NameValue{value:"false".into()} , clarification:None},
+            AttrVariant{ kind:AttrKind::NameValue{value:"true".into()} , clarification:None},
+        ],
+        word:"extension_methods",
+        description:"\
+            Determines whether extension ConstMethods are allowed to mutate 
+            the Const-parameter of the derived type.\n\
+            Default value is `false`.\
+        ".into(),
+    }
+}
 
 
-lazy_static!{
-    pub static ref TYPE_ATTR:AttrShape<'static>=AttrShape{
+pub fn type_attr()->AttrShape{
+    AttrShape{
         variants:vec![
             AttrVariant{ 
-                kind:AttrKind::NameValue{value:"ident"} ,
-                clarification:Some("the string must be a valid identifier")
+                kind:AttrKind::NameValue{value:"ident".into()} ,
+                clarification:Some("the string must be a valid identifier".into())
             },
             AttrVariant{ 
-                kind:AttrKind::List{value:" name=\"ident\" $(, <metadata_attribute> )* "} , 
-                clarification:Some("the string must be a valid identifier")
+                kind:AttrKind::List{value:" name=\"ident\" $(, <metadata_attribute> )* ".into()} , 
+                clarification:Some("the string must be a valid identifier".into())
             },
             AttrVariant{ 
-                kind:AttrKind::List{value:" use_=\"ident\"  $(, <metadata_attribute> )* "} , 
+                kind:AttrKind::List{value:" use_=\"ident\"  $(, <metadata_attribute> )* ".into()} , 
                 clarification:Some(use_clarification("<TypeAlias>"))
             },
-        ].piped(leak_vec),
+        ],
         word:"Type",
         description:"(required attribute)\
              Determines the name and other optional properties of <TypeAlias>.\
-        ",
-    };
+        ".into(),
+    }
 }
 
 
-lazy_static!{
-    pub static ref ITEMS_ATTR:AttrShape<'static>=new_items(
+pub fn items_attr()->AttrShape{
+    new_items(
         ImplsIndex::T,
-        "Allows specifying the metadata attributes for the generated impls."
-    );
-    
-    pub static ref CONST_PARAM_ATTR:AttrShape<'static>=AttrShape{
+        "Allows specifying the metadata attributes for the generated impls.".into()
+    )
+}
+
+pub fn const_param_attr()->AttrShape{
+    AttrShape{
         variants:vec![
             AttrVariant{
-                kind:AttrKind::NameValue{value:"ident"} , 
-                clarification:Some("the string must be one of the type type parameters.")
+                kind:AttrKind::NameValue{value:"ident".into()} , 
+                clarification:Some("the string must be one of the type type parameters.".into())
             }
-        ].piped(leak_vec),
+        ],
         word:"ConstParam",
-        description:"(required attribute) The identifier of the Const-parameter of this type.",
-    };
+        description:"(required attribute) \
+            The identifier of the Const-parameter of this type.\
+        ".into(),
+    }
+}
 
-    pub static ref CONSTCONSTRUCTOR_ATTR:AttrShape<'static>=AttrShape{
+pub fn constconstructor_attr()->AttrShape{
+    AttrShape{
         variants:vec![
             AttrVariant{ 
-                kind:AttrKind::NameValue{value:"ident"} ,
-                clarification:Some("the string must be a valid identifier")
+                kind:AttrKind::NameValue{value:"ident".into()} ,
+                clarification:Some("the string must be a valid identifier".into())
             },
             AttrVariant{ 
-                kind:AttrKind::List{value:" name=\"ident\" $(, <metadata_attribute> )* "} , 
-                clarification:Some("the string must be a valid identifier")
+                kind:AttrKind::List{value:" name=\"ident\" $(, <metadata_attribute> )* ".into()} , 
+                clarification:Some("the string must be a valid identifier".into())
             },
             AttrVariant{ 
-                kind:AttrKind::List{value:" use_=\"ident\"  $(, <metadata_attribute> )* "} , 
+                kind:AttrKind::List{value:" use_=\"ident\"  $(, <metadata_attribute> )* ".into()} , 
                 clarification:Some(use_clarification("<ConstConstructor>"))
             },
-        ].piped(leak_vec),
+        ],
         word:"ConstConstructor",
         description:"(optional attribute)\
              Determines the name and other optional properties of the ConstConstructor.\
-        ",
-    };
-    
+        ".into(),
+    }
 }
 
 
 
-fn use_clarification(item_name:&str)->&'static str{
-    format!("the string must be the identifier of a pre-existing {}.",item_name)
-        .piped(leak_string)
+fn use_clarification(item_name:&str)->CowStr{
+    format!("the string must be the identifier of a pre-existing {}.",item_name).into()
 }
 
 fn use_attr(item_name:&str)->AttrShape{
     AttrShape{
         variants:vec![
             AttrVariant{
-                kind:AttrKind::NameValue{value:"ident"} , 
+                kind:AttrKind::NameValue{value:"ident".into()} , 
                 clarification:Some(use_clarification(item_name))
             }
-        ].piped(leak_vec),
+        ],
         word:"use_",
         description:format!(
             "(required attribute) Specifies which pre-existing {} to use.",
             item_name
-        ).piped(leak_string),
+        ).into(),
     }
 }
 
 
-fn name_subattr(item_name:&str)->AttrShape<'static>{
+fn name_subattr(item_name:&str)->AttrShape{
     AttrShape{
         variants:vec![
             AttrVariant{
-                kind:AttrKind::NameValue{value:"ident"} , 
+                kind:AttrKind::NameValue{value:"ident".into()} , 
                 clarification:Some(use_clarification(item_name))
             }
-        ].piped(leak_vec),
+        ],
         word:"name",
         description:format!(
             "(optional attribute) Specifies the name of the generated {}.",
             item_name
-        ).piped(leak_string),
+        ).into(),
     }
 }
 
 
-pub fn type_subattr(type_:&'static str)->ValidAttrs<'static>{
-    [
+pub fn type_subattr(type_:&'static str)->ValidAttrs{
+    vec![
         use_attr(type_),
         name_subattr(type_),
-    ].iter()
-        .chain( SHARED_METADATA.iter() ).cloned()
+    ].into_iter()
+        .chain( shared_metadata() )
         .collect::<Vec<_>>()
         .piped(ValidAttrs::new)
 }
 
 
-lazy_static!{
-    pub static ref TYPE_SUBATTRS:ValidAttrs<'static>=
-        type_subattr("<TypeAlias>");
+pub fn type_subattrs()->ValidAttrs{
+    type_subattr("<TypeAlias>")
+}
 
-    pub static ref CONSTCONSTRUCTOR_SUBATTRS:ValidAttrs<'static>=
-        type_subattr("<ConstConstructor>");
+pub fn constconstructor_subattrs()->ValidAttrs{
+    type_subattr("<ConstConstructor>")
+}
 
-    pub static ref CCONSTRUCTOR_ATTRS:ValidAttrs<'static>={
-        vec![
-            *TYPE_ATTR,
-            *CONST_PARAM_ATTR,
-            *CONSTCONSTRUCTOR_ATTR,
-            EXTENSION_METHODS_ATTR,
-            *ITEMS_ATTR,
-        ].piped(ValidAttrs::new)
-    };
+pub fn cconstructor_attrs()->ValidAttrs{
+    vec![
+        type_attr(),
+        const_param_attr(),
+        constconstructor_attr(),
+        extension_methods_attr(),
+        items_attr(),
+    ].piped(ValidAttrs::new)
 }
 
 

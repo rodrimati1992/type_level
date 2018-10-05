@@ -38,13 +38,13 @@ pub fn main_() {
 #[derive(ConstConstructor)]
 #[cconstructor(Type(use_="11"),ConstParam="C")]
 pub struct Wrapper<C>{
-    _const:PhantomWrapper<C>,
+    _const:ConstWrapper<C>,
 }
 
 
     "##;
 
-    let (dur, derived) =
+    let (dur, _derived) =
         measure_time::measure(|| derive_cconstr::derive_from_str(&struct_decl));
 
     println!("taken {} to run derive.", dur);
