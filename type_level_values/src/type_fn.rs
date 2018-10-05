@@ -314,7 +314,7 @@ macro_rules! type_fn {
         ///
         /// A type-level function.Implements TypeFn<> for the trait of a similar name.
         ///
-        /// To instantiate a runtime value of this function use `Type::PW`/`<Type>::PW`.
+        /// To instantiate a runtime value of this function use `Type::CW`/`<Type>::CW`.
         #[allow(non_camel_case_types)]
         pub struct $op_name;
 
@@ -398,7 +398,7 @@ macro_rules! type_fn {
         $(#[$attr])*
         #[allow(non_camel_case_types)]
         ///
-        /// To instantiate a runtime value of this function use `Type::PW`/`<Type>::PW`.
+        /// To instantiate a runtime value of this function use `Type::CW`/`<Type>::CW`.
         $(pub $(($($visibility)*))*)*
         struct $op_name<$($bound_vars $(=$bound_def)* ,)*>(
             $(pub $bound_vars,)*

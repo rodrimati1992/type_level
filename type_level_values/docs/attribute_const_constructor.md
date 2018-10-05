@@ -23,9 +23,9 @@ This macro generates 2 items by default (this can be overriden):
     Eg:the ConstConstructor RectangleCC<T> for the type Rectangle<T,Const>.
 
 - \<TypeAlias>:
-    A type alias which passes the ConstType parameter wrapped in a PhantomWrapper,
+    A type alias which passes the ConstType parameter wrapped in a ConstWrapper,
     so that the ConstType itself isn't required to implement any traits.<br>
-    Eg:`type Rectangle<T,Const>=RectangleInner<T,PhantomWrapper<Const>>` .
+    Eg:`type Rectangle<T,Const>=RectangleInner<T,ConstWrapper<Const>>` .
 
 # Generated impls
 
@@ -117,7 +117,7 @@ This macro generates 2 items by default (this can be overriden):
 #[cconstructor(Type = "ChannelEnd", ConstParam = "S")]
 pub struct ChannelEndInner<Chan, S: WrapperTrait> {
     channel: Chan,
-    state: PhantomWrapper<S>,
+    state: ConstWrapper<S>,
 }
 
 ```

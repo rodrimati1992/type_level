@@ -26,7 +26,7 @@ use self::type_level_Mutability::{Immutable, MutabilityTrait, Mutable};
 
 /// A Wrapper type whose mutability is a const-parameter.
 /// Many impls are also implemented on [MutabilityWrapperInternal].
-pub type MutabilityWrapper<T, M> = MutabilityWrapperInternal<T, PhantomWrapper<M>>;
+pub type MutabilityWrapper<T, M> = MutabilityWrapperInternal<T, ConstWrapper<M>>;
 
 /// A Wrapper type whose mutability is a const-parameter.
 /// Many impls are implemented on [MutabilityWrapper].
@@ -43,7 +43,7 @@ where
     pub fn new(value: T, _mutability: M) -> Self {
         Self {
             value,
-            mutability: PhantomWrapper::NEW,
+            mutability: ConstWrapper::NEW,
         }
     }
 

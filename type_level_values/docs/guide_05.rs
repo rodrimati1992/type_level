@@ -98,10 +98,10 @@ The PW associated constant,
 defined in ::type_level_values::const_wrapper::AsConstWrapper,
 wraps the type in a PhatomWrapper.
 <br>
-PhantomWrapper has multiple inherent methods that allow manipulating type-level structs,
+ConstWrapper has multiple inherent methods that allow manipulating type-level structs,
 in this case using its `set_field_val` method.
 <br> 
-PhantomWrapper can also dereference to its wrapped type if it is a MarkerType,
+ConstWrapper can also dereference to its wrapped type if it is a MarkerType,
 which all type-level-values are.
 
 
@@ -201,7 +201,7 @@ mod rectangle{
         y:u32,
         w:u32,
         h:u32,
-        mutability:PhantomWrapper<C>
+        mutability:ConstWrapper<C>
     }
 
     //@codeblock-end:rect_decl
@@ -211,7 +211,7 @@ mod rectangle{
 
     impl<C> Rectangle<C>{
         pub fn new(x:u32,y:u32,w:u32,h:u32,_mutability:C)->Rectangle<C>{
-            Rectangle{ x, y, w, h, mutability:PhantomWrapper::NEW }
+            Rectangle{ x, y, w, h, mutability:ConstWrapper::NEW }
         }
     }
 
@@ -234,7 +234,7 @@ mod rectangle{
                 y:self.y,
                 w:self.w,
                 h:self.h,
-                mutability:PhantomWrapper::NEW,
+                mutability:ConstWrapper::NEW,
             }
         }
     }
@@ -354,7 +354,7 @@ fn main(){
     {
         //@codeblock-start:main_2
 
-        let mutability=AllMutable::PW
+        let mutability=AllMutable::CW
             .set_field_val( fields_fm::x , Mutable )
             .set_field_val( fields_fm::y , Mutable )
             .set_field_val( fields_fm::w , Immutable )

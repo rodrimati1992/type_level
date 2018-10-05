@@ -18,7 +18,7 @@ pub trait GetCubed<T> {
 }
 
 impl GetCubed<True> for Marker {
-    type GetCubed = PhantomWrapper<U1>;
+    type GetCubed = ConstWrapper<U1>;
 }
 
 impl GetCubed<False> for Marker {

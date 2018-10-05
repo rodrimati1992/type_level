@@ -56,7 +56,7 @@ Then we declare the text we'll parse,with 3 FullNames.
 <br>
 Then we call parse_names,
 specifying the type being parsed with `FullName::T` 
-and specifying the constructed collection with `VecFn::PW`.
+and specifying the constructed collection with `VecFn::CW`.
 <br>
 Then we check that the returned value is what we expect.
 
@@ -202,7 +202,7 @@ fn main() {
         let text="thomas,anderson;matt,parker;joe";
 
         let (ret,ret_slices,set_errors) = 
-            parse_names(text, FullName::T , VecFn::PW );
+            parse_names(text, FullName::T , VecFn::CW );
             
         let cmp = vec![
             FullName::new("thomas",Some("anderson")),
@@ -229,7 +229,7 @@ fn main() {
         let text="thomas,anderson;matt,parker;joe";
 
         let (ret,ret_slices,set_errors) = 
-            parse_names(text, FullName::T , BTreeSetFn::PW );
+            parse_names(text, FullName::T , BTreeSetFn::CW );
         let cmp = BTreeSet::new().mutated(|v| {
             v.insert(FullName::new("thomas",Some("anderson")));
             v.insert(FullName::new("matt",Some("parker")));

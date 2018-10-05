@@ -27,10 +27,10 @@ pub type RangedUInt<Start, End> = RangedUIntR<ConstRange<Start, End>>;
 pub struct RangedUIntInner<R>
 where
     R: WrapperTrait,
-    GetConstValue<R>: RangeTypes,
+    UnwrapConst<R>: RangeTypes,
 {
-    range: PhantomWrapper<R>,
-    value: <GetConstValue<R> as RangeTypes>::Compressed,
+    range: ConstWrapper<R>,
+    value: <UnwrapConst<R> as RangeTypes>::Compressed,
 }
 
 impl<R> RangedUIntR<R>
@@ -42,7 +42,7 @@ where
         if range_.start <= n && n < range_.end {
             Some(Self {
                 value: (n - range_.start).as_(),
-                range: PhantomWrapper::NEW,
+                range: ConstWrapper::NEW,
             })
         } else {
             None
@@ -72,7 +72,7 @@ where
         if range_.start <= value && value < range_.end {
             Ok(Self {
                 value: (value - range_.start).as_(),
-                range: PhantomWrapper::NEW,
+                range: ConstWrapper::NEW,
             })
         } else {
             Err(UIntOutsideRange {

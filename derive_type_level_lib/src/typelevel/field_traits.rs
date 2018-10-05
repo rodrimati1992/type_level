@@ -98,11 +98,11 @@ impl<'a> ToTokens for FieldTraits<'a>{
                 where 
                     Self:GetField_<Field,Output=FieldVal>,
                 {
-                    type Output=PhantomWrapper<FieldVal>;
+                    type Output=ConstWrapper<FieldVal>;
 
                     #[inline(always)]
                     fn index(&self,_:Field)->&Self::Output{
-                        PhantomWrapper::markertype_ref()
+                        ConstWrapper::markertype_ref()
                     }
                 }
 

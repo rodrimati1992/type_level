@@ -94,24 +94,24 @@ mod tests {
 
     #[test]
     fn construct_option() {
-        let _: Ok_<U0> = Ok_(U0::PW);
-        let _: Err_<U1> = Err_(U1::PW);
+        let _: Ok_<U0> = Ok_(U0::CW);
+        let _: Err_<U1> = Err_(U1::CW);
 
-        assert_eq!(Ok_(U0::PW).into_runtime(), Ok::<_, ()>(0));
+        assert_eq!(Ok_(U0::CW).into_runtime(), Ok::<_, ()>(0));
         assert_eq!(Err_(False.into()).into_runtime(), Err::<(), _>(false));
     }
 
     #[test]
     fn result_operators() {
-        let _: Ok_<U0> = Ok_(U0::PW) | Err_(U1::PW);
-        let _: Ok_<U0> = Ok_(U0::PW) | Ok_(U1::PW);
-        let _: Err_<U1> = Err_(U0::PW) | Err_(U1::PW);
-        let _: Ok_<U1> = Err_(U0::PW) | Ok_(U1::PW);
+        let _: Ok_<U0> = Ok_(U0::CW) | Err_(U1::CW);
+        let _: Ok_<U0> = Ok_(U0::CW) | Ok_(U1::CW);
+        let _: Err_<U1> = Err_(U0::CW) | Err_(U1::CW);
+        let _: Ok_<U1> = Err_(U0::CW) | Ok_(U1::CW);
 
-        let _: Err_<U1> = Ok_(U0::PW) & Err_(U1::PW);
-        let _: Ok_<U1> = Ok_(U0::PW) & Ok_(U1::PW);
-        let _: Err_<U0> = Err_(U0::PW) & Err_(U1::PW);
-        let _: Err_<U0> = Err_(U0::PW) & Ok_(U1::PW);
+        let _: Err_<U1> = Ok_(U0::CW) & Err_(U1::CW);
+        let _: Ok_<U1> = Ok_(U0::CW) & Ok_(U1::CW);
+        let _: Err_<U0> = Err_(U0::CW) & Err_(U1::CW);
+        let _: Err_<U0> = Err_(U0::CW) & Ok_(U1::CW);
     }
 
     #[test]

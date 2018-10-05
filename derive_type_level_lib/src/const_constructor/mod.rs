@@ -160,7 +160,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         for tparam in type_param_idents {
             if *tparam==const_param_ident{
                 t_s.append_all(quote!{
-                    ::type_level_values::reexports::PhantomWrapper<#const_param_for_alias>
+                    ::type_level_values::reexports::ConstWrapper<#const_param_for_alias>
                 });
             }else{
                 tparam.to_tokens(t_s);
@@ -278,8 +278,8 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
             };
             use type_level_values::const_wrapper::{
                 WrapperTrait,
-                PhantomWrapper,
-                GetConstValue,
+                ConstWrapper,
+                UnwrapConst,
             };
 
             #[doc(hidden)]
@@ -336,7 +336,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
             where 
                 #(#where_clause,)*
                 #bounds_gcp
-                #const_param_ident:TypeIdentity<Type=PhantomWrapper<#const_param_for_alias>>
+                #const_param_ident:TypeIdentity<Type=ConstWrapper<#const_param_for_alias>>
             {
                 type Const = #const_param_for_alias;
             }
@@ -349,7 +349,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
                 #(#where_clause,)*
                 #bounds_acp
                 #bounds_cc_type
-                PhantomWrapper<#const_param_for_alias>:TypeIdentity<Type=#const_param_ident>,
+                ConstWrapper<#const_param_for_alias>:TypeIdentity<Type=#const_param_ident>,
                 #name #ty_generics:TypeIdentity<Type=__Output>,
                 __Output:
                     GetConstConstructor_<

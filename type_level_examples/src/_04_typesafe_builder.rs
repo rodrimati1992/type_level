@@ -47,7 +47,7 @@ pub type AnimalInitialized = SetField<AnimalInitialization_Uninit, ai_field::All
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-type AnimalBuilder<I> = AnimalBuilderInner<PhantomWrapper<I>>;
+type AnimalBuilder<I> = AnimalBuilderInner<ConstWrapper<I>>;
 
 #[derive(ConstConstructor)]
 #[cconstructor(Type(use_ = "AnimalBuilder"), ConstParam = "I")]
@@ -58,7 +58,7 @@ where
     years_lived: ManuallyDrop<u32>,
     children: ManuallyDrop<u32>,
     family: ManuallyDrop<String>,
-    _marker: PhantomWrapper<I>,
+    _marker: ConstWrapper<I>,
 }
 
 impl AnimalBuilder<AnimalUninitialized> {

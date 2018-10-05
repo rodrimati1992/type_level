@@ -104,7 +104,7 @@ pub use self::type_level_CFParams::{CFParamsTrait, ConstCFParams};
     ConstParam = "C"
 )]
 pub struct CondTypeInner<T, C> {
-    _marker: PhantomWrapper<C>,
+    _marker: ConstWrapper<C>,
     value: T,
 }
 
@@ -116,7 +116,7 @@ where
     fn new(value: _Out, _condition: C::constant) -> CondType<_Out, C> {
         CondType {
             value,
-            _marker: PhantomWrapper::NEW,
+            _marker: ConstWrapper::NEW,
         }
     }
 }

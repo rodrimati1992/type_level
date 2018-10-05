@@ -8,73 +8,78 @@ use super::{
     AttrVariant,
     AttrShape,
     AttrKind,
-    SHARED_METADATA,
+    shared_metadata,
     // SHARED_BOUND,
     // SHARED_ATTR,
     // SHARED_DOC,
 };
 
 
-lazy_static!{
-    pub static ref TYPE_ATTRS:ValidAttrs<'static>={
-        [
-            RENAME,
-            RENAME_TRAIT,
-            DERIVE,
-            *ITEMS,
-            RENAME_CONSTTYPE,
-            REEXPORT,
-        ].iter().chain( SHARED_METADATA.iter() ).cloned()
-            .collect::<Vec<_>>()
-            .piped(ValidAttrs::new)
-    };
-
-    pub static ref FIELD_ATTRS:ValidAttrs<'static>=vec![
-        FIELD_PUB_TRAIT_ACCESSOR,
-        FIELD_BOUND,
-        FIELD_BOUND_RUNT,
-        FIELD_RENAME,
-        FIELD_ACCESSOR,
-        FIELD_DELEGATE,
-    ].piped(ValidAttrs::new);
-
-    pub static ref ITEM_ATTRS:ValidAttrs<'static>=
-        [
-            ITEMS_ATTR_NO_IMPLS,
-            ITEMS_ATTR_DEFAULT_IMPLS,
-            ITEMS_ATTR_REMOTE,
-            ITEMS_ATTR_INTERNAL,
-        ].iter()
-            .chain(SHARED_METADATA.iter()).cloned()
-            .collect::<Vec<_>>().piped(ValidAttrs::new);
+pub fn type_attrs()->ValidAttrs{
+    vec![
+        rename(),
+        rename_trait(),
+        derive(),
+        items(),
+        rename_consttype(),
+        reexport(),
+    ].into_iter().chain( shared_metadata() )
+        .collect::<Vec<_>>()
+        .piped(ValidAttrs::new)
 }
 
-pub static RENAME_CONSTTYPE:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::NameValue{value:"new_name"},
-            clarification:Some("the string must be a valid identifier."),
-        }
-    ],
-    word:"rename_statictype",
-    description:"\
-        Renames the ConstType generated for the Type.\n\
-        ConstType is marker type used as the type of a ConstValue,\n\
-        in which ConstValue is the compiletime equivalent of a value.\
-    ",
-};
+pub fn field_attrs()->ValidAttrs{
+    vec![
+        field_pub_trait_accessor(),
+        field_bound(),
+        field_bound_runt(),
+        field_rename(),
+        field_accessor(),
+        field_delegate(),
+    ].piped(ValidAttrs::new)
+}
+
+pub fn item_attrs()->ValidAttrs{
+    vec![
+        items_attr_no_impls(),
+        items_attr_default_impls(),
+        items_attr_remote(),
+        items_attr_internal(),
+    ].into_iter()
+        .chain(shared_metadata())
+        .collect::<Vec<_>>().piped(ValidAttrs::new)
+}
+
+pub fn rename_consttype()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"new_name".into()},
+                clarification:Some("the string must be a valid identifier.".into()),
+            }
+        ],
+        word:"rename_statictype",
+        description:"\
+            Renames the ConstType generated for the Type.\n\
+            ConstType is marker type used as the type of a ConstValue,\n\
+            in which ConstValue is the compiletime equivalent of a value.\
+        ".into(),
+    }
+}
 
 
 
-pub static REEXPORT:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::NameValue{value:"visibility"},
-            clarification:Some("where the string has to be a valid visibility"),
-        },
-        AttrVariant{
-            kind:AttrKind::List{value:" $(<reexport_kind>),* "},
-            clarification:Some("\
+pub fn reexport()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"visibility".into()},
+                clarification:Some("where the string has to be a valid visibility".into()),
+            },
+            AttrVariant{
+                kind:AttrKind::List{value:" $(<reexport_kind>),* ".into()},
+                clarification:Some("\
+}
 Where <reexport_kind> enables re-exporting a group of items , one/many of:
 - Traits:
     For structs <DerivingType>Trait and <DerivingType>IntoRuntime.
@@ -87,230 +92,262 @@ Where <reexport_kind> enables re-exporting a group of items , one/many of:
 - Discriminants:the `variants` module
 
 - Fields:the `fields` module.
-            ")
-        }
-    ],
-    word:"reexport",
-    description:"\
-        Reexports the generated items outside of the generated module ,\n\
-        reexported to the module of the deriving type.\
-    ",
-};
+                ".into())
+            }
+        ],
+        word:"reexport",
+        description:"\
+            Reexports the generated items outside of the generated module ,\n\
+            reexported to the module of the deriving type.\
+        ".into(),
+    }
+}
 
 
 
-pub static RENAME:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::NameValue{value:"new_name"} ,
-            clarification:Some("the string has to be a valid identifier."),
-        }
-    ],
-    word:"rename",
-    description:"Renames the ConstValue equivalent of the derived Type/Variant.",
-};
+pub fn rename()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"new_name".into()} ,
+                clarification:Some("the string has to be a valid identifier.".into()),
+            }
+        ],
+        word:"rename",
+        description:"Renames the ConstValue equivalent of the derived Type/Variant.".into(),
+    }
+}
 
 
-pub static RENAME_TRAIT:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::NameValue{value:"new_name"} ,
-            clarification:Some("the string has to be a valid identifier."),
-        }
-    ],
-    word:"rename_trait",
-    description:"\
-        Renames the trait used to access the fields of the ConstValue equivalent \n\
-        for the derived Type/Variant.\
-    ",
-};
+pub fn rename_trait()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"new_name".into()} ,
+                clarification:Some("the string has to be a valid identifier.".into()),
+            }
+        ],
+        word:"rename_trait",
+        description:"\
+            Renames the trait used to access the fields of the ConstValue equivalent \n\
+            for the derived Type/Variant.\
+        ".into(),
+    }
+}
 
 
-pub static DERIVE:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::List{value:"ConstEq|ConstOrd| OtherTraits "} ,
-            clarification:Some("the string has to be a valid identifier."),
-        }
-    ],
-    word:"derive",
-    description:"\
-        Derives all Built-in traits,\n\
-        delegating all unsupported traits to the #[derive(...)] attribute.\
-    ",
-};
+pub fn derive()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::List{value:"ConstEq|ConstOrd| OtherTraits ".into()} ,
+                clarification:Some("the string has to be a valid identifier.".into()),
+            }
+        ],
+        word:"derive",
+        description:"\
+            Derives all Built-in traits,\n\
+            delegating all unsupported traits to the #[derive(...)] attribute.\
+        ".into(),
+    }
+}
 
 
-lazy_static!{
-    pub static ref ITEMS:AttrShape<'static>=new_items(
+pub fn items()->AttrShape{
+    new_items(
         ImplIndex::T,
         "\
             Allows specifying Metadata for the generated impls and how/whether \
             they are implemented.\n\
             The generated impls are for the Built-in traits and \
             all the Automatically implementd Traits.\
-        "
-    );
+        ".into()
+    )
 }
 
 
 
-pub static ITEMS_ATTR_NO_IMPLS:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::Word,
-            clarification:None
-        }
-    ],
-    word:"NoImpls",
-    description:"Disables this implementation.",
-};
+pub fn items_attr_no_impls()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::Word,
+                clarification:None
+            }
+        ],
+        word:"NoImpls",
+        description:"Disables this implementation.".into(),
+    }
+}
 
 
-pub static ITEMS_ATTR_DEFAULT_IMPLS:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::Word,
-            clarification:None
-        }
-    ],
-    word:"DefaultImpls",
-    description:"Generates the default implementation.",
-};
+pub fn items_attr_default_impls()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::Word,
+                clarification:None
+            }
+        ],
+        word:"DefaultImpls",
+        description:"Generates the default implementation.".into(),
+    }
+}
 
 
-pub static ITEMS_ATTR_REMOTE:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::NameValue{value:"type_identifier"},
-            clarification:Some("where the string is a valid identifier.")
-        },
-        AttrVariant{
-            kind:AttrKind::List{value:"Type=\"type_identifier\",Manual"},
-            clarification:Some("\
-                The string must be a valid identifier.\n\
-                The trait must be manually implemented.\
-            ")
-        }
-    ],
-    word:"Remote",
-    description:"Generates an implementation of the trait for usage with the delegate attribute.",
-};
+pub fn items_attr_remote()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"type_identifier".into()},
+                clarification:Some("where the string is a valid identifier.".into())
+            },
+            AttrVariant{
+                kind:AttrKind::List{value:"Type=\"type_identifier\",Manual".into()},
+                clarification:Some("\
+                    The string must be a valid identifier.\n\
+                    The trait must be manually implemented.\
+                ".into())
+            }
+        ],
+        word:"Remote",
+        description:"\
+            Generates an implementation of the trait for usage with the delegate attribute.\
+        ".into(),
+    }
+}
 
 
-pub static ITEMS_ATTR_INTERNAL:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::NameValue{value:"type_identifier"},
-            clarification:Some("where the string is a valid identifier.")
-        },
-        AttrVariant{
-            kind:AttrKind::List{value:"Type=\"type_identifier\",Manual"},
-            clarification:Some("\
-                The string must be a valid identifier.\n\
-                The trait must be manually implemented.\
-            ")
-        }
-    ],
-    word:"Internal",
-    description:"\
-        Generates an implementation for a different type,instead of the type being derived.\n\
-        Has no effect on traits that do not involve the deriving type.\
-    ",
-};
+pub fn items_attr_internal()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"type_identifier".into()},
+                clarification:Some("where the string is a valid identifier.".into())
+            },
+            AttrVariant{
+                kind:AttrKind::List{value:"Type=\"type_identifier\",Manual".into()},
+                clarification:Some("\
+                    The string must be a valid identifier.\n\
+                    The trait must be manually implemented.\
+                ".into())
+            }
+        ],
+        word:"Internal",
+        description:"\
+            Generates an implementation for a different type,instead of the type being derived.\n\
+            Has no effect on traits that do not involve the deriving type.\
+        ".into(),
+    }
+}
 
 
 
-pub static FIELD_PUB_TRAIT_ACCESSOR:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::Word,
-            clarification:None,
-        },
-    ],
-    word:"pub_trait_accessor",
-    description:"\
-        Allows accessing the value of a private field through the <DerivingType>Trait.\n\
-        Does not allow using GetField to access the value of the field.\
-    ",
-};
+pub fn field_pub_trait_accessor()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::Word,
+                clarification:None,
+            },
+        ],
+        word:"pub_trait_accessor",
+        description:"\
+            Allows accessing the value of a private field through the <DerivingType>Trait.\n\
+            Does not allow using GetField to access the value of the field.\
+        ".into(),
+    }
+}
 
 
-pub static FIELD_BOUND:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::NameValue{value:"bound"},
-            clarification:Some("bound must be a valid constraint."),
-        },
-    ],
-    word:"bound",
-    description:"\
-        Allows adding a bound to the associated type of the <DerivingType>Trait\
-        representing this field.\
-    ",
-};
+pub fn field_bound()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"bound".into()},
+                clarification:Some("bound must be a valid constraint.".into()),
+            },
+        ],
+        word:"bound",
+        description:"\
+            Allows adding a bound to the associated type of the <DerivingType>Trait\
+            representing this field.\
+        ".into(),
+    }
+}
 
 
-pub static FIELD_BOUND_RUNT:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::NameValue{value:"bound"},
-            clarification:Some("bound must be a valid constraint."),
-        },
-    ],
-    word:"bound_runt",
-    description:"\
-        Allows adding a bound to the associated type of the <DerivingType>WithRuntime\
-        representing this field.\
-    ",
-};
+pub fn field_bound_runt()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"bound".into()},
+                clarification:Some("bound must be a valid constraint.".into()),
+            },
+        ],
+        word:"bound_runt",
+        description:"\
+            Allows adding a bound to the associated type of the <DerivingType>WithRuntime\
+            representing this field.\
+        ".into(),
+    }
+}
 
 
-pub static FIELD_RENAME:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::NameValue{value:"name"},
-            clarification:Some("the string must be a valid identifier."),
-        },
-    ],
-    word:"rename",
-    description:"\
-        Renames the field in the generated code.\
-        Currently only possible for Struct/Struct Variants.\
-    ",
-};
+pub fn field_rename()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"name".into()},
+                clarification:Some("the string must be a valid identifier.".into()),
+            },
+        ],
+        word:"rename",
+        description:"\
+            Renames the field in the generated code.\
+            Currently only possible for Struct/Struct Variants.\
+        ".into(),
+    }
+}
 
 
-pub static FIELD_ACCESSOR:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::NameValue{value:"name"},
-            clarification:Some("the string must be a valid identifier."),
-        },
-    ],
-    word:"accessor",
-    description:"\
-        The name of the field accessor,declared in the fields submodule.\n\
-        This accessor is used to access the contents of the field in GetField/SetField.\
-    ",
-};
+pub fn field_accessor()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"name".into()},
+                clarification:Some("the string must be a valid identifier.".into()),
+            },
+        ],
+        word:"accessor",
+        description:"\
+            The name of the field accessor,declared in the fields submodule.\n\
+            This accessor is used to access the contents of the field in GetField/SetField.\
+        ".into(),
+    }
+}
 
 
-pub static FIELD_DELEGATE:AttrShape<'static>=AttrShape{
-    variants:&[
-        AttrVariant{
-            kind:AttrKind::List{value:" runtime_conv/IntoConstType/IntoRuntime =\"const_type\" "},
-            clarification:Some("\
-                The string must be a type which implements \
-                IntoConstType_< FieldType > and/or IntoRuntime<FieldType,C>.\
-            "),
-        },
-    ],
-    word:"delegate",
-    description:"\
-        The type to which the implementations of IntoRuntime and IntoConstType are delegated to.\
-    ",
-};
+pub fn field_delegate()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::List{
+                    value:" runtime_conv/IntoConstType/IntoRuntime =\"const_type\" ".into()
+                },
+                clarification:Some("\
+                    The string must be a type which implements \
+                    IntoConstType_< FieldType > and/or IntoRuntime<FieldType,C>.\
+                ".into()),
+            },
+        ],
+        word:"delegate",
+        description:"\
+            The type to which the implementations of \
+            IntoRuntime and IntoConstType are delegated to.\
+        ".into(),
+    }
+}
 
 
 

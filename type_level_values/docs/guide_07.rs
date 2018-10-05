@@ -124,7 +124,7 @@ pub enum Access{
 #[cconstructor(Type = "RwLocker",ConstParam = "C")]
 pub struct RwLockerInner<T,C>{
     lock:RwLock<T>,
-    access:PhantomWrapper<C>,
+    access:ConstWrapper<C>,
 }
 
 //@codeblock-end:rw_locker_struct
@@ -137,7 +137,7 @@ impl<T> RwLocker<T,RwAccess>{
     pub fn new(value:T)->Self{
         Self{
             lock:RwLock::new(value),
-            access:PhantomWrapper::NEW,
+            access:ConstWrapper::NEW,
         }
     }
 }

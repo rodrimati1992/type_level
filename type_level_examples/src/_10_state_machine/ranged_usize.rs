@@ -13,7 +13,7 @@ pub type RangedUsize<Start, End> = RangedUsizeR<ConstRange<Start, End>>;
 #[cconstructor(Type = "RangedUsizeR", ConstParam = "R")]
 pub struct RangedUsizeInner<R> {
     value: usize,
-    range: PhantomWrapper<R>,
+    range: ConstWrapper<R>,
 }
 
 pub trait RangedUsizeBounds {
@@ -49,7 +49,7 @@ where
 
         Self {
             value,
-            range: PhantomWrapper::NEW,
+            range: ConstWrapper::NEW,
         }
     }
 }
@@ -70,7 +70,7 @@ where
         if range_.start <= value && value < range_.end {
             Ok(Self {
                 value,
-                range: PhantomWrapper::NEW,
+                range: ConstWrapper::NEW,
             })
         } else {
             Err(UsizeOutsideRange {

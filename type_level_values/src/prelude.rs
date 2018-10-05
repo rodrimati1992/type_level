@@ -48,8 +48,7 @@ pub use ops::{
 };
 
 pub use const_wrapper::{
-    AsConstWrapper, AsRuntime, ConstWrapper, ConstWrapperFromTrait, GetConstValue, GetWrapperKind,
-    PhantomWrapper, WrapperTrait,
+    AsConstWrapper, ConstWrapper, ConstWrapperFromTrait, UnwrapConst,WrapperTrait,
 };
 
 pub use core_extensions::{

@@ -1,7 +1,8 @@
 /**
 A macro for defining a ConstMethod.
 
-ConstMethod is a type which is used to implement an operation on a type's Const-parameter.
+ConstMethod is a type which is used to implement an operation which mutates 
+a type's ConstValue-parameter.
 
 # Kinds of ConstMethod
 
@@ -67,6 +68,195 @@ $(
 
 ```
 
+# Example of a Const-method.
+
+This ConstMethod is used to freeze the constents of the wrapper.
+
+```
+
+# #[macro_use]
+# extern crate derive_type_level;
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+
+fn main(){
+    let mut wrapper:MutWrapper<String,Mutable>=
+        MutWrapper::new("what".to_string(),Mutable);
+
+    {
+        let inner:&mut MutWrapper<String,Immutable>=
+            wrapper.mutparam_mut(Freeze,Default::default());
+        
+        // The next line doesn't compile.
+        // inner.push_str(" is");
+
+        assert_eq!(&**inner,"what");
+    }
+
+    wrapper.push_str(" is");
+    assert_eq!(&*wrapper,"what is");
+
+}
+
+use std::ops::{Deref,DerefMut};
+
+#[derive(TypeLevel)]
+#[typelevel(reexport(Variants))]
+pub enum Mutability{
+    Mutable,
+    Immutable,
+}
+
+#[derive(ConstConstructor)]
+#[cconstructor( Type="MutWrapper", ConstParam="Mut" )]
+pub struct MutWrapperInner<T,Mut>{
+    _mutability:ConstWrapper<Mut>,
+    value:T,
+}
+
+impl<T,Mut> MutWrapper<T,Mut>{
+    pub fn new(value:T,_mutability:Mut)->Self{
+        Self{ value , _mutability:ConstWrapper::NEW }
+    }
+}
+
+impl<T,Mut> Deref for MutWrapper<T,Mut>{
+    type Target=T;
+    fn deref(&self)->&T{
+        &self.value
+    }
+}
+
+impl<T> DerefMut for MutWrapper<T,Mutable>{
+    fn deref_mut(&mut self)->&mut T{
+        &mut self.value
+    }
+}
+
+const_method!{
+    type ConstConstructor[T]=( MutWrapperCC<T> )
+    type AllowedConversions=( allowed_conversions::All )
+
+    pub fn Freeze[I](I,()){ Immutable }
+}
+
+```
+
+
+
+# Example of a Const-method.
+
+Here we implement a channel which can only be called a limited ammount of times 
+before it is closed,producing a compile-time error if one tries to call recv/send again.
+
+This is also an example about how a ConstMethod can be private.
+
+```
+
+
+# #[macro_use]
+# extern crate type_level_values;
+# #[macro_use]
+# extern crate derive_type_level;
+
+# use type_level_values::prelude::*;
+use type_level_values::ops::IfEager;
+
+use std::ops::Sub;
+use std::sync::mpsc::{self, Receiver as MPSCReceiver, RecvError, SendError, Sender as MPSCSender};
+
+fn main () {
+    let (tx, rx) = channel::<&'static str, U2>();
+
+    #[allow(unused_variables)]
+    let tx: Sender<_, Closed> = tx.send("hello").send("hello");
+
+    let (rx, val) = rx.recv();
+    println!("{}", val);
+    let (rx, val) = rx.recv();
+    println!("{}", val);
+    let _:Receiver<_,Closed>=rx;
+}
+
+
+use self::bounded_channel::*;
+pub mod bounded_channel{
+    use super::*;
+
+    #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, TypeLevel)]
+    #[typelevel(reexport(Variants,Traits))]
+    pub enum State {
+        Open { remaining: u64 },
+        Closed,
+    }
+
+
+    #[derive(ConstConstructor)]
+    #[cconstructor(Type = "ChannelEnd", ConstParam = "S")]
+    pub struct ChannelEndInner<Chan, S: WrapperTrait> {
+        channel: Chan,
+        #[allow(dead_code)]
+        state: ConstWrapperFromTrait<S>,
+    }
+
+    pub type Sender<T, S> = ChannelEnd<MPSCSender<T>, S>;
+    pub type Receiver<T, S> = ChannelEnd<MPSCReceiver<T>, S>;
+
+    pub type SenderCC<T> = ChannelEndCC<MPSCSender<T>>;
+    pub type ReceiverCC<T> = ChannelEndCC<MPSCReceiver<T>>;
+
+    pub fn channel<T: Send, L>() -> (Sender<T, Open<L>>, Receiver<T, Open<L>>){
+        let (tx, rx) = mpsc::channel();
+        (
+            Sender   { channel: tx, state: ConstWrapper::NEW },
+            Receiver { channel: rx, state: ConstWrapper::NEW },
+        )
+    }
+
+    impl<T: Send, L> Sender<T, L> {
+        pub fn send<__NextSelf>(self, value: T) -> __NextSelf
+        where Self: MCPBounds<TransferValue, (), NextSelf = __NextSelf>,
+        {
+            self.channel.send(value).unwrap();
+            self.mutparam(TransferValue::new(), Default::default())
+        }
+    }
+
+    impl<T: Send, L> Receiver<T, L> {
+        pub fn recv<__NextSelf>(self) -> (__NextSelf, T)
+        where Self: MCPBounds<TransferValue, (), NextSelf = __NextSelf>,
+        {
+            let ret = self.channel.recv().unwrap();
+            (self.mutparam(TransferValue::new(), Default::default()), ret)
+        }
+    }
+
+    const_method!{
+        type ConstConstructor[T]=( ChannelEndCC<T> )
+        type AllowedConversions=( allowed_conversions::ByVal )
+
+        fn TransferValue[I](I,())
+        where [
+            I:OpenTrait,
+            I::remaining :Sub<U1,Output=var0>+ConstEq_<U1,Output=is_1>,
+            is_1:Boolean,
+            IfEager< is_1, Closed, Open<var0> >:TypeFn_<(),Output=var1>
+        ]
+        {
+            let var0;let is_1;let var1;
+            var1
+        }
+    }
+}
+
+
+
+```
+
+
+
 # Example of an extension method
 
 This ConstMethod simply returns back the input constant `I`.
@@ -90,65 +280,8 @@ const_method!{
 
 ```
 
-# Example of a setter method from the example `_05_capabilities`.
-
-This ConstMethod disables a capability,making is impossible to call the methods
-related to that capability on the returned value.
-
-```ignore
-
-# #[macro_use]
-# extern crate type_level_values;
-# use type_level_values::prelude::*;
 
 
-const_method!{
-    type ConstConstructor[FS,EC]=( SideEffectfulCC<FS,EC> )
-    type AllowedConversions=( allowed_conversions::All )
-
-    pub fn DisableCapability[Caps,Field](Caps,Field)
-    where [ Caps:SetField_<Field,DisabledCap> ]
-    {Caps::Output}
-}
-
-# fn main(){}
-
-```
-
-# Example of a more complex method from the example `_06_channel`.
-
-This ConstMethod counts down the number of remaining values to send over the channel
-and when it reaches 0 it closes the channel.
-
-```ignore
-
-# #[macro_use]
-# extern crate type_level_values;
-# use type_level_values::prelude::*;
-
-
-const_method!{
-    type ConstConstructor[T]=( ChannelEndCC<T> )
-    type AllowedConversions=( allowed_conversions::ByVal )
-
-    fn TransferValue[I](I,())
-    where [
-        I:OpenTrait,
-        I::remaining:Sub<U1,Output=var0>+ConstEq_<U1>,
-        IfEager<ConstEq<I::remaining,U1>,
-            Closed,
-            Open<var0>
-        >:TypeFn_<(),Output=var1>
-    ]
-    {
-        let var0;let var1;
-        var1
-    }
-}
-
-# fn main(){}
-
-```
 
 */
 #[macro_export]
@@ -203,11 +336,11 @@ macro_rules! const_method {
     )=>{
         impl $crate::user_traits::const_methods::ConstMethod for $op_name{}
 
-        impl $crate::user_traits::const_methods::ConstMethod_RegularExt for $op_name{}
+        impl $crate::user_traits::const_methods::ConstMethod_Extension for $op_name{}
 
         impl $crate::user_traits::const_methods::ExtensionConstMethod for $op_name{
             type MethodKind=
-                $crate::user_traits::const_methods::type_level_ExtensionMethodKind::RegularExt;
+                $crate::user_traits::const_methods::type_level_ExtensionMethodKind::Extension;
         }
     };
     (inner_extension_method;

@@ -295,7 +295,7 @@ fn constructor_inner<'alloc>(
                 word=>{
                     panic!("Unsupported attribute:'{}'{}", 
                         word,
-                        &*attribute_errors::CCONSTRUCTOR_ATTRS
+                        attribute_errors::cconstructor_attrs()
                     );
                 }
             }
@@ -335,9 +335,9 @@ fn update_ident_and_metadata<'alloc>(
                 item.update_with_meta(&param,arenas).unwrap_or_else(|_|{
                     let error_msg=match type_or_cconstr {
                         TypeOrCConstr::Type=> 
-                            &*attribute_errors::TYPE_SUBATTRS,
+                            attribute_errors::type_subattrs(),
                         TypeOrCConstr::ConstConstructor=>
-                            &*attribute_errors::CONSTCONSTRUCTOR_SUBATTRS,
+                            attribute_errors::constconstructor_subattrs(),
                     };
                     panic!("Invalid parameter:{:#?}{}", param,error_msg) 
                 });
@@ -348,8 +348,8 @@ fn update_ident_and_metadata<'alloc>(
         }
         word=>{
             let error_msg=match type_or_cconstr {
-                TypeOrCConstr::Type=> &*attribute_errors::TYPE_ATTR,
-                TypeOrCConstr::ConstConstructor=>&attribute_errors::CONSTCONSTRUCTOR_ATTR,
+                TypeOrCConstr::Type=>attribute_errors::type_attr(),
+                TypeOrCConstr::ConstConstructor=>attribute_errors::constconstructor_attr(),
             };
             panic!("Unsupported nested attribute:{:#?}{}", word,error_msg);
         }

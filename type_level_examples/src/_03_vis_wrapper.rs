@@ -30,7 +30,7 @@ pub mod rectangle {
         y: u32,
         w: u32,
         h: u32,
-        marker: PhantomWrapper<I>,
+        marker: ConstWrapper<I>,
     }
 
     impl Rectangle<RectangleAcessibleDefault> {
@@ -211,7 +211,7 @@ pub fn main_ () {
 // #[doc = "A rectangle where certain fields are inaccessible based on a const parameter."]
 // #[doc = "Many impls are also implemented on [RectangleInner]."]
 // pub type Rectangle<__ConstParam> =
-//     RectangleInner<::type_level_values::reexports::PhantomWrapper<__ConstParam>>;
+//     RectangleInner<::type_level_values::reexports::ConstWrapper<__ConstParam>>;
 // pub struct RectangleCC {
 //     _marker: ::type_level_values::reexports::VariantPhantom<()>,
 // }
@@ -219,7 +219,7 @@ pub fn main_ () {
 // #[allow(non_camel_case_types)]
 // mod const_constructor_RectangleInner {
 //     use super::*;
-//     use type_level_values::const_wrapper::{GetConstValue, PhantomWrapper, WrapperTrait};
+//     use type_level_values::const_wrapper::{UnwrapConst, ConstWrapper, WrapperTrait};
 //     use type_level_values::reexports::*;
 //     use type_level_values::user_traits::{
 //         ApplyConstParam_, ConstConstructor, ConstLayoutIndependent, GetConstConstructor_,
@@ -242,13 +242,13 @@ pub fn main_ () {
 //     {}
 //     impl<I, __ConstParam> GetConstParam_ for RectangleInner<I>
 //     where
-//         I: TypeIdentity<Type = PhantomWrapper<__ConstParam>>,
+//         I: TypeIdentity<Type = ConstWrapper<__ConstParam>>,
 //     {
 //         type Const = __ConstParam;
 //     }
 //     impl<I, __ConstParam, __Output> ApplyConstParam_<__ConstParam> for RectangleCC
 //     where
-//         PhantomWrapper<__ConstParam>: TypeIdentity<Type = I>,
+//         ConstWrapper<__ConstParam>: TypeIdentity<Type = I>,
 //         RectangleInner<I>: TypeIdentity<Type = __Output>,
 //         __Output: GetConstConstructor_<Const = __ConstParam, Constructor = Self>,
 //     {

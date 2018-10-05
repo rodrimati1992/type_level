@@ -143,7 +143,7 @@ type_fn!{
 }
 
 type_fn!{
-    pub fn WrapPhantom[T](T){ PhantomWrapper<T> }
+    pub fn WrapPhantom[T](T){ ConstWrapper<T> }
 }
 
 type_fn!{
@@ -173,7 +173,7 @@ type_fn!{
         CheckNoContinueBreak[branch](Branch_Variant,branch)
         where[
             branch:BranchTrait,
-            branch::branches:MapVariants< PhantomWrapper<CheckNoContinueBreak> >,
+            branch::branches:MapVariants< ConstWrapper<CheckNoContinueBreak> >,
         ]{ () }
 
         CheckNoContinueBreak[T](Closed_Variant,T){ () }
@@ -185,7 +185,7 @@ pub struct InvalidOutsideLoop<T>(Void, T);
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-pub type Channel<CEnd, S> = ChannelInner<PhantomWrapper<CEnd>, PhantomWrapper<S>>;
+pub type Channel<CEnd, S> = ChannelInner<ConstWrapper<CEnd>, ConstWrapper<S>>;
 
 #[derive(Debug, ConstConstructor)]
 #[cconstructor(Type(use_ = "Channel"), ConstParam = "S")]
@@ -193,7 +193,7 @@ pub struct ChannelInner<CEnd, S> {
     tx: MPSCSender<Message>,
     rx: MPSCReceiver<Message>,
     runt_state: RuntState,
-    consts: PhantomWrapper<(CEnd, S)>,
+    consts: ConstWrapper<(CEnd, S)>,
 }
 pub type Message = Box<Any + Send>;
 
@@ -228,7 +228,7 @@ mod channel {
                 tx,
                 rx,
                 runt_state: RuntState::new(),
-                consts: PhantomWrapper::NEW,
+                consts: ConstWrapper::NEW,
             }
         }
     }
@@ -239,7 +239,7 @@ mod channel {
                 tx: self.tx,
                 rx: self.rx,
                 runt_state: self.runt_state,
-                consts: PhantomWrapper::NEW,
+                consts: ConstWrapper::NEW,
             }
         }
     }
@@ -250,7 +250,7 @@ mod channel {
                 tx: self.tx,
                 rx: self.rx,
                 runt_state: self.runt_state,
-                consts: PhantomWrapper::NEW,
+                consts: ConstWrapper::NEW,
             }
         }
         fn erase_channel(self) -> Channel<Erased, Erased> {
@@ -258,7 +258,7 @@ mod channel {
                 tx: self.tx,
                 rx: self.rx,
                 runt_state: self.runt_state,
-                consts: PhantomWrapper::NEW,
+                consts: ConstWrapper::NEW,
             }
         }
     }
@@ -306,7 +306,7 @@ mod channel {
         Channel<CEnd, TList<Current, Rem>>
     where
         Current: BranchTrait,
-        Current::branches: MapVariants<PhantomWrapper<WrapPhantom>, Output = PhantomVariants>,
+        Current::branches: MapVariants<ConstWrapper<WrapPhantom>, Output = PhantomVariants>,
         Current::branches: Len_<Output = Len>,
         PhantomVariants: From<RangedUsize<U0, Len>>,
         PhantomVariants: MapVariants<ChannelInto<Self>, Output = MappedVariants>,
@@ -455,10 +455,10 @@ mod channel {
 
     pub struct ChannelInto<Ch>(pub Ch);
 
-    impl<Params, End, List> CallInto<PhantomWrapper<Params>> for ChannelInto<Channel<End, List>> {
+    impl<Params, End, List> CallInto<ConstWrapper<Params>> for ChannelInto<Channel<End, List>> {
         type Returns = Channel<End, Params>;
         /// calls this function
-        fn call_into(self, _params: PhantomWrapper<Params>) -> Self::Returns {
+        fn call_into(self, _params: ConstWrapper<Params>) -> Self::Returns {
             self.0.change_list()
         }
     }
@@ -477,7 +477,7 @@ mod channel {
                 tx: self.tx,
                 rx: self.rx,
                 runt_state: self.runt_state,
-                consts: PhantomWrapper::NEW,
+                consts: ConstWrapper::NEW,
             }
         }
     }

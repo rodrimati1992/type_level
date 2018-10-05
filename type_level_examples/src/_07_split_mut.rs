@@ -84,9 +84,9 @@ pub fn main_ () {
         rem.accessible_fields_ty().assert_ty(
             ConstRectangleAcessible {
                 x: Inaccessible.into(),
-                y: Inaccessible::PW,
-                w: Inaccessible.into_(PhantomWrapper::T),
-                h: Inaccessible::PW,
+                y: Inaccessible::CW,
+                w: Inaccessible.into_(ConstWrapper::T),
+                h: Inaccessible::CW,
             }.ty_(),
         );
     }

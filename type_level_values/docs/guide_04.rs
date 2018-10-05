@@ -95,7 +95,7 @@ pub enum DebugImpl{
 #[cconstructor(Type="DebugWrapper",ConstParam="C" )]
 pub struct DebugWrapperInner<T,C>{
     pub value:T,
-    impl_:PhantomWrapper<C>,
+    impl_:ConstWrapper<C>,
 }
 
 //@codeblock-end:struct_decl
@@ -108,7 +108,7 @@ impl<T,C> DebugWrapper<T,C>{
     fn new(value:T,_debug_impl:C)->Self{
         Self{
             value,
-            impl_:PhantomWrapper::NEW
+            impl_:ConstWrapper::NEW
         }
     }
 }

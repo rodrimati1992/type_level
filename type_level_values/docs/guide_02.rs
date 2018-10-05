@@ -15,7 +15,7 @@ Trait/Type glossary:
 
 - ConstValue: A trait for type-level values,also used here to refer to implementors of it.
 
-- PhantomWrapper:
+- ConstWrapper:
     Zero-sized wrapper type for type-level-values that unconditionally implements 
     Eq/PartialEq/Ord/PartialOrd/Copy/Clone/Debug/etc ,
     delegating IntoRuntime/GetField/SetField/etc to the wrapped type-level-value.
@@ -35,14 +35,14 @@ Here is the zero-overhead wrapper struct that determines the mutability of its c
 the `Mut` parameter.
 
 The `ConstConstructor` derive macro generates the `Wrapper`
-type alias which passes `Mut` wrapped inside a PhantomWrapper
+type alias which passes `Mut` wrapped inside a ConstWrapper
 so that `Mut` does not have to implement Debug/PartialEq/etc.
 
 Prefer using the type alias declared by ConstConstructor everywhere,
 except the ::std::ops::Drop trait since it requires 
 that the generic parameters stay generic and not be wrapped inside another type.
 
-The reason why Mut is wrapped inside a PhantomWrapper in the field type is because
+The reason why Mut is wrapped inside a ConstWrapper in the field type is because
 this allows using the repr(transparent) attribute,which is used to guarantee
 that a wrapper type has the same representation as its only non-zero-sized field,
 and because Rust does not allow type parameters to not be used in a field.
@@ -53,12 +53,12 @@ and because Rust does not allow type parameters to not be used in a field.
 This is the constructor for Wrapper,which takes the `Mut` by value,
 so as not to require using type inference.
 
-When constructing a PhantomWrapper inside a constructor function prefer using PhantomWrapper::NEW.
+When constructing a ConstWrapper inside a constructor function prefer using ConstWrapper::NEW.
 <br>
-When constructing a PhantomWrapper whose type can't be inferred use Type::PW.
+When constructing a ConstWrapper whose type can't be inferred use Type::CW.
 <br>
-When there is a value that needs to be converted to a PhantomWrapper 
-either use value.to_pw() or value.into() (if the type is Copy),
+When there is a value that needs to be converted to a ConstWrapper 
+either use value.to_cw() or value.into() (if the type is Copy),
 
 
 //@use_codeblock:deref-impls,ignore
@@ -119,7 +119,7 @@ pub enum Mutability {
 #[derive(Debug,Copy,Clone,PartialEq,PartialOrd,Eq,Ord,ConstConstructor)]
 #[cconstructor(Type="Wrapper",ConstParam="Mut")]
 pub struct WrapperInner<T,Mut>{
-    mutability:PhantomWrapper<Mut>,
+    mutability:ConstWrapper<Mut>,
     value:T,
 }
 
@@ -131,7 +131,7 @@ impl<T,Mut> Wrapper<T,Mut>{
     fn new(value:T,mutability:Mut)->Self{
         Wrapper{
             value,
-            mutability:PhantomWrapper::NEW,
+            mutability:ConstWrapper::NEW,
         }
     }
 }

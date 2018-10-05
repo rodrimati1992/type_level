@@ -140,7 +140,7 @@ type AnyBox=Box<Any+Send+'static>;
 pub struct ChannelInner<S>{
     sender  :Sender<AnyBox>,
     receiver:Receiver<AnyBox>,
-    state:PhantomWrapper<S>,
+    state:ConstWrapper<S>,
 }
 
 
@@ -157,7 +157,7 @@ impl Channel<()>{
 
 impl<S> Channel<S>{
     fn new_inner<S2>(sender:Sender<AnyBox>,receiver:Receiver<AnyBox>)->Channel<S2>{
-        Channel{ sender, receiver, state:PhantomWrapper::NEW }
+        Channel{ sender, receiver, state:ConstWrapper::NEW }
     }
     fn change_list<S2>(self)->Channel<S2>{
         Self::new_inner(self.sender,self.receiver)
