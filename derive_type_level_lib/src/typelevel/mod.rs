@@ -47,7 +47,6 @@ use proc_macro2::{TokenStream};
 use self::attribute_detection::typelevel::{
     TLAttributes,
     FieldAttrs,
-    TraitImpls,
     ImplVariant,
     ImplIndex,
     ReExportVis,

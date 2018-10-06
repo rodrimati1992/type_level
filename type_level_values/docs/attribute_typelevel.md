@@ -145,10 +145,6 @@ Valid attributes inside items(impl_name( ... )):
 - DefaultImpls:
     Generates the default implementation.
 
-- Remote:
-    Generates an implementation of the trait for usage with the delegate attribute.<br>
-    Of the form `remote="type_identifier"`,where the string is a valid identifier.
-
 - Internal:
     Generates an implementation for a different type,instead of the type being derived.
     Has no effect on traits that do not involve the deriving type.<br>
@@ -194,49 +190,6 @@ Valid attributes inside items(impl_name( ... )):
     This accessor is used to access the contents of the field in GetField/SetField.<br>
     Of the form `accessor="name"`,the string must be a valid identifier.
         
-
-- delegate:
-    The type to which the implementations of IntoRuntime and IntoConstType are delegated to.<br>
-    Of the form `delegate( runtime_conv/IntoConstType_/IntoRuntime ="const_type" )`,
-    The string must be a type which implements 
-    IntoConstType_< FieldType > and/or IntoRuntime<FieldType,C>.
-    
-    Delegation Example:
-
-    ```
-
-    # #[macro_use]
-    # extern crate derive_type_level;
-    # extern crate type_level_values;
-    # fn main(){}
-
-    struct ImportedStruct<T>{
-        value:T,
-    }
-
-    #[derive(TypeLevel)]
-    #[typelevel(
-        //print_derive,
-        //skip_derive,
-        reexport(Struct),
-        items( runtime_conv( Remote="ImportedStruct" ) ),
-    )]
-    struct Value<T>{
-        value:T
-    }
-
-
-    #[derive(TypeLevel)]
-    struct Using{
-        #[typelevel(delegate(runtime_conv="ValueType"))]
-        gstate:ImportedStruct<usize>,
-    }
-
-
-    ```
-
-
-
 ## Built-in traits
 
 This derive macro allows deriving some traits declared in type_level_values ,

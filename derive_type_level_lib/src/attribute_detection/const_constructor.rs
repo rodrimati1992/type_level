@@ -299,20 +299,6 @@ fn constructor_inner<'alloc>(
                     );
                 }
             }
-            
-            // match word {
-            //     "rename" => {
-            //         settings.rename = Some(ident_from_nested(&value,arenas));
-            //     }
-            //     "accessor" => {
-            //         settings.accessor = Some(ident_from_nested(&value,arenas));
-            //     }
-            //     "delegate" => {
-            //     }
-            //     word => {
-            //         panic!("Unsupported nested attribute:{:#?}", word);
-            //     }
-            // }
         }
     }
 }

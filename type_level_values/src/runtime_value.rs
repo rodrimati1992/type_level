@@ -20,7 +20,7 @@ pub trait ConstTypeOf_ {
 pub type ConstTypeOf<This> = <This as ConstTypeOf_>::Type;
 
 /// The ConstType equivalent of Self.
-pub trait IntoConstType_<From = Self> {
+pub trait IntoConstType_ {
     type ToConst: ConstType;
 }
 
@@ -28,7 +28,7 @@ pub trait IntoConstType_<From = Self> {
 pub type FromRuntime<This> = <This as IntoConstType_>::ToConst;
 
 /// Converts a compile-time value into a runtime value
-pub trait IntoRuntime<To, From = Self> {
+pub trait IntoRuntime<To> {
     /// Gets the runtime equivalent of this ConstValue.
     fn to_runtime() -> To;
 
@@ -51,17 +51,6 @@ pub trait IntoRuntime<To, From = Self> {
     }
 }
 
-impl<CType, From, To> IntoRuntime<To, From> for CType
-where
-    From: ConstTypeOf_<Type = CType> + IntoRuntime<To>,
-    CType: ConstType,
-{
-    #[inline(always)]
-    fn to_runtime() -> To {
-        From::to_runtime()
-    }
-}
-
 #[cfg(rust_1_22)]
 /// Converts a compile-time value into a runtime value
 pub trait IntoConstant<To, From = Self> {
@@ -70,7 +59,8 @@ pub trait IntoConstant<To, From = Self> {
 
 /////////////////////////////////////////////////////////////////////////////
 
-/// Traits derived in the TypeLevel macro.
+/// Trait alias for the variants/the Const\<DerivingType> created by the TypeLevel macro.
+///
 pub trait DerivedTraits:
     Copy + Clone + 
     Send + Sync + 

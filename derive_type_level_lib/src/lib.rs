@@ -29,6 +29,7 @@ pub(crate) mod data_structure;
 pub mod typelevel;
 pub mod const_constructor;
 pub mod doc_code_snippets;
+pub mod void_like;
 
 
 ////////////////////////////////////////////////////////////////////////////////

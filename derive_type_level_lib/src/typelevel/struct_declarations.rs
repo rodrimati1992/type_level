@@ -128,11 +128,6 @@ pub(crate) struct FieldDeclaration<'a>{
     pub(crate) assoc_type:&'a Ident,
     pub(crate) original_ty:&'a Type,
     pub(crate) relative_priv:RelativePriv,
-    /// The type that performs the conversion between runtime and Const types,
-    /// with the IntoRuntime and IntoConstType_ traits.
-    /// 
-    /// By Default this is the same as `self.generic`.
-    pub(crate) delegated:TraitImpls<&'a Type>,
     pub(crate) generic  :&'a Type,
     // used when generating conversions between the struct and another type.
     pub(crate) generic_2:&'a Type, 
@@ -262,19 +257,6 @@ impl<'a> StructDeclarations<'a>{
                     let generic  =parse_alloc("");
                     let generic_2=parse_alloc("_TyB");
 
-                    let delegated_ict=field_attrs.delegated.into_consttype.is_some();
-                    let delegated=field_attrs.delegated.map(|index,impl_|{
-                        use super::ImplIndex::IntoConstType;
-                        impl_.unwrap_or_else(||if index==IntoConstType {original_ty}else{generic})
-                    });
-
-                    {
-                        let occupied=all_types.entry(original_ty).or_insert(None);
-                        if occupied.is_none() && delegated_ict {
-                            *occupied=Some(delegated.into_consttype);
-                        }
-                    }
-
                     use self::RelativePriv as RP;
 
                     let field_vis_kind;
@@ -340,7 +322,6 @@ impl<'a> StructDeclarations<'a>{
                         original_ty,
                         generic,
                         generic_2,
-                        delegated,
                         rt_assoc_type:ident_from(&format!("rt_{}",assoc_type)) ,
                         runt_bound :field_attrs.runt_bound,
                         const_bound:field_attrs.const_bound,

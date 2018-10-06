@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rodrimati1992/type_level.svg?branch=master)](https://travis-ci.org/rodrimati1992/type_level)
+
 Package for declaring and using type level values and functions.
 
 **Work in progress.This will be ready for consumption in "0.1.0" .**
