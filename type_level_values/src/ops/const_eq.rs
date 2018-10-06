@@ -1,18 +1,22 @@
 use crate_::ops::{VariantAsTList, VariantAsTList_};
 use prelude::*;
 
-/// Compares Self with Rhs for equality,returning True/False.
-pub trait ConstEq_<Rhs> {
-    type Output;
+type_fn!{define_trait
+    /// Compares Self with R for equality,returning True/False.
+    trait=ConstEq_ [R]
+    /// Compares Self with R for equality,returning True/False.
+    type=ConstEq
+    /// Compares Self with R for equality,returning True/False.
+    fn_type=ConstEqOp
 }
 
-/// Compares L with R for equality,returning True/False.
-pub type ConstEq<L, R> = <L as ConstEq_<R>>::Output;
-
-pub use crate_::fn_types::ConstEqOp;
-
-pub trait ConstNE_<Rhs> {
-    type Output;
+type_fn!{define_trait
+    /// Compares Self with R for inequality,returning True/False.
+    trait=ConstNE_ [R]
+    /// Compares Self with R for inequality,returning True/False.
+    type=ConstNE
+    /// Compares Self with R for inequality,returning True/False.
+    fn_type=ConstNEOp
 }
 
 impl<Lhs, Rhs,is_eq> ConstNE_<Rhs> for Lhs
@@ -22,9 +26,6 @@ where
 {
     type Output = is_eq::Not;
 }
-
-/// Compares L with R for inequality,returning True/False.
-pub type ConstNE<L, R> = <L as ConstNE_<R>>::Output;
 
 mod ord_for_numtype {
     use super::*;

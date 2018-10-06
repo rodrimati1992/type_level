@@ -2,10 +2,6 @@ use core_extensions::MarkerType;
 use prelude::*;
 use std_::ops::BitAnd;
 
-type_fn!{
-    pub fn AssertConstType[T](T)where[ T:ConstType ]{ () }
-}
-
 /// Represents a compile-time type,like SignedInteger/BooleanType/OptionType/ResultType.
 pub trait ConstType {}
 
@@ -70,22 +66,6 @@ where
 /// Converts a compile-time value into a runtime value
 pub trait IntoConstant<To, From = Self> {
     const VALUE: To;
-}
-
-//////////////////////////////////////////////////////////////
-
-/// The identity conversion module,
-/// use it by using the #[typelevel(delegate(runtime_conv="ConvIdentity"))] attribute.
-///
-pub struct ConvIdentity;
-
-impl<To> IntoRuntime<To, To> for ConvIdentity
-where
-    To: ConstValue,
-{
-    fn to_runtime() -> To {
-        To::MTVAL
-    }
 }
 
 /////////////////////////////////////////////////////////////////////////////

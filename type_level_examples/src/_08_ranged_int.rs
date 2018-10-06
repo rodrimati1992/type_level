@@ -168,7 +168,7 @@ where
 }
 
 type_fn!{
-    /// The Integer type of the distance between the ends of the range.
+    /// The Integer type of the distance between the start and end of the range.
     pub fn IntTypeOfRange[R](R)
     where[
         R     :RangeTrait,
@@ -183,7 +183,7 @@ type_fn!{
 }
 
 type_fn!{
-    /// The Integer type of the distance between the ends of the range.
+    /// The Integer necessary to store the end.
     pub fn IntTypeOfEnd[R](R)
     where[
         R     :RangeTrait,
@@ -196,8 +196,7 @@ type_fn!{
 }
 
 type_fn!{
-    #[doc(hidden)]
-    pub fn IntTypeOfHelper(True,U0){u8}
+    fn IntTypeOfHelper(True,U0){u8}
     IntTypeOfHelper[End](False,End)
     where[
         End:Sub<U1,Output=n>,
@@ -210,9 +209,8 @@ type_fn!{
 }
 
 type_fn!{
-    #[doc(hidden)]
     /// The Integer type of a type-level integer,one of u8,u16,u32,u64.
-    pub fn IntTypeOf[N](N)
+    fn IntTypeOf[N](N)
     where[
         N     :Shr<U8 ,Output=DivU8 >,
         DivU8 :Shr<U8 ,Output=DivU16>,
@@ -234,8 +232,7 @@ type_fn!{
 }
 
 type_fn!{
-    #[doc(hidden)]
-    pub fn IntTypeHelper(True,True,True){ u8 }
+    fn IntTypeHelper(True,True,True){ u8 }
        IntTypeHelper(False,True,True){ u16 }
        IntTypeHelper(False,False,True){ u32 }
        IntTypeHelper(False,False,False){ u64 }

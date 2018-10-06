@@ -153,7 +153,7 @@ pub type TypeFn<This, Params> = <This as TypeFn_<Params>>::Output;
 A macro for implementing TypeFn_ .
 
 For usage examples of declaring a new TypeFn_  please look at the 
-[documentation for the TypeFn_ trait](./ops/trait.TypeFn_.html)
+[documentation for the TypeFn_ trait](./type_fn/trait.TypeFn_.html)
 
 
 # Syntax for declaring a new TypeFn_
@@ -311,6 +311,7 @@ macro_rules! type_fn {
         alias $op_name:ident[$lhs:ident$(,$param:ident)*] $(::$assoc_ty:ident)* =$trait_name:ident
         $(where[$($bound:tt)*])*
     ) => {
+        $(#[$attr_op])*
         ///
         /// A type-level function.Implements TypeFn<> for the trait of a similar name.
         ///
@@ -354,8 +355,6 @@ macro_rules! type_fn {
         }
 
         $(#[$attr_trait])*
-        ///
-        /// A type-level function.
         pub trait $trait_name< $($param),* >{
             type Output;
         }
@@ -390,17 +389,41 @@ macro_rules! type_fn {
 
     };
     (inner-function-decl-struct;
-        captures[$($bound_vars:ident $(= $bound_def:ty )* ),*]
+        captures[$($bound_vars:tt)*]
         $(#[$attr:meta])*
         $(pub $(($($visibility:tt)*))*)*
         fn $op_name:ident $($rest:tt)*
     )=>{
+        
+        
+        type_fn!{inner_struct_decl;
+            captures[$($bound_vars)*]
+            privacy[ $(pub $(($($visibility)*))*)* ]
+            $(#[$attr])*
+            #[allow(non_camel_case_types)]
+            ///
+            /// To instantiate a runtime value of this function use `Type::CW`/`<Type>::CW`.
+            struct $op_name;
+        }
+    };
+    (inner_struct_decl;
+        captures[$($bound_vars:ident $(= $bound_def:ty )* ),*]
+        privacy[pub] $(#[$attr:meta])* struct $op_name:ident;
+    )=>{
         $(#[$attr])*
         #[allow(non_camel_case_types)]
-        ///
-        /// To instantiate a runtime value of this function use `Type::CW`/`<Type>::CW`.
-        $(pub $(($($visibility)*))*)*
-        struct $op_name<$($bound_vars $(=$bound_def)* ,)*>(
+        pub struct $op_name<$($bound_vars $(=$bound_def)* ,)*>(
+            $(pub $bound_vars,)*
+        );
+    };
+    (inner_struct_decl;
+        captures[$($bound_vars:ident $(= $bound_def:ty )* ),*]
+        privacy[$($privacy:tt)*] $(#[$attr:meta])* struct $op_name:ident;
+    )=>{
+        #[doc(hidden)]
+        $(#[$attr])*
+        #[allow(non_camel_case_types)]
+        pub struct $op_name<$($bound_vars $(=$bound_def)* ,)*>(
             $(pub $bound_vars,)*
         );
     };

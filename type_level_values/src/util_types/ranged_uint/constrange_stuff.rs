@@ -5,6 +5,9 @@ use std_::ops::{Add, Range, Shr, Sub};
 use crate_::prelude::*;
 use crate_::fn_types::ConstLEOp;
 
+#[allow(unused_imports)]
+use typenum::operator_aliases::{Sub1,Add1,Diff as Sub_,Sum,Shleft,Shright};
+
 use num_traits::cast::AsPrimitive;
 
 /// Trait for ConstRange<Start,End>.
@@ -65,6 +68,7 @@ where
     
     IntTypeOfRange: TypeFn_<R, Output = SI>,
     IntTypeOf: TypeFn_<End, Output = RI>,
+
     SI: Copy + 'static + Into<RI> + Debug + fmt::Display + PartialEq + PartialOrd + Eq + Ord,
     RI: Sub<RI, Output = RI>
         + Add<RI, Output = RI>
@@ -83,15 +87,19 @@ where
     type Compressed = SI;
     type Decompressed = RI;
 
+    #[inline]
     fn is_empty()->bool{
         IsEmpty::to_runtime()
     }
+    #[inline]
     fn start() -> Self::Decompressed {
         Start::to_runtime()
     }
+    #[inline]
     fn end() -> Self::Decompressed {
         End::to_runtime()
     }
+    #[inline]
     fn end_inclusive() -> Self::Decompressed {
         EndSub1::to_runtime()
     }
@@ -141,7 +149,7 @@ type MaxUInt=u64;
 // type MaxUInt=u128;
 
 type_fn!{
-    pub fn IntTypeHelper(True,True,True,True){ u8 }
+    fn IntTypeHelper(True,True,True,True){ u8 }
        IntTypeHelper(False,True,True,True){ u16 }
        IntTypeHelper(False,False,True,True){ u32 }
        IntTypeHelper(False,False,False,True){ u64 }
@@ -150,6 +158,7 @@ type_fn!{
 
 
 type_fn!{
+    /// Subtracts 1 from an unsigned integer.Stopping at 0.
     pub fn SaturatingSub1[L](L)
     where[
         L:ConstEq_<U0>,
@@ -160,7 +169,7 @@ type_fn!{
 }
 
 type_fn!{
-    pub fn 
+    fn 
         SaturatingSub1Helper(True,U0){U0}
 
         SaturatingSub1Helper[L](False,L)
@@ -168,3 +177,62 @@ type_fn!{
         { L::Output }
 }
 
+#[cfg(test)]
+mod test{
+    use super::*;
+    #[test]
+    fn saturating_sub(){
+        let _:U0=TypeFn::<SaturatingSub1,U0>::MTVAL;
+        let _:U0=TypeFn::<SaturatingSub1,U1>::MTVAL;
+        let _:U1=TypeFn::<SaturatingSub1,U2>::MTVAL;
+        let _:U2=TypeFn::<SaturatingSub1,U3>::MTVAL;
+        let _:U3=TypeFn::<SaturatingSub1,U4>::MTVAL;
+    }
+
+    #[test]
+    fn int_type(){
+        macro_rules! test_int_type {
+            (
+                ( $int_ty:ty,$int_val:ty )
+            ) => (
+                let _:VariantPhantom<$int_ty>=
+                    TypeFn::<IntTypeOf,$int_val>::T;
+            )
+        }
+        
+        test_int_type!( (u8,U0) );
+        test_int_type!( (u8,Shleft<U1,U0>) );
+        test_int_type!( (u8,Shleft<U1,U1>) );
+        test_int_type!( (u8,Shleft<U1,U2>) );
+        test_int_type!( (u8,Shleft<U1,U3>) );
+        test_int_type!( (u8,Shleft<U1,U4>) );
+        test_int_type!( (u8,Shleft<U1,U5>) );
+        test_int_type!( (u8,Shleft<U1,U6>) );
+        test_int_type!( (u8,Shleft<U1,U7>) );
+        test_int_type!( (u8,Sub1<Shleft<U1,U8>>) );
+        test_int_type!( (u16,Shleft<U1,U8>) );
+        test_int_type!( (u16,Shleft<U1,U9>) );
+        test_int_type!( (u16,Shleft<U1,U10>) );
+        test_int_type!( (u16,Shleft<U1,U13>) );
+        test_int_type!( (u16,Shleft<U1,U14>) );
+        test_int_type!( (u16,Shleft<U1,U15>) );
+        test_int_type!( (u16,Sub1<Shleft<U1,U16>>) );
+        test_int_type!( (u32,Shleft<U1,U16>) );
+        test_int_type!( (u32,Shleft<U1,U17>) );
+        test_int_type!( (u32,Shleft<U1,U18>) );
+        test_int_type!( (u32,Shleft<U1,U29>) );
+        test_int_type!( (u32,Shleft<U1,U30>) );
+        test_int_type!( (u32,Shleft<U1,U31>) );
+        test_int_type!( (u32,Sub1<Shleft<U1,U32>>) );
+        test_int_type!( (u64,Shleft<U1,U32>) );
+        test_int_type!( (u64,Shleft<U1,U33>) );
+        test_int_type!( (u64,Shleft<U1,U34>) );
+        test_int_type!( (u64,Shleft<U1,U60>) );
+        test_int_type!( (u64,Shleft<U1,U61>) );
+        test_int_type!( (u64,Shleft<U1,U62>) );
+        test_int_type!( (u64,Shleft<U1,U63>) );
+        test_int_type!( (u64,Sub1<Shleft<U1,U64>>) );
+        
+    }
+
+}

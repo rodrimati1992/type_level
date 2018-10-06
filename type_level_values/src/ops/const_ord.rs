@@ -8,33 +8,91 @@ use std_::cmp::Ordering;
 
 /// Compares Self with Rhs,returning whether Self is Less_/Equal_/Greater_ than Rhs
 pub trait ConstOrd_<Rhs> {
-    type Output: OrderingTrait;
+    type Output;
 }
 
 /// Compares L to R,returning an Ordering_.
 ///
-/// Equivalent to ::std_::cmp::Ord::cmp.
 pub type ConstOrd<L, R> = TypeFn<ConstOrdOp, (L, R)>;
 
-/// Returns whether L is less than R.
+type_fn!{
+    /// Compares L to R,returning an Ordering_.
+    ///
+    alias ConstOrdOp[L,R]=ConstOrd_
+}
+
+
+/// Returns whether L < R.
 ///
-/// Equivalent to L < R.
 pub type ConstLt<L, R> = TypeFn<ConstLtOp, (L, R)>;
 
-/// Returns whether L is less than or equal to R.
+type_fn!{
+    /// Returns whether L < R.
+    ///
+    pub fn ConstLtOp[L,R](L,R)
+    where[
+        L:ConstOrd_<R>,
+        L::Output:ConstEq_<Less_,Output=Out>,
+    ]{ let Out;Out }
+}
+
+
+/// Returns whether L <= R.
 ///
-/// Equivalent to L <= R.
 pub type ConstLE<L, R> = TypeFn<ConstLEOp, (L, R)>;
 
-/// Returns whether L is greater than R.
+type_fn!{
+    /// Returns whether L <= R.
+    ///
+    pub fn ConstLEOp[L,R](L,R)
+    where[
+        L:ConstOrd_<R>,
+        _IsLessOrEqual:TypeFn_<L::Output,Output=Out>,
+    ]{ let Out;Out }
+}
+
+
+/// Returns whether L > R.
 ///
-/// Equivalent to L > R.
 pub type ConstGt<L, R> = TypeFn<ConstGtOp, (L, R)>;
 
-/// Returns whether L is greater than or equal to R.
+type_fn!{
+    /// Returns whether L > R.
+    ///
+    pub fn ConstGtOp[L,R](L,R)
+    where[
+        L:ConstOrd_<R>,
+        L::Output:ConstEq_<Greater_,Output=Out>,
+    ]{ let Out;Out }
+}
+
+
+/// Returns whether L >= R.
 ///
-/// Equivalent to L >= R.
 pub type ConstGE<L, R> = TypeFn<ConstGEOp, (L, R)>;
+
+type_fn!{
+    /// Returns whether L >= R.
+    ///
+    pub fn ConstGEOp[L,R](L,R)
+    where[
+        L:ConstOrd_<R>,
+        _IsGreaterOrEqual:TypeFn_<L::Output,Output=Out>,
+    ]{ let Out;Out }
+}
+
+
+type_fn!{
+    fn _IsLessOrEqual(Less_ ){True}
+       _IsLessOrEqual(Equal_){True}
+       _IsLessOrEqual(Greater_){False}
+}
+type_fn!{
+    fn _IsGreaterOrEqual(Less_ ){False}
+       _IsGreaterOrEqual(Equal_){True}
+       _IsGreaterOrEqual(Greater_){True}
+}
+
 
 mod numtype_impls {
     use super::*;

@@ -225,8 +225,10 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         });
     }
     if let TypeDeclVariant::Name(_)=*const_constructor {
+        let const_constructor_doc=format!("The ConstConstructor for {}",name);
         tokens.append_all(quote!{
             #attrs_cc_type
+            #[doc=#const_constructor_doc]
             #vis struct #const_constructor_ident< #remaining_generics >
             where 
                 #bounds_cc_type

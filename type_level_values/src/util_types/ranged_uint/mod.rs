@@ -4,7 +4,7 @@ requires `.value()` to recover the uncompressed number.
 
 */
 
-mod constrange_stuff;
+pub mod constrange_stuff;
 
 #[cfg(test)]
 mod tests;
@@ -19,7 +19,7 @@ use crate_::prelude::*;
 use std_::cmp::{self,Eq,Ord,PartialEq,PartialOrd};
 use std_::mem::size_of;
 use std_::ops::{Range};
-#[cfg(rust_1_26)]
+#[cfg(rust_1_27)]
 use std_::ops::RangeInclusive;
 use std_::str::FromStr;
 
@@ -147,9 +147,12 @@ where
         R::end_inclusive()
     }
     /// Returns the range of this integer.
-    #[cfg(rust_1_26)]
+    #[cfg(rust_1_27)]
     pub fn range_inclusive(&self)->RangeInclusive<R::Decompressed>{
-        R::start()..=R::end_inclusive()
+        RangeInclusive::new(
+            R::start(),
+            R::end_inclusive()
+        )
     }
     /// Returns the range of this integer.
     ///

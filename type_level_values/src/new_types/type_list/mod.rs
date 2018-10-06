@@ -84,8 +84,7 @@ where
 }
 
 type_fn!{
-    #[doc(hidden)]
-    pub fn
+    fn
         GetFieldHelper[Rem,T0]
         (True,U0,tlist![T0,..Rem])
         {T0}
@@ -141,8 +140,7 @@ where
 }
 
 type_fn!{
-    #[doc(hidden)]
-    pub fn
+    fn
         SetFieldHelper[Rem,val,T0]
         (True,U0,val,tlist![T0,..Rem])
         {tlist![val,..Rem]}
@@ -202,8 +200,7 @@ where
 }
 
 type_fn!{
-    #[doc(hidden)]
-    pub fn
+    fn
         InsertHelper[Rem,val]
         (True,U0,val,Rem)
         {tlist![val,..Rem]}
@@ -259,8 +256,7 @@ where
 }
 
 type_fn!{
-    #[doc(hidden)]
-    pub fn
+    fn
         RemoveHelper[Rem,T0]
         (True,U0,tlist![T0,..Rem])
         {Rem}
@@ -341,8 +337,7 @@ impl<Mapper> Map_<Mapper> for TNil {
 
 type_fn!{
     captures(predicate)
-    #[doc(hidden)]
-    pub fn PredicateRhs[_0,T](_0,T)where[predicate:TypeFn_<T>]{ predicate::Output }
+    fn PredicateRhs[_0,T](_0,T)where[predicate:TypeFn_<T>]{ predicate::Output }
 }
 
 impl<T, Rem, Predicate, out> Filter_<Predicate> for TList<T, Rem>
@@ -408,8 +403,7 @@ impl<Elem> PushBack_<Elem> for TNil {
 /////////////////////////////////////////////////////////////////////////////////
 
 type_fn!{
-    #[doc(hidden)]
-    pub fn
+    fn
         PopBackHelper[T0,T1,Rem](tlist![T0,T1,..Rem])
         where [
             PopBackHelper:TypeFn_<tlist![T1,..Rem],Output=(last,RemOut)>
@@ -450,8 +444,7 @@ where
 }
 
 type_fn!{
-    #[doc(hidden)]
-    pub fn
+    fn
     ReverseHelper[Suffix,T,Rem](Suffix,TList<T,Rem>)
     where [ ReverseHelper:TypeFn_< (TList<T,Suffix>,Rem),Output=out > ]
     { let out;out }
