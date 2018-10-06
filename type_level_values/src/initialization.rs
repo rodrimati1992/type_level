@@ -1,3 +1,7 @@
+/*!
+Traits,types,`TypeFn_`s related to ConstValue construction.
+*/
+
 use field_traits::*;
 use prelude::*;
 use crate_::ops::{Map_};

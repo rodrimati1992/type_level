@@ -1,4 +1,4 @@
-use crate_::enum_stuff::GetDiscriminant;
+use crate_::discriminant::GetDiscriminant;
 use new_types::type_list::{TList, TListType, TypeLevelListTrait};
 use prelude::*;
 

@@ -78,7 +78,7 @@ impl IntoConstType_ for bool {
 
 pub mod boolean_variants {
     use super::*;
-    use enum_stuff::{Discriminant, DiscriminantFor};
+    use discriminant::{Discriminant, DiscriminantFor};
     use typenum::consts::{U0, U1};
 
     pub type FalseVariant = Discriminant<False, BooleanType, U0>;

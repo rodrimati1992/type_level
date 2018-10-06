@@ -1,9 +1,6 @@
 /*! 
 
-
-This library has many kinds of uses,from defining a compile-time equivalent of a type to 
-using that type as a parameter to a struct/function.
-
+Where all the documentation about how to use the library resides.
 
 # Introduction 
 

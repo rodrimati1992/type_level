@@ -3,7 +3,7 @@ use prelude::*;
 
 /// Compares Self with Rhs for equality,returning True/False.
 pub trait ConstEq_<Rhs> {
-    type Output: Boolean;
+    type Output;
 }
 
 /// Compares L with R for equality,returning True/False.
@@ -12,14 +12,15 @@ pub type ConstEq<L, R> = <L as ConstEq_<R>>::Output;
 pub use crate_::fn_types::ConstEqOp;
 
 pub trait ConstNE_<Rhs> {
-    type Output: Boolean;
+    type Output;
 }
 
-impl<Lhs, Rhs> ConstNE_<Rhs> for Lhs
+impl<Lhs, Rhs,is_eq> ConstNE_<Rhs> for Lhs
 where
-    Lhs: ConstEq_<Rhs>,
+    Lhs: ConstEq_<Rhs,Output=is_eq>,
+    is_eq:Boolean,
 {
-    type Output = <ConstEq<Lhs, Rhs> as Boolean>::Not;
+    type Output = is_eq::Not;
 }
 
 /// Compares L with R for inequality,returning True/False.

@@ -1,7 +1,15 @@
+/*! 
+Contains ConstWrapper,
+for wrapping ConstValues so that they implement many std library traits.
+
+To instantiate a ConstWrapper use either `Value::CW` or `value.to_cw()`.
+
+*/
+
 use prelude::*;
 
 use crate_::user_traits::const_traits;
-use crate_::enum_stuff::{
+use crate_::discriminant::{
     Discriminant,
 };
 use crate_::runtime_value::{

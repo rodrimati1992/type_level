@@ -1,8 +1,8 @@
 /*!
 Operator adaptors for TypeFn_ implementors.
 
-Contains types for converting operators to a different arity(amount of parameters),
-transforming one input to an operator before applying it,etc.
+
+
 */
 
 use prelude::*;

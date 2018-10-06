@@ -23,7 +23,7 @@ To use this crate in no_std contexts disable the default-feature.
 
 */
 
-#![recursion_limit = "128"]
+#![recursion_limit = "160"]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(non_camel_case_types)]
 #![allow(unused_imports)]
@@ -59,7 +59,7 @@ pub mod ops;
 pub mod macros;
 
 
-pub mod enum_stuff;
+pub mod discriminant;
 #[macro_use]
 pub mod field_traits;
 pub mod const_wrapper;

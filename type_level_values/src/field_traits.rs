@@ -1,3 +1,9 @@
+/*!
+Traits and `TypeFn`s for manipulating fields.
+
+*/
+
+
 use prelude::*;
 
 use crate_::ops::{FoldL_, Map_};
@@ -246,14 +252,6 @@ type_fn!{
         let NewValue;let Out;
         Out
     }
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////
-
-/// Trait for field accessors.
-pub trait Field_ {
-    /// What type this field is stored inside of.
-    type Inside: ConstType;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

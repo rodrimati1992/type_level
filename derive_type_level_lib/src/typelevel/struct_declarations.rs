@@ -575,19 +575,11 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                     #[derive(Clone,Copy)]
                     /// This is the accessor for the field of the same name.
                     #vis_kind_submod_rep struct #fields_1;
-
-                    impl super::Field_ for #fields_2{
-                        type Inside=super::#type_marker_struct_rep_b;
-                    }
                 )*
 
                 /// This is the accessor for all the fields.
                 #[derive(Clone,Copy)]
                 #vis_kind_submod struct All;
-
-                impl super::Field_ for All{
-                    type Inside=super::#type_marker_struct;
-                }
             }
 
             pub mod fields{

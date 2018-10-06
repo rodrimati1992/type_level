@@ -1,8 +1,5 @@
 /*!
-These are types that represent operators,unary and binary.
-
-Every type here also implements the TypeFn_ trait so as to be usable in contexts
-where the operator is generic.
+These are TypeFn_ aliases of pre-existing trait.
 */
 
 use prelude::*;
