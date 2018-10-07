@@ -6,7 +6,7 @@ Traits and `TypeFn`s for manipulating fields.
 
 use prelude::*;
 
-use crate_::ops::{FoldL_, Map_};
+use crate_::collection_ops::{FoldL_, Map_};
 use crate_::fn_types::{SubOp};
 use crate_::fn_adaptors::{ApplyNth,ApplyRhs};
 

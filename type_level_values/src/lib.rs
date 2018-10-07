@@ -2,6 +2,39 @@
 
 Crate for using type level values and functions.
 
+# Introduction 
+
+[For the introduction to this library go here.](./docs/introduction/index.html)
+
+# Guide
+
+This guide will guide any user towards defining type-level-values and  using them,
+starting with simple examples,then getting gradually more complex.
+
+The guide is [here](./docs/guide/index.html),
+and it starts [here](./docs/guide/introduction/index.html),
+
+
+# Reference
+
+Derive macros from `derive_type_level`:
+    
+- [TypeLevel derive macro.](./docs/attribute_typelevel/index.html) 
+
+- [ConstConstructor derive macro.](./docs/attribute_const_constructor/index.html)
+
+
+Miscelaneous things:
+
+- [Privacy: Details on how TypeLevel deals with privacy.](./docs/reference_privacy/index.html)
+
+- [reading error messages: 
+    How to read error messages by the compiler.
+  ](./docs/appendix_error_messages/index.html)
+
+- [Patterns: Programming patterns in this library.](./docs/appendix_patterns/index.html)
+
+
 # Documentation
 
 For documentation outside of API docs go [here](./docs/index.html).
@@ -63,6 +96,7 @@ pub mod discriminant;
 #[macro_use]
 pub mod field_traits;
 pub mod const_wrapper;
+pub mod collection_ops;
 pub mod extern_types;
 pub mod new_types;
 pub mod runtime_value;

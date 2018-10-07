@@ -10,8 +10,9 @@ use crate_::ops::control_flow::{If, Lazy};
 use crate_::ops::AsTList_;
 use crate_::fn_adaptors::*;
 use crate_::fn_types::{AddOp, ConstEqOp, ConstLtOp, ConstOrdOp, NotOp};
-use crate_::ops::{
-    ConstEq, ConstFrom_, ConstNE_, ConstOrd, Filter_, FoldL, FoldL_, FoldR, FoldR_, Insert,
+use crate_::ops::{ConstEq, ConstFrom_, ConstNE_, ConstOrd};
+use crate_::collection_ops::{
+    Filter_, FoldL, FoldL_, FoldR, FoldR_, Insert,
     Insert_, Len, Len_, Map, Map_, Pop, PopBack_, PopFront_, Pop_, Push, PushBack_, PushFront_,
     PushOp, Push_, Remove, Remove_, Repeat, Repeat_, Reverse_, 
 };

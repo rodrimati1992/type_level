@@ -2,7 +2,8 @@ use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
 use crate_::fn_types::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
-use crate_::ops::{FoldL_, FoldR_, Map_, Unwrap_};
+use crate_::ops::{Unwrap_,Unwrap,UnwrapOr_,UnwrapOr};
+use crate_::collection_ops::{FoldL_, FoldR_, Len_, Map, Map_};
 use prelude::*;
 
 use std_::ops::{BitAnd, BitOr};
@@ -83,6 +84,16 @@ impl<T> Unwrap_ for Ok_<T> {
 
 /////////////////////////////
 
+impl<T,Def> UnwrapOr_<Def> for Ok_<T> {
+    type Output = T;
+}
+
+impl<E,Def> UnwrapOr_<Def> for Err_<E> {
+    type Output = Def;
+}
+
+/////////////////////////////
+
 #[allow(dead_code)]
 fn tests() {
     use typenum::consts::{U0, U1};
@@ -116,13 +127,21 @@ mod tests {
 
     #[test]
     fn result_functions() {
-        let _: False = <TypeFn<IsOk, Err_<False>>>::MTVAL;
-        let _: True = <TypeFn<IsOk, Ok_<U1>>>::MTVAL;
+        let _: AssEqTy<TypeFn<IsOk, Err_<False>>,False>;
+        let _: AssEqTy<TypeFn<IsOk, Ok_<U1>>,True>;
 
-        let _: True = <TypeFn<IsErr, Err_<False>>>::MTVAL;
-        let _: False = <TypeFn<IsErr, Ok_<U1>>>::MTVAL;
+        let _: AssEqTy<TypeFn<IsErr, Err_<False>>,True>;
+        let _: AssEqTy<TypeFn<IsErr, Ok_<U1>>,False>;
 
-        let _: U0 = <<Ok_<U0> as Unwrap_>::Output>::MTVAL;
+        let _: AssEqTy<Unwrap<Ok_<U0>>,U0>;
+        let _: AssEqTy<Unwrap<Ok_<U1>>,U1>;
+
+        let _: AssEqTy<UnwrapOr<Ok_<U0>,False>,U0>;
+        let _: AssEqTy<UnwrapOr<Ok_<U1>,False>,U1>;
+        let _: AssEqTy<UnwrapOr<Err_<U100>,U400>,U400>;
+        let _: AssEqTy<UnwrapOr<Err_<U100>,U200>,U200>;
+
+
     }
 
 }

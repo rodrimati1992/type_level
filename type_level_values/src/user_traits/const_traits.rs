@@ -10,7 +10,7 @@ pub trait GetConstParam_ {
     type Const;
 }
 
-/// Returns the ConstConstructor for this type.
+/// The ConstConstructor for this type.
 pub trait GetConstConstructor_: GetConstParam_ {
     /// the ConstConstructor for this type.
     type Constructor: ConstConstructor;
@@ -40,10 +40,10 @@ pub trait ApplyConstParam_<Param>: ConstConstructor {
     type Applied: GetConstParam_<Const = Param> + GetConstConstructor_<Constructor = Self>;
 }
 
-/// The Const-parameter to `This`.
+/// Gets the Const-parameter to `This`.
 pub type GetConstParam<This> = <This as GetConstParam_>::Const;
 
-/// The ConstConstructor for `This`.
+/// Gets the ConstConstructor for `This`.
 pub type GetConstConstructor<This> = <This as GetConstConstructor_>::Constructor;
 
 /// Applies the Const-parameter to the ConstConstructor ,

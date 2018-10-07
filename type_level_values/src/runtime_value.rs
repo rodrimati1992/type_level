@@ -1,3 +1,14 @@
+/*!
+Traits for converting between type-level-values and constants/runtime values.
+
+
+# Rust versions
+
+The IntoConstant trait requires Rust 1.22 to allow constructing Drop/not Copy types.
+
+
+*/
+
 use core_extensions::MarkerType;
 use prelude::*;
 use std_::ops::BitAnd;

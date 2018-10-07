@@ -3,7 +3,8 @@ use core_extensions::Void;
 
 use crate_::fn_adaptors::ApplyRhs;
 use crate_::fn_types::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
-use crate_::ops::{FoldL, FoldL_, FoldR, FoldR_, Len_, Map, Map_,Unwrap_};
+use crate_::ops::{Unwrap_,Unwrap,UnwrapOr_,UnwrapOr};
+use crate_::collection_ops::{FoldL, FoldL_, FoldR, FoldR_, Len_, Map, Map_};
 use prelude::*;
 
 use std_::fmt::Debug;
@@ -126,6 +127,16 @@ impl<T> Unwrap_ for Some_<T> {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
+impl<Def> UnwrapOr_<Def> for None_ {
+    type Output = Def;
+}
+
+impl<T,Def> UnwrapOr_<Def> for Some_<T> {
+    type Output = T;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -166,13 +177,18 @@ mod tests {
 
     #[test]
     fn option_functions() {
-        let _: False = <TypeFn<IsSome, None_>>::MTVAL;
-        let _: True = <TypeFn<IsSome, Some_<U1>>>::MTVAL;
+        let _:AssEqTy<TypeFn<IsSome, None_>,False>;
+        let _:AssEqTy<TypeFn<IsSome, Some_<U1>>,True>;
 
-        let _: True = <TypeFn<IsNone, None_>>::MTVAL;
-        let _: False = <TypeFn<IsNone, Some_<U1>>>::MTVAL;
+        let _:AssEqTy<TypeFn<IsNone, None_>,True>;
+        let _:AssEqTy<TypeFn<IsNone, Some_<U1>>,False>;
 
-        let _: U0 = <<Some_<U0> as Unwrap_>::Output>::MTVAL;
+        let _:AssEqTy<Unwrap<Some_<U0>>,U0>;
+        let _:AssEqTy<Unwrap<Some_<U1>>,U1>;
+
+        let _:AssEqTy<UnwrapOr<Some_<U0>,U100>,U0>;
+        let _:AssEqTy<UnwrapOr<Some_<U1>,U100>,U1>;
+        let _:AssEqTy<UnwrapOr<None_    ,U200>,U200>;
     }
 
 }

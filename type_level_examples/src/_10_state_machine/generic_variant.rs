@@ -1,5 +1,5 @@
 use type_level_values::core_extensions::{CallInto, TryFrom,Void};
-use type_level_values::ops::Len_;
+use type_level_values::collection_ops::Len_;
 use type_level_values::prelude::*;
 
 use super::ranged_usize::{RangedUsize, RangedUsizeBounds};

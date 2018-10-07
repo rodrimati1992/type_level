@@ -1,4 +1,4 @@
-use crate_::ops::iteration_ops::{PopFront_, PushFront_};
+use crate_::collection_ops::{PopFront_, PushFront_};
 use prelude::*;
 
 impl<Value> PushFront_<Value> for () {

@@ -1,3 +1,17 @@
+/*!
+Contains the TypeFn_ trait,for type-level-functions.
+
+# Macros
+
+[type_fn](../macro.type_fn.html):
+    is a macro for declaring type-level-functions.
+
+
+
+*/
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
 /**
 A type-level function.
 

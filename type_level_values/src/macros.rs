@@ -46,7 +46,7 @@ macro_rules! tlist {
     (..$rest:ty) => { $rest };
     ($current:ty) => { tlist![$current,] };
     ($element:ty;$repeat:ty) => {
-        $crate::ops::Repeat<
+        $crate::collection_ops::Repeat<
             $crate::new_types::type_list::TListType,
             $element,
             $repeat

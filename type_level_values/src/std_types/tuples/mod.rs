@@ -2,18 +2,17 @@ use core_extensions::SelfOps;
 
 use crate_::new_types::TListType;
 use crate_::fn_adaptors::ApplyRhs;
-use crate_::ops::{
-    ConstInto, ConstInto_, Filter_, FoldL_, FoldR_, Insert_, Len_, Map_, Remove_, Repeat_,
-};
+use crate_::ops::{ConstInto, ConstInto_,AsTList_};
+use crate_::collection_ops::{Filter_, FoldL_, FoldR_, Insert_, Len_, Map_, Remove_, Repeat_,};
 
 use crate_::field_traits::{GetField_, SetField_};
-use crate_::ops::as_tlist::AsTList_;
 use crate_::discriminant::Discriminant;
 
 use prelude::*;
 
 #[cfg(test)]
 mod tests;
+mod tuple_impls;
 
 /// Marker type representing tuples up to 32 elements.
 #[derive(Debug, Default, Copy, Clone)]
@@ -110,6 +109,18 @@ macro_rules! impl_tuple_trait {
             {
                 type Output=Out;
             }
+
+
+            impl<$($tparams,)* Op,list,new_list,Out> 
+                Map_<Op> for ($($tparams,)*)
+            where
+                Self:ConstInto_<TListType,Output=list>,
+                list:Map_<Op,Output=new_list>,
+                new_list:ConstInto_<TupleType,Output=Out>,
+            {
+                type Output = Out;
+            }
+
 
 
             impl<$($tparams,)* Index,Value,list,Out>

@@ -14,7 +14,7 @@ use crate_::ops::{ConstEq_, ConstNE_};
 
 
 use fn_adaptors::*;
-use crate_::ops::iteration_ops::*;
+use crate_::collection_ops::*;
 
 type_fn!{alias AddOp      [A,B]=Add}
 type_fn!{alias BitAndOp   [A,B]=BitAnd}

@@ -1,5 +1,5 @@
 /*!
-Bundled-in datatypes that use ConstValue parameters.
+Types that have ConstValue parameters.
     
 
 

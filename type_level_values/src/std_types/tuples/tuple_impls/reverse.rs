@@ -1,4 +1,4 @@
-use crate_::ops::Reverse_;
+use crate_::collection_ops::Reverse_;
 
 impl Reverse_ for () {
     type Output = ();

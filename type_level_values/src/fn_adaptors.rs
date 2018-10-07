@@ -8,7 +8,7 @@ Operator adaptors for TypeFn_ implementors.
 use prelude::*;
 
 use crate_::field_traits::{MapFieldOp};
-use crate_::ops::{Insert_};
+use crate_::collection_ops::{Insert_};
 
 type_fn!{
     captures(Op,Rhs)
