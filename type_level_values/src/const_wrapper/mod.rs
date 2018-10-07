@@ -119,12 +119,14 @@ impl<This> AsConstWrapper for This {}
 //////////////////////////////////////////////////////////////////////////////////////
 
 impl<T> fmt::Display for ConstWrapper<T> {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Display::fmt(&"ConstWrapper(T)", f)
     }
 }
 
 impl<T> fmt::Debug for ConstWrapper<T> {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Display::fmt(&"ConstWrapper(T)", f)
     }
@@ -171,7 +173,7 @@ mod serde_impl {
         where
             D: Deserializer<'de>,
         {
-            <()>::deserialize(deserializer).map(|_| Default::default())
+            <()>::deserialize(deserializer).map(|_| ConstWrapper::NEW )
         }
     }
     impl<T> Serialize for ConstWrapper<T> {
@@ -221,27 +223,6 @@ where T:InitializationValues
     type Initialized = ConstWrapper<T::Initialized>;
 }
 
-
-impl<T> ConstWrapper<T> {
-    #[inline(always)]
-    pub fn to_runtime<R>(self) -> R
-    where
-        T: IntoRuntime<R>,
-    {
-        T::to_runtime()
-    }
-}
-
-
-impl<T> ConstWrapper<T> {
-    pub fn get_runt<Runtime>(self) -> Runtime
-    where
-        T: IntoRuntime<Runtime>,
-    {
-        T::to_runtime()
-    }
-}
-
 impl<T> ConstWrapper<T> {
     pub const NEW: Self = MarkerType::MTVAL;
 
@@ -252,7 +233,12 @@ impl<T> ConstWrapper<T> {
     {
         T::MTVAL
     }
-
+    pub fn get_runt<Runtime>(self) -> Runtime
+    where
+        T: IntoRuntime<Runtime>,
+    {
+        T::to_runtime()
+    }
     pub fn get_as<Runtime>(self, _: VariantPhantom<Runtime>) -> Runtime
     where
         T: IntoRuntime<Runtime>,
@@ -268,28 +254,6 @@ impl<T> ConstWrapper<T> {
         GetField<T, Field>: MarkerType,
     {
         MarkerType::MTVAL
-    }
-
-    /// Returns the runtime value of the field.
-    pub fn field_runt<Field, R>(self, _: Field) -> GetFieldRuntime<Self, Field, R>
-    where
-        Self: GetFieldRuntime_<Field, R>,
-        GetField<Self, Field>: IntoRuntime<GetFieldRuntime<Self, Field, R>>,
-    {
-        Self::get_val()
-    }
-
-    /// Returns the runtime value of the field.
-    pub fn field_as<Field, Runtime>(
-        self,
-        _: Field,
-        _: VariantPhantom<Runtime>,
-    ) -> GetFieldRuntime<T, Field, Runtime>
-    where
-        T: GetFieldRuntime_<Field, Runtime>,
-        GetField<T, Field>: IntoRuntime<GetFieldRuntime<T, Field, Runtime>>,
-    {
-        T::get_val()
     }
 
     #[inline(always)]

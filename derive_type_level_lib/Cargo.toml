@@ -1,6 +1,6 @@
 [package]
 name = "derive_type_level_lib"
-version = "0.0.21"
+version = "0.0.23"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "macros 1.1 derive macros for type-level values and users of them."

@@ -54,9 +54,9 @@ pub mod fn_adaptors;
 
 
 #[macro_use]
-pub mod ops;
-#[macro_use]
 pub mod macros;
+#[macro_use]
+pub mod ops;
 
 
 pub mod discriminant;
@@ -70,6 +70,9 @@ pub mod std_types;
 pub mod user_traits;
 pub mod util_types;
 pub mod initialization;
+
+#[cfg(test)]
+pub(crate) mod testing;
 
 #[path = "../docs/mod.rs"]
 pub mod docs;

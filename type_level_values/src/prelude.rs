@@ -10,6 +10,11 @@ it's necessary to `use` this declaration in any file needs it:
 
 */
 
+#[cfg(test)]
+pub(crate) use testing::{
+    AssEqTy,
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////
 ////                        Values Prelude
@@ -46,7 +51,7 @@ pub use user_traits::{
 pub use runtime_value::IntoConstant;
 
 pub use runtime_value::{
-    ConstTypeOf_,ConstType,ConstValue, IntoConstType_,IntoRuntime,
+    ConstTypeOf_,ConstTypeOf,ConstType,ConstValue, IntoConstType_,IntoRuntime,
 };
 
 pub use discriminant::GetDiscriminant;

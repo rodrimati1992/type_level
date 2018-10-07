@@ -10,25 +10,38 @@ use typenum::consts::{
     U0, U1, U10, U11, U12, U13, U14, U15, U16, U2, U3, U4, U5, U6, U7, U8, U9, Z0,
 };
 
-#[derive(Debug, Clone, TypeLevel)]
+#[derive(Debug, Clone, TypeLevel,PartialEq)]
 #[typelevel(
     // skip_derive,
     // print_derive,
     reexport(Struct),
 )]
-pub struct Dim2d {
-    pub width: u32,
-    pub height: u32,
+struct Dim2d {
+    width: u32,
+    height: u32,
 }
 
 type Wrapper0 = ConstWrapper<construct!(Dim2dType=> fields::width = U3, fields::height = U5,)>;
+
+
+#[test]
+fn whole_ops(){
+    let v:ConstWrapper<()>=().to_cw();
+    let _:()=v.identity_(());
+
+    let v:ConstWrapper<&'static str>=v.set::<&'static str>();
+    let _:&'static str=v.identity_("hello");
+
+    let v:ConstWrapper<True>=v.set_val(True);
+    let _:True=v.identity_(True);
+}
 
 #[test]
 fn get_field() {
     let v0 = Wrapper0::NEW;
 
-    assert_eq!(v0.field_runt(fields::width), 3);
-    assert_eq!(v0.field_runt(fields::height), 5);
+    assert_eq!(v0[fields::width].get_as(u32::T), 3);
+    assert_eq!(v0[fields::height].get_as(u32::T), 5);
 
     let _: U3 = v0.field(fields::width);
     let _: U5 = v0.field(fields::height);
@@ -36,17 +49,26 @@ fn get_field() {
 
 #[test]
 fn set_field() {
-    let v0 = Wrapper0::NEW;
+    {
+        let v0 = Wrapper0::NEW
+            .set_field_val(fields::width, U0::MTVAL)
+            .set_field_val(fields::height, U1::MTVAL);
 
-    let v0 = v0
-        .set_field_val(fields::width, U0::MTVAL)
-        .set_field_val(fields::height, U1::MTVAL);
+        let _: ConstDim2d<U0,U1> = *v0;
 
-    assert_eq!(v0[fields::width ].get_runt::<u32>(), 0);
-    assert_eq!(v0[fields::height].get_runt::<u32>(), 1);
+        assert_eq!(v0.get_runt(), Dim2d{width:0, height:1});
+    }
 
-    let _: U0 = *v0.width;
-    let _: U1 = *v0.height;
+    {
+        let v0 = Wrapper0::NEW
+            .set_field::<fields::width, U10>()
+            .set_field::<fields::height, U20>();
+
+        let _: ConstDim2d<U10,U20> = *v0;
+
+        assert_eq!(v0.get_runt(), Dim2d{width:10, height:20});
+    }
+
 }
 
 #[test]
@@ -57,8 +79,8 @@ fn map_field() {
         .map_field(fields::width, <ApplyRhs<AddOp, U3>>::CW)
         .map_field_fn(fields::height, |v| v * U2::MTVAL);
 
-    assert_eq!(v0.field_runt(fields::width), 6);
-    assert_eq!(v0.field_runt(fields::height), 10);
+    assert_eq!(v0[fields::width].get_as(u32::T), 6);
+    assert_eq!(v0[fields::height].get_as(u32::T), 10);
 
     let _: U6 = *v0.width;
     let _: U10 = *v0.height;
@@ -89,7 +111,7 @@ fn map_all() {
     let v0 = Wrapper0::NEW;
 
     {
-        let v0 = v0.map(ApplyNonSelf::<MapFieldOp, (fields::height, ApplyRhs<AddOp, U3>)>::CW);
+        let v0 = v0.map(<ApplyNonSelf<MapFieldOp, (fields::height, ApplyRhs<AddOp, U3>)>>::CW);
         assert_eq!(v0.width.get_as(u32::T), 3);
         assert_eq!(v0.height.get_as(u32::T), 8);
         let _: U3 = *v0.width;

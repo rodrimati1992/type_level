@@ -1,4 +1,7 @@
 use super::*;
+
+use super::RangeTypes;
+
 #[allow(unused_imports)]
 use typenum::operator_aliases::{Sub1,Add1,Diff as Sub_,Sum,Shleft,Shright};
 
@@ -58,7 +61,7 @@ fn values(){
                         start: UsedRange::start(),
                         end: UsedRange::end(),
                         end_inclusive: UsedRange::end_inclusive(),
-                    }),
+                    })
                 );
             }
         })
@@ -93,6 +96,14 @@ fn values(){
         end=U356,
         size=1,
         inside_range=[100,101,110,111,112,150,197,198,199],
+        outside_range=[0,5,9,98,99,356,357,358],
+    }
+
+    test_values!{
+        start=U256,
+        end=U256,
+        size=1,
+        inside_range=[],
         outside_range=[0,5,9,98,99,356,357,358],
     }
 
@@ -234,4 +245,182 @@ fn values(){
             ],
         }
     }
+}
+
+
+macro_rules! test_range_my_types {
+    (
+        ($start:ty,$end:ty),
+        is_empty=$is_empty:expr,
+        start=$range_start:expr,
+        end=$range_end:expr,
+        end_inclusive=$range_end_inclusive:expr,
+    ) => ({
+        type UsedRange=ConstRange<$start,$end>;
+        assert_eq!(<UsedRange as RangeTypes>::is_empty(),$is_empty);
+        assert_eq!(UsedRange::start(),$range_start);
+        assert_eq!(UsedRange::end(),$range_end);
+        assert_eq!(UsedRange::end_inclusive(),$range_end_inclusive);
+    })
+}
+
+#[test]
+fn test_range_my_types(){
+    test_range_my_types!{
+        (U0,U10),
+        is_empty=false,
+        start=0,
+        end=Some(10),
+        end_inclusive=9,
+    }
+
+    test_range_my_types!{
+        (U0,U100),
+        is_empty=false,
+        start=0,
+        end=Some(100),
+        end_inclusive=99,
+    }
+
+    test_range_my_types!{
+        (U10,U100),
+        is_empty=false,
+        start=10,
+        end=Some(100),
+        end_inclusive=99,
+    }
+
+    test_range_my_types!{
+        (U100,U356),
+        is_empty=false,
+        start=100,
+        end=Some(356),
+        end_inclusive=355,
+    }
+
+    {
+        type Start=Shleft<U1,U16>;
+        type End  =Sum<Start,Shleft<U1,U16>>;
+
+        test_range_my_types!{
+            (Start,End),
+            is_empty=false,
+            start=0x1_0000,
+            end=Some(0x2_0000),
+            end_inclusive=0x1_ffff,
+        }
+    }
+    {
+        type Start=Shleft<U1,U32>;
+        type End  =Sum<Start,Shleft<U1,U16>>;
+        test_range_my_types!{
+            (Start,End),
+            is_empty=false,
+            start=0x1_0000_0000,
+            end=Some(0x1_0001_0000),
+            end_inclusive=0x1_0001_0000-1,
+        }
+    }
+    {
+        type Start=Shleft<U1,U32>;
+        type End  =Sum<Start,Sub1<Shleft<U1,U32>>>;
+        test_range_my_types!{
+            (Start,End),
+            is_empty=false,
+            start=0x1_0000_0000,
+            end=Some(0x2_0000_0000-1),
+            end_inclusive=0x2_0000_0000-2,
+        }
+    }
+    {
+        type Start=U0;
+        type End  =Shleft<U1,U8>;
+        test_range_my_types!{
+            (Start,End),
+            is_empty=false,
+            start=0,
+            end=Some(256),
+            end_inclusive=255,
+        }
+    }
+    {
+        type Start=U0;
+        type End  =Shleft<U1,U16>;
+        test_range_my_types!{
+            (Start,End),
+            is_empty=false,
+            start=0,
+            end=Some(0x1_0000),
+            end_inclusive=0xffff,
+        }
+    }
+    {
+        type Start=U0;
+        type End  =Shleft<U1,U32>;
+        test_range_my_types!{
+            (Start,End),
+            is_empty=false,
+            start=0,
+            end=Some(0x1_0000_0000),
+            end_inclusive=0xffff_ffff,
+        }
+    }
+    {
+        type Start=U10;
+        type End  =Sub_<Shleft<U1,U64>,U10>;
+        test_range_my_types!{
+            (Start,End),
+            is_empty=false,
+            start=10,
+            end=Some(0xffff_ffff_ffff_ffff-9),
+            end_inclusive=(0xffff_ffff_ffff_ffff-10),
+        }
+    }
+    {
+        type Start=U0;
+        type End  =Shleft<U1,U64>;
+        test_range_my_types!{
+            (Start,End),
+            is_empty=false,
+            start=0,
+            end=None,
+            end_inclusive=(0xffff_ffff_ffff_ffff),
+        }
+    }
+    
+
+    {
+        type Start=U0;
+        type End  =U0;
+        test_range_my_types!{
+            (Start,End),
+            is_empty=true,
+            start=0,
+            end=Some(0),
+            end_inclusive=0,
+        }
+    }
+    {
+        type Start=U10;
+        type End  =U10;
+        test_range_my_types!{
+            (Start,End),
+            is_empty=true,
+            start=10,
+            end=Some(10),
+            end_inclusive=9,
+        }
+    }
+    {
+        type Start=U256;
+        type End  =U256;
+        test_range_my_types!{
+            (Start,End),
+            is_empty=true,
+            start=256,
+            end=Some(256),
+            end_inclusive=255,
+        }
+    }
+
 }

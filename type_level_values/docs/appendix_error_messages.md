@@ -5,9 +5,12 @@ This appendix is about how to read compiler error messages.
 # Guidelines
 
 The recommended approach to reading error messages is to read the error message in this order of importance:
-    -Read the "main" error message,if the types in the error message are not too long.
-    -Read the "help" if it's printed.
-    -Read the first note.
+
+- Read the "main" error message,if the types in the error message are not too long.
+
+- Read the "help" if it's printed.
+
+- Read the first note.
 
 # Example
 

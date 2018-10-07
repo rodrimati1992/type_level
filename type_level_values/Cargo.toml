@@ -1,9 +1,10 @@
 [package]
 name = "type_level_values"
-version = "0.0.21"
+version = "0.0.23"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Crate for using type-level values and functions."
+documentation = "https://docs.rs/type_level_values/"
 readme="../readme.md"
 keywords = ["typelevel", "no-std"]
 categories = ["no-std"]
@@ -31,7 +32,7 @@ std=[]
 [dependencies]
 num-traits={version="0.2"}
 typenum = {version="1.10.0",features=["no_std"]}
-derive_type_level={path="../derive_type_level",version="0.0.21"}
+derive_type_level={path="../derive_type_level",version="0.0.23"}
 
 
 [dependencies.core_extensions]

@@ -21,3 +21,26 @@ impl<C> ConstUserExtMeth<C> {
 }
 
 ////////////////////////////////////////////////////////
+
+
+#[derive(ConstConstructor)]
+#[cconstructor(
+    Type = "TestingUnsized",
+    ConstParam = "C",
+)]
+pub struct TestingUnsizedInner<T:?Sized,C> {
+    pub const_: ConstWrapper<C>,
+    pub value:T,
+}
+
+
+#[derive(ConstConstructor)]
+#[cconstructor(
+    // print_derive,
+    Type = "TestingUnsizedOuter",
+    ConstParam = "C",
+)]
+pub struct TestingUnsizedOuter_<T:?Sized,C> {
+    pub const_: TestingUnsized<T,C>,
+}
+

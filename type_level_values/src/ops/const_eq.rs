@@ -73,27 +73,105 @@ mod tests {
 
     use typenum::consts::{U0, U1, U2};
 
+
+    #[derive(TypeLevel)]
+    #[typelevel(
+        reexport(Struct),
+        derive(ConstEq,ConstOrd),
+    )]
+    #[allow(dead_code)]
+    struct Point{
+        x:u32,
+        y:u32,
+    }
+
+    type Test<equality,L,R>=
+        AssEqTy<equality,ConstEq<L,R>>;
+
     #[test]
     pub fn test_typenum() {
-        let _: False = ConstEq::<U1, U2>::MTVAL;
-        let _: True = ConstEq::<U1, U1>::MTVAL;
-        let _: False = ConstEq::<U1, U0>::MTVAL;
+        let _:Test<False,U1, U2>;
+        let _:Test<True,U1, U1>;
+        let _:Test<False,U1, U0>;
 
-        let _: False = ConstEq::<(U1), (U2)>::MTVAL;
-        let _: True = ConstEq::<(U1), (U1)>::MTVAL;
-        let _: False = ConstEq::<(U1), (U0)>::MTVAL;
+        let _:Test<False,(U1), (U2)>;
+        let _:Test<True,(U1), (U1)>;
+        let _:Test<False,(U1), (U0)>;
 
-        let _: False = ConstEq::<(U1, U1), (U1, U2)>::MTVAL;
-        let _: True = ConstEq::<(U1, U1), (U1, U1)>::MTVAL;
-        let _: False = ConstEq::<(U1, U1), (U1, U0)>::MTVAL;
+        let _:Test<False,(U1, U1), (U1, U2)>;
+        let _:Test<True,(U1, U1), (U1, U1)>;
+        let _:Test<False,(U1, U1), (U1, U0)>;
 
-        let _: False = ConstEq::<(U1, U1, U1), (U1, U1, U2)>::MTVAL;
-        let _: True = ConstEq::<(U1, U1, U1), (U1, U1, U1)>::MTVAL;
-        let _: False = ConstEq::<(U1, U1, U1), (U1, U1, U0)>::MTVAL;
+        let _:Test<False,(U1, U1, U1), (U1, U1, U2)>;
+        let _:Test<True,(U1, U1, U1), (U1, U1, U1)>;
+        let _:Test<False,(U1, U1, U1), (U1, U1, U0)>;
 
-        let _: False = ConstEq::<(U1, U1, U1, U1), (U1, U1, U1, U2)>::MTVAL;
-        let _: True = ConstEq::<(U1, U1, U1, U1), (U1, U1, U1, U1)>::MTVAL;
-        let _: False = ConstEq::<(U1, U1, U1, U1), (U1, U1, U1, U0)>::MTVAL;
+        let _:Test<False,(U1, U1, U1, U1), (U1, U1, U1, U2)>;
+        let _:Test<True,(U1, U1, U1, U1), (U1, U1, U1, U1)>;
+        let _:Test<False,(U1, U1, U1, U1), (U1, U1, U1, U0)>;
+    }
+
+
+    #[test]
+    pub fn test_derived(){
+        let _:Test<False,Some_<U0>,None_>;
+        let _:Test<False,Some_<U1>,None_>;
+        let _:Test<False,Some_<U2>,None_>;
+        let _:Test<False,None_    ,Some_<U0>>;
+        let _:Test<False,None_    ,Some_<U1>>;
+        let _:Test<False,None_    ,Some_<U2>>;
+        let _:Test<True,Some_<U0>,Some_<U0>>;
+        let _:Test<True,Some_<U1>,Some_<U1>>;
+        let _:Test<True,Some_<U2>,Some_<U2>>;
+        let _:Test<True,None_    ,None_>;
+        let _:Test<False,Some_<U0>,Some_<U1>>;
+        let _:Test<True,Some_<U1>,Some_<U1>>;
+        let _:Test<False,Some_<U2>,Some_<U1>>;
+        
+
+        let _:Test<False,Ok_<U0>,Err_<U0>>;
+        let _:Test<False,Ok_<U1>,Err_<U0>>;
+        let _:Test<False,Ok_<U2>,Err_<U0>>;
+        
+        let _:Test<True,Ok_<U0>,Ok_<U0>>;
+        let _:Test<True,Ok_<U1>,Ok_<U1>>;
+        let _:Test<True,Ok_<U2>,Ok_<U2>>;
+        
+        let _:Test<False,Ok_<U0>,Ok_<U1>>;
+        let _:Test<True,Ok_<U1>,Ok_<U1>>;
+        let _:Test<False,Ok_<U2>,Ok_<U1>>;
+
+        let _:Test<False,Err_<U0>,Err_<U1>>;
+        let _:Test<True,Err_<U1>,Err_<U1>>;
+        let _:Test<False,Err_<U2>,Err_<U1>>;
+
+        let _:Test<False,Err_<U0>,Ok_<U0>>;
+        let _:Test<False,Err_<U0>,Ok_<U1>>;
+        let _:Test<False,Err_<U0>,Ok_<U2>>;
+
+        let _:Test<False,Err_<U0>,Ok_<U0>>;
+        let _:Test<False,Err_<U0>,Ok_<U1>>;
+        let _:Test<False,Err_<U0>,Ok_<U2>>;
+
+        let _:Test<True,ConstPoint<U0,U0>,ConstPoint<U0,U0>>;
+        let _:Test<True,ConstPoint<U1,U1>,ConstPoint<U1,U1>>;
+        let _:Test<True,ConstPoint<U1,U2>,ConstPoint<U1,U2>>;
+        let _:Test<True,ConstPoint<U2,U2>,ConstPoint<U2,U2>>;
+
+        let _:Test<False,ConstPoint<U0,U0>,ConstPoint<U1,U0>>;
+        let _:Test<False,ConstPoint<U0,U0>,ConstPoint<U2,U0>>;
+        let _:Test<False,ConstPoint<U0,U0>,ConstPoint<U3,U0>>;
+        let _:Test<False,ConstPoint<U0,U0>,ConstPoint<U0,U1>>;
+        let _:Test<False,ConstPoint<U0,U0>,ConstPoint<U0,U2>>;
+        let _:Test<False,ConstPoint<U0,U0>,ConstPoint<U0,U3>>;
+
+        let _:Test<False,ConstPoint<U1,U0>,ConstPoint<U0,U0>>;
+        let _:Test<False,ConstPoint<U2,U0>,ConstPoint<U0,U0>>;
+        let _:Test<False,ConstPoint<U3,U0>,ConstPoint<U0,U0>>;
+        let _:Test<False,ConstPoint<U0,U1>,ConstPoint<U0,U0>>;
+        let _:Test<False,ConstPoint<U0,U2>,ConstPoint<U0,U0>>;
+        let _:Test<False,ConstPoint<U0,U3>,ConstPoint<U0,U0>>;
+
     }
 
 }

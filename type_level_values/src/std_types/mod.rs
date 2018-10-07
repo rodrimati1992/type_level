@@ -1,3 +1,9 @@
+/*!
+
+Implementations of traits for core/std library types.
+
+*/
+
 pub mod cmp_ordering;
 pub mod option;
 pub mod phantomdata;

@@ -43,6 +43,7 @@ use attribute_detection::shared::parse_type;
 pub(crate) struct FieldAccessor{
     /// The ammount of times the field identifier is used for a public field.
     pub(crate) public_instances:usize,
+    pub(crate) is_tuple_field:bool,
 }
 
 impl FieldAccessor{
@@ -219,7 +220,7 @@ impl<'a> StructDeclarations<'a>{
                         move|i|{
                             while tuple_fields.len() <= i {
                                 let new_ident=variant
-                                    .new_ident( format!("field_{}",tuple_fields.len()) )
+                                    .new_ident( format!("U{}",tuple_fields.len()) )
                                     .piped(alloc_ident);
                                 tuple_fields.push( new_ident );
                             }
@@ -289,7 +290,8 @@ impl<'a> StructDeclarations<'a>{
                     {
                         let accessor=field_accessors.entry(accessor_ident).or_insert_with(||{
                             FieldAccessor{
-                                public_instances:0
+                                public_instances:0,
+                                is_tuple_field:matches!(FieldName::Index{..}= name_ident),
                             }
                         });
                         if relative_priv==RP::Inherited{
@@ -489,7 +491,18 @@ impl<'a> ToTokens for StructDeclarations<'a>{
 
         let fields_doc_hidden=self.field_accessors.values()
             .map(|acc|acc.doc_hidden_attr(self.tokens));
-        let fields_1=self.field_accessors.keys();
+        
+        let mut fields_1a=Vec::new();
+        let mut fields_1b=Vec::new();
+        for (k,acc) in &self.field_accessors {
+            match acc.is_tuple_field {
+                false=>&mut fields_1a,
+                true =>&mut fields_1b,
+            }.push(k);
+        }
+        let fields_1a=&fields_1a;
+        let fields_1b=&fields_1b;
+
         let fields_2=self.field_accessors.keys();
         let pub_fields=self.field_accessors.iter()
             .filter(|&(_,v)| v.public_instances != 0 )
@@ -555,8 +568,11 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                     #fields_doc_hidden
                     #[derive(Clone,Copy)]
                     /// This is the accessor for the field of the same name.
-                    #vis_kind_submod_rep struct #fields_1;
+                    #vis_kind_submod_rep struct #fields_1a;
                 )*
+                #vis_kind_submod use super::typenum_reexports::{
+                    #( #fields_1b, )*
+                };
 
                 /// This is the accessor for all the fields.
                 #[derive(Clone,Copy)]

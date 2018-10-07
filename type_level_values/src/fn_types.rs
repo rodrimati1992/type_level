@@ -10,7 +10,7 @@ use std_::ops::{
     Rem as Rem, Shl as Shl, Shr as Shr, Sub as Sub,
 };
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_};
-use crate_::ops::{ConstFrom_, ConstInto_,ConstEq_, ConstNE_};
+use crate_::ops::{ConstEq_, ConstNE_};
 
 
 use fn_adaptors::*;
@@ -30,9 +30,6 @@ type_fn!{alias RemOp      [A,B]=Rem}
 type_fn!{alias ShlOp      [A,B]=Shl}
 type_fn!{alias ShrOp      [A,B]=Shr}
 type_fn!{alias SubOp      [A,B]=Sub}
-type_fn!{alias ConstNEOp  [A,B]=ConstNE_}
-type_fn!{alias ConstFromOp[A,B]=ConstFrom_}
-type_fn!{alias ConstIntoOp[A,B]=ConstInto_}
 
 pub use crate_::ops::const_ord::{
     ConstOrdOp,
@@ -41,7 +38,11 @@ pub use crate_::ops::const_ord::{
     ConstGtOp,
     ConstGEOp,
 };
+pub use crate_::ops::const_from::{
+    ConstFromOp,
+    ConstIntoOp,
+};
 pub use crate_::ops::const_eq::{
     ConstEqOp,
-    // ConstNEOp,
+    ConstNEOp,
 };

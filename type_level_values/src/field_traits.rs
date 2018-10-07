@@ -7,12 +7,13 @@ Traits and `TypeFn`s for manipulating fields.
 use prelude::*;
 
 use crate_::ops::{FoldL_, Map_};
-use crate_::fn_adaptors::ApplyNth;
+use crate_::fn_types::{SubOp};
+use crate_::fn_adaptors::{ApplyNth,ApplyRhs};
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-/// Gets the value of the fields of a ConstValue.
-pub trait GetField_<Field>: Sized {
+/// Gets the value of a field of a ConstValue.
+pub trait GetField_<Field> {
     /// The type of the field.
     type Output;
 
@@ -35,6 +36,7 @@ pub trait GetField_<Field>: Sized {
     /// Returns the ConstValue field.
     fn field(self) -> Self::Output
     where
+        Self:Sized,
         Self::Output: MarkerType,
     {
         MarkerType::markertype_val()
@@ -43,6 +45,7 @@ pub trait GetField_<Field>: Sized {
     /// Returns the ConstValue field by reference.
     fn field_ref<'a>(self) -> &'a Self::Output
     where
+        Self:Sized,
         Self::Output: MarkerType + 'a,
     {
         MarkerType::markertype_ref()
@@ -67,7 +70,9 @@ pub trait GetFieldRuntime_<Field, RuntimeType>: GetField_<Field> {
         self,
         _: Field,
         _: VariantPhantom<RuntimeType>,
-    ) -> VariantPhantom<Self::Runtime> {
+    ) -> VariantPhantom<Self::Runtime> 
+    where Self:Sized,
+    {
         PhantomData
     }
 }
@@ -90,7 +95,7 @@ pub type GetFieldRuntime<This, FieldName, RuntimeTy> =
 //////////////////////////////////////////////////////////////////////////////////////////
 
 
-/// Allows setting a field of a type-level struct.
+/// Sets the value of a field of a ConstValue.
 pub trait SetField_<Field, Value: ?Sized>: Sized {
     type Output;
 }
@@ -106,9 +111,9 @@ type_fn!{
 
 /**
 
-Sets the fields of Self with the `FVPairs` list of (FieldAccessor,Value) pairs.
+Sets the value of fields of a ConstValue with a list of (FieldAccessor,Value) pairs.
 
-`FVPairs` example:tlist![ (field::x,U10), (field::y,U5) ] .
+Example of the list:`tlist![ (field::x,U10), (field::y,U5) ]` .
 
 # Example
 
@@ -320,4 +325,315 @@ macro_rules! set_fields {
             >
         >::Output
     };
+}
+
+
+
+
+
+
+
+mod tests{
+    use super::*;
+
+    use std_types::range::{fields as range_f,ConstRange};
+
+    #[derive(TypeLevel)]
+    #[typelevel(reexport(Struct))]
+    struct Tuple2(
+        (),
+        (),
+    );
+
+
+    #[derive(TypeLevel)]
+    #[typelevel(reexport(Struct))]
+    struct Tuple3(
+        (),
+        (),
+        (),
+    );
+
+
+    #[derive(TypeLevel)]
+    #[typelevel(reexport(Struct))]
+    struct Rectangle{
+        x:u32,
+        y:u32,
+        w:u32,
+        h:u32,
+    }
+    use self::type_level_Rectangle::fields as rect_f;
+
+    #[test]
+    fn test_get_field(){
+        type Test<This,Index,Value>=
+            AssEqTy<GetField<This,Index>,Value>;
+
+        let _:Test<Some_<True>,U0,True>;
+        let _:Test<Some_<False>,U0,False>;
+
+
+        let _:Test<Ok_<True>,U0,True>;
+        let _:Test<Ok_<False>,U0,False>;
+
+
+        let _:Test<Err_<True>,U0,True>;
+        let _:Test<Err_<False>,U0,False>;
+
+
+        let _:Test<ConstTuple2<U10,U20>,U0,U10>;
+        let _:Test<ConstTuple2<U10,U20>,U1,U20>;
+
+
+        let _:Test<ConstTuple3<U10,U20,U30>,U0,U10>;
+        let _:Test<ConstTuple3<U10,U20,U30>,U1,U20>;
+        let _:Test<ConstTuple3<U10,U20,U30>,U2,U30>;
+
+        
+        let _:Test<ConstRange<U10,U20>,range_f::start,U10>;
+        let _:Test<ConstRange<U10,U20>,range_f::end  ,U20>;
+
+        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::x,U0>;
+        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::y,U10>;
+        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::w,U20>;
+        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::h,U30>;
+    }
+
+    #[test]
+    fn test_set_field(){
+        type Test<This,Index,Value,NewValue>=
+            AssEqTy<SetField<This,Index,Value>,NewValue>;
+
+        let _:Test<Some_<True> ,U0,False,Some_<False> >;
+        let _:Test<Some_<False>,U0,True,Some_<True>>;
+
+
+        let _:Test<Ok_<True >,U0,False,Ok_<False>>;
+        let _:Test<Ok_<False>,U0,True,Ok_<True>>;
+
+
+        let _:Test<Err_<True>,U0,True,Err_<True>>;
+        let _:Test<Err_<False>,U0,False,Err_<False>>;
+
+
+        let _:Test<ConstTuple2<U10,U20>,U0,(),ConstTuple2<() ,U20>>;
+        let _:Test<ConstTuple2<U10,U20>,U1,(),ConstTuple2<U10,() >>;
+
+
+        let _:Test<ConstTuple3<U10,U20,U30>,U0,(),ConstTuple3<() ,U20,U30>>;
+        let _:Test<ConstTuple3<U10,U20,U30>,U1,(),ConstTuple3<U10,() ,U30>>;
+        let _:Test<ConstTuple3<U10,U20,U30>,U2,(),ConstTuple3<U10,U20,() >>;
+
+        
+        let _:Test<ConstRange<U10,U20>,range_f::start,(),ConstRange<() ,U20>>;
+        let _:Test<ConstRange<U10,U20>,range_f::end  ,(),ConstRange<U10,() >>;
+
+        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::x,(),ConstRectangle<(),U10,U20,U30>>;
+        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::y,(),ConstRectangle<U0,() ,U20,U30>>;
+        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::w,(),ConstRectangle<U0,U10,() ,U30>>;
+        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::h,(),ConstRectangle<U0,U10,U20,() >>;
+    }
+
+    #[test]
+    fn test_set_fields(){
+        let _:AssEqTy<
+            set_fields!{ConstTuple2<(),()> =>
+                U0=U10,
+                U1=U20,
+            },
+            ConstTuple2<U10,U20>
+        >;
+        
+        let _:AssEqTy<
+            set_fields!{ConstTuple3<(),(),()> =>
+                U0=U10,
+                U1=U20,
+                U2=U30,
+            },
+            ConstTuple3<U10,U20,U30>
+        >;
+        
+        let _:AssEqTy<
+            set_fields!{ConstRange<(),()> =>
+                range_f::start=U10,
+                range_f::end  =U20,
+            },
+            ConstRange<U10 ,U20>
+        >;
+        let _:AssEqTy<
+            set_fields!{ConstRange<(),()> =>
+                range_f::start=U10,
+                range_f::end  =U20,
+            },
+            ConstRange<U10,U20>
+        >;
+
+        let _:AssEqTy<
+            set_fields!{ConstRectangle<(),(),(),()> =>
+                rect_f::x=U0,
+                rect_f::y=U10,
+                rect_f::w=U20,
+                rect_f::h=U30,
+            },
+            ConstRectangle<U0,U10,U20,U30>
+        >;
+    }
+
+    #[test]
+    fn test_set_fields_to(){
+        type Test<This,Fields,To,Equals>=(
+            AssEqTy<TypeFn<SetFieldsToOp<To>,(This,Fields)>,Equals>,
+            AssEqTy<SetFieldsTo<This,Fields,To>,Equals>,
+        );
+        let _:Test<
+            ConstRectangle<U100,U100,U100,U100>,
+            tlist![ rect_f::x,rect_f::w ],
+            U0,
+            ConstRectangle<U0,U100,U0,U100>,
+        >;
+
+        let _:Test<
+            ConstRectangle<U100,U100,U100,U100>,
+            tlist![  ],
+            U0,
+            ConstRectangle<U100,U100,U100,U100>,
+        >;
+
+        let _:Test<
+            ConstTuple2<(),()>,
+            tlist![U0,U1],
+            False,
+            ConstTuple2<False,False>
+        >;
+        
+        let _:Test<
+            ConstRange<U100,U100>,
+            tlist![range_f::start,range_f::end],
+            U0,
+            ConstRange<U0,U0>
+        >;
+
+        let _:Test<
+            ConstTuple3<(),(),()>,
+            tlist![U0,U2],
+            False,
+            ConstTuple3<False,(),False>
+        >;
+        
+    }
+
+    type Sub1Op=ApplyRhs<SubOp,U1>;
+
+
+    #[test]
+    fn map_field(){
+        type Test<This,Field,Mapper,Equals>=(
+            AssEqTy<TypeFn<MapFieldOp,(This,Field,Mapper)>,Equals>,
+            AssEqTy<MapField<This,Field,Mapper>,Equals>,
+        );
+        
+
+        let _:Test<
+            ConstRectangle<U100,U100,U100,U100>,
+            rect_f::x,
+            Sub1Op,
+            ConstRectangle<U99,U100,U100,U100>,
+        >;
+
+        let _:Test<
+            ConstRectangle<U100,U100,U100,U100>,
+            rect_f::w,
+            Sub1Op,
+            ConstRectangle<U100,U100,U99,U100>,
+        >;
+
+        let _:Test<
+            ConstTuple2<U100,U100>,
+            U0,
+            Sub1Op,
+            ConstTuple2<U99,U100>,
+        >;
+        
+        let _:Test<
+            ConstTuple2<U100,U100>,
+            U1,
+            Sub1Op,
+            ConstTuple2<U100,U99>,
+        >;
+        
+        let _:Test<
+            ConstRange<U100,U100>,
+            range_f::start,
+            Sub1Op,
+            ConstRange<U99,U100>,
+        >;
+        
+        let _:Test<
+            ConstRange<U100,U100>,
+            range_f::end,
+            Sub1Op,
+            ConstRange<U100,U99>,
+        >;
+
+        let _:Test<
+            ConstTuple3<U100,U100,U100>,
+            U0,
+            Sub1Op,
+            ConstTuple3<U99,U100,U100>,
+        >;
+
+        let _:Test<
+            ConstTuple3<U100,U100,U100>,
+            U1,
+            Sub1Op,
+            ConstTuple3<U100,U99,U100>,
+        >;
+
+        let _:Test<
+            ConstTuple3<U100,U100,U100>,
+            U2,
+            Sub1Op,
+            ConstTuple3<U100,U100,U99>,
+        >;
+        
+    }
+
+    #[test]
+    fn map_into_field(){
+        type Test<This,Field,Mapper,Equals>=(
+            AssEqTy<TypeFn<MapIntoFieldOp,(This,Field,Mapper)>,Equals>,
+            AssEqTy<MapIntoField<This,Field,Mapper>,Equals>,
+        );
+        type SubField<Field>=tlist![ ApplyRhs<GetFieldOp,Field>,Sub1Op ];
+
+        let _:Test<
+            ConstRectangle<U10,U20,U30,U40>,
+            rect_f::x,
+            SubField<rect_f::h>,
+            ConstRectangle<U39,U20,U30,U40>,
+        >;
+
+        let _:Test<
+            ConstRectangle<U10,U20,U30,U40>,
+            rect_f::y,
+            SubField<rect_f::w>,
+            ConstRectangle<U10,U29,U30,U40>,
+        >;
+
+        let _:Test<
+            ConstTuple3<U10,U20,U30>,
+            U1,
+            SubField<U0>,
+            ConstTuple3<U10,U9,U30>,
+        >;
+
+        let _:Test<
+            ConstTuple3<U10,U20,U30>,
+            U0,
+            SubField<U2>,
+            ConstTuple3<U29,U20,U30>,
+        >;
+
+    }
 }

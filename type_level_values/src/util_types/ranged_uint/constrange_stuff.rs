@@ -48,7 +48,8 @@ pub trait RangeTypes {
     fn start() -> Self::Decompressed ;
     
     /// The end of the exclusive range.
-    fn end() -> Self::Decompressed ;
+    /// Returns None if the range covers all of the maximum integer size available.
+    fn end() -> Option<Self::Decompressed> ;
     
     /// The end of the inclusive range.
     fn end_inclusive() -> Self::Decompressed ;
@@ -96,8 +97,9 @@ where
         Start::to_runtime()
     }
     #[inline]
-    fn end() -> Self::Decompressed {
-        End::to_runtime()
+    fn end() -> Option<Self::Decompressed> {
+        let end=End::to_runtime();
+        if end < EndSub1::to_runtime() { None }else{ Some(end) }
     }
     #[inline]
     fn end_inclusive() -> Self::Decompressed {

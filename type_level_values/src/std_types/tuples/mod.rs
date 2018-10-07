@@ -7,6 +7,8 @@ use crate_::ops::{
 };
 
 use crate_::field_traits::{GetField_, SetField_};
+use crate_::ops::as_tlist::AsTList_;
+use crate_::discriminant::Discriminant;
 
 use prelude::*;
 
@@ -27,6 +29,9 @@ pub trait TupleTrait: Sealed {}
 
 impl ConstType for TupleType {}
 
+
+pub type Tuple_Discr=Discriminant<TupleType, TupleType, U0>;
+
 macro_rules! impl_tuple_trait {
     (with-idents;$( ($len:ty)=[ $($tparams:ident,)* => $($runtparams:ident,)* ])*) => {
         $(
@@ -39,6 +44,15 @@ macro_rules! impl_tuple_trait {
             where $($tparams:ConstTypeOf_,)*
             {
                 type Type=TupleType;
+            }
+
+            impl<$($tparams),*>  GetDiscriminant for ($($tparams,)*){
+                type Discriminant=Tuple_Discr;
+                type Variant=TupleType;
+            }
+
+            impl<$($tparams),*> AsTList_ for ($($tparams,)*) {
+                type Output=tlist![$($tparams),*];
             }
 
             impl<$($runtparams,)*> IntoConstType_ for ($($runtparams,)*)

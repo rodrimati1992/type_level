@@ -6,7 +6,6 @@ use core_extensions::type_level_bool::{Boolean, BooleanType, False, True};
 use typenum::bit::{B0, B1};
 use typenum::consts::{P1, U0, U1, Z0};
 
-/// Conversion trait for compile-time values.
 pub trait ConstFrom_<Other>: ConstType {
     type Output;
 }
@@ -28,6 +27,9 @@ where
 {
     type Output = S::Output;
 }
+
+type_fn!{alias ConstFromOp[A,B]=ConstFrom_}
+type_fn!{alias ConstIntoOp[A,B]=ConstInto_}
 
 pub type ConstFrom<This, Other> = <This as ConstFrom_<Other>>::Output;
 
@@ -76,20 +78,33 @@ mod boolean_impls {
 mod tests {
     use super::*;
 
-    struct AssertIdentityConv<T>(T)
-    where
-        T: ConstValue,
-        T::Type: ConstFrom_<T, Output = T>;
-
     #[test]
     fn identity_conversion() {
-        let _: AssertIdentityConv<True>;
-        let _: AssertIdentityConv<False>;
 
-        let _: AssertIdentityConv<U0>;
-        let _: AssertIdentityConv<U1>;
+        macro_rules! check_identity_conv {
+            ( $($type_:ty),*  $(,)* ) => (
+                $(
+                    let _:AssEqTy<$type_, ConstFrom<ConstTypeOf<$type_>,$type_> >;
 
-        let _: AssertIdentityConv<Z0>;
-        let _: AssertIdentityConv<P1>;
+                )*
+            )
+        }
+
+        check_identity_conv!{
+            True,False,
+            U0,U1,U2,U3,U4,U5,
+            Z0,
+            N1,N2,N3,N4,N5,
+            P1,P2,P3,P4,P5,
+            None_,Some_<False>,Some_<True>,
+            Ok_<False>,Ok_<True>,
+            Err_<False>,Err_<True>,
+            ConstRange<U0,U0>,
+            ConstRange<U1,U4>,
+            ConstRange<U6,U10000>,
+            ConstRangeInclusive<U0,U0>,
+            ConstRangeInclusive<U1,U4>,
+            ConstRangeInclusive<U6,U10000>,
+        }
     }
 }

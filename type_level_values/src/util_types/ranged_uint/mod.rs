@@ -1,15 +1,10 @@
-/*!
-A ranged unsigned integer type which stores the number compressed and 
-requires `.value()` to recover the uncompressed number.
-
-*/
 
 pub mod constrange_stuff;
 
 #[cfg(test)]
 mod tests;
 
-use core_extensions::{TryFrom, TryInto,BoolExt};
+use core_extensions::{TryFrom, TryInto,BoolExt,OptionExt};
 
 use typenum::operator_aliases::Sum;
 use num_traits::cast::AsPrimitive;
@@ -140,7 +135,7 @@ where
     pub fn start()->R::Decompressed{
         R::start()
     }
-    pub fn end()->R::Decompressed{
+    pub fn end()->Option<R::Decompressed>{
         R::end()
     }
     pub fn end_inclusive()->R::Decompressed{
@@ -156,13 +151,9 @@ where
     }
     /// Returns the range of this integer.
     ///
-    /// Returns None if the Range covers all of R::Decompressed.
+    /// Returns None if the range covers all of the maximum integer size available.
     pub fn range(&self)->Option<Range<R::Decompressed>>{
-        if !R::is_empty() && R::end()==R::Decompressed::from(0) {
-            None
-        }else{
-            Some(R::start()..R::end())
-        }
+        R::end().map(|end| R::start()..end )
     }
 }
 
@@ -241,7 +232,7 @@ pub struct UIntOutsideRange<N> {
     pub value: N,
     pub start: N,
     pub end_inclusive: N,
-    end:N,
+    end:Option<N>,
 }
 
 #[derive(Debug, Clone)]

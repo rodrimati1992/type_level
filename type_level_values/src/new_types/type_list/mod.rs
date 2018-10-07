@@ -7,6 +7,7 @@ use core_extensions::type_level_bool::{Boolean, False, True};
 use crate_::extern_types::typenum::UnsignedInteger;
 use crate_::field_traits::{GetField_, SetField_};
 use crate_::ops::control_flow::{If, Lazy};
+use crate_::ops::AsTList_;
 use crate_::fn_adaptors::*;
 use crate_::fn_types::{AddOp, ConstEqOp, ConstLtOp, ConstOrdOp, NotOp};
 use crate_::ops::{
@@ -22,7 +23,11 @@ use prelude::*;
 use std_::ops::{Add, BitAnd, BitOr, Index, Sub};
 
 #[derive(TypeLevel)]
-#[typelevel(reexport(Variants, Traits), rename_consttype = "TListType",)]
+#[typelevel(
+    reexport(Variants, Traits,Discriminants), 
+    rename_consttype = "TListType",
+    items(AsTList(NoImpls))
+)]
 pub enum TypeLevelList<Current, Remaining> {
     TNil,
     TList {
@@ -429,6 +434,18 @@ impl<T> PopBack_ for TList<T, TNil> {
 impl PopBack_ for TNil {
     type Output = None_;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+impl<Current, Rem> AsTList_ for TList<Current, Rem>{
+    type Output = Self;
+}
+
+impl AsTList_ for TNil {
+    type Output = TNil;
+}
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 

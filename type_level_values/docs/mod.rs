@@ -23,6 +23,12 @@ This is the reference for topics not coverred in api documentation:
 
 - [Privacy: Details on how TypeLevel deals with privacy.](./reference_privacy/index.html)
 
+- [reading error messages: 
+    How to read error messages by the compiler.
+  ](./appendix_error_messages/index.html)
+
+- [Patterns: Programming patterns in this library.](./appendix_patterns/index.html)
+
 
 
 */
