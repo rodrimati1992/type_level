@@ -34,6 +34,7 @@ Miscelaneous things:
 
 - [Patterns: Programming patterns in this library.](./docs/appendix_patterns/index.html)
 
+- [type-level-function composition](./docs/appendix_function_composition/index.html)
 
 # Documentation
 

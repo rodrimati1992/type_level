@@ -24,6 +24,9 @@ pub mod appendix_error_messages;
 #[path = "appendix_patterns.md"]
 pub mod appendix_patterns;
 
+#[path = "appendix_function_composition.md"]
+pub mod appendix_function_composition;
+
 /**
 
 The guide for how to use this library,starting with the introduction.

@@ -31,6 +31,7 @@ type_fn!{alias ShlOp      [A,B]=Shl}
 type_fn!{alias ShrOp      [A,B]=Shr}
 type_fn!{alias SubOp      [A,B]=Sub}
 
+
 pub use crate_::ops::const_ord::{
     ConstOrdOp,
     ConstLtOp,

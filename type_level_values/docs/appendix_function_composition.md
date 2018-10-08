@@ -1,0 +1,236 @@
+/*!
+
+
+What this library calls function composition is taking 
+multiple functions and producing a type which implements TypeFn_.
+
+# Ways to compose functions
+
+The ways to compose functions are:
+
+- Having a tuple/type-level-list entirely composed of TypeFn_,
+    all elements of which take the return value of the previous TypeFn_.
+
+- Using a function adaptor from type_level_value::fn_adaptors.
+
+# Function adaptors
+
+Function adaptors are generic types which implement TypeFn_,
+taking other TypeFn as parameters (either in the type or as a function parameter).
+
+Most of them are declared [in the fn_adaptors module](../../fn_adaptors/index.html).
+
+The examples will use these adaptors:
+ [ApplyRhs](../../fn_adaptors/struct.ApplyRhs.html)
+/[ApplyLhs](../../fn_adaptors/struct.ApplyLhs.html)
+/[ApplyNonSelf](../../fn_adaptors/type.ApplyNonSelf.html)
+
+### Example 1
+
+Creating a function which multiplies a number by 2.
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+use type_level_values::ops::AssertEq;
+use type_level_values::fn_adaptors::*;
+use type_level_values::fn_types::*;
+
+fn main(){
+    type Mul2=ApplyRhs<MulOp,U2>;
+
+    let _:AssertEq< TypeFn<Mul2,U0> , U0 >;
+    let _:AssertEq< TypeFn<Mul2,U1> , U2 >;
+    let _:AssertEq< TypeFn<Mul2,U2> , U4 >;
+    let _:AssertEq< TypeFn<Mul2,U3> , U6 >;
+
+}
+
+```
+
+
+### Example 2
+
+Creating a function which sets a field to U0.
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+use type_level_values::ops::AssertEq;
+use type_level_values::fn_adaptors::*;
+use type_level_values::fn_types::*;
+use type_level_values::field_traits::{SetFieldOp};
+
+fn main(){
+    type ToU0=ApplyNth< SetFieldOp,U2,U0 >;
+
+    let _:AssertEq< TypeFn<ToU0,((U10,U20,U30,U40),U0)> ,(U0 ,U20,U30,U40)>;
+    let _:AssertEq< TypeFn<ToU0,((U10,U20,U30,U40),U1)> ,(U10,U0 ,U30,U40)>;
+    let _:AssertEq< TypeFn<ToU0,((U10,U20,U30,U40),U2)> ,(U10,U20,U0 ,U40)>;
+    let _:AssertEq< TypeFn<ToU0,((U10,U20,U30,U40),U3)> ,(U10,U20,U30,U0 )>;
+
+}
+
+```
+
+
+### Example 3
+
+Creating a function which divides a field by 2.
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+use type_level_values::ops::AssertEq;
+use type_level_values::fn_adaptors::*;
+use type_level_values::fn_types::*;
+use type_level_values::field_traits::{MapFieldOp};
+
+fn main(){
+    type Div2<Field>=
+        ApplyNonSelf<
+            MapFieldOp,
+            (Field,ApplyRhs<DivOp,U2>)
+        >;
+
+    let _:AssertEq< TypeFn<Div2<U0>,(U10,U20,U30,U40)> , (U5 ,U20,U30,U40) >;
+    let _:AssertEq< TypeFn<Div2<U1>,(U10,U20,U30,U40)> , (U10,U10,U30,U40) >;
+    let _:AssertEq< TypeFn<Div2<U2>,(U10,U20,U30,U40)> , (U10,U20,U15,U40) >;
+    let _:AssertEq< TypeFn<Div2<U3>,(U10,U20,U30,U40)> , (U10,U20,U30,U20) >;
+
+}
+
+```
+
+
+
+### Example 4
+
+Copying one field into another.
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+use type_level_values::ops::AssertEq;
+use type_level_values::fn_adaptors::*;
+use type_level_values::fn_types::*;
+use type_level_values::field_traits::{GetFieldOp,MapIntoFieldOp};
+
+
+fn main(){
+
+    type CopyField<From,To>=
+        ApplyNonSelf<
+            MapIntoFieldOp,
+            (To,ApplyRhs<GetFieldOp,From>)
+        >;
+
+    let _:AssertEq<
+        TypeFn<CopyField<U2,U0>,(U20,U40,U60)>,
+        (U60,U40,U60)
+    >;
+
+    let _:AssertEq<
+        TypeFn<CopyField<U0,U1>,(U20,U40,U60)>,
+        (U20,U20,U60)
+    >;
+}
+
+
+
+```
+
+
+# Tuples/type-level-lists of TypeFn_
+
+If all elements implement TypeFn_ the collection implements TypeFn_,
+all elements of which take the return value of the previous TypeFn_
+
+
+### Example 1
+
+Implementing a multiply-add function.
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+use type_level_values::ops::AssertEq;
+use type_level_values::fn_adaptors::*;
+use type_level_values::fn_types::*;
+
+fn main(){
+
+    type_fn!{
+        pub fn MulAdd[L,R](L,R)
+        where[ (MulOp,ApplyLhs<AddOp,R>):TypeFn_<(L,R),Output=Out>  ]
+        { let Out;Out }
+    }
+
+    let _:AssertEq<TypeFn<MulAdd,(U1,U1)>,U2>;
+    let _:AssertEq<TypeFn<MulAdd,(U1,U2)>,U4>;
+    let _:AssertEq<TypeFn<MulAdd,(U1,U3)>,U6>;
+    let _:AssertEq<TypeFn<MulAdd,(U1,U4)>,U8>;
+    let _:AssertEq<TypeFn<MulAdd,(U2,U1)>,U3>;
+    let _:AssertEq<TypeFn<MulAdd,(U2,U2)>,U6>;
+    let _:AssertEq<TypeFn<MulAdd,(U2,U3)>,U9>;
+    let _:AssertEq<TypeFn<MulAdd,(U2,U4)>,U12>;
+}
+
+```
+
+### Example 2
+
+Copying one field into another,substracted from 500.
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+use type_level_values::ops::AssertEq;
+use type_level_values::fn_adaptors::*;
+use type_level_values::fn_types::*;
+use type_level_values::field_traits::{GetFieldOp,MapIntoFieldOp};
+
+
+fn main(){
+    /// Gets the field and then subtracts 500 with it.
+    type GetFieldSub<Field>=
+        tlist![
+            ApplyRhs<GetFieldOp,Field>,
+            ApplyLhs<SubOp,U500>,
+        ];
+
+    type CopyMapField<From,To>=
+        ApplyNonSelf<
+            MapIntoFieldOp,
+            (To,GetFieldSub<From>)
+        >;
+
+    let _:AssertEq<
+        TypeFn<CopyMapField<U2,U0>,(U20,U30,U100)>,
+        (U400,U30,U100)
+    >;
+
+    let _:AssertEq<
+        TypeFn<CopyMapField<U0,U1>,(U20,U30,U100)>,
+        (U20,U480,U100)
+    >;
+}
+
+```
+
+
+
+
+*/

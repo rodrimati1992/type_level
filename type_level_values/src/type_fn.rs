@@ -21,6 +21,22 @@ Type-level functions is what this library calls every implementor of this trait.
 
 The preferred way to implement this trait is using the type_fn macro.
 
+# Parameters
+
+This is the convention how TypeFn_ gets implemented 
+depending on the ammount of parameters it takes:
+
+- 0 parameters: `TypeFn_<()>`.
+- 1 parameter : `TypeFn_<Param0>`.
+- 2 parameters: `TypeFn_<(Param0,Param1)>`.
+- 3 parameters: `TypeFn_<(Param0,Param1,Param2)>`.
+- 4 parameters: `TypeFn_<(Param0,Param1,Param2,Param3)>`.
+- etc
+
+This has the slight downside that function adaptors have to account for 
+functions that take 0 and 1 parameters.
+
+
 ### Example
 
 Implementing a multiply add operation.
@@ -166,7 +182,7 @@ pub type TypeFn<This, Params> = <This as TypeFn_<Params>>::Output;
 
 A macro for implementing TypeFn_ .
 
-For usage examples of declaring a new TypeFn_  please look at the 
+For more information please look at the 
 [documentation for the TypeFn_ trait](./type_fn/trait.TypeFn_.html)
 
 
@@ -427,7 +443,9 @@ macro_rules! type_fn {
         $(#[$attr])*
         #[allow(non_camel_case_types)]
         pub struct $op_name<$($bound_vars $(=$bound_def)* ,)*>(
-            $(pub $bound_vars,)*
+            pub $crate::prelude::VariantPhantom<(
+                $($crate::prelude::VariantPhantom<$bound_vars>,)*
+            )>
         );
     };
     (inner_struct_decl;
@@ -438,7 +456,7 @@ macro_rules! type_fn {
         $(#[$attr])*
         #[allow(non_camel_case_types)]
         pub struct $op_name<$($bound_vars $(=$bound_def)* ,)*>(
-            $(pub $bound_vars,)*
+            $(pub $crate::prelude::VariantPhantom<$bound_vars>,)*
         );
     };
     (inner_function_decl0;

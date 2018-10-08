@@ -16,40 +16,6 @@ use crate_::fn_adaptors::{ApplyNth,ApplyRhs};
 pub trait GetField_<Field> {
     /// The type of the field.
     type Output;
-
-    /// Returns the ConstValue field.
-    fn get_field() -> Self::Output
-    where
-        Self::Output: MarkerType,
-    {
-        MarkerType::markertype_val()
-    }
-
-    /// Returns the ConstValue field by reference.
-    fn get_field_ref<'a>() -> &'a Self::Output
-    where
-        Self::Output: MarkerType + 'a,
-    {
-        MarkerType::markertype_ref()
-    }
-
-    /// Returns the ConstValue field.
-    fn field(self) -> Self::Output
-    where
-        Self:Sized,
-        Self::Output: MarkerType,
-    {
-        MarkerType::markertype_val()
-    }
-
-    /// Returns the ConstValue field by reference.
-    fn field_ref<'a>(self) -> &'a Self::Output
-    where
-        Self:Sized,
-        Self::Output: MarkerType + 'a,
-    {
-        MarkerType::markertype_ref()
-    }
 }
 
 /// Gets the runtime value of a field of a ConstValue.
@@ -58,22 +24,11 @@ pub trait GetFieldRuntime_<Field, RuntimeType>: GetField_<Field> {
     type Runtime;
 
     /// Returns the runtime value of the field.
-    fn get_val() -> Self::Runtime
+    fn get_field_runtime() -> Self::Runtime
     where
         GetField<Self, Field>: IntoRuntime<Self::Runtime>,
     {
         Self::Output::to_runtime()
-    }
-
-    /// Returns a VariantPhantom wrapping the type of the runtime equivalent of `Field`.
-    fn runtime_field_ty(
-        self,
-        _: Field,
-        _: VariantPhantom<RuntimeType>,
-    ) -> VariantPhantom<Self::Runtime> 
-    where Self:Sized,
-    {
-        PhantomData
     }
 }
 

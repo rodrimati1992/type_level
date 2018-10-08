@@ -203,11 +203,3 @@ type_fn!{
     /// Type-level version of "|x| x ".
     pub fn IdentityFn[P](P){P}
 }
-
-type_fn!{
-    captures(F)
-    /// A type-level version of "|x| f((x,)) "
-    pub fn TupledIn[Input](Input)
-    where[ F: TypeFn_<(Input,)>, ]
-    { F::Output }
-}

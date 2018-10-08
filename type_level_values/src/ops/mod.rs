@@ -3,13 +3,16 @@ Contains many operations on `ConstValue`s.
 */
 
 pub mod as_tlist;
+pub mod assertions;
 pub mod const_eq;
 pub mod const_from;
 pub mod const_ord;
 pub mod control_flow;
 pub mod wrapper_ops;
 
-#[doc(inline)]
+pub use self::assertions::{
+    AssertEq, AssertEqOp, AssertEq_,
+};
 pub use self::as_tlist::{
     AsTList, AsTListOp, AsTList_, VariantAsTList, VariantAsTListOp, VariantAsTList_,
 };
