@@ -5,6 +5,9 @@ pub(crate) mod struct_declarations;
 pub(crate) mod variants_mod;
 pub(crate) mod reexports;
 
+// #[cfg(test)]
+// pub(crate) mod test;
+
 
 // use std::cmp::max;
 use std::iter;

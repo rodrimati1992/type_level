@@ -50,7 +50,7 @@ use ::print_derive_tokens;
 
 pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     use syn::token::Comma;
-    let comma=Comma::new(ast.ident.span());
+    let comma=Comma::default();
     ast.generics.make_where_clause();
     for generic in &mut ast.generics.params {
         match *generic {

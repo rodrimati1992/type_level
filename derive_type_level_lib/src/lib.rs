@@ -29,17 +29,17 @@ pub(crate) mod data_structure;
 pub mod typelevel;
 pub mod const_constructor;
 pub mod doc_code_snippets;
-pub mod void_like;
+pub(crate) mod void_like;
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-pub trait FromWith<T,W>{
+pub(crate) trait FromWith<T,W>{
     fn from_with(from:T,with:W)->Self;
 }
 
-pub trait IntoWith<To,W>{
+pub(crate) trait IntoWith<To,W>{
     fn into_with(self,with:W)->To;
 }
 
@@ -97,7 +97,7 @@ pub(crate) type ArenasRef<'alloc>=
 
 use proc_macro2::{TokenStream};
 
-pub fn print_derive_tokens(stream:&TokenStream)-> ! {
+pub(crate) fn print_derive_tokens(stream:&TokenStream)-> ! {
     use regex::Regex;
 
     let str_=format!("{}",stream);

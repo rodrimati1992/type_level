@@ -189,7 +189,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                     (ImplVariant::Internal{type_,..},EnumOrStruct::Enum)
                     =>{
                         type_.to_tokens(tstream);
-                        token::Colon2::new(span).to_tokens(tstream);
+                        token::Colon2::default().to_tokens(tstream);
                         original_variant_name.to_tokens(tstream);
                     }
                     (ImplVariant::Internal{type_,..},EnumOrStruct::Struct)

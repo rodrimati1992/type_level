@@ -1,4 +1,3 @@
-#[macro_export]
 macro_rules! annotations_and_bounds {
     (inner; $decls:expr, $impl_ind:expr,let($annotations:ident, $bounds:ident) $(,)*) => {
         let $annotations;
@@ -30,7 +29,6 @@ macro_rules! annotations_and_bounds {
     };
 }
 
-#[macro_export]
 macro_rules! to_stream {
     ( $stream:ident ; $($expr:expr),* $(,)* ) => {{
         // use quote::TokenStreamExt;

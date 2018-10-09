@@ -31,10 +31,12 @@ typed-arena = "1.4"
 regex="1.0"
 
 [dependencies.syn]
-version = "0.14"
+version = "0.15"
 features=["extra-traits","visit","visit-mut"]
 
-
+[dev-dependencies.syn]
+version = "0.15"
+features=["extra-traits","visit","full","visit-mut"]
 
 [dependencies.core_extensions]
 version="0.1.4"

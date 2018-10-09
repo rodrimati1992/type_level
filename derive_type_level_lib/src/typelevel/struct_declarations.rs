@@ -535,7 +535,7 @@ impl<'a> ToTokens for StructDeclarations<'a>{
             
 
         tokens.append_all(quote!{
-            mod private{
+            mod __private{
                 #vis_kind_submod trait Sealed{}
 
                 #vis_kind_submod trait __PrivTrait{}
@@ -545,7 +545,7 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                 impl __PrivTrait for __IsPriv{}
 
             }
-            use self::private::Sealed;
+            use self::__private::Sealed;
 
             #priv_struct_reexport
 

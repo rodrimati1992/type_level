@@ -41,6 +41,13 @@ macro_rules! declare_common_tokens {
 }
 
 
+impl Default for CommonTokens{
+    fn default()->Self{
+        Self::new()
+    }
+}
+
+
 impl Eq for CommonTokens{}
 impl PartialEq for CommonTokens{
     fn eq(&self,_other:&Self)->bool{
@@ -65,6 +72,9 @@ impl Ord for CommonTokens{
 
 declare_common_tokens!{
     with_new[
+    ]
+
+    with_default[
         lt=Lt,
         gt=Gt,
         comma=Comma,
@@ -72,9 +82,6 @@ declare_common_tokens!{
         colon2=Colon2,
         add=Add,
         semicolon=Semi,
-    ]
-
-    with_default[
         pub_=Pub,
         super_=Super,
         crate_=Crate,
@@ -100,5 +107,6 @@ declare_common_tokens!{
         fields_mod="fields",
         variants_mod="variants",
         dund_fields_mod="__fields",
+        priv_mod="__private_mod",
     ]
 }
