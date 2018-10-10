@@ -525,7 +525,7 @@ impl<'a> ToTokens for StructDeclarations<'a>{
 
         let priv_struct_reexport=self.opt_priv_field_vis().map(|_|{
             quote!(
-                #priv_field_vis_submod use self::private::{
+                #priv_field_vis_submod use self::__private_mod::{
                     __PrivTrait,
                     __IsPriv,
                 };
@@ -535,7 +535,7 @@ impl<'a> ToTokens for StructDeclarations<'a>{
             
 
         tokens.append_all(quote!{
-            mod __private{
+            mod __private_mod{
                 #vis_kind_submod trait Sealed{}
 
                 #vis_kind_submod trait __PrivTrait{}
@@ -545,7 +545,7 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                 impl __PrivTrait for __IsPriv{}
 
             }
-            use self::__private::Sealed;
+            use self::__private_mod::Sealed;
 
             #priv_struct_reexport
 

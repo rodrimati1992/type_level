@@ -155,6 +155,82 @@ If all elements implement TypeFn_ the collection implements TypeFn_,
 all elements of which take the return value of the previous TypeFn_
 
 
+### Example 0
+
+Creating a type-level function which wraps the type T in a `Arc<Mutex<Vec<Option<T>>>>`.
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+
+use type_level_values::ops::*;
+
+use std::sync::{Mutex,Arc};
+
+type_fn!{ pub fn OptionFn[T](T){Option<T>} }
+type_fn!{ pub fn VecFn[T](T){Vec<T>} }
+type_fn!{ pub fn MutexFn[T](T){Mutex<T>} }
+type_fn!{ pub fn ArcFn[T](T){Arc<T>} }
+
+fn main(){
+    let _:AssertEq< 
+        TypeFn< OptionFn ,u32>, 
+        Option<u32> 
+    >={
+        None
+    };
+    
+    let _:AssertEq< TypeFn<( OptionFn,VecFn ),u32>, Vec<Option<u32>> >= {
+        vec![ Some(10) , None ]
+    };
+    
+    let _:AssertEq< 
+        TypeFn<( OptionFn,VecFn,MutexFn ),u32>, 
+        Mutex<Vec<Option<u32>>> 
+    >={
+        Mutex::new( vec![ None , None ] )
+    };
+    
+    let _:AssertEq< 
+        TypeFn<( OptionFn,VecFn,MutexFn,ArcFn ), u8 >,
+        Arc<Mutex<Vec<Option< u8 >>>>
+    >={
+        10
+        .piped(Some)
+        .piped(|x| vec![x;10] )
+        .piped(Mutex::new)
+        .piped(Arc::new)
+    };
+    
+    let _:AssertEq< 
+        TypeFn<( OptionFn,VecFn,MutexFn,ArcFn ), String >,
+        Arc<Mutex<Vec<Option< String >>>>
+    >={
+        "what the"
+        .to_string()
+        .piped(Some)
+        .piped(|x| vec![x;10] )
+        .piped(Mutex::new)
+        .piped(Arc::new)
+    };
+}
+
+```
+
+`AssertEq` is a type alias that assert that both types are the same,evaluating to the second one.
+
+The `piped` method is defined like this:
+
+```ignore
+fn piped<F, U>(self, f: impl FnOnce(Self) -> U) -> U {
+    f(self)
+}
+```
+
+
+
 ### Example 1
 
 Implementing a multiply-add function.

@@ -23,5 +23,6 @@ fn main() {
         println!("cargo:rustc-cfg=rust_1_27");
     }
 
+    //#[cfg(test)]
     self::test::build_tests().unwrap();
 }
