@@ -4,7 +4,7 @@ pub(crate) mod typelevel;
 pub(crate) mod const_constructor;
 
 
-use attribute_detection::indexable_struct::GetEnumIndices;
+use indexable_struct::GetEnumIndices;
 
 
 #[allow(unused_imports)]

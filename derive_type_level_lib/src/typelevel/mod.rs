@@ -128,7 +128,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         panic!("{:#?}", struct_decls);
     }
 
-    quote!(
+    let mut output=quote!(
         #[allow(non_snake_case)]
         #[allow(non_camel_case_types)]
         #[allow(dead_code)]
@@ -149,11 +149,21 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         }
 
         #reexport
-    ).observe(|v|{
-        if attribute_detected.print_derive {
-            print_derive_tokens(v)
-        }
-    })
+    );
+    if attribute_detected.print_derive {
+        print_derive_tokens(&output);
+    }
+    if attribute_detected.derive_str {
+        let derive_str=format!("{}",output);
+        let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
+        
+        output.append_all(quote! {
+            impl #impl_generics #name #ty_generics #where_clause {
+                pub const TYPELEVEL_DERIVE:&'static str=#derive_str;
+            }
+        });
+    }
+    output
 }
 
 pub fn derive_from_str(input:&str) -> TokenStream {

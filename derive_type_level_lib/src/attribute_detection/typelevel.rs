@@ -11,7 +11,7 @@ use super::shared::{
     parse_visibility,
 };
 
-use super::indexable_struct::GetEnumIndices;
+use indexable_struct::GetEnumIndices;
 
 use attribute_errors::typelevel as attribute_errors;
 
@@ -56,6 +56,8 @@ pub(crate) struct TLAttributes<'a> {
     pub(crate) skip_derive: bool,
     pub(crate) print_debug: bool,
     pub(crate) print_attributes:bool,
+    /// If true,creates an associated constant containing the derive output.
+    pub(crate) derive_str:bool,
     pub(crate) _marker: PhantomData<&'a ()>,
 }
 
@@ -391,6 +393,9 @@ fn attr_settings_new_attr<'alloc>(
                 }
                 "print_attributes" => {
                     settings.print_attributes = true;
+                }
+                "derive_str" => {
+                    settings.derive_str = true;
                 }
                 "reexport" => {
                     reexport_attribute(

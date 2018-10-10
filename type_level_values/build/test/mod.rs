@@ -338,6 +338,15 @@ let _:AssertEq<AsTList<Val1>,tlist![U0,U10]>;
 let _:AssertEq<AsTList<Val2>,tlist![U10,U0]>;
 let _:AssertEq<AsTList<Val3>,tlist![U10,U10]>;
 
+let _:AssertEq<
+    <{deriving}_Uninit as InitializationValues>::Uninitialized,
+    {name}< UninitField<fields::x> , UninitField<fields::y> >
+>;
+
+let _:AssertEq<
+    <{deriving}_Uninit as InitializationValues>::Initialized,
+    {name}< IsInitField<fields::x> , IsInitField<fields::y> >
+>;
 
 ",   
                     name=name,
@@ -433,6 +442,23 @@ let _:AssertEq<AsTList<Open2>,tlist![U100]>;
 let _:AssertEq<AsTList<Closed>,tlist![]>;
 
 
+let _:AssertEq<<HalfOpen_Uninit as InitializationValues>::Initialized,HalfOpen>;
+let _:AssertEq<<HalfOpen_Uninit as InitializationValues>::Uninitialized,HalfOpen>;
+
+let _:AssertEq<
+    <Open_Uninit as InitializationValues>::Uninitialized,
+    Open< UninitField<fields::remaining> >
+>;
+
+let _:AssertEq<
+    <Open_Uninit as InitializationValues>::Initialized,
+    Open< IsInitField<fields::remaining> >
+>;
+
+let _:AssertEq<<Closed_Uninit as InitializationValues>::Initialized,Closed>;
+let _:AssertEq<<Closed_Uninit as InitializationValues>::Uninitialized,Closed>;
+
+
 ",
                     //name=name,
                     deriving=deriving_type,
@@ -508,40 +534,45 @@ fn type_decls<W:ioWrite>(mut w:W)->io::Result<()> {
 fn imports<W:ioWrite>(mut w:W)->io::Result<()> {
     write!(w,"
 
-        #[macro_use]\n\
-        extern crate derive_type_level;\n\
-        #[macro_use]\n\
-        extern crate type_level_values;\n\
-        \n\
+#[macro_use]
+extern crate derive_type_level;
+#[macro_use]
+extern crate type_level_values;
 
 
-        #[allow(dead_code)]
-        mod tests{{
+
+#[allow(dead_code)]
+mod tests{{
 
 
-        use std::ops::Index; \n\
-        use type_level_values::prelude::*;\n\
-        use type_level_values::ops::*;\n\
-        use type_level_values::collection_ops::{{Reverse}};
-        use type_level_values::std_types::cmp_ordering::{{Less_,Equal_,Greater_}};
-        use type_level_values::discriminant::{{GetDiscrOf,GetVariantOf,Discriminant}};
-        use type_level_values::field_traits::{{GetField,SetField,GetFieldRuntime}};
+use std::ops::Index; 
+use type_level_values::prelude::*;
+use type_level_values::ops::*;
+use type_level_values::collection_ops::{{Reverse}};
+use type_level_values::std_types::cmp_ordering::{{Less_,Equal_,Greater_}};
+use type_level_values::discriminant::{{GetDiscrOf,GetVariantOf,Discriminant}};
+use type_level_values::field_traits::{{GetField,SetField,GetFieldRuntime}};
+use type_level_values::initialization::{{
+    InitializationValues,
+    IsInitField,
+    UninitField,
+}};
 
 
-        macro_rules! assert_eq_into{{
-            ( $tylevel:ty , $runt:expr ) => ({{
-                let runtime_val=$runt;
-                assert_eq!( 
-                    <$tylevel as IntoRuntime<_>>::to_runtime() , 
-                    runtime_val
-                );
-                assert_eq!( 
-                    <$tylevel as IntoConstant<_>>::VALUE , 
-                    runtime_val
-                );
-            }})
-        }}
-        \n\
+macro_rules! assert_eq_into{{
+    ( $tylevel:ty , $runt:expr ) => ({{
+        let runtime_val=$runt;
+        assert_eq!( 
+            <$tylevel as IntoRuntime<_>>::to_runtime() , 
+            runtime_val
+        );
+        assert_eq!( 
+            <$tylevel as IntoConstant<_>>::VALUE , 
+            runtime_val
+        );
+    }})
+}}
+
     ")?;
     Ok(())
 }

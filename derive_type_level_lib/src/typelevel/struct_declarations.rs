@@ -489,9 +489,6 @@ impl<'a> ToTokens for StructDeclarations<'a>{
 
         let priv_suffix=self.priv_param_suffix();
 
-        let fields_doc_hidden=self.field_accessors.values()
-            .map(|acc|acc.doc_hidden_attr(self.tokens));
-        
         let mut fields_1a=Vec::new();
         let mut fields_1b=Vec::new();
         for (k,acc) in &self.field_accessors {
@@ -565,7 +562,6 @@ impl<'a> ToTokens for StructDeclarations<'a>{
 
             mod __fields{
                 #(
-                    #fields_doc_hidden
                     #[derive(Clone,Copy)]
                     /// This is the accessor for the field of the same name.
                     #vis_kind_submod_rep struct #fields_1a;

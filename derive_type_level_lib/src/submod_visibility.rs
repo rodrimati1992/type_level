@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use syn;
 use syn::Visibility;
 use syn::Path;
 use quote::ToTokens;

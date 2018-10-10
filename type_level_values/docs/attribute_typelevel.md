@@ -97,6 +97,10 @@ Most attributes lists support these attributes:
     <br>
     - Fields:the `fields` module.
 
+- derive_str :
+    Creates the associated constant `const TYPELEVEL_DERIVE:&'static str` on the deriving type,
+    containing the output of the derive macro.
+
 ## Attributes on a Type/Variant:
 
 
@@ -109,7 +113,6 @@ Most attributes lists support these attributes:
     Renames the trait used to access the fields of the ConstValue equivalent 
     for the derived Type/Variant.<br>
     Of the form `rename_trait = "new_name"`,the string must be a valid identifier.
-
 
 - derive : 
     Derives all Built-in traits,

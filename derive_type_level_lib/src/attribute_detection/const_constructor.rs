@@ -1,6 +1,6 @@
 use super::item_metadata::ItemMetaData;
 use super::my_meta::{MyMeta, MyNested};
-use super::indexable_struct::GetEnumIndices;
+use indexable_struct::GetEnumIndices;
 
 use attribute_errors::const_constructor as attribute_errors;
 
