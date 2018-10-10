@@ -208,7 +208,7 @@ where
         T::to_runtime()
     }
 }
-#[cfg(rust_1_20)]
+#[cfg(rust_1_22)]
 impl<T, R> IntoConstant<R> for ConstWrapper<T>
 where
     T: IntoConstant<R>,

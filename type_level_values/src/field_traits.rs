@@ -293,6 +293,7 @@ mod tests{
 
     use std_types::range::{fields as range_f,ConstRange};
 
+    #[allow(dead_code)]
     #[derive(TypeLevel)]
     #[typelevel(reexport(Struct))]
     struct Tuple2(
@@ -300,7 +301,7 @@ mod tests{
         (),
     );
 
-
+    #[allow(dead_code)]
     #[derive(TypeLevel)]
     #[typelevel(reexport(Struct))]
     struct Tuple3(
@@ -309,7 +310,7 @@ mod tests{
         (),
     );
 
-
+    #[allow(dead_code)]
     #[derive(TypeLevel)]
     #[typelevel(reexport(Struct))]
     struct Rectangle{

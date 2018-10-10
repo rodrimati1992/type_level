@@ -11,7 +11,7 @@ categories = ["no-std"]
 repository = "https://github.com/rodrimati1992/type_level"
 include = [
     "Cargo.toml", 
-    "build.rs", 
+    "build/**/*.rs", 
     "src/**/*.rs", 
     "docs/**/*.rs", 
     "docs/**/*.md", 
@@ -19,6 +19,7 @@ include = [
     "../APACHE_license", 
     "../MIT_license"
 ]
+build = "build/main.rs"
 
 [badges]
 travis-ci = { repository =  "rodrimati1992/type_level/" }
@@ -49,6 +50,9 @@ optional=true
 
 [build-dependencies]
 rustc_version = "0.2"
+core_extensions = "0.1"
+itertools="0.7"
+bitflags="1.0"
 
 
 

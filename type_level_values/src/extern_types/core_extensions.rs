@@ -52,12 +52,12 @@ impl IntoRuntime<bool> for False {
     }
 }
 
-#[cfg(rust_1_20)]
+#[cfg(rust_1_22)]
 impl IntoConstant<bool> for True {
     const VALUE: bool = true;
 }
 
-#[cfg(rust_1_20)]
+#[cfg(rust_1_22)]
 impl IntoConstant<bool> for False {
     const VALUE: bool = false;
 }
