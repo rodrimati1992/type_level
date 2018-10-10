@@ -7,7 +7,6 @@
 
 use type_level_values::prelude::*;
 
-use std::mem::transmute;
 use std::ops::{Deref, DerefMut};
 
 /////////////////////////////////////////////////////////////////////
@@ -25,13 +24,10 @@ use self::type_level_Mutability::{Immutable, MutabilityTrait, Mutable};
 /////////////////////////////////////////////////////////////////////
 
 /// A Wrapper type whose mutability is a const-parameter.
-/// Many impls are also implemented on [MutabilityWrapperInternal].
-pub type MutabilityWrapper<T, M> = MutabilityWrapperInternal<T, ConstWrapper<M>>;
-
-/// A Wrapper type whose mutability is a const-parameter.
 /// Many impls are implemented on [MutabilityWrapper].
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Ord, PartialOrd)]
-pub struct MutabilityWrapperInternal<T, M> {
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Ord, PartialOrd,ConstConstructor)]
+#[cconstructor(Type="MutabilityWrapper",ConstParam="M")]
+pub struct MutabilityWrapperInner<T, M> {
     value: T,
     mutability: M,
 }
@@ -47,19 +43,21 @@ where
         }
     }
 
-    pub fn to_immutable(&self) -> MutabilityWrapper<T, Immutable>
-    where
-        T: Clone,
-    {
-        MutabilityWrapper::new(self.value.clone(), Immutable {})
-    }
     pub fn into_immutable(self) -> MutabilityWrapper<T, Immutable> {
-        MutabilityWrapper::new(self.value, Immutable {})
+        self.mutparam(ChangeMutability::new(),Immutable::T)
     }
     pub fn as_immutable(&self) -> &MutabilityWrapper<T, Immutable> {
-        unsafe { transmute(self) }
+        self.mutparam_ref(ChangeMutability::new(),Immutable::T)
     }
 }
+
+const_method!{
+    type ConstConstructor[T]=( MutabilityWrapperCC<T> )
+    type AllowedConversions=( allowed_conversions::All )
+
+    fn ChangeMutability[I,I2](I,I2) { I2 }
+}
+
 
 impl<T, M> Deref for MutabilityWrapper<T, M> {
     type Target = T;
@@ -77,6 +75,7 @@ impl<T> DerefMut for MutabilityWrapper<T, Mutable> {
 
 /////////////////////////////////////////////////////////////////////
 
+#[allow(unused_mut)]
 pub fn main_ () {
     let mut wrapper: MutabilityWrapper<_, Mutable> = MutabilityWrapper::new(100, Mutable {});
     assert_eq!(*wrapper, 100);
@@ -84,8 +83,7 @@ pub fn main_ () {
     assert_eq!(*wrapper, 200);
     *wrapper = 200;
 
-    #[allow(unused_mut)]
-    let mut frozen: MutabilityWrapper<_, Immutable> = wrapper.to_immutable();
+    let mut frozen: MutabilityWrapper<_, Immutable> = wrapper.into_immutable();
     assert_eq!(*frozen, 200);
 
     // The line bellow won't compile because the contents of the wrapper are immutable

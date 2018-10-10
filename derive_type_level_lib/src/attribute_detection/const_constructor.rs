@@ -7,9 +7,10 @@ use attribute_errors::const_constructor as attribute_errors;
 use super::shared::{
     NotUpdated,
     UpdateWithMeta,
-    ident_from_nested,
+    // ident_from_nested,
     foreach_nestedmeta_index,
     parse_ident,
+    typaram_from_nested,
 };
 use ArenasRef;
 
@@ -36,7 +37,7 @@ pub(crate)struct CCAttributes<'alloc>{
     pub(crate) attrs:ItemMetaData<'alloc,()>,
     pub(crate) const_constructor:ItemMetaData<'alloc,TypeDecl<'alloc>>,
     pub(crate) type_alias       :ItemMetaData<'alloc,TypeDecl<'alloc>>,
-    pub(crate) const_param      :Option<&'alloc Ident>,
+    pub(crate) const_param      :Option<(&'alloc Ident,Option<&'alloc syn::Type>)>,
     
     /// Whether extension Const-methods are allowed.
     pub(crate) extension_methods:ItemMetaData<'alloc,ExtMethodIA>,
@@ -259,7 +260,7 @@ fn constructor_inner<'alloc>(
                     );
                 } 
                 "ConstParam" => {
-                    this.const_param = Some(ident_from_nested(&nested0.value,arenas));
+                    this.const_param = Some( typaram_from_nested(&nested0.value,arenas) );
                 }
                 "items"=>{
                     let value = nested0.value;

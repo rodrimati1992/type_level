@@ -52,7 +52,6 @@ pub fn main (){
     let which_binary=Example::from_list(&which_binary);
 
     match which_binary {
-        Some(Example(ExampleKind::Regular,0))=>_00_constconstructor_safety::main_(),
         Some(Example(ExampleKind::Regular,1))=>_01_deserialize_uninitialized::main_(),
         Some(Example(ExampleKind::Regular,2))=>_02_mut_wrapper::main_(),
         Some(Example(ExampleKind::Regular,3))=>_03_vis_wrapper::main_(),
@@ -68,7 +67,7 @@ pub fn main (){
         Some(Example(ExampleKind::Syntax,1))=>syntax_01_construct::main_(),
         _=>panic!("\n\n\
 Arguments must be one of: 
-    `0-10`:Examples demonstrating functionality implemented using type-level values.
+    `1-10`:Examples demonstrating functionality implemented using type-level values.
     `playground 1-2`:A local playground.
     `syntax 1`:The executable part of examples showing some piece of syntax .
 

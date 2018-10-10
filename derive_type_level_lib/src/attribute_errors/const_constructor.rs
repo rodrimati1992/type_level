@@ -68,8 +68,15 @@ pub fn const_param_attr()->AttrShape{
         variants:vec![
             AttrVariant{
                 kind:AttrKind::NameValue{value:"ident".into()} , 
-                clarification:Some("the string must be one of the type type parameters.".into())
-            }
+                clarification:Some("the string must be one of the type parameters.".into())
+            },
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"ident = DefaultType".into()} , 
+                clarification:Some("\
+                    `ident` must be the identifier of one of the type parameters,\n\
+                    and `DefaultType` must be its default value.\
+                ".into())
+            },
         ],
         word:"ConstParam",
         description:"(required attribute) \

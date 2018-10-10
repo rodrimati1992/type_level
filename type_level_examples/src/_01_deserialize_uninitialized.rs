@@ -34,12 +34,9 @@ pub struct Reversed(pub bool);
 pub type DeserializeSortedList<T> = SortedList<T, Uninitialized>;
 
 /// A List that is sorted (its type being SortedList<T>) .
-pub type SortedList<T, I = Initialized> = SortedListInner<T, ConstWrapper<I>>;
-
-/// A List that is sorted (its type being SortedList<T>) .
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, ConstConstructor)]
-#[cconstructor(Type(use_ = "SortedList"), ConstParam = "I")]
-pub struct SortedListInner<T, I = ConstWrapper<Initialized>> {
+#[cconstructor(Type= "SortedList", ConstParam = "I=Initialized")]
+pub struct SortedListInner<T, I> {
     list: Vec<T>,
 
     const_value: I,

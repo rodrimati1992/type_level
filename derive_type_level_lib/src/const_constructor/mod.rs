@@ -125,9 +125,10 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
 
     let const_param_for_alias=new_ident(format!("__ConstParam"));
     // let const_param_for_alias_rep=iter::repeat(const_param_for_alias);
-    let const_param_ident=attrs.const_param.unwrap_or_else(||{
-        panic!("must pass the 'ConstParam' parameter.\n{}",help_message);
-    });
+    let (const_param_ident,const_param_default)=
+        attrs.const_param.unwrap_or_else(||{
+            panic!("must pass the 'ConstParam' parameter.\n{}",help_message);
+        });
 
 
     let ref lifetimes   =ast.generics.lifetimes().collect::<Vec<_>>();
@@ -137,7 +138,14 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     let ref type_param_idents=type_params.iter().map(|x| &x.ident ).collect::<Vec<_>>();
     
     let ref type_alias_ty_params=type_params.iter()
-        .map(|x| if x.ident==*const_param_ident { const_param_for_alias }else{ &x.ident } )
+        .map(|x| {
+            let ident=&x.ident;
+            if x.ident==*const_param_ident { 
+                quote!( #const_param_for_alias #( = #const_param_default )* )
+            }else{ 
+                quote!( #ident )
+            }
+        })
         .collect::<Vec<_>>();
 
     let ref truncated_type_params=type_param_idents.iter()

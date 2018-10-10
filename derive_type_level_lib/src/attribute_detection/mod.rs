@@ -27,6 +27,7 @@ pub(crate) mod shared {
     use super::*;
 
     use ArenasRef;
+    use core_extensions::SelfOps;
 
     use std::fmt;
 
@@ -126,6 +127,23 @@ pub(crate) mod shared {
         match new_ident {
             &MyNested::Value(ref val) => arenas.idents.alloc(parse_ident(val)),
             v => panic!("cannot be parsed as an identifier:{:#?}", v),
+        }
+    }
+
+    pub(crate) fn typaram_from_nested<'a>(
+        new_ident: &MyNested<'a>,
+        arenas: ArenasRef<'a>
+    ) -> (&'a syn::Ident,Option<&'a syn::Type>) {
+        match new_ident {
+            &MyNested::Value(ref val) => {
+                let mut iter=val.splitn(2,'=');
+                let param_=iter.next().unwrap_or("")
+                    .piped(|x| arenas.idents.alloc(parse_ident(x)) );
+                let type_=iter.next()
+                    .map(|x| &*arenas.types.alloc(parse_type(x)) );
+                ( param_ , type_ )
+            },
+            v => panic!("cannot be parsed as an identifier :{:#?}", v),
         }
     }
 
