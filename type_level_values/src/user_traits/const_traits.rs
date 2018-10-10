@@ -52,28 +52,57 @@ pub type ApplyConstParam<Constructor, Const> = <Constructor as ApplyConstParam_<
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-/// Marker trait for types whose memory layout does not change when the Const-parameter does.
-///
-/// # Safety
-///
-/// Implementors of this trait must ensure that the Const-parameter is not used to
-/// determine the layout of the type.
-///
-/// To ensure that the Const-parameter does not affect the layout:
-///
-/// - Use the ConstConstructor derive macro which automatically implements this trait.
-///
-/// - Or implement this trait manually.
-///
-/// # Manual implementors
-///
-/// Manual implementors of this trait must constrain every field which
-/// mentions the Const-parameter implements ConstLayoutIndependent< NewFieldType >,
-/// and optionally SameConstConstructor< NewFieldType >
-/// (if one wants the ConstConstructor to stay the same) .<br>
-/// NewFieldType is the type of the same field in `Other`.
-///
-///
+
+/**
+Marker trait for types whose memory layout does not change when the Const-parameter does.
+
+# Safety
+
+Implementors of this trait must ensure that the Const-parameter is not used to
+determine the layout of the type.
+
+To ensure that the Const-parameter does not affect the layout:
+
+- Use the ConstConstructor derive macro which automatically implements this trait.
+
+- Or implement this trait manually.
+
+# Manual implementors
+
+Manual implementors of this trait must constrain every field which
+mentions the Const-parameter implements ConstLayoutIndependent< NewFieldType >,
+and optionally SameConstConstructor< NewFieldType >
+(if one wants the ConstConstructor to stay the same) .<br>
+NewFieldType is the type of the same field in `Other`.
+
+# Incompatible memory layouts 
+
+Some memory layouts are incompatible,
+this is caused by having a field that mentions the ConstValue-parameter
+and does not implement ConstLayoutIndependent.
+
+```compile_fail
+
+# #[macro_use]
+# extern crate derive_type_level;
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+
+use type_level_values::user_traits::example_const_user::{
+    StoredInside,
+    ChangeParam,
+};
+
+fn main(){
+    let wrapper=StoredInside::new(100,());
+    wrapper.mutparam(ChangeParam , String::T );
+}
+
+```
+
+*/
 pub unsafe trait ConstLayoutIndependent<Other: ?Sized> {}
 
 /// All MarkerType are interchangeable when it comes to memory layout.
