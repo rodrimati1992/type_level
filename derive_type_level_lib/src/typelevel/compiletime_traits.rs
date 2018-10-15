@@ -2,9 +2,12 @@ use super::*;
 use super::struct_declarations::RelativePriv;
 use self_removed_bound::SelfRemovedBound;
 
-// use core_extensions::BoolExt;
+
 #[allow(unused_imports)]
-use core_extensions::OptionExt;
+use core_extensions::{
+    BoolExt,
+    OptionExt,
+};
 #[allow(unused_imports)]
 use core_extensions::Void;
 
@@ -302,10 +305,14 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
 
             let const_bounds_wclause=c_or_r_bound_wclause(ConstOrRuntime::Const);
             let const_bounds_b=struct_.fields.iter().map(|f| &f.const_bound );
+            let const_bounds_opt_colon=struct_.fields.iter()
+                .map(|f| f.const_bound.is_empty().if_false(|| token.colon ) );
             // let const_bounds_c=struct_.fields.iter().map(|f| &f.const_bound );
 
             let runt_bounds_wclause=c_or_r_bound_wclause(ConstOrRuntime::Runtime);
             let runt_bounds_b=struct_.fields.iter().map(|f| &f.runt_bound );
+            let runt_bounds_opt_colon=struct_.fields.iter()
+                .map(|f| f.runt_bound.is_empty().if_false(|| token.colon ) );
             // let runt_bounds_c=struct_.fields.iter().map(|f| &f.runt_bound );
 
             let field_accessor_a=struct_.fields.iter().map(|f| &f.accessor_ident );
@@ -333,7 +340,9 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                     #(
                         #field_name_vis_a
                         #(#[doc=#field_docs_a])*
-                        type #field_names_d: #const_bounds_b ;
+                        type #field_names_d
+                            #const_bounds_opt_colon
+                            #const_bounds_b ;
                     )*
                 }
                 impl<#generics> #trait_ident for #struct_name<#generics #priv_suffix>
@@ -421,7 +430,9 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                         #(
                             #field_name_vis_d
                             #(#[doc=#field_docs_b])*
-                            type #field_names_rt_a: #runt_bounds_b ;
+                            type #field_names_rt_a
+                                #runt_bounds_opt_colon
+                                #runt_bounds_b ;
                         )*
                     }
 

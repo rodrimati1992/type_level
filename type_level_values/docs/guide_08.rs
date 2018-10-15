@@ -75,12 +75,6 @@ when one attempts to do operations that require a specific state.
 
 Each of the functions called in the where clauses of the function branches 
 have type parameters to emulate closures.
-<br>
-This is used to simplify function composition ,
-since it allows composing the functions without having to use partial application,
-which will be covered much later in this guide.
-
-//TODO:reference the partial application chapter
 
 
 //@use_codeblock:take-coins-fn,ignore

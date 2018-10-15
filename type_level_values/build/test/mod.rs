@@ -1,21 +1,42 @@
 pub mod disabled_enabled_iter;
 
-use self::disabled_enabled_iter::DisabledEnabled;
+// use self::disabled_enabled_iter::DisabledEnabled;
 
 #[allow(unused_imports)]
 use core_extensions::{Void,SelfOps};
 
-
-use itertools::{ConsTuples,Product};
-
-
 use std::io::Write as ioWrite;
 use std::{iter,slice,env, fs, io, path};
 
+
+#[derive(Debug,Copy,Clone,PartialEq,Eq,Hash)]
+pub enum VariantKind{
+    Braced,
+    Tupled,
+    Unit,
+}
+
+#[derive(Debug,Copy,Clone,PartialEq,Eq)]
+pub enum Privacy{
+    Public,
+    PrivateField,
+}
+
+
+#[derive(Debug,Copy,Clone,PartialEq,Eq,Hash)]
+pub enum StructOrEnum{
+    Struct,
+    Enum,
+}
+
+
+
 bitflags! {
     pub struct EnabledImpl: u32 {
-        const CONST_EQ =1<<0;
-        const CONST_ORD=1<<1;
+        const EMPTY=0;
+        const CONST_EQ =0b0000_0001;
+        const CONST_ORD=0b0000_0010;
+        const CONST_EQ_ORD=0b0000_0011;
     }
 }
 
@@ -27,26 +48,15 @@ impl Default for EnabledImpl{
 
 
 #[derive(Debug,Copy,Clone,PartialEq,Eq)]
-pub enum StructOrEnum{
-    Struct,
-    Enum,
-}
-
-#[derive(Debug,Copy,Clone,PartialEq,Eq)]
 pub enum ConstOrRunt{
     Const,
     Runt,
 }
 
-#[derive(Debug,Copy,Clone,PartialEq,Eq)]
-pub enum Privacy{
-    Public,
-    PrivateField,
-}
-
 
 fn get_typename(
     s_or_e:StructOrEnum,
+    var_kind:VariantKind,
     privacy:Privacy,
     c_or_r:ConstOrRunt,
     impls:EnabledImpl,
@@ -62,14 +72,19 @@ fn get_typename(
     }
 
     name.push_str(match s_or_e {
-        StructOrEnum::Struct=>"Struct",
-        StructOrEnum::Enum=>"Enum",
+        StructOrEnum::Struct=>"Struct_",
+        StructOrEnum::Enum=>"Enum_",
+    });
+    name.push_str(match var_kind {
+        VariantKind::Unit  =>"Unit_",
+        VariantKind::Braced=>"Braced_",
+        VariantKind::Tupled=>"Tupled_",
     });
     if impls.contains(EnabledImpl::CONST_EQ ) {
-        name.push_str("Eq");
+        name.push_str("Eq_");
     }
     if impls.contains(EnabledImpl::CONST_ORD) {
-        name.push_str("Ord");
+        name.push_str("Ord_");
     }
     match privacy {
         Privacy::PrivateField=>name.push_str("Priv"),
@@ -80,54 +95,34 @@ fn get_typename(
 }
 
 
-#[allow(non_upper_case_globals)]
-static StructOrEnum_VARIANTS:[StructOrEnum;2]=[StructOrEnum::Struct,StructOrEnum::Enum];
+pub type ItemType=(StructOrEnum,VariantKind,Privacy,EnabledImpl);
 
-type ImplProduct=ConsTuples<
-    Product<
-        Product<
-            iter::Cloned<slice::Iter<'static, StructOrEnum>>, 
-            DisabledEnabled<EnabledImpl>
-        >,
-        DisabledEnabled<EnabledImpl>
-    >, 
-    ((StructOrEnum, EnabledImpl), EnabledImpl)
->;
+pub static TEST_CASES:&'static [ItemType]={
+    use self::StructOrEnum as SOE;
+    use self::EnabledImpl as EI;
+    use self::VariantKind as VK;
+    &[
+        (SOE::Struct,VK::Braced,Privacy::Public      ,EI::EMPTY),
+        (SOE::Struct,VK::Braced,Privacy::Public      ,EI::CONST_EQ),
+        (SOE::Struct,VK::Braced,Privacy::Public      ,EI::CONST_ORD),
+        (SOE::Struct,VK::Braced,Privacy::Public      ,EI::CONST_EQ_ORD),
+        (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::EMPTY),
+        (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::CONST_EQ),
+        (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::CONST_ORD),
+        (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::CONST_EQ_ORD),
+        (SOE::Struct,VK::Braced,Privacy::PrivateField,EI::CONST_EQ),
+        (SOE::Struct,VK::Tupled,Privacy::PrivateField,EI::CONST_EQ_ORD),
+        (SOE::Struct,VK::Tupled,Privacy::Public      ,EI::CONST_EQ_ORD),
+        (SOE::Enum  ,VK::Tupled,Privacy::Public      ,EI::CONST_EQ_ORD),
+        (SOE::Struct,VK::Unit  ,Privacy::Public      ,EI::CONST_EQ_ORD),
+        (SOE::Enum  ,VK::Unit  ,Privacy::Public      ,EI::CONST_EQ_ORD),
+    ]
+};
 
-
-pub struct OrImpls<I>{
-    iter:I,
+fn type_impls_permutations()->iter::Cloned<slice::Iter<'static,ItemType>>{
+    TEST_CASES.iter().cloned()
 }
 
-impl<I> OrImpls<I>{
-    pub fn new(iter:I)->Self{
-        Self{iter}
-    }
-}
-
-pub type ItemType=(StructOrEnum,Privacy,EnabledImpl);
-
-impl<I> Iterator for OrImpls<I>
-where I:Iterator<Item=(StructOrEnum,EnabledImpl,EnabledImpl)>,
-{
-    type Item=ItemType;
-
-    fn next(&mut self)->Option<Self::Item>{
-        self.iter.next().map(|(soe,x0,x1)|{
-            (soe,Privacy::Public,(x0|x1))
-        })
-    }
-}
-
-fn type_impls_permutations()->iter::Chain<OrImpls<ImplProduct>,iter::Once<ItemType>>{
-    OrImpls::new(iproduct!(
-        StructOrEnum_VARIANTS.iter().cloned(),
-        DisabledEnabled::new(EnabledImpl::CONST_EQ),
-        DisabledEnabled::new(EnabledImpl::CONST_ORD)
-    )).chain(iter::once(
-        ( StructOrEnum::Struct ,Privacy::PrivateField ,EnabledImpl::CONST_EQ )
-    ))
-}
 
 
 fn impls_test<W:ioWrite>(mut w:W)->io::Result<()> {
@@ -165,41 +160,51 @@ type TestGetF<This,Field,Val>=(
     
 
 ")?;
-    for (soe,privacy,impls) in type_impls_permutations() {
-        let name=get_typename(soe,privacy,ConstOrRunt::Const,impls);
-        let deriving_type=get_typename(soe,privacy,ConstOrRunt::Runt,impls);
+    for (soe,var_kind,privacy,impls) in type_impls_permutations() {
+        let name=get_typename(soe,var_kind,privacy,ConstOrRunt::Const,impls);
+        let deriving_type=get_typename(soe,var_kind,privacy,ConstOrRunt::Runt,impls);
         let consttype=format!("{}Type",deriving_type);
         let pre_priv=match privacy {
             Privacy::PrivateField=>"priv_",
             Privacy::Public=>"",
         };
         
-        writeln!(w,"#[allow(non_snake_case)]")?;
-        writeln!(w,"#[test]")?;
-        writeln!(w,"fn test_{name}(){{",name=name)?;
-        writeln!(w,"use self::type_level_{}::*;",deriving_type)?;
-        
+        let co =if var_kind==VariantKind::Unit {"//"}else{""};
+        let col=if var_kind==VariantKind::Unit {"/*"}else{""};
+        let cor=if var_kind==VariantKind::Unit {"*/"}else{""};
+
+        writeln!(w,"
+            #[allow(non_snake_case)]
+            #[test]
+            fn test_{name}(){{
+            use self::type_level_{deriving}::*;
+        ",name=name,deriving=deriving_type)?;
+    
         match soe {
             StructOrEnum::Enum=>{
-                writeln!(w,"type Open0=Open<U0>;")?;
-                writeln!(w,"type Open1=Open<U10>;")?;
-                writeln!(w,"type Open2=Open<U100>;")?;
+                writeln!(w,"
+                    type Open0=Open {col} <U0> {cor};
+                    type Open1=Open {col} <U10> {cor};
+                    type Open2=Open {col} <U100> {cor};
+                ", col=col,cor=cor )?;
             }
             StructOrEnum::Struct=>{
-                writeln!(w,"type Val0={name}<U0,U0>;",name=name)?;
-
-                writeln!(w,"type Val1={name}<U0,U10>;",name=name)?;
-                
-                writeln!(w,"type Val2={name}<U10,U0>;",name=name)?;
-                
-                writeln!(w,"type Val3={name}<U10,U10>;",name=name)?;
+                writeln!(w,"
+                    type Val0={name} {col} <U0,U0> {cor};
+                    type Val1={name} {col} <U0,U10> {cor};
+                    type Val2={name} {col} <U10,U0> {cor};
+                    type Val3={name} {col} <U10,U10> {cor};
+                ", col=col,cor=cor , name=name)?;
             }
         }
 
         
-        match (impls.contains(EnabledImpl::CONST_EQ ),soe) {
-            (false,_)=>{},
-            (true ,StructOrEnum::Struct)=>{
+        match (impls.contains(EnabledImpl::CONST_EQ ),var_kind,soe) {
+            (false,_,_)=>{},
+            (true,VariantKind::Unit,StructOrEnum::Struct)=>{
+                writeln!(w,"let _:TestEq<{name},{name},True>;",name=name)?;
+            }
+            (true ,_,StructOrEnum::Struct)=>{
                 writeln!(w,"
 
     let _:TestEq<Val0,Val0,True>;
@@ -218,7 +223,7 @@ type TestGetF<This,Field,Val>=(
 
 ")?;
             },
-            (true ,StructOrEnum::Enum  )=>{
+            (true ,_,StructOrEnum::Enum  )=>{
                 writeln!(w,"
 
     let _:TestEq<HalfOpen,HalfOpen,True>;
@@ -232,19 +237,24 @@ type TestGetF<This,Field,Val>=(
     let _:TestEq<Open2,Closed,False>;
                     
     let _:TestEq<Open0,Open0,True>;
-    let _:TestEq<Open0,Open1,False>;
-    let _:TestEq<Open0,Open2,False>;
     let _:TestEq<Open1,Open1,True>;
-    let _:TestEq<Open1,Open2,False>;
     let _:TestEq<Open2,Open2,True>;
 
-")?;
+    {co}let _:TestEq<Open0,Open1,False>;
+    {co}let _:TestEq<Open0,Open2,False>;
+    {co}let _:TestEq<Open1,Open2,False>;
+",
+    co=co
+)?;
             },
         }
 
-        match (impls.contains(EnabledImpl::CONST_ORD ),soe) {
-            (false,_)=>{},
-            (true,StructOrEnum::Struct)=>{
+        match (impls.contains(EnabledImpl::CONST_ORD ),var_kind,soe) {
+            (false,_,_)=>{},
+            (true,VariantKind::Unit,StructOrEnum::Struct)=>{
+                writeln!(w,"let _:TestOrd<{name},{name},Equal_>;",name=name)?;
+            }
+            (true,_,StructOrEnum::Struct)=>{
                 writeln!(w,"
     let _:TestOrd<Val0,Val0,Equal_>;
     let _:TestOrd<Val0,Val1,Less_>;
@@ -262,7 +272,7 @@ type TestGetF<This,Field,Val>=(
 
 ")?;
             },
-            (true,StructOrEnum::Enum)=>{
+            (true,_,StructOrEnum::Enum)=>{
                 writeln!(w,"
     
     let _:TestOrd<HalfOpen,HalfOpen,Equal_>;
@@ -276,79 +286,103 @@ type TestGetF<This,Field,Val>=(
     let _:TestOrd<Open2,Closed,Less_>;
 
     let _:TestOrd<Open0,Open0,Equal_>;
-    let _:TestOrd<Open0,Open1,Less_>;
-    let _:TestOrd<Open0,Open2,Less_>;
     let _:TestOrd<Open1,Open1,Equal_>;
-    let _:TestOrd<Open1,Open2,Less_>;
     let _:TestOrd<Open2,Open2,Equal_>;
+    {co}let _:TestOrd<Open0,Open1,Less_>;
+    {co}let _:TestOrd<Open0,Open2,Less_>;
+    {co}let _:TestOrd<Open1,Open2,Less_>;
 
-")?;
+",
+    co=co
+)?;
 
             },
         }
         match soe {
             StructOrEnum::Struct=>{
+                let (const_fields,runt_fields,assoc_fields)=match var_kind {
+                     VariantKind::Unit
+                    |VariantKind::Tupled=>(("U0","U1"),("0","1"),("field_0","field_1")),
+                    VariantKind::Braced=>(("x","y"),("x","y"),("x","y")),
+                };
                 writeln!(w,"
 
-let _:AssertEq<
-    GetDiscrOf<Val1>,
-    Discriminant<variants::{deriving}_Variant,{consttype},U0>
->;
+                    let _:AssertEq<
+                        GetDiscrOf<Val1>,
+                        Discriminant<variants::{deriving}_Variant,{consttype},U0>
+                    >;
 
-let _:AssertEq<GetVariantOf<Val1>,variants::{deriving}_Variant>;
+                    {co}let _:AssertEq<GetVariantOf<Val1>,variants::{deriving}_Variant>;
 
-let _:TestSetField<Val1,fields::x,U7,{name}<U7,U10>>;
-let _:TestSetField<Val1,fields::y,U7,{name}<U0,U7>>;
+                    {co}let _:TestSetField<Val1,fields::{x},U7,{name}<U7,U10>>;
+                    {co}let _:TestSetField<Val1,fields::{y},U7,{name}<U0,U7>>;
+                    {co}let _:AssertEq<SetField<Val1,fields::All,U7>,{name}<U7,U7>>;
+                    {co}
+                    {co}let _:TestGetF<Val1,fields::{x},U0 >;
+                    {co}let _:TestGetF<Val1,fields::{y},U10>;
+                    {co}
+                    {co}let _:TestGetFR<Val1,fields::{x},{deriving}<u32>,bool>;
+                    {co}let _:TestGetFR<Val1,fields::{y},{deriving}<u32>,Option<u32>>;
 
-let _:TestGetF<Val1,fields::x,U0 >;
-let _:TestGetF<Val1,fields::y,U10>;
+                    let _:AssertEq<
+                        <{deriving} {col}<u32>{cor} as IntoConstType_>::ToConst , 
+                        {consttype} 
+                    >;
 
-let _:TestGetFR<Val1,fields::x,{deriving}<u32>,bool>;
-let _:TestGetFR<Val1,fields::y,{deriving}<u32>,Option<u32>>;
+                    assert_eq_into!(
+                        {name} {col} <False,Some_<U0>> {cor}, 
+                        {deriving} {col} {{ {rx}:false,{ry}:Some(0u32) }} {cor}
+                    );
+                    assert_eq_into!(
+                        {name} {col} <True,Some_<U0>> {cor},
+                        {deriving} {col} {{ {rx}:true,{ry}:Some(0u32) }} {cor}
+                    );
+                    assert_eq_into!(
+                        {name} {col} <True,None_> {cor},
+                        {deriving} {col} {{ {rx}:true,{ry}:None::<()> }} {cor}
+                    );
 
-let _:AssertEq<<{deriving}<u32> as IntoConstType_>::ToConst , {consttype} >;
-
-assert_eq_into!(
-    {name}<False,Some_<U0>>,
-    {deriving}{{ x:false,y:Some(0u32) }}
-);
-assert_eq_into!(
-    {name}<True,Some_<U0>>,
-    {deriving}{{ x:true,y:Some(0u32) }}
-);
-assert_eq_into!(
-    {name}<True,None_>,
-    {deriving}{{ x:true,y:None::<()> }}
-);
-
-let _:AssertEq<ConstTypeOf<Val0>,{consttype} >;
-let _:AssertEq<ConstTypeOf<Val1>,{consttype} >;
-let _:AssertEq<ConstTypeOf<Val2>,{consttype} >;
-let _:AssertEq<ConstTypeOf<Val3>,{consttype} >;
+                    let _:AssertEq<ConstTypeOf<Val0>,{consttype} >;
+                    let _:AssertEq<ConstTypeOf<Val1>,{consttype} >;
+                    let _:AssertEq<ConstTypeOf<Val2>,{consttype} >;
+                    let _:AssertEq<ConstTypeOf<Val3>,{consttype} >;
 
 
-let _:AssertEq<<Val1 as {deriving}Trait>::x , U0>;
-let _:AssertEq<<Val1 as {deriving}Trait>::{ppriv}y , U10>;
+                    {co}let _:AssertEq<<Val1 as {deriving}Trait>::{at_x} , U0>;
+                    {co}let _:AssertEq<<Val1 as {deriving}Trait>::{ppriv}{at_y} , U10>;
+                    {co}
+                    {co}let _:AssertEq<<Val1 as {deriving}WithRuntime<u32>>::rt_{at_x} , U0>;
+                    {co}let _:AssertEq<
+                    {co}    <Val1 as {deriving}WithRuntime<u32>>::rt_{ppriv}{at_y} , 
+                    {co}    U10
+                    {co}>;
 
-let _:AssertEq<<Val1 as {deriving}WithRuntime<u32>>::rt_x , U0>;
-let _:AssertEq<<Val1 as {deriving}WithRuntime<u32>>::rt_{ppriv}y , U10>;
+                    let _:AssertEq<AsTList<Val0>,tlist![{col} U0,U0 {cor}]>;
+                    let _:AssertEq<AsTList<Val1>,tlist![{col} U0,U10 {cor}]>;
+                    let _:AssertEq<AsTList<Val2>,tlist![{col} U10,U0 {cor}]>;
+                    let _:AssertEq<AsTList<Val3>,tlist![{col} U10,U10 {cor}]>;
 
-let _:AssertEq<AsTList<Val0>,tlist![U0,U0]>;
-let _:AssertEq<AsTList<Val1>,tlist![U0,U10]>;
-let _:AssertEq<AsTList<Val2>,tlist![U10,U0]>;
-let _:AssertEq<AsTList<Val3>,tlist![U10,U10]>;
+                    let _:AssertEq<
+                        <{deriving}_Uninit as InitializationValues>::Uninitialized,
+                        {name} {col} <
+                            UninitField<fields::{x}> , 
+                            UninitField<fields::{y}> 
+                        > {cor}
+                    >;
 
-let _:AssertEq<
-    <{deriving}_Uninit as InitializationValues>::Uninitialized,
-    {name}< UninitField<fields::x> , UninitField<fields::y> >
->;
+                    let _:AssertEq<
+                        <{deriving}_Uninit as InitializationValues>::Initialized,
+                        {name} {col} < IsInitField<fields::{x}> , IsInitField<fields::{y}> > {cor}
+                    >;
 
-let _:AssertEq<
-    <{deriving}_Uninit as InitializationValues>::Initialized,
-    {name}< IsInitField<fields::x> , IsInitField<fields::y> >
->;
-
-",   
+                    ",   
+                    col=col,cor=cor,co=co,
+                    x=const_fields.0,
+                    y=const_fields.1,
+                    at_x=assoc_fields.0,
+                    at_y=assoc_fields.1,
+                    rx=runt_fields.0,
+                    ry=runt_fields.1,
                     name=name,
                     deriving=deriving_type,
                     consttype=consttype,
@@ -360,107 +394,128 @@ let _:AssertEq<
             StructOrEnum::Enum=>{
                 writeln!(w,"
 
-let _:AssertEq<
-    GetDiscrOf<HalfOpen>,
-    Discriminant<variants::HalfOpen_Variant,{consttype},U0>
->;
-let _:AssertEq<
-    GetDiscrOf<Open0>,
-    Discriminant<variants::Open_Variant,{consttype},U1>
->;
-let _:AssertEq<
-    GetDiscrOf<Open1>,
-    Discriminant<variants::Open_Variant,{consttype},U1>
->;
-let _:AssertEq<
-    GetDiscrOf<Closed>,
-    Discriminant<variants::Closed_Variant,{consttype},U2>
->;
+                    let _:AssertEq<
+                        GetDiscrOf<HalfOpen>,
+                        Discriminant<variants::HalfOpen_Variant,{consttype},U0>
+                    >;
+                    let _:AssertEq<
+                        GetDiscrOf<Open0>,
+                        Discriminant<variants::Open_Variant,{consttype},U1>
+                    >;
+                    let _:AssertEq<
+                        GetDiscrOf<Open1>,
+                        Discriminant<variants::Open_Variant,{consttype},U1>
+                    >;
+                    let _:AssertEq<
+                        GetDiscrOf<Closed>,
+                        Discriminant<variants::Closed_Variant,{consttype},U2>
+                    >;
 
-let _:AssertEq<GetVariantOf<HalfOpen>,variants::HalfOpen_Variant>;
-let _:AssertEq<GetVariantOf<Open0>,variants::Open_Variant>;
-let _:AssertEq<GetVariantOf<Open1>,variants::Open_Variant>;
-let _:AssertEq<GetVariantOf<Closed>,variants::Closed_Variant>;
+                    let _:AssertEq<GetVariantOf<HalfOpen>,variants::HalfOpen_Variant>;
+                    let _:AssertEq<GetVariantOf<Open0>,variants::Open_Variant>;
+                    let _:AssertEq<GetVariantOf<Open1>,variants::Open_Variant>;
+                    let _:AssertEq<GetVariantOf<Closed>,variants::Closed_Variant>;
 
-let _:TestSetField<Open0,fields::remaining,U7,Open<U7>>;
-let _:TestSetField<Open0,fields::remaining,U3,construct!(Open_Uninit=>fields::remaining=U3)>;
+                    {co}let _:TestSetField<Open0,fields::remaining,U7,Open<U7>>;
+                    {co}let _:AssertEq<SetField<Open0,fields::All,U7>,Open<U7>>;
+                    {co}let _:TestSetField<
+                    {co}    Open0,
+                    {co}    fields::remaining,
+                    {co}    U3,
+                    {co}    construct!(Open_Uninit=>fields::remaining=U3)
+                    {co}>;
+                    {co}
+                    {co}let _:TestGetF<Open2,fields::remaining,U100 >;
+                    {co}
+                    {co}let _:TestGetFR<Open0,fields::remaining,{deriving},u32>;
 
-let _:TestGetF<Open2,fields::remaining,U100 >;
+                    let _:AssertEq<<{deriving} as IntoConstType_>::ToConst , {consttype} >;
 
-let _:TestGetFR<Open0,fields::remaining,{deriving},u32>;
+                    assert_eq_into!(
+                        HalfOpen,
+                        {deriving}::HalfOpen
+                    );
+                    assert_eq_into!(
+                        Open0,
+                        {deriving}::Open {co} {{remaining:0}}
+                    );
+                    assert_eq_into!(
+                        Open1,
+                        {deriving}::Open {co} {{remaining:10}}
+                    );
+                    assert_eq_into!(
+                        Open2,
+                        {deriving}::Open {co} {{remaining:100}}
+                    );
+                    assert_eq_into!(
+                        Closed,
+                        {deriving}::Closed
+                    );
 
-let _:AssertEq<<{deriving} as IntoConstType_>::ToConst , {consttype} >;
-
-assert_eq_into!(
-    HalfOpen,
-    {deriving}::HalfOpen
-);
-assert_eq_into!(
-    Open0,
-    {deriving}::Open{{remaining:0}}
-);
-assert_eq_into!(
-    Open1,
-    {deriving}::Open{{remaining:10}}
-);
-assert_eq_into!(
-    Open2,
-    {deriving}::Open{{remaining:100}}
-);
-assert_eq_into!(
-    Closed,
-    {deriving}::Closed
-);
-
-let _:AssertEq<ConstTypeOf<HalfOpen>,{consttype} >;
-let _:AssertEq<ConstTypeOf<Open0>,{consttype} >;
-let _:AssertEq<ConstTypeOf<Open1>,{consttype} >;
-let _:AssertEq<ConstTypeOf<Open2>,{consttype} >;
-let _:AssertEq<ConstTypeOf<Closed>,{consttype} >;
-
-
-let _:AssertEq<<Open0 as OpenTrait>::remaining , U0>;
-let _:AssertEq<<Open1 as OpenTrait>::remaining , U10>;
-let _:AssertEq<<Open2 as OpenTrait>::remaining , U100>;
-
-fn assert_closed()
-where  
-    HalfOpen:HalfOpenTrait+HalfOpenWithRuntime,
-    Closed:ClosedTrait+ClosedWithRuntime,
-{{}}
-
-assert_closed();
-
-let _:AssertEq<<Open0 as OpenWithRuntime>::rt_remaining , U0>;
-let _:AssertEq<<Open1 as OpenWithRuntime>::rt_remaining , U10>;
-let _:AssertEq<<Open2 as OpenWithRuntime>::rt_remaining , U100>;
-
-let _:AssertEq<AsTList<HalfOpen>,tlist![]>;
-let _:AssertEq<AsTList<Open0>,tlist![U0]>;
-let _:AssertEq<AsTList<Open1>,tlist![U10]>;
-let _:AssertEq<AsTList<Open2>,tlist![U100]>;
-let _:AssertEq<AsTList<Closed>,tlist![]>;
+                    let _:AssertEq<ConstTypeOf<HalfOpen>,{consttype} >;
+                    let _:AssertEq<ConstTypeOf<Open0>,{consttype} >;
+                    let _:AssertEq<ConstTypeOf<Open1>,{consttype} >;
+                    let _:AssertEq<ConstTypeOf<Open2>,{consttype} >;
+                    let _:AssertEq<ConstTypeOf<Closed>,{consttype} >;
 
 
-let _:AssertEq<<HalfOpen_Uninit as InitializationValues>::Initialized,HalfOpen>;
-let _:AssertEq<<HalfOpen_Uninit as InitializationValues>::Uninitialized,HalfOpen>;
+                    {co}let _:AssertEq<<Open0 as OpenTrait>::remaining , U0>;
+                    {co}let _:AssertEq<<Open1 as OpenTrait>::remaining , U10>;
+                    {co}let _:AssertEq<<Open2 as OpenTrait>::remaining , U100>;
 
-let _:AssertEq<
-    <Open_Uninit as InitializationValues>::Uninitialized,
-    Open< UninitField<fields::remaining> >
->;
+                    fn assertions()
+                    where  
+                        Open0:OpenTrait+OpenWithRuntime,
+                        Open1:OpenTrait+OpenWithRuntime,
+                        Open2:OpenTrait+OpenWithRuntime,
+                        HalfOpen:HalfOpenTrait+HalfOpenWithRuntime,
+                        Closed:ClosedTrait+ClosedWithRuntime,
+                    {{}}
 
-let _:AssertEq<
-    <Open_Uninit as InitializationValues>::Initialized,
-    Open< IsInitField<fields::remaining> >
->;
+                    assertions();
 
-let _:AssertEq<<Closed_Uninit as InitializationValues>::Initialized,Closed>;
-let _:AssertEq<<Closed_Uninit as InitializationValues>::Uninitialized,Closed>;
+                    {co}let _:AssertEq<<Open0 as OpenWithRuntime>::rt_remaining , U0>;
+                    {co}let _:AssertEq<<Open1 as OpenWithRuntime>::rt_remaining , U10>;
+                    {co}let _:AssertEq<<Open2 as OpenWithRuntime>::rt_remaining , U100>;
+
+                    let _:AssertEq<AsTList<HalfOpen>,tlist![]>;
+                    let _:AssertEq<AsTList<Open0>,tlist![{col}U0  {cor}]>;
+                    let _:AssertEq<AsTList<Open1>,tlist![{col}U10 {cor}]>;
+                    let _:AssertEq<AsTList<Open2>,tlist![{col}U100{cor}]>;
+                    let _:AssertEq<AsTList<Closed>,tlist![]>;
 
 
-",
-                    //name=name,
+                    let _:AssertEq<
+                        <HalfOpen_Uninit as InitializationValues>::Initialized,
+                        HalfOpen
+                    >;
+                    let _:AssertEq<
+                        <HalfOpen_Uninit as InitializationValues>::Uninitialized,
+                        HalfOpen
+                    >;
+
+                    let _:AssertEq<
+                        <Open_Uninit as InitializationValues>::Uninitialized,
+                        Open {col} <UninitField<fields::remaining>> {cor}
+                    >;
+
+                    let _:AssertEq<
+                        <Open_Uninit as InitializationValues>::Initialized,
+                        Open {col} <IsInitField<fields::remaining>> {cor}
+                    >;
+
+                    let _:AssertEq<
+                        <Closed_Uninit as InitializationValues>::Initialized,
+                        Closed
+                    >;
+                    let _:AssertEq<
+                        <Closed_Uninit as InitializationValues>::Uninitialized,
+                        Closed
+                    >;
+
+
+                    ",
+                    co=co ,col=col,cor=cor,
                     deriving=deriving_type,
                     consttype=consttype,
                 )?;
@@ -475,12 +530,18 @@ let _:AssertEq<<Closed_Uninit as InitializationValues>::Uninitialized,Closed>;
 
 
 fn type_decls<W:ioWrite>(mut w:W)->io::Result<()> {
-    for (soe,privacy,impls) in type_impls_permutations() {
-        let deriving_type=get_typename(soe,privacy,ConstOrRunt::Runt,impls);
+    for (soe,var_kind,privacy,impls) in type_impls_permutations() {
+        let deriving_type=get_typename(soe,var_kind,privacy,ConstOrRunt::Runt,impls);
         
+        #[allow(unused_variables)]
+        let co =if var_kind==VariantKind::Unit {"//"}else{""};
+        let col=if var_kind==VariantKind::Unit {"/*"}else{""};
+        let cor=if var_kind==VariantKind::Unit {"*/"}else{""};
+
         write!(w,"
 #[derive(TypeLevel)]
 //#[typelevel(print_derive)]
+#[typelevel(derive_str)]
 #[typelevel(derive(
 ")?;
         if impls.contains(EnabledImpl::CONST_EQ ) {
@@ -496,35 +557,76 @@ fn type_decls<W:ioWrite>(mut w:W)->io::Result<()> {
                     Privacy::Public=>"pub",
                     Privacy::PrivateField=>"",
                 };
-                writeln!(w,"#[derive(Debug,PartialEq,Eq)]")?;
-                writeln!(w,"pub struct {deriving}<T> {{",deriving=deriving_type)?;
-                writeln!(w,"    pub x:bool,")?;
-                writeln!(w,"    {} y:Option<T>,",priv_)?;
-                writeln!(w,"}}\n")?;
+                match var_kind {
+                    VariantKind::Braced=>
+                        writeln!(w,"
+                            #[derive(Debug,PartialEq,Eq)]
+                            pub struct {deriving}<T> {{
+                                pub x:bool,
+                                {priv_} y:Option<T>,
+                            }}
+                            type Alias{deriving}={deriving}<()>;
+                            ",
+                            priv_=priv_,
+                            deriving=deriving_type
+                        )?,
+                    VariantKind::Tupled=>
+                        writeln!(w,"
+                            #[derive(Debug,PartialEq,Eq)]
+                            pub struct {deriving}<T> (
+                                pub bool,{priv_} Option<T>
+                            );
+                            type Alias{deriving}={deriving}<()>;
+                            ",
+                            priv_=priv_,
+                            deriving=deriving_type
+                        )?,
+                    VariantKind::Unit=>
+                        writeln!(w,"
+                            #[derive(Debug,PartialEq,Eq)]
+                            pub struct {deriving};
+                            type Alias{deriving}={deriving};
+                            ",
+                            deriving=deriving_type
+                        )?,
+                }
 
                 if privacy==Privacy::PrivateField {
                     let type_alias=
-                        get_typename(soe,Privacy::PrivateField,ConstOrRunt::Const,impls);
-                        
-                    writeln!(w,"\
-                        pub type {alias}<X,Y>=construct!(\n\
-                            self::type_level_{deriving}::{deriving}_Uninit=>
-                            self::type_level_{deriving}::fields::x =X ,\n\
-                            self::type_level_{deriving}::fields::y =Y ,\n\
+                        get_typename(soe,var_kind,Privacy::PrivateField,ConstOrRunt::Const,impls);
+                    let (x,y)=match var_kind {
+                        VariantKind::Braced=>("x","y"),
+                         VariantKind::Unit
+                        |VariantKind::Tupled=>("U0","U1"),
+                    };
+                    write!(w,"\
+                        pub type {alias}{col}<X,Y>{cor}=construct!(\n\
+                            self::type_level_{deriving}::{deriving}_Uninit {col} =>
+                            self::type_level_{deriving}::fields::{x} =X ,\n\
+                            self::type_level_{deriving}::fields::{y} =Y ,\n {cor}
                         );\n
-                    ",
-                        deriving=deriving_type,
+                        ",
+                        col=col,cor=cor,
                         alias=type_alias,
+                        x=x,y=y,
+                        deriving=deriving_type,
                     )?;
+                    writeln!(w,"")?;
                 }
             }
             StructOrEnum::Enum=>{
-                writeln!(w,"#[derive(Debug,PartialEq,Eq)]")?;
-                writeln!(w,"pub enum {deriving} {{",deriving=deriving_type)?;
-                writeln!(w,"    HalfOpen,")?;
-                writeln!(w,"    Open{{remaining:u32}},")?;
-                writeln!(w,"    Closed,")?;
-                writeln!(w,"}}\n")?;
+                writeln!(w,"
+                    #[derive(Debug,PartialEq,Eq)]
+                    pub enum {deriving} {{
+                        HalfOpen,
+                        Open {col} {{remaining:u32}} {cor},
+                        Closed,
+                    }}\n
+                    type Alias{deriving}={deriving};
+                ",
+                col=col,cor=cor,
+                deriving=deriving_type
+                )?;
             }
         };
     }
@@ -538,14 +640,22 @@ fn imports<W:ioWrite>(mut w:W)->io::Result<()> {
 extern crate derive_type_level;
 #[macro_use]
 extern crate type_level_values;
-
+#[macro_use]
+extern crate derive_type_level_lib;
+extern crate syn;
+#[macro_use]
+extern crate core_extensions;
+#[macro_use]
+extern crate quote;
+#[macro_use]
+extern crate lazy_static;
 
 
 #[allow(dead_code)]
 mod tests{{
 
+use std::ops::Index;
 
-use std::ops::Index; 
 use type_level_values::prelude::*;
 use type_level_values::ops::*;
 use type_level_values::collection_ops::{{Reverse}};
@@ -587,7 +697,7 @@ pub fn build_tests()->io::Result<()>{
     imports(&mut test_file)?;
     type_decls(&mut test_file)?;
     impls_test(&mut test_file)?;
-
+    
     write!(test_file,"\n}}")?;
 
     Ok(())

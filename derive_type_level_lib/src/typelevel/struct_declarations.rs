@@ -639,9 +639,6 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                     #(#generics_0,)* 
                     #priv_suffix
                 >
-                #(where 
-                    #has_priv_fields:__PrivTrait,
-                )*
             });
 
             tokens.append_all(match declaration.variant.kind {
@@ -653,12 +650,18 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                         ( 
                             #(#field_vis ConstWrapper<#generics_1>,)* 
                             #(#opt_priv_field_vis ConstWrapper<__IsPriv>,)*
-                        ); 
+                        )
+                        #(where 
+                            #has_priv_fields:__PrivTrait,
+                        )*; 
                     }
                 }
                 StructKind::Braced=>{
                     let names=declaration.fields.iter().map(|x| &x.name_ident );
                     quote!{ 
+                        #(where 
+                            #has_priv_fields:__PrivTrait,
+                        )*
                         { 
                             #(#field_vis #names:ConstWrapper<#generics_1>,)* 
                             #(#opt_priv_field_vis priv_:ConstWrapper<__IsPriv>,)*

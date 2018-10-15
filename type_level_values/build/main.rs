@@ -1,8 +1,6 @@
 extern crate rustc_version;
 #[macro_use]
 extern crate bitflags;
-#[macro_use]
-extern crate itertools;
 extern crate core_extensions;
 
 use rustc_version::{version, Version};

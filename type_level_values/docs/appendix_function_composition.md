@@ -155,7 +155,7 @@ If all elements implement TypeFn_ the collection implements TypeFn_,
 all elements of which take the return value of the previous TypeFn_
 
 
-### Example 0
+### Example 1
 
 Creating a type-level function which wraps the type T in a `Arc<Mutex<Vec<Option<T>>>>`.
 
@@ -231,7 +231,7 @@ fn piped<F, U>(self, f: impl FnOnce(Self) -> U) -> U {
 
 
 
-### Example 1
+### Example 2
 
 Implementing a multiply-add function.
 
@@ -263,49 +263,6 @@ fn main(){
 }
 
 ```
-
-### Example 2
-
-Copying one field into another,substracted from 500.
-
-```
-# #[macro_use]
-# extern crate type_level_values;
-
-# use type_level_values::prelude::*;
-use type_level_values::ops::AssertEq;
-use type_level_values::fn_adaptors::*;
-use type_level_values::fn_types::*;
-use type_level_values::field_traits::{GetFieldOp,MapIntoFieldOp};
-
-
-fn main(){
-    /// Gets the field and then subtracts 500 with it.
-    type GetFieldSub<Field>=
-        tlist![
-            ApplyRhs<GetFieldOp,Field>,
-            ApplyLhs<SubOp,U500>,
-        ];
-
-    type CopyMapField<From,To>=
-        ApplyNonSelf<
-            MapIntoFieldOp,
-            (To,GetFieldSub<From>)
-        >;
-
-    let _:AssertEq<
-        TypeFn<CopyMapField<U2,U0>,(U20,U30,U100)>,
-        (U400,U30,U100)
-    >;
-
-    let _:AssertEq<
-        TypeFn<CopyMapField<U0,U1>,(U20,U30,U100)>,
-        (U20,U480,U100)
-    >;
-}
-
-```
-
 
 
 

@@ -4,28 +4,35 @@ use std::ops::IndexMut;
 use syn::Ident;
 
 
+#[doc(hidden)]
+pub mod reexp{
+    pub use arrayvec::ArrayString;
+    pub use std::str::FromStr;
+}
 
 #[derive(Debug)]
-pub(crate) struct InvalidIndex;
+pub struct InvalidIndex;
 
 #[derive(Debug)]
-pub(crate) struct InvalidMultiIndex<I>(pub I);
+pub struct InvalidMultiIndex<I>(pub I);
 
 /// Alias for the traits implemented by all indexable structs.
-pub(crate) trait IndexableStruct:
+pub trait IndexableStruct:
     StructIndexType + Default + IndexMut<<Self as StructIndexType>::Index>
 {
 }
 
-impl<This> IndexableStruct for This where This: StructIndexType + Default + IndexMut<Self::Index> {}
+impl<This> IndexableStruct for This 
+where This: StructIndexType + Default + IndexMut<Self::Index> 
+{}
 
 /// Implementation detail for indexable structs.
-pub(crate) trait StructIndexType {
+pub trait StructIndexType {
     type Index: GetEnumIndices;
 }
 
 /// Trait to get enum-indices for an indexable struct.
-pub(crate) trait GetEnumIndices: Debug + Copy + PartialEq + Eq + 'static {
+pub trait GetEnumIndices: Debug + Copy + PartialEq + Eq + 'static {
     /// Gets the indices for `ident`,
     /// returns InvalidMultiIndex on an invalid index.
     fn many_from_ident(ident: &Ident) -> Result<&'static [Self], InvalidMultiIndex<&Ident>>;
@@ -36,6 +43,8 @@ pub(crate) trait GetEnumIndices: Debug + Copy + PartialEq + Eq + 'static {
 
     /// A message listing all the indices.
     fn indices_message()->String;
+
+    const INDICES:&'static [Self];
 }
 
 #[doc(hidden)]
@@ -67,12 +76,12 @@ macro_rules! declare_indexable_struct {
 
         $(#[$index_attrs])*
         #[derive(Debug,Copy,Clone,PartialEq,Eq,Ord,PartialOrd,Hash)]
-        pub(crate) enum $enum_index{
+        pub enum $enum_index{
             $( $index, )*
         }
 
 
-        impl FromStr for $enum_index{
+        impl $crate::indexable_struct::reexp::FromStr for $enum_index{
             type Err=$crate::indexable_struct::InvalidIndex;
             fn from_str(s:&str)->Result<Self,Self::Err>{
                 match s {
@@ -89,9 +98,6 @@ macro_rules! declare_indexable_struct {
             const VARIANTS:&'static[&'static str]=&[ $( stringify!( $index ) ),* ];
             const IND_ALIASES:&'static [(&'static str,&'static [Self])]=&[
                 $( ($mul_ind_name , &[ $( $enum_index::$index_alias ,)* ]) ,)*
-            ];
-            const INDICES:&'static [Self]=&[
-                $($enum_index::$index,)*
             ];
 
             #[inline]
@@ -128,7 +134,10 @@ macro_rules! declare_indexable_struct {
                 &'static [Self], 
                 $crate::indexable_struct::InvalidMultiIndex<&::syn::Ident>
             >{
+                #[allow(unused_imports)]
                 use std::fmt::Write;
+                
+                use $crate::indexable_struct::reexp::ArrayString;
 
                 let mut str_: ArrayString<[_; 128]> = ArrayString::new();
                 let _ = write!(str_, "{}", ident);
@@ -163,6 +172,10 @@ macro_rules! declare_indexable_struct {
                 buffer.pop();
                 buffer
             }
+
+            const INDICES:&'static [Self]=&[
+                $($enum_index::$index,)*
+            ];
         }
 
 
@@ -172,8 +185,8 @@ macro_rules! declare_indexable_struct {
         $(#[$indexable_struct_attrs])*
         /// A generic struct which can be indexed with an associated enum.
         #[derive(Debug,Clone,PartialEq,Eq)]
-        pub(crate) struct $indexable_struct<T>{
-            $(pub(crate) $field:T ,)*
+        pub struct $indexable_struct<T>{
+            $(pub $field:T ,)*
         }
 
 
@@ -183,17 +196,24 @@ macro_rules! declare_indexable_struct {
         {
             #[inline]
             #[allow(dead_code)]
-            pub(crate) fn new()->Self{
+            pub fn new()->Self{
                 Default::default()
             }
 
             #[allow(dead_code)]
-            pub(crate) fn map<F,U>(self,mut f:F)->$indexable_struct<U>
+            pub fn map<F,U>(self,mut f:F)->$indexable_struct<U>
             where F:FnMut($enum_index,T)->U
             {
                 $indexable_struct{
                     $($field:f($enum_index::$index,self.$field),)*
                 }
+            }
+            
+            #[allow(dead_code)]
+            pub fn to_vec(self)->Vec<($enum_index,T)>{
+                vec![
+                    $( ( $enum_index::$index , self.$field ) ,)*
+                ]
             }
         }
 

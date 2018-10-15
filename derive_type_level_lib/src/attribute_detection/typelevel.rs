@@ -17,7 +17,8 @@ use attribute_errors::typelevel as attribute_errors;
 
 use ArenasRef;
 
-use arrayvec::ArrayString;
+
+// use arrayvec::ArrayString;
 
 
 use core_extensions::*;
@@ -34,7 +35,7 @@ use syn::{
 };
 
 use std::marker::PhantomData;
-use std::str::FromStr;
+// use std::str::FromStr;
 
 ////////////////////////////////////////////////////////////////////////////
 
