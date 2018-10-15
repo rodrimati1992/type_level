@@ -12,7 +12,7 @@ can think in terms of type-level functions and values.
 
 # The Guide
 
-[The guide starts here.](../guide_01/index.html)
+[The remainder of the guide is here.](../index.html)
 
 # Defining a ConstValue.
 

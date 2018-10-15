@@ -4,9 +4,6 @@ use super::*;
 use core_extensions::IteratorExt;
 
 
-#[macro_use]
-pub(crate) mod indexable_struct;
-
 pub(crate) mod item_metadata;
 pub(crate) mod my_meta;
 
@@ -23,19 +20,29 @@ pub(crate) use self::my_meta::{MyMeta, MyNested};
 /////////////////////////////////////////////////////////////////////////////
 
 pub(crate) mod shared {
-    use super::indexable_struct::{GetEnumIndices, InvalidMultiIndex};
+    use indexable_struct::{GetEnumIndices, InvalidMultiIndex};
     use super::*;
 
     use ArenasRef;
+    use core_extensions::SelfOps;
 
-    use std::fmt;
+    
 
     use syn::punctuated::Punctuated;
     use syn::token::Comma;
     use syn::{
         NestedMeta,
         TypeParamBound,
-        Ident,
+
+    };
+
+    pub(crate) use parse_syn::{
+        parse_where_pred,
+        parse_ident,
+        parse_type,
+        parse_visibility,
+        parse_syn_path,
+        
     };
 
     pub(crate) fn foreach_nestedmeta_index<'alloc,I, WI, WE>(
@@ -87,38 +94,6 @@ pub(crate) mod shared {
         }
     }
 
-
-    fn error_msg<T,E>(invalid_msg:&str,str_:&str,e:E)->T
-    where
-        E:fmt::Debug
-    {
-        panic!("\n\n{}:\n    '{}'\n\nerror:{:#?}\n\n",invalid_msg,str_,e )
-    }
-
-
-    use syn::WherePredicate;
-
-    pub(crate) fn parse_where_pred(str_:&str)->WherePredicate{
-        syn::parse_str(str_).unwrap_or_else(|e|error_msg("Invalid where predicate",str_,e))
-    }
-
-    pub(crate) fn parse_ident(str_:&str)->Ident{
-        syn::parse_str(str_).unwrap_or_else(|e|error_msg("Invalid identifier",str_,e))
-    }
-
-    pub(crate) fn parse_type(str_:&str)->syn::Type{
-        syn::parse_str(str_).unwrap_or_else(|e|error_msg("Invalid type",str_,e))
-    }
-
-    pub(crate) fn parse_visibility(str_:&str)->syn::Visibility{
-        syn::parse_str(str_).unwrap_or_else(|e|error_msg("Invalid syn::Visibility",str_,e))
-    }
-
-    pub(crate) fn parse_syn_path(str_:&str)->syn::Path{
-        syn::parse_str(str_).unwrap_or_else(|e|error_msg("Invalid syn::Path",str_,e))
-    }
-
-
     pub(crate) fn ident_from_nested<'a>(
         new_ident: &MyNested<'a>,
         arenas: ArenasRef<'a>
@@ -126,6 +101,23 @@ pub(crate) mod shared {
         match new_ident {
             &MyNested::Value(ref val) => arenas.idents.alloc(parse_ident(val)),
             v => panic!("cannot be parsed as an identifier:{:#?}", v),
+        }
+    }
+
+    pub(crate) fn typaram_from_nested<'a>(
+        new_ident: &MyNested<'a>,
+        arenas: ArenasRef<'a>
+    ) -> (&'a syn::Ident,Option<&'a syn::Type>) {
+        match new_ident {
+            &MyNested::Value(ref val) => {
+                let mut iter=val.splitn(2,'=');
+                let param_=iter.next().unwrap_or("")
+                    .piped(|x| arenas.idents.alloc(parse_ident(x)) );
+                let type_=iter.next()
+                    .map(|x| &*arenas.types.alloc(parse_type(x)) );
+                ( param_ , type_ )
+            },
+            v => panic!("cannot be parsed as an identifier :{:#?}", v),
         }
     }
 

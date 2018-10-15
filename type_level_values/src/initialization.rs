@@ -1,6 +1,10 @@
+/*!
+Traits,types,`TypeFn_`s related to ConstValue construction.
+*/
+
 use field_traits::*;
 use prelude::*;
-use crate_::ops::{Map_};
+use crate_::collection_ops::{Map_};
 
 /// Trait used by the `constructor` macro to construct a fully initialized version of a value.
 ///

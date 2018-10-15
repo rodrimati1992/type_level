@@ -1,40 +1,91 @@
 use crate_::fn_adaptors::*;
 use crate_::fn_types::*;
-use crate_::ops::{ConstEq, Contains, VariantAsTList, VariantAsTList_};
+use crate_::ops::{ConstEq, VariantAsTList, VariantAsTList_};
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_, OrderingTrait, OrderingType};
 use prelude::*;
 
 use std_::cmp::Ordering;
 
-/// Compares Self with Rhs,returning whether Self is Less_/Equal_/Greater_ than Rhs
-pub trait ConstOrd_<Rhs> {
-    type Output: OrderingTrait;
+type_fn!{define_trait
+    /// Compares Self with R,returning whether Self is Less_/Equal_/Greater_ than R
+    trait=ConstOrd_ [R]
+    /// Compares Self with R,returning whether Self is Less_/Equal_/Greater_ than R
+    type=ConstOrd
+    /// Compares Self with R,returning whether Self is Less_/Equal_/Greater_ than R
+    fn_type=ConstOrdOp
 }
 
-/// Compares L to R,returning an Ordering_.
+/// Returns whether L < R.
 ///
-/// Equivalent to ::std_::cmp::Ord::cmp.
-pub type ConstOrd<L, R> = TypeFn<ConstOrdOp, (L, R)>;
-
-/// Returns whether L is less than R.
-///
-/// Equivalent to L < R.
 pub type ConstLt<L, R> = TypeFn<ConstLtOp, (L, R)>;
 
-/// Returns whether L is less than or equal to R.
+type_fn!{
+    /// Returns whether L < R.
+    ///
+    pub fn ConstLtOp[L,R](L,R)
+    where[
+        L:ConstOrd_<R>,
+        L::Output:ConstEq_<Less_,Output=Out>,
+    ]{ let Out;Out }
+}
+
+
+/// Returns whether L <= R.
 ///
-/// Equivalent to L <= R.
 pub type ConstLE<L, R> = TypeFn<ConstLEOp, (L, R)>;
 
-/// Returns whether L is greater than R.
+type_fn!{
+    /// Returns whether L <= R.
+    ///
+    pub fn ConstLEOp[L,R](L,R)
+    where[
+        L:ConstOrd_<R>,
+        _IsLessOrEqual:TypeFn_<L::Output,Output=Out>,
+    ]{ let Out;Out }
+}
+
+
+/// Returns whether L > R.
 ///
-/// Equivalent to L > R.
 pub type ConstGt<L, R> = TypeFn<ConstGtOp, (L, R)>;
 
-/// Returns whether L is greater than or equal to R.
+type_fn!{
+    /// Returns whether L > R.
+    ///
+    pub fn ConstGtOp[L,R](L,R)
+    where[
+        L:ConstOrd_<R>,
+        L::Output:ConstEq_<Greater_,Output=Out>,
+    ]{ let Out;Out }
+}
+
+
+/// Returns whether L >= R.
 ///
-/// Equivalent to L >= R.
 pub type ConstGE<L, R> = TypeFn<ConstGEOp, (L, R)>;
+
+type_fn!{
+    /// Returns whether L >= R.
+    ///
+    pub fn ConstGEOp[L,R](L,R)
+    where[
+        L:ConstOrd_<R>,
+        _IsGreaterOrEqual:TypeFn_<L::Output,Output=Out>,
+    ]{ let Out;Out }
+}
+
+
+type_fn!{
+    fn _IsLessOrEqual(Less_ ){True}
+       _IsLessOrEqual(Equal_){True}
+       _IsLessOrEqual(Greater_){False}
+}
+type_fn!{
+    fn _IsGreaterOrEqual(Less_ ){False}
+       _IsGreaterOrEqual(Equal_){True}
+       _IsGreaterOrEqual(Greater_){True}
+}
+
 
 mod numtype_impls {
     use super::*;
@@ -80,6 +131,17 @@ mod tests {
     use super::*;
     use typenum::consts::{U0, U1, U2};
 
+    #[derive(TypeLevel)]
+    #[typelevel(
+        reexport(Struct),
+        derive(ConstEq,ConstOrd),
+    )]
+    #[allow(dead_code)]
+    struct Point{
+        x:u32,
+        y:u32,
+    }
+
     #[test]
     pub fn test_typenum() {
         let _: True = ConstLt::<U0, U1>::MTVAL;
@@ -116,5 +178,70 @@ mod tests {
         let _: Less_ = ConstOrd::<(U1, U1, U1, U1), (U1, U1, U1, U2)>::MTVAL;
         let _: Equal_ = ConstOrd::<(U1, U1, U1, U1), (U1, U1, U1, U1)>::MTVAL;
         let _: Greater_ = ConstOrd::<(U1, U1, U1, U1), (U1, U1, U1, U0)>::MTVAL;
+    }
+
+    #[test]
+    pub fn test_derived(){
+        type Test<ordering,L,R>=
+            AssEqTy<ordering,ConstOrd<L,R>>;
+
+        let _:Test<Less_,Some_<U0>,None_>;
+        let _:Test<Less_,Some_<U1>,None_>;
+        let _:Test<Less_,Some_<U2>,None_>;
+        let _:Test<Greater_,None_    ,Some_<U0>>;
+        let _:Test<Greater_,None_    ,Some_<U1>>;
+        let _:Test<Greater_,None_    ,Some_<U2>>;
+        let _:Test<Equal_,Some_<U0>,Some_<U0>>;
+        let _:Test<Equal_,Some_<U1>,Some_<U1>>;
+        let _:Test<Equal_,Some_<U2>,Some_<U2>>;
+        let _:Test<Equal_,None_    ,None_>;
+        let _:Test<Less_,Some_<U0>,Some_<U1>>;
+        let _:Test<Equal_,Some_<U1>,Some_<U1>>;
+        let _:Test<Greater_,Some_<U2>,Some_<U1>>;
+        
+
+        let _:Test<Less_,Ok_<U0>,Err_<U0>>;
+        let _:Test<Less_,Ok_<U1>,Err_<U0>>;
+        let _:Test<Less_,Ok_<U2>,Err_<U0>>;
+        
+        let _:Test<Equal_,Ok_<U0>,Ok_<U0>>;
+        let _:Test<Equal_,Ok_<U1>,Ok_<U1>>;
+        let _:Test<Equal_,Ok_<U2>,Ok_<U2>>;
+        
+        let _:Test<Less_,Ok_<U0>,Ok_<U1>>;
+        let _:Test<Equal_,Ok_<U1>,Ok_<U1>>;
+        let _:Test<Greater_,Ok_<U2>,Ok_<U1>>;
+
+        let _:Test<Less_,Err_<U0>,Err_<U1>>;
+        let _:Test<Equal_,Err_<U1>,Err_<U1>>;
+        let _:Test<Greater_,Err_<U2>,Err_<U1>>;
+
+        let _:Test<Greater_,Err_<U0>,Ok_<U0>>;
+        let _:Test<Greater_,Err_<U0>,Ok_<U1>>;
+        let _:Test<Greater_,Err_<U0>,Ok_<U2>>;
+
+        let _:Test<Greater_,Err_<U0>,Ok_<U0>>;
+        let _:Test<Greater_,Err_<U0>,Ok_<U1>>;
+        let _:Test<Greater_,Err_<U0>,Ok_<U2>>;
+
+        let _:Test<Equal_,ConstPoint<U0,U0>,ConstPoint<U0,U0>>;
+        let _:Test<Equal_,ConstPoint<U1,U1>,ConstPoint<U1,U1>>;
+        let _:Test<Equal_,ConstPoint<U1,U2>,ConstPoint<U1,U2>>;
+        let _:Test<Equal_,ConstPoint<U2,U2>,ConstPoint<U2,U2>>;
+
+        let _:Test<Less_,ConstPoint<U0,U0>,ConstPoint<U1,U0>>;
+        let _:Test<Less_,ConstPoint<U0,U0>,ConstPoint<U2,U0>>;
+        let _:Test<Less_,ConstPoint<U0,U0>,ConstPoint<U3,U0>>;
+        let _:Test<Less_,ConstPoint<U0,U0>,ConstPoint<U0,U1>>;
+        let _:Test<Less_,ConstPoint<U0,U0>,ConstPoint<U0,U2>>;
+        let _:Test<Less_,ConstPoint<U0,U0>,ConstPoint<U0,U3>>;
+
+        let _:Test<Greater_,ConstPoint<U1,U0>,ConstPoint<U0,U0>>;
+        let _:Test<Greater_,ConstPoint<U2,U0>,ConstPoint<U0,U0>>;
+        let _:Test<Greater_,ConstPoint<U3,U0>,ConstPoint<U0,U0>>;
+        let _:Test<Greater_,ConstPoint<U0,U1>,ConstPoint<U0,U0>>;
+        let _:Test<Greater_,ConstPoint<U0,U2>,ConstPoint<U0,U0>>;
+        let _:Test<Greater_,ConstPoint<U0,U3>,ConstPoint<U0,U0>>;
+
     }
 }

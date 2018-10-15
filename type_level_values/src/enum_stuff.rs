@@ -1,3 +1,9 @@
+/*!
+types and trait related to the variant/disciminant of ConstValues.
+
+
+*/
+
 use prelude::*;
 
 use initialization::InitializationValues;

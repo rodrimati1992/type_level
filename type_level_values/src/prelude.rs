@@ -1,3 +1,21 @@
+/*!
+The library's prelude.
+
+These are the items that are always imported in examples.
+
+Because this prelude is not always imported like Rust's is,
+it's necessary to `use` this declaration in any file needs it:
+`use type_level_values::prelude::*`.
+
+
+*/
+
+#[cfg(test)]
+pub(crate) use testing::{
+    AssEqTy,
+};
+
+
 ////////////////////////////////////////////////////////////////////////////////////
 ////                        Values Prelude
 ////////////////////////////////////////////////////////////////////////////////////
@@ -33,10 +51,10 @@ pub use user_traits::{
 pub use runtime_value::IntoConstant;
 
 pub use runtime_value::{
-    ConstTypeOf_,ConstType,ConstValue, IntoConstType_,IntoRuntime,
+    ConstTypeOf_,ConstTypeOf,ConstType,ConstValue, IntoConstType_,IntoRuntime,
 };
 
-pub use enum_stuff::GetDiscriminant;
+pub use discriminant::GetDiscriminant;
 
 pub use type_fn::{
     TypeFn_,

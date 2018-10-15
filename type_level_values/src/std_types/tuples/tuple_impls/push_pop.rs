@@ -1,4 +1,4 @@
-use crate_::ops::iteration_ops::{Pop_, Push_};
+use crate_::collection_ops::{Pop_, Push_};
 use crate_::std_types::option::{None_, Some_};
 
 use typenum::consts::{U0, U1, U10, U11, U12, U13, U14, U15, U2, U3, U4, U5, U6, U7, U8, U9};

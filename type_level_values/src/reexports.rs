@@ -12,7 +12,7 @@ pub mod _constraints {
     pub use std_types::cmp_ordering::OrderingTrait;
 }
 
-pub use enum_stuff::{Discriminant, DiscriminantFor, GetDiscriminant};
+pub use discriminant::{Discriminant, DiscriminantFor, GetDiscriminant};
 pub use fn_adaptors::IgnoreFirst;
 pub use type_fn::{
     TypeFn,TypeFn_,
@@ -28,11 +28,11 @@ pub use const_wrapper::{AsConstWrapper, ConstWrapper};
 #[cfg(rust_1_22)]
 pub use runtime_value::IntoConstant;
 pub use runtime_value::{
-    AssertConstType, ConstType, ConstTypeOf, ConstTypeOf_, ConstValue, DerivedTraits,
+    ConstType, ConstTypeOf, ConstTypeOf_, ConstValue, DerivedTraits,
     FromRuntime, IntoConstType_, IntoRuntime,
 };
 
-pub use field_traits::{Field_, GetFieldRuntime_, GetField_, SetField_};
+pub use field_traits::{GetFieldRuntime_, GetField_, SetField_};
 pub use initialization as __initialization;
 
 pub use new_types::{TList, TNil};

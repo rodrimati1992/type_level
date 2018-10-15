@@ -7,10 +7,12 @@ use core_extensions::type_level_bool::{Boolean, False, True};
 use crate_::extern_types::typenum::UnsignedInteger;
 use crate_::field_traits::{GetField_, SetField_};
 use crate_::ops::control_flow::{If, Lazy};
+use crate_::ops::AsTList_;
 use crate_::fn_adaptors::*;
 use crate_::fn_types::{AddOp, ConstEqOp, ConstLtOp, ConstOrdOp, NotOp};
-use crate_::ops::{
-    ConstEq, ConstFrom_, ConstNE_, ConstOrd, Filter_, FoldL, FoldL_, FoldR, FoldR_, Insert,
+use crate_::ops::{ConstEq, ConstFrom_, ConstNE_, ConstOrd};
+use crate_::collection_ops::{
+    Filter_, FoldL, FoldL_, FoldR, FoldR_, Insert,
     Insert_, Len, Len_, Map, Map_, Pop, PopBack_, PopFront_, Pop_, Push, PushBack_, PushFront_,
     PushOp, Push_, Remove, Remove_, Repeat, Repeat_, Reverse_, 
 };
@@ -22,7 +24,11 @@ use prelude::*;
 use std_::ops::{Add, BitAnd, BitOr, Index, Sub};
 
 #[derive(TypeLevel)]
-#[typelevel(reexport(Variants, Traits), rename_consttype = "TListType",)]
+#[typelevel(
+    reexport(Variants, Traits,Discriminants), 
+    rename_consttype = "TListType",
+    items(AsTList(NoImpls))
+)]
 pub enum TypeLevelList<Current, Remaining> {
     TNil,
     TList {
@@ -84,8 +90,7 @@ where
 }
 
 type_fn!{
-    #[doc(hidden)]
-    pub fn
+    fn
         GetFieldHelper[Rem,T0]
         (True,U0,tlist![T0,..Rem])
         {T0}
@@ -141,8 +146,7 @@ where
 }
 
 type_fn!{
-    #[doc(hidden)]
-    pub fn
+    fn
         SetFieldHelper[Rem,val,T0]
         (True,U0,val,tlist![T0,..Rem])
         {tlist![val,..Rem]}
@@ -202,8 +206,7 @@ where
 }
 
 type_fn!{
-    #[doc(hidden)]
-    pub fn
+    fn
         InsertHelper[Rem,val]
         (True,U0,val,Rem)
         {tlist![val,..Rem]}
@@ -259,8 +262,7 @@ where
 }
 
 type_fn!{
-    #[doc(hidden)]
-    pub fn
+    fn
         RemoveHelper[Rem,T0]
         (True,U0,tlist![T0,..Rem])
         {Rem}
@@ -341,8 +343,7 @@ impl<Mapper> Map_<Mapper> for TNil {
 
 type_fn!{
     captures(predicate)
-    #[doc(hidden)]
-    pub fn PredicateRhs[_0,T](_0,T)where[predicate:TypeFn_<T>]{ predicate::Output }
+    fn PredicateRhs[_0,T](_0,T)where[predicate:TypeFn_<T>]{ predicate::Output }
 }
 
 impl<T, Rem, Predicate, out> Filter_<Predicate> for TList<T, Rem>
@@ -408,8 +409,7 @@ impl<Elem> PushBack_<Elem> for TNil {
 /////////////////////////////////////////////////////////////////////////////////
 
 type_fn!{
-    #[doc(hidden)]
-    pub fn
+    fn
         PopBackHelper[T0,T1,Rem](tlist![T0,T1,..Rem])
         where [
             PopBackHelper:TypeFn_<tlist![T1,..Rem],Output=(last,RemOut)>
@@ -438,6 +438,18 @@ impl PopBack_ for TNil {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+impl<Current, Rem> AsTList_ for TList<Current, Rem>{
+    type Output = Self;
+}
+
+impl AsTList_ for TNil {
+    type Output = TNil;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 impl Reverse_ for TNil {
     type Output = TNil;
 }
@@ -450,8 +462,7 @@ where
 }
 
 type_fn!{
-    #[doc(hidden)]
-    pub fn
+    fn
     ReverseHelper[Suffix,T,Rem](Suffix,TList<T,Rem>)
     where [ ReverseHelper:TypeFn_< (TList<T,Suffix>,Rem),Output=out > ]
     { let out;out }

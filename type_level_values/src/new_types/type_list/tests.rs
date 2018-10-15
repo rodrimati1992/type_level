@@ -3,7 +3,8 @@ use super::*;
 use crate_::fn_types::SubOp;
 
 use crate_::field_traits::{GetField, SetField};
-use crate_::ops::{ConstInto, PopBack, PopFront, PushBack, PushFront};
+use crate_::ops::{ConstInto};
+use crate_::collection_ops::{PopBack, PopFront, PushBack, PushFront};
 
 #[test]
 fn the_macro() {

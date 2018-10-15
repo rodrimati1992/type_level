@@ -35,7 +35,6 @@ pub fn field_attrs()->ValidAttrs{
         field_bound_runt(),
         field_rename(),
         field_accessor(),
-        field_delegate(),
     ].piped(ValidAttrs::new)
 }
 
@@ -43,7 +42,6 @@ pub fn item_attrs()->ValidAttrs{
     vec![
         items_attr_no_impls(),
         items_attr_default_impls(),
-        items_attr_remote(),
         items_attr_internal(),
     ].into_iter()
         .chain(shared_metadata())
@@ -195,29 +193,6 @@ pub fn items_attr_default_impls()->AttrShape{
 }
 
 
-pub fn items_attr_remote()->AttrShape{
-    AttrShape{
-        variants:vec![
-            AttrVariant{
-                kind:AttrKind::NameValue{value:"type_identifier".into()},
-                clarification:Some("where the string is a valid identifier.".into())
-            },
-            AttrVariant{
-                kind:AttrKind::List{value:"Type=\"type_identifier\",Manual".into()},
-                clarification:Some("\
-                    The string must be a valid identifier.\n\
-                    The trait must be manually implemented.\
-                ".into())
-            }
-        ],
-        word:"Remote",
-        description:"\
-            Generates an implementation of the trait for usage with the delegate attribute.\
-        ".into(),
-    }
-}
-
-
 pub fn items_attr_internal()->AttrShape{
     AttrShape{
         variants:vec![
@@ -326,31 +301,6 @@ pub fn field_accessor()->AttrShape{
         ".into(),
     }
 }
-
-
-pub fn field_delegate()->AttrShape{
-    AttrShape{
-        variants:vec![
-            AttrVariant{
-                kind:AttrKind::List{
-                    value:" runtime_conv/IntoConstType/IntoRuntime =\"const_type\" ".into()
-                },
-                clarification:Some("\
-                    The string must be a type which implements \
-                    IntoConstType_< FieldType > and/or IntoRuntime<FieldType,C>.\
-                ".into()),
-            },
-        ],
-        word:"delegate",
-        description:"\
-            The type to which the implementations of \
-            IntoRuntime and IntoConstType are delegated to.\
-        ".into(),
-    }
-}
-
-
-
 
 
 

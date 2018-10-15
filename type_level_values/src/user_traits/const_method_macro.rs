@@ -398,6 +398,7 @@ macro_rules! const_method {
     (struct_decl;
         safety[$(safe)*] privacy[$($privacy:tt)*] $(#[$attr:meta])* struct $op_name:ident;
     )=>{
+        #[doc(hidden)]
         $(#[$attr])*
         pub struct $op_name{
             _dummy:()

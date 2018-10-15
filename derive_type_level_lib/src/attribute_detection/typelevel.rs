@@ -3,7 +3,6 @@ use super::my_meta::{MyMeta, MyNested};
 use super::shared::{
     NotUpdated,
     UpdateWithMeta,
-    type_from_nested,
     ident_from_nested,
     foreach_nestedmeta_index,
     bounds_from_str,
@@ -12,15 +11,21 @@ use super::shared::{
     parse_visibility,
 };
 
-use super::indexable_struct::GetEnumIndices;
+use indexable_struct::GetEnumIndices;
 
 use attribute_errors::typelevel as attribute_errors;
 
 use ArenasRef;
 
-use arrayvec::ArrayString;
+
+// use arrayvec::ArrayString;
+
 
 use core_extensions::*;
+#[allow(unused_imports)]
+use ::void_like::VoidLike as UsedVoid;
+// #[allow(unused_imports)]
+// use core_extensions::Void as UsedVoid;
 use ::*;
 
 use syn::punctuated::Punctuated;
@@ -30,7 +35,7 @@ use syn::{
 };
 
 use std::marker::PhantomData;
-use std::str::FromStr;
+// use std::str::FromStr;
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -52,6 +57,8 @@ pub(crate) struct TLAttributes<'a> {
     pub(crate) skip_derive: bool,
     pub(crate) print_debug: bool,
     pub(crate) print_attributes:bool,
+    /// If true,creates an associated constant containing the derive output.
+    pub(crate) derive_str:bool,
     pub(crate) _marker: PhantomData<&'a ()>,
 }
 
@@ -158,12 +165,6 @@ macro_rules! derived_traits {
         pub(crate) type DerivedTraits<'a>=
             TraitImpls<ImplMetaData<'a>>;
 
-        /// The delegated traits for a field,
-        /// currently only IntoRuntime and IntoConstType are supported.
-        pub(crate) type FieldDelegatedTraits<'a>=
-            TraitImpls<Option<&'a syn::Type>>;
-
-
         impl<'a> Default for DerivedTraits<'a>{
             fn default()->Self{
                 Self{
@@ -172,24 +173,17 @@ macro_rules! derived_traits {
             }
         }
 
-        impl<'a> Default for FieldDelegatedTraits<'a>{
-            fn default()->Self{
-                Self{
-                    $( $field :None, )*
-                }
-            }
-        }
     }
 }
 
 derived_traits!{
     variants=[
-        (const_eq        ,ConstEq        ,ImplVariant::Unspecified(UNSPEC_NO_IMPLS)     ),
-        (const_ord       ,ConstOrd       ,ImplVariant::Unspecified(UNSPEC_NO_IMPLS)     ),
-        (get_discriminant,GetDiscriminant,ImplVariant::Unspecified(UNSPEC_DEFAULT_IMPLS)),
-        (into_consttype  ,IntoConstType  ,ImplVariant::Unspecified(UNSPEC_DEFAULT_IMPLS)),
-        (into_runtime    ,IntoRuntime    ,ImplVariant::Unspecified(UNSPEC_DEFAULT_IMPLS)),
-        (as_t_list       ,AsTList        ,ImplVariant::Unspecified(UNSPEC_DEFAULT_IMPLS)),
+        (const_eq        ,ConstEq        ,ImplVariant::Unspecified(&UNSPEC_NO_IMPLS)     ),
+        (const_ord       ,ConstOrd       ,ImplVariant::Unspecified(&UNSPEC_NO_IMPLS)     ),
+        (get_discriminant,GetDiscriminant,ImplVariant::Unspecified(&UNSPEC_DEFAULT_IMPLS)),
+        (into_consttype  ,IntoConstType  ,ImplVariant::Unspecified(&UNSPEC_DEFAULT_IMPLS)),
+        (into_runtime    ,IntoRuntime    ,ImplVariant::Unspecified(&UNSPEC_DEFAULT_IMPLS)),
+        (as_t_list       ,AsTList        ,ImplVariant::Unspecified(&UNSPEC_DEFAULT_IMPLS)),
     ]
 
     multi_indices=[
@@ -201,25 +195,41 @@ derived_traits!{
 
 /// Determines whether and how an impl is derived.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub(crate) enum ImplVariant<'a, Priv = &'a ImplVariant<'a, Void>> {
+pub(crate) enum ImplVariant<
+    'a, 
+    Priv = &'static ImplVariant<'static, UsedVoid,UsedVoid> , 
+    Path:'a=&'a SynPath 
+> 
+{
     Unspecified(Priv),
     NoImpls,
     DefaultImpls,
-    Remote { type_: &'a SynPath   ,manual:bool},
-    Internal { type_: &'a SynPath ,manual:bool},
+    Internal { type_:Path,manual:bool,_marker:PhantomData<&'a ()>},
 }
 
-const UNSPEC_NO_IMPLS:&'static ImplVariant<'static, Void>= 
-    &ImplVariant::NoImpls;
+static UNSPEC_NO_IMPLS:ImplVariant<UsedVoid, UsedVoid>= 
+    ImplVariant::NoImpls;
 
-const UNSPEC_DEFAULT_IMPLS:&'static ImplVariant<'static, Void>= 
-    &ImplVariant::DefaultImpls;
+static UNSPEC_DEFAULT_IMPLS:ImplVariant<UsedVoid, UsedVoid>= 
+    ImplVariant::DefaultImpls;
 
 
 
 pub(crate) trait ImplVariantMethods{
     /// Whether the trait is derived or not.Being derived implies being implemented.
     fn is_derived(self)->bool;
+}
+
+
+impl<'a> ImplVariant<'a,UsedVoid,UsedVoid> {
+    fn void_to<A,B>(self)->ImplVariant<'a,A,B>{
+        match self {
+            ImplVariant::Unspecified{..} => unreachable!(),
+            ImplVariant::NoImpls => ImplVariant::NoImpls,
+            ImplVariant::DefaultImpls => ImplVariant::DefaultImpls,
+            ImplVariant::Internal {..} => unreachable!(),
+        }
+    }
 }
 
 
@@ -231,14 +241,13 @@ where Priv:ImplVariantMethods
             ImplVariant::Unspecified(v) => v.is_derived(),
             ImplVariant::NoImpls => false,
             ImplVariant::DefaultImpls => true,
-            ImplVariant::Remote   { manual , ..} => !manual,
             ImplVariant::Internal { manual , ..} => !manual,
         }
     }
 }
 
 
-impl ImplVariantMethods for Void {
+impl ImplVariantMethods for UsedVoid {
     fn is_derived(self)->bool{ false }
 }
 
@@ -255,20 +264,23 @@ impl<'a> ImplVariant<'a> {
         self.to_specified() != ImplVariant::NoImpls
     }
 
-    pub(crate) fn to_specified(self) -> ImplVariant<'a, Void> {
+    pub(crate) fn to_specified(self) -> ImplVariant<'a, UsedVoid,&'a SynPath> {
         match self {
-            ImplVariant::Unspecified(v) => *v,
+            ImplVariant::Unspecified(v) =>  {
+                let ret:ImplVariant<'a, UsedVoid,&'a SynPath>=v.void_to();
+                ret
+            }
             ImplVariant::NoImpls => ImplVariant::NoImpls,
             ImplVariant::DefaultImpls => ImplVariant::DefaultImpls,
-            ImplVariant::Remote { type_,manual } => ImplVariant::Remote { type_,manual },
-            ImplVariant::Internal { type_,manual } => ImplVariant::Internal { type_,manual },
+            ImplVariant::Internal { type_,manual,_marker } => 
+                ImplVariant::Internal { type_,manual,_marker },
         }
     }
 }
 
 impl<'a> Default for ImplVariant<'a> {
     fn default() -> Self {
-        ImplVariant::Unspecified(UNSPEC_NO_IMPLS)
+        ImplVariant::Unspecified(&UNSPEC_NO_IMPLS)
     }
 }
 
@@ -281,7 +293,7 @@ impl<'ar> UpdateWithMeta<'ar> for ImplVariant<'ar> {
         *self = match (&*meta.word.str, &meta.value) {
             ("NoImpls", _) => ImplVariant::NoImpls,
             ("DefaultImpls", _) => ImplVariant::DefaultImpls,
-            ("Remote", _)|("Internal", _) => {
+            ("Internal", _) => {
                 let mut type_=None::<&'ar SynPath> ;
                 let mut manual=false;
                 
@@ -306,14 +318,10 @@ impl<'ar> UpdateWithMeta<'ar> for ImplVariant<'ar> {
                     }
                 }
                 let type_=type_.unwrap_or_else(||{
-                    panic!("must specify the type for {} derive.",meta.word.str);
+                    panic!("must specify the type for Internal derive.");
                 });
 
-                match &*meta.word.str {
-                    "Remote"  =>ImplVariant::Remote  {type_,manual},
-                    "Internal"=>ImplVariant::Internal{type_,manual},
-                    _=>unreachable!(),
-                }
+                ImplVariant::Internal{type_,manual,_marker:PhantomData}
             }
             (_, _) => return Err(NotUpdated),
         };
@@ -386,6 +394,9 @@ fn attr_settings_new_attr<'alloc>(
                 }
                 "print_attributes" => {
                     settings.print_attributes = true;
+                }
+                "derive_str" => {
+                    settings.derive_str = true;
                 }
                 "reexport" => {
                     reexport_attribute(
@@ -553,7 +564,6 @@ pub(crate) struct FieldAttrs<'a> {
     pub(crate) rename: Option<&'a Ident>,
     /// Renames the accessor struct on Some.
     pub(crate) accessor: Option<&'a Ident>,
-    pub(crate) delegated: FieldDelegatedTraits<'a>,
     /// the bounds for the field in the <Type>Trait trait.
     pub(crate) const_bound:Punctuated<TypeParamBound, Add>,
     /// the bounds for the field in the <Type>IntoRuntime trait.
@@ -593,18 +603,6 @@ fn field_attrs_helper<'a>(
                 }
                 "accessor" => {
                     settings.accessor = Some(ident_from_nested(&value,arenas));
-                }
-                "delegate" => {
-                    if let MyNested::List(list_1) = value {
-                        foreach_nestedmeta_index(
-                            list_1,
-                            arenas,
-                            |v, ind| settings.delegated[ind] = Some(type_from_nested(v, arenas)),
-                            |_,e| panic!("not valid inside delegate( ... ):'{}'", e.0),
-                        );
-                    } else {
-                        panic!("Unsupported nested attribute:{:#?}", value);
-                    }
                 }
                 "bound"|"bound_runt" => {
                     let str_=match value{

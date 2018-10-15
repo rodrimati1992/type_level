@@ -84,6 +84,7 @@ macro_rules! from_const {
                 }
             }
 
+            $(#[$attr])*
             #[cfg(rust_1_22)]
             impl<U: Unsigned +Default +Copy,B:Bit+Copy+Default> IntoConstant<$type> for UInt<U,B>{
                 const VALUE:$type= <UInt<U,B> as Unsigned>::$constant ;
@@ -96,6 +97,7 @@ macro_rules! from_const {
                 }
             }
 
+            $(#[$attr])*
             #[cfg(rust_1_22)]
             impl IntoConstant<$type> for UTerm{
                 const VALUE:$type=0;
@@ -110,7 +112,8 @@ from_const!{signed
     [i32  ,I32]
     [isize,ISIZE]
     [i64  ,I64]
-    // [i128 ,I128]
+    // Re-enable one typenum does not require nightly to compile with the i128 feature.
+    //[#[cfg(feature="i128")] i128 ,I128]
 }
 
 from_const!{unsigned
@@ -124,9 +127,16 @@ from_const!{unsigned
     [isize,ISIZE]
     [i64,I64]
     [u64,U64]
-    // [#[cfg(rust_1_26)] u128,U128]
-    // [#[cfg(rust_1_26)] i128,I128]
+    // Re-enable one typenum does not require nightly to compile with the i128 feature.
+    //[#[cfg(feature="i128")] u128,U128] 
+    //[#[cfg(feature="i128")] i128,I128]
 }
+
+#[cfg(rust_1_26)]
+impl IntoConstType_ for u128{ type ToConst=UnsignedInteger; }
+
+#[cfg(rust_1_26)]
+impl IntoConstType_ for i128{ type ToConst=SignedInteger; }
 
 macro_rules! compiletime_equiv {
     ( $comp:ty [$($runt:ty),*] ) => {

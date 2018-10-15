@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use syn;
 use syn::Visibility;
 use syn::Path;
 use quote::ToTokens;
@@ -51,7 +53,7 @@ impl<'a> MyVisibility<'a>{
             }
             &Visibility::Restricted(ref restricted)=>{
                 let path=&restricted.path;
-                let is_global=restricted.path.global();
+                let is_global=restricted.path.leading_colon.is_some();
                 let path_seg_0=path.segments.first().unwrap();
                 let path_seg_0=path_seg_0.value();
                 let is_crate=path_seg_0.ident=="crate";

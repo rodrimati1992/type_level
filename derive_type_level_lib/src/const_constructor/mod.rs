@@ -50,7 +50,7 @@ use ::print_derive_tokens;
 
 pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     use syn::token::Comma;
-    let comma=Comma::new(ast.ident.span());
+    let comma=Comma::default();
     ast.generics.make_where_clause();
     for generic in &mut ast.generics.params {
         match *generic {
@@ -125,9 +125,10 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
 
     let const_param_for_alias=new_ident(format!("__ConstParam"));
     // let const_param_for_alias_rep=iter::repeat(const_param_for_alias);
-    let const_param_ident=attrs.const_param.unwrap_or_else(||{
-        panic!("must pass the 'ConstParam' parameter.\n{}",help_message);
-    });
+    let (const_param_ident,const_param_default)=
+        attrs.const_param.unwrap_or_else(||{
+            panic!("must pass the 'ConstParam' parameter.\n{}",help_message);
+        });
 
 
     let ref lifetimes   =ast.generics.lifetimes().collect::<Vec<_>>();
@@ -137,7 +138,14 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     let ref type_param_idents=type_params.iter().map(|x| &x.ident ).collect::<Vec<_>>();
     
     let ref type_alias_ty_params=type_params.iter()
-        .map(|x| if x.ident==*const_param_ident { const_param_for_alias }else{ &x.ident } )
+        .map(|x| {
+            let ident=&x.ident;
+            if x.ident==*const_param_ident { 
+                quote!( #const_param_for_alias #( = #const_param_default )* )
+            }else{ 
+                quote!( #ident )
+            }
+        })
         .collect::<Vec<_>>();
 
     let ref truncated_type_params=type_param_idents.iter()
@@ -225,8 +233,10 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         });
     }
     if let TypeDeclVariant::Name(_)=*const_constructor {
+        let const_constructor_doc=format!("The ConstConstructor for {}",name);
         tokens.append_all(quote!{
             #attrs_cc_type
+            #[doc=#const_constructor_doc]
             #vis struct #const_constructor_ident< #remaining_generics >
             where 
                 #bounds_cc_type

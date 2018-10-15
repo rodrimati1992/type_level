@@ -2,6 +2,40 @@
 
 Crate for using type level values and functions.
 
+# Introduction 
+
+[For the introduction to this library go here.](./docs/introduction/index.html)
+
+# Guide
+
+This guide will guide any user towards defining type-level-values and  using them,
+starting with simple examples,then getting gradually more complex.
+
+The guide is [here](./docs/guide/index.html),
+and it starts [here](./docs/guide/introduction/index.html),
+
+
+# Reference
+
+Derive macros from `derive_type_level`:
+    
+- [TypeLevel derive macro.](./docs/attribute_typelevel/index.html) 
+
+- [ConstConstructor derive macro.](./docs/attribute_const_constructor/index.html)
+
+
+Miscelaneous things:
+
+- [Privacy: Details on how TypeLevel deals with privacy.](./docs/reference_privacy/index.html)
+
+- [reading error messages: 
+    How to read error messages by the compiler.
+  ](./docs/appendix_error_messages/index.html)
+
+- [Patterns: Programming patterns in this library.](./docs/appendix_patterns/index.html)
+
+- [type-level-function composition](./docs/appendix_function_composition/index.html)
+
 # Documentation
 
 For documentation outside of API docs go [here](./docs/index.html).
@@ -23,7 +57,7 @@ To use this crate in no_std contexts disable the default-feature.
 
 */
 
-#![recursion_limit = "128"]
+#![recursion_limit = "160"]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(non_camel_case_types)]
 #![allow(unused_imports)]
@@ -54,15 +88,16 @@ pub mod fn_adaptors;
 
 
 #[macro_use]
-pub mod ops;
-#[macro_use]
 pub mod macros;
+#[macro_use]
+pub mod ops;
 
 
-pub mod enum_stuff;
+pub mod discriminant;
 #[macro_use]
 pub mod field_traits;
 pub mod const_wrapper;
+pub mod collection_ops;
 pub mod extern_types;
 pub mod new_types;
 pub mod runtime_value;
@@ -70,6 +105,9 @@ pub mod std_types;
 pub mod user_traits;
 pub mod util_types;
 pub mod initialization;
+
+#[cfg(test)]
+pub(crate) mod testing;
 
 #[path = "../docs/mod.rs"]
 pub mod docs;

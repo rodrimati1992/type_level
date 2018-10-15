@@ -4,7 +4,7 @@
 
 */
 
-use crate_::ops::{Filter_, FoldL_, FoldR_, Map_};
+use crate_::collection_ops::{Filter_, FoldL_, FoldR_, Map_};
 use crate_::type_fn::TypeFn_;
 
 ////////////////////////////////////////////////////////////////////////////////////////

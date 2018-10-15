@@ -1,3 +1,10 @@
+/*!
+Where the macros for declaring and initializing datatypes are declared.
+
+In Rust 2015 edition (the one that as of october 2018 this crate is built on)
+the documentation for this module does not mention any macros. 
+*/
+
 
 
 /**
@@ -39,7 +46,7 @@ macro_rules! tlist {
     (..$rest:ty) => { $rest };
     ($current:ty) => { tlist![$current,] };
     ($element:ty;$repeat:ty) => {
-        $crate::ops::Repeat<
+        $crate::collection_ops::Repeat<
             $crate::new_types::type_list::TListType,
             $element,
             $repeat
@@ -58,7 +65,7 @@ macro_rules! tlist {
 /** 
 
 Instantiates a type-level-list,
-which is just a MarkerType and does not contain instances of the types it lists.
+which is a zero-sized-type which does not contain instances of the types it lists.
 
 This macro uses takes these 2 forms:
 
@@ -81,9 +88,13 @@ use std::borrow::Cow;
 
 fn main(){
 
-    let first_primes=tlist_val![ U1,U2,U3,U5,U7,U11,U13,U17,U19,U23 ];
+    let first_primes:
+        tlist    ![ U1,U2,U3,U5,U7,U11,U13,U17,U19,U23 ]=
+        tlist_val![ U1,U2,U3,U5,U7,U11,U13,U17,U19,U23 ];
 
-    let strings=tlist_val![ String,&str,Cow<str> ];
+    let strings:
+        tlist    ![ String,&str,Cow<str> ]=
+        tlist_val![ String,&str,Cow<str> ];
 
 }
 
@@ -104,12 +115,12 @@ macro_rules! tlist_val {
 
 
 
-#[macro_export]
 /**
-Declares a ConstValue type,giving every field a type.
-
-This macro ensures that every field is initialized,
+Initializes a ConstValue,ensuring that every field is initialized,
 otherwise producing a compile-time error which mentions the fields that weren't initialized.
+
+This is a type macro,for a macro that produces a runtime value please look at 
+[construct_val](./macro.construct_val.html).
 
 # Usage
 
@@ -173,6 +184,10 @@ fn main(){
 
 
 # Example 2:Constructing a struct with private fields.
+
+Constructing a struct with private fields requires that one uses the 
+<DerivingType>_Uninit constructor,
+<DerivingType>Type is not a constructor if any field is more private than the struct.
 
 ```
 # #[macro_use]
@@ -268,6 +283,7 @@ fn main(){
 
 
 */
+#[macro_export]
 macro_rules! construct {
     ($name:ty)=>{
         $crate::initialization::Construct<$name,tlist![]>
@@ -303,7 +319,7 @@ Go to the documentation of the `construct` macro for more details on the syntax 
 ](./macro.construct.html)
 
 
-# Example:Constructing a struct with only public fields.
+# Example:Constructing a struct with no private fields.
 
 ```
 # #[macro_use]

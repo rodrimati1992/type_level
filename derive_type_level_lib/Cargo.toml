@@ -1,6 +1,6 @@
 [package]
 name = "derive_type_level_lib"
-version = "0.0.21"
+version = "0.0.23"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "macros 1.1 derive macros for type-level values and users of them."
@@ -17,6 +17,7 @@ include = [
 ]
 
 
+
 [badges]
 travis-ci = { repository =  "rodrimati1992/type_level/" }
 
@@ -30,13 +31,15 @@ typed-arena = "1.4"
 regex="1.0"
 
 [dependencies.syn]
-version = "0.14"
+version = "0.15"
 features=["extra-traits","visit","visit-mut"]
 
-
+[dev-dependencies.syn]
+version = "0.15"
+features=["extra-traits","visit","full","visit-mut"]
 
 [dependencies.core_extensions]
-version="0.1.3"
+version="0.1.4"
 
 [build-dependencies]
 rustc_version = "0.2"

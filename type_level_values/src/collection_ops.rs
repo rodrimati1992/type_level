@@ -1,3 +1,7 @@
+/*!
+Operations for collection types,including TypeList,tuples,Option,Result.
+*/
+
 use std_::ops::Sub;
 
 use prelude::*;
@@ -7,8 +11,6 @@ use crate_::field_traits::{
 };
 use crate_::fn_adaptors::*;
 use crate_::fn_types::*;
-
-use core_extensions::type_level_bool::{BooleanType, False, True};
 
 type_fn!{define_trait
     /// An iterator function that processes the collection incrementally from the start,
@@ -189,20 +191,6 @@ type_fn!{
         Collection::Output
     }
 }
-
-type_fn!{
-    /// Returns the last value of Collection,or returns Defaultval if it's empty.
-    pub fn LastOrDefaultOp[Collection,Defaultval](Collection,Defaultval)
-    where[ Collection:FoldL_<Defaultval,GetRhs,Output=Out> ]
-    {
-        let GetRhs=ApplyRhs<GetFieldOp, U1>;
-        let Out;
-        Out
-    }
-}
-
-/// Returns the last value of Collection,or returns Defaultval if it's empty.
-pub type LastOrDefault<Collection, DefaultVal> = TypeFn<LastOrDefaultOp, (Collection, DefaultVal)>;
 
 impl<This, Op, Val, Rem, Out> ReduceL_<Op> for This
 where

@@ -42,7 +42,6 @@ impl<'a> ToTokens for FieldTraits<'a>{
                 ImplVariant::Unspecified(_)=>unreachable!("because of Void"),
                 ImplVariant::NoImpls|ImplVariant::DefaultImpls=>&self.decls.original_path,
                 ImplVariant::Internal{type_,..}=>type_,
-                ImplVariant::Remote{type_,..} =>type_,
             };
             
             for (field_i,field) in struct_.fields.iter().enumerate(){

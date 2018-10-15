@@ -52,12 +52,12 @@ impl IntoRuntime<bool> for False {
     }
 }
 
-#[cfg(rust_1_20)]
+#[cfg(rust_1_22)]
 impl IntoConstant<bool> for True {
     const VALUE: bool = true;
 }
 
-#[cfg(rust_1_20)]
+#[cfg(rust_1_22)]
 impl IntoConstant<bool> for False {
     const VALUE: bool = false;
 }
@@ -78,7 +78,7 @@ impl IntoConstType_ for bool {
 
 pub mod boolean_variants {
     use super::*;
-    use enum_stuff::{Discriminant, DiscriminantFor};
+    use discriminant::{Discriminant, DiscriminantFor};
     use typenum::consts::{U0, U1};
 
     pub type FalseVariant = Discriminant<False, BooleanType, U0>;

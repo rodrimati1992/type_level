@@ -21,3 +21,56 @@ impl<C> ConstUserExtMeth<C> {
 }
 
 ////////////////////////////////////////////////////////
+
+
+#[derive(ConstConstructor)]
+#[cconstructor(
+    Type = "TestingUnsized",
+    ConstParam = "C",
+)]
+pub struct TestingUnsizedInner<T:?Sized,C> {
+    pub const_: ConstWrapper<C>,
+    pub value:T,
+}
+
+
+#[derive(ConstConstructor)]
+#[cconstructor(
+    // print_derive,
+    Type = "TestingUnsizedOuter",
+    ConstParam = "C",
+)]
+pub struct TestingUnsizedOuter_<T:?Sized,C> {
+    pub const_: TestingUnsized<T,C>,
+}
+
+////////////////////////////////////////////////////////
+
+
+#[derive(Debug,Copy,Clone,Default)]
+pub struct NoConstLayoutIndependent<T>(pub T);
+
+
+#[derive(Debug,Copy,Clone,Default,ConstConstructor)]
+#[cconstructor(Type= "StoredInside", ConstParam = "I")]
+pub struct StoredInsideInner<T,I> {
+    pub value:T,
+    marker: NoConstLayoutIndependent<I>,
+}
+
+impl<T,I> StoredInside<T,I>{
+    pub fn new(value:T,_marker:I)->Self{
+        Self{
+            value,
+            marker:NoConstLayoutIndependent(ConstWrapper::NEW)
+        }
+    }
+}
+
+const_method!{
+    type ConstConstructor[T]=( StoredInsideCC<T> )
+    type AllowedConversions=( allowed_conversions::All )
+    pub fn ChangeParam[I,I2](I,I2){ I2 }
+}
+
+

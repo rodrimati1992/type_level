@@ -4,28 +4,35 @@ use std::ops::IndexMut;
 use syn::Ident;
 
 
+#[doc(hidden)]
+pub mod reexp{
+    pub use arrayvec::ArrayString;
+    pub use std::str::FromStr;
+}
 
 #[derive(Debug)]
-pub(crate) struct InvalidIndex;
+pub struct InvalidIndex;
 
 #[derive(Debug)]
-pub(crate) struct InvalidMultiIndex<I>(pub I);
+pub struct InvalidMultiIndex<I>(pub I);
 
 /// Alias for the traits implemented by all indexable structs.
-pub(crate) trait IndexableStruct:
+pub trait IndexableStruct:
     StructIndexType + Default + IndexMut<<Self as StructIndexType>::Index>
 {
 }
 
-impl<This> IndexableStruct for This where This: StructIndexType + Default + IndexMut<Self::Index> {}
+impl<This> IndexableStruct for This 
+where This: StructIndexType + Default + IndexMut<Self::Index> 
+{}
 
 /// Implementation detail for indexable structs.
-pub(crate) trait StructIndexType {
+pub trait StructIndexType {
     type Index: GetEnumIndices;
 }
 
 /// Trait to get enum-indices for an indexable struct.
-pub(crate) trait GetEnumIndices: Debug + Copy + PartialEq + Eq + 'static {
+pub trait GetEnumIndices: Debug + Copy + PartialEq + Eq + 'static {
     /// Gets the indices for `ident`,
     /// returns InvalidMultiIndex on an invalid index.
     fn many_from_ident(ident: &Ident) -> Result<&'static [Self], InvalidMultiIndex<&Ident>>;
@@ -36,11 +43,14 @@ pub(crate) trait GetEnumIndices: Debug + Copy + PartialEq + Eq + 'static {
 
     /// A message listing all the indices.
     fn indices_message()->String;
+
+    const INDICES:&'static [Self];
 }
 
 #[doc(hidden)]
 pub type IndicesMap<IndexEnum> = ::std::collections::BTreeMap<&'static str, &'static [IndexEnum]>;
 
+#[macro_export]
 macro_rules! declare_indexable_struct {
     (
         $(#[$index_attrs:meta])*
@@ -66,17 +76,17 @@ macro_rules! declare_indexable_struct {
 
         $(#[$index_attrs])*
         #[derive(Debug,Copy,Clone,PartialEq,Eq,Ord,PartialOrd,Hash)]
-        pub(crate) enum $enum_index{
+        pub enum $enum_index{
             $( $index, )*
         }
 
 
-        impl FromStr for $enum_index{
-            type Err=$crate::attribute_detection::indexable_struct::InvalidIndex;
+        impl $crate::indexable_struct::reexp::FromStr for $enum_index{
+            type Err=$crate::indexable_struct::InvalidIndex;
             fn from_str(s:&str)->Result<Self,Self::Err>{
                 match s {
                     $( stringify!( $index )=>Ok($enum_index::$index), )*
-                    _=>Err($crate::attribute_detection::indexable_struct::InvalidIndex),
+                    _=>Err($crate::indexable_struct::InvalidIndex),
                 }
             }
         }
@@ -89,19 +99,16 @@ macro_rules! declare_indexable_struct {
             const IND_ALIASES:&'static [(&'static str,&'static [Self])]=&[
                 $( ($mul_ind_name , &[ $( $enum_index::$index_alias ,)* ]) ,)*
             ];
-            const INDICES:&'static [Self]=&[
-                $($enum_index::$index,)*
-            ];
 
             #[inline]
             fn indices_map()
-            ->&'static $crate::attribute_detection::indexable_struct::IndicesMap<Self>
+            ->&'static $crate::indexable_struct::IndicesMap<Self>
             {
                 use core_extensions::utils::as_slice;
 
                 lazy_static! {
                     static ref MANY_IMPL_MAP: 
-                        $crate::attribute_detection::indexable_struct::IndicesMap<$enum_index> 
+                        $crate::indexable_struct::IndicesMap<$enum_index> 
                     ={
                         [
                             ("all",$enum_index::INDICES),
@@ -118,16 +125,19 @@ macro_rules! declare_indexable_struct {
             }
         }
 
-        impl $crate::attribute_detection::indexable_struct::GetEnumIndices for $enum_index {
+        impl $crate::indexable_struct::GetEnumIndices for $enum_index {
             /// Gets the indices for `ident`,
             /// returns InvalidMultiIndex<on an invalid index.
             fn many_from_ident(
                 ident: &::syn::Ident
             )-> Result<
                 &'static [Self], 
-                $crate::attribute_detection::indexable_struct::InvalidMultiIndex<&::syn::Ident>
+                $crate::indexable_struct::InvalidMultiIndex<&::syn::Ident>
             >{
+                #[allow(unused_imports)]
                 use std::fmt::Write;
+                
+                use $crate::indexable_struct::reexp::ArrayString;
 
                 let mut str_: ArrayString<[_; 128]> = ArrayString::new();
                 let _ = write!(str_, "{}", ident);
@@ -135,7 +145,7 @@ macro_rules! declare_indexable_struct {
                 Self::indices_map()
                     .get(&*str_)
                     .cloned()
-                    .ok_or($crate::attribute_detection::indexable_struct::InvalidMultiIndex(ident))
+                    .ok_or($crate::indexable_struct::InvalidMultiIndex(ident))
             }
 
             /// Gets the indices for `string`,
@@ -144,12 +154,12 @@ macro_rules! declare_indexable_struct {
                 string: &str
             )-> Result<
                 &'static [Self], 
-                $crate::attribute_detection::indexable_struct::InvalidMultiIndex<&str>
+                $crate::indexable_struct::InvalidMultiIndex<&str>
             > {
                 Self::indices_map()
                     .get(string)
                     .cloned()
-                    .ok_or($crate::attribute_detection::indexable_struct::InvalidMultiIndex(string))
+                    .ok_or($crate::indexable_struct::InvalidMultiIndex(string))
             }
 
             fn indices_message()->String{
@@ -162,6 +172,10 @@ macro_rules! declare_indexable_struct {
                 buffer.pop();
                 buffer
             }
+
+            const INDICES:&'static [Self]=&[
+                $($enum_index::$index,)*
+            ];
         }
 
 
@@ -171,8 +185,8 @@ macro_rules! declare_indexable_struct {
         $(#[$indexable_struct_attrs])*
         /// A generic struct which can be indexed with an associated enum.
         #[derive(Debug,Clone,PartialEq,Eq)]
-        pub(crate) struct $indexable_struct<T>{
-            $(pub(crate) $field:T ,)*
+        pub struct $indexable_struct<T>{
+            $(pub $field:T ,)*
         }
 
 
@@ -180,23 +194,31 @@ macro_rules! declare_indexable_struct {
         impl<T> $indexable_struct<T>
         where Self:Default,
         {
-            // #[inline]
-            // pub(crate) fn new()->Self{
-            //     Default::default()
-            // }
+            #[inline]
+            #[allow(dead_code)]
+            pub fn new()->Self{
+                Default::default()
+            }
 
             #[allow(dead_code)]
-            pub(crate) fn map<F,U>(self,mut f:F)->$indexable_struct<U>
+            pub fn map<F,U>(self,mut f:F)->$indexable_struct<U>
             where F:FnMut($enum_index,T)->U
             {
                 $indexable_struct{
                     $($field:f($enum_index::$index,self.$field),)*
                 }
             }
+            
+            #[allow(dead_code)]
+            pub fn to_vec(self)->Vec<($enum_index,T)>{
+                vec![
+                    $( ( $enum_index::$index , self.$field ) ,)*
+                ]
+            }
         }
 
 
-        impl<T> $crate::attribute_detection::indexable_struct::StructIndexType 
+        impl<T> $crate::indexable_struct::StructIndexType 
         for $indexable_struct<T>
         {
             type Index=$enum_index;

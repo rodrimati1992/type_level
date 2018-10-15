@@ -78,6 +78,10 @@ This macro generates 2 items by default (this can be overriden):
     The identifier of the Const-parameter of this type.<br>
     Of the form `ConstParam="ident"`,
     where the string must be the identifier of one of the type type parameters.
+    <br>
+    Or of the form `ConstParam="ident = DefaultType"`,
+    where `ident` must be the identifier of one of the type type parameters,
+    and `DefaultType` must be the default value for that type parameter (in the type alias).
 
 - ConstConstructor (optional attribute) :
     Determines the name and other optional properties of <ConstConstructor>.

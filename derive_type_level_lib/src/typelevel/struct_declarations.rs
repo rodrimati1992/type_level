@@ -43,6 +43,7 @@ use attribute_detection::shared::parse_type;
 pub(crate) struct FieldAccessor{
     /// The ammount of times the field identifier is used for a public field.
     pub(crate) public_instances:usize,
+    pub(crate) is_tuple_field:bool,
 }
 
 impl FieldAccessor{
@@ -128,11 +129,6 @@ pub(crate) struct FieldDeclaration<'a>{
     pub(crate) assoc_type:&'a Ident,
     pub(crate) original_ty:&'a Type,
     pub(crate) relative_priv:RelativePriv,
-    /// The type that performs the conversion between runtime and Const types,
-    /// with the IntoRuntime and IntoConstType_ traits.
-    /// 
-    /// By Default this is the same as `self.generic`.
-    pub(crate) delegated:TraitImpls<&'a Type>,
     pub(crate) generic  :&'a Type,
     // used when generating conversions between the struct and another type.
     pub(crate) generic_2:&'a Type, 
@@ -224,7 +220,7 @@ impl<'a> StructDeclarations<'a>{
                         move|i|{
                             while tuple_fields.len() <= i {
                                 let new_ident=variant
-                                    .new_ident( format!("field_{}",tuple_fields.len()) )
+                                    .new_ident( format!("U{}",tuple_fields.len()) )
                                     .piped(alloc_ident);
                                 tuple_fields.push( new_ident );
                             }
@@ -262,19 +258,6 @@ impl<'a> StructDeclarations<'a>{
                     let generic  =parse_alloc("");
                     let generic_2=parse_alloc("_TyB");
 
-                    let delegated_ict=field_attrs.delegated.into_consttype.is_some();
-                    let delegated=field_attrs.delegated.map(|index,impl_|{
-                        use super::ImplIndex::IntoConstType;
-                        impl_.unwrap_or_else(||if index==IntoConstType {original_ty}else{generic})
-                    });
-
-                    {
-                        let occupied=all_types.entry(original_ty).or_insert(None);
-                        if occupied.is_none() && delegated_ict {
-                            *occupied=Some(delegated.into_consttype);
-                        }
-                    }
-
                     use self::RelativePriv as RP;
 
                     let field_vis_kind;
@@ -307,7 +290,8 @@ impl<'a> StructDeclarations<'a>{
                     {
                         let accessor=field_accessors.entry(accessor_ident).or_insert_with(||{
                             FieldAccessor{
-                                public_instances:0
+                                public_instances:0,
+                                is_tuple_field:matches!(FieldName::Index{..}= name_ident),
                             }
                         });
                         if relative_priv==RP::Inherited{
@@ -340,7 +324,6 @@ impl<'a> StructDeclarations<'a>{
                         original_ty,
                         generic,
                         generic_2,
-                        delegated,
                         rt_assoc_type:ident_from(&format!("rt_{}",assoc_type)) ,
                         runt_bound :field_attrs.runt_bound,
                         const_bound:field_attrs.const_bound,
@@ -506,9 +489,17 @@ impl<'a> ToTokens for StructDeclarations<'a>{
 
         let priv_suffix=self.priv_param_suffix();
 
-        let fields_doc_hidden=self.field_accessors.values()
-            .map(|acc|acc.doc_hidden_attr(self.tokens));
-        let fields_1=self.field_accessors.keys();
+        let mut fields_1a=Vec::new();
+        let mut fields_1b=Vec::new();
+        for (k,acc) in &self.field_accessors {
+            match acc.is_tuple_field {
+                false=>&mut fields_1a,
+                true =>&mut fields_1b,
+            }.push(k);
+        }
+        let fields_1a=&fields_1a;
+        let fields_1b=&fields_1b;
+
         let fields_2=self.field_accessors.keys();
         let pub_fields=self.field_accessors.iter()
             .filter(|&(_,v)| v.public_instances != 0 )
@@ -531,7 +522,7 @@ impl<'a> ToTokens for StructDeclarations<'a>{
 
         let priv_struct_reexport=self.opt_priv_field_vis().map(|_|{
             quote!(
-                #priv_field_vis_submod use self::private::{
+                #priv_field_vis_submod use self::__private_mod::{
                     __PrivTrait,
                     __IsPriv,
                 };
@@ -541,7 +532,7 @@ impl<'a> ToTokens for StructDeclarations<'a>{
             
 
         tokens.append_all(quote!{
-            mod private{
+            mod __private_mod{
                 #vis_kind_submod trait Sealed{}
 
                 #vis_kind_submod trait __PrivTrait{}
@@ -551,7 +542,7 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                 impl __PrivTrait for __IsPriv{}
 
             }
-            use self::private::Sealed;
+            use self::__private_mod::Sealed;
 
             #priv_struct_reexport
 
@@ -571,23 +562,17 @@ impl<'a> ToTokens for StructDeclarations<'a>{
 
             mod __fields{
                 #(
-                    #fields_doc_hidden
                     #[derive(Clone,Copy)]
                     /// This is the accessor for the field of the same name.
-                    #vis_kind_submod_rep struct #fields_1;
-
-                    impl super::Field_ for #fields_2{
-                        type Inside=super::#type_marker_struct_rep_b;
-                    }
+                    #vis_kind_submod_rep struct #fields_1a;
                 )*
+                #vis_kind_submod use super::typenum_reexports::{
+                    #( #fields_1b, )*
+                };
 
                 /// This is the accessor for all the fields.
                 #[derive(Clone,Copy)]
                 #vis_kind_submod struct All;
-
-                impl super::Field_ for All{
-                    type Inside=super::#type_marker_struct;
-                }
             }
 
             pub mod fields{
@@ -654,9 +639,6 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                     #(#generics_0,)* 
                     #priv_suffix
                 >
-                #(where 
-                    #has_priv_fields:__PrivTrait,
-                )*
             });
 
             tokens.append_all(match declaration.variant.kind {
@@ -668,12 +650,18 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                         ( 
                             #(#field_vis ConstWrapper<#generics_1>,)* 
                             #(#opt_priv_field_vis ConstWrapper<__IsPriv>,)*
-                        ); 
+                        )
+                        #(where 
+                            #has_priv_fields:__PrivTrait,
+                        )*; 
                     }
                 }
                 StructKind::Braced=>{
                     let names=declaration.fields.iter().map(|x| &x.name_ident );
                     quote!{ 
+                        #(where 
+                            #has_priv_fields:__PrivTrait,
+                        )*
                         { 
                             #(#field_vis #names:ConstWrapper<#generics_1>,)* 
                             #(#opt_priv_field_vis priv_:ConstWrapper<__IsPriv>,)*

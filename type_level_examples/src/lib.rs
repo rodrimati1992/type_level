@@ -19,8 +19,6 @@ extern crate take_mut;
 extern crate serde;
 extern crate serde_json;
 
-
-pub mod _00_constconstructor_safety;
 pub mod _01_deserialize_uninitialized;
 pub mod _02_mut_wrapper;
 pub mod _03_vis_wrapper;

@@ -5,6 +5,7 @@ use crate_::fn_types::*;
 
 use crate_::field_traits::{GetField, SetField};
 use crate_::ops::*;
+use crate_::collection_ops::*;
 use crate_::std_types::{Equal_, Greater_, Less_};
 
 macro_rules! tuple_ {

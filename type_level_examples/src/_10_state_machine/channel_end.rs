@@ -3,7 +3,7 @@ use std::ops::Range;
 use std::sync::mpsc::{self, Receiver as MPSCReceiver, RecvError, SendError, Sender as MPSCSender};
 
 use type_level_values::new_types::{TList, TNil};
-use type_level_values::ops::{Len_, PushBack_};
+use type_level_values::collection_ops::{Len_, PushBack_};
 use type_level_values::prelude::*;
 
 

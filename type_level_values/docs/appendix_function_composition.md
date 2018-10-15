@@ -1,0 +1,269 @@
+/*!
+
+
+What this library calls function composition is taking 
+multiple functions and producing a type which implements TypeFn_.
+
+# Ways to compose functions
+
+The ways to compose functions are:
+
+- Having a tuple/type-level-list entirely composed of TypeFn_,
+    all elements of which take the return value of the previous TypeFn_.
+
+- Using a function adaptor from type_level_value::fn_adaptors.
+
+# Function adaptors
+
+Function adaptors are generic types which implement TypeFn_,
+taking other TypeFn as parameters (either in the type or as a function parameter).
+
+Most of them are declared [in the fn_adaptors module](../../fn_adaptors/index.html).
+
+The examples will use these adaptors:
+ [ApplyRhs](../../fn_adaptors/struct.ApplyRhs.html)
+/[ApplyLhs](../../fn_adaptors/struct.ApplyLhs.html)
+/[ApplyNonSelf](../../fn_adaptors/type.ApplyNonSelf.html)
+
+### Example 1
+
+Creating a function which multiplies a number by 2.
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+use type_level_values::ops::AssertEq;
+use type_level_values::fn_adaptors::*;
+use type_level_values::fn_types::*;
+
+fn main(){
+    type Mul2=ApplyRhs<MulOp,U2>;
+
+    let _:AssertEq< TypeFn<Mul2,U0> , U0 >;
+    let _:AssertEq< TypeFn<Mul2,U1> , U2 >;
+    let _:AssertEq< TypeFn<Mul2,U2> , U4 >;
+    let _:AssertEq< TypeFn<Mul2,U3> , U6 >;
+
+}
+
+```
+
+
+### Example 2
+
+Creating a function which sets a field to U0.
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+use type_level_values::ops::AssertEq;
+use type_level_values::fn_adaptors::*;
+use type_level_values::fn_types::*;
+use type_level_values::field_traits::{SetFieldOp};
+
+fn main(){
+    type ToU0=ApplyNth< SetFieldOp,U2,U0 >;
+
+    let _:AssertEq< TypeFn<ToU0,((U10,U20,U30,U40),U0)> ,(U0 ,U20,U30,U40)>;
+    let _:AssertEq< TypeFn<ToU0,((U10,U20,U30,U40),U1)> ,(U10,U0 ,U30,U40)>;
+    let _:AssertEq< TypeFn<ToU0,((U10,U20,U30,U40),U2)> ,(U10,U20,U0 ,U40)>;
+    let _:AssertEq< TypeFn<ToU0,((U10,U20,U30,U40),U3)> ,(U10,U20,U30,U0 )>;
+
+}
+
+```
+
+
+### Example 3
+
+Creating a function which divides a field by 2.
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+use type_level_values::ops::AssertEq;
+use type_level_values::fn_adaptors::*;
+use type_level_values::fn_types::*;
+use type_level_values::field_traits::{MapFieldOp};
+
+fn main(){
+    type Div2<Field>=
+        ApplyNonSelf<
+            MapFieldOp,
+            (Field,ApplyRhs<DivOp,U2>)
+        >;
+
+    let _:AssertEq< TypeFn<Div2<U0>,(U10,U20,U30,U40)> , (U5 ,U20,U30,U40) >;
+    let _:AssertEq< TypeFn<Div2<U1>,(U10,U20,U30,U40)> , (U10,U10,U30,U40) >;
+    let _:AssertEq< TypeFn<Div2<U2>,(U10,U20,U30,U40)> , (U10,U20,U15,U40) >;
+    let _:AssertEq< TypeFn<Div2<U3>,(U10,U20,U30,U40)> , (U10,U20,U30,U20) >;
+
+}
+
+```
+
+
+
+### Example 4
+
+Copying one field into another.
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+use type_level_values::ops::AssertEq;
+use type_level_values::fn_adaptors::*;
+use type_level_values::fn_types::*;
+use type_level_values::field_traits::{GetFieldOp,MapIntoFieldOp};
+
+
+fn main(){
+
+    type CopyField<From,To>=
+        ApplyNonSelf<
+            MapIntoFieldOp,
+            (To,ApplyRhs<GetFieldOp,From>)
+        >;
+
+    let _:AssertEq<
+        TypeFn<CopyField<U2,U0>,(U20,U40,U60)>,
+        (U60,U40,U60)
+    >;
+
+    let _:AssertEq<
+        TypeFn<CopyField<U0,U1>,(U20,U40,U60)>,
+        (U20,U20,U60)
+    >;
+}
+
+
+
+```
+
+
+# Tuples/type-level-lists of TypeFn_
+
+If all elements implement TypeFn_ the collection implements TypeFn_,
+all elements of which take the return value of the previous TypeFn_
+
+
+### Example 1
+
+Creating a type-level function which wraps the type T in a `Arc<Mutex<Vec<Option<T>>>>`.
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+
+use type_level_values::ops::*;
+
+use std::sync::{Mutex,Arc};
+
+type_fn!{ pub fn OptionFn[T](T){Option<T>} }
+type_fn!{ pub fn VecFn[T](T){Vec<T>} }
+type_fn!{ pub fn MutexFn[T](T){Mutex<T>} }
+type_fn!{ pub fn ArcFn[T](T){Arc<T>} }
+
+fn main(){
+    let _:AssertEq< 
+        TypeFn< OptionFn ,u32>, 
+        Option<u32> 
+    >={
+        None
+    };
+    
+    let _:AssertEq< TypeFn<( OptionFn,VecFn ),u32>, Vec<Option<u32>> >= {
+        vec![ Some(10) , None ]
+    };
+    
+    let _:AssertEq< 
+        TypeFn<( OptionFn,VecFn,MutexFn ),u32>, 
+        Mutex<Vec<Option<u32>>> 
+    >={
+        Mutex::new( vec![ None , None ] )
+    };
+    
+    let _:AssertEq< 
+        TypeFn<( OptionFn,VecFn,MutexFn,ArcFn ), u8 >,
+        Arc<Mutex<Vec<Option< u8 >>>>
+    >={
+        10
+        .piped(Some)
+        .piped(|x| vec![x;10] )
+        .piped(Mutex::new)
+        .piped(Arc::new)
+    };
+    
+    let _:AssertEq< 
+        TypeFn<( OptionFn,VecFn,MutexFn,ArcFn ), String >,
+        Arc<Mutex<Vec<Option< String >>>>
+    >={
+        "what the"
+        .to_string()
+        .piped(Some)
+        .piped(|x| vec![x;10] )
+        .piped(Mutex::new)
+        .piped(Arc::new)
+    };
+}
+
+```
+
+`AssertEq` is a type alias that assert that both types are the same,evaluating to the second one.
+
+The `piped` method is defined like this:
+
+```ignore
+fn piped<F, U>(self, f: impl FnOnce(Self) -> U) -> U {
+    f(self)
+}
+```
+
+
+
+### Example 2
+
+Implementing a multiply-add function.
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+use type_level_values::ops::AssertEq;
+use type_level_values::fn_adaptors::*;
+use type_level_values::fn_types::*;
+
+fn main(){
+
+    type_fn!{
+        pub fn MulAdd[L,R](L,R)
+        where[ (MulOp,ApplyLhs<AddOp,R>):TypeFn_<(L,R),Output=Out>  ]
+        { let Out;Out }
+    }
+
+    let _:AssertEq<TypeFn<MulAdd,(U1,U1)>,U2>;
+    let _:AssertEq<TypeFn<MulAdd,(U1,U2)>,U4>;
+    let _:AssertEq<TypeFn<MulAdd,(U1,U3)>,U6>;
+    let _:AssertEq<TypeFn<MulAdd,(U1,U4)>,U8>;
+    let _:AssertEq<TypeFn<MulAdd,(U2,U1)>,U3>;
+    let _:AssertEq<TypeFn<MulAdd,(U2,U2)>,U6>;
+    let _:AssertEq<TypeFn<MulAdd,(U2,U3)>,U9>;
+    let _:AssertEq<TypeFn<MulAdd,(U2,U4)>,U12>;
+}
+
+```
+
+
+
+*/

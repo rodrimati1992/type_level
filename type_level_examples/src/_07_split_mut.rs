@@ -13,11 +13,8 @@
 
 use type_level_values::field_traits::*;
 use type_level_values::new_types::{TList, TNil};
-use type_level_values::ops::{
-    //ConstEq,
-    FoldL_,
-    VariantAsTList_,
-};
+use type_level_values::ops::{VariantAsTList_};
+use type_level_values::collection_ops::{FoldL_,};
 use type_level_values::prelude::*;
 // use type_level_values::reexports::type_level_bool::False;
 

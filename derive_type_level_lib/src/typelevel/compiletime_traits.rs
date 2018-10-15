@@ -2,10 +2,18 @@ use super::*;
 use super::struct_declarations::RelativePriv;
 use self_removed_bound::SelfRemovedBound;
 
-// use core_extensions::BoolExt;
-use core_extensions::OptionExt;
+
+#[allow(unused_imports)]
+use core_extensions::{
+    BoolExt,
+    OptionExt,
+};
+#[allow(unused_imports)]
+use core_extensions::Void;
 
 use attribute_detection::typelevel::ImplVariantMethods;
+#[allow(unused_imports)]
+use ::void_like::VoidLike;
 
 // use token_suffixed::TokenSuffixed;
 
@@ -59,12 +67,9 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
         {
             let self_ty=ToTokenFnMut::new(|tstream|{
                 match derived.into_consttype.inner.to_specified() {
-                    ImplVariant::Unspecified(_)|ImplVariant::NoImpls=>
-                        unreachable!("because of Void"),
+                    ImplVariant::Unspecified(_)|ImplVariant::NoImpls=>{}
                     ImplVariant::DefaultImpls=>
                         original_type.to_tokens(tstream),
-                    ImplVariant::Remote{..}=>
-                        type_marker_struct.to_tokens(tstream),
                     ImplVariant::Internal{type_,..}=>
                         to_stream!( tstream; type_,token.lt, original_gen_params ,token.gt ),
                 }
@@ -72,17 +77,13 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
             let derived=derived.into_consttype.inner.to_specified();
             let tmp=match derived {
                 ImplVariant::Unspecified(_)=>
-                    unreachable!("because of Void"),
-                 ImplVariant::NoImpls=>
-                    None,
+                    false,
+                ImplVariant::NoImpls=>
+                    false,
                 ImplVariant::DefaultImpls|ImplVariant::Internal{..}=>
-                    Some(None       ),
-                ImplVariant::Remote{type_,..}=>
-                    Some(Some(ToTokenFnMut::new(move|tstream|{
-                        to_stream!(tstream;type_,token.lt, original_gen_params ,token.gt)
-                    }))),
+                    true,
             };
-            if let Some(into_consttype)=tmp.filter_(|_| derived.is_derived() ) {
+            if tmp && derived.is_derived() {
                 annotations_and_bounds!(outer;
                     self.decls,ImplIndex::IntoConstType,let (from_runtime_attrs,from_runtime_bounds)
                 );
@@ -90,7 +91,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                 let mod_ty  =self.decls.all_types.iter().map(|x| x.mod_ty );
                 tokens.append_all(quote!{
                     #from_runtime_attrs
-                    impl<#original_gen_params> IntoConstType_<#into_consttype> for #self_ty
+                    impl<#original_gen_params> IntoConstType_ for #self_ty
                     where 
                         #where_preds
                         #( #mod_ty:IntoConstType_<#field_ty>,)*
@@ -125,9 +126,11 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
             let generics_c=generics_fn();
             let generics_d=generics_fn();
             let generics_e=generics_fn();
+            let generics_e_0=generics_fn();
             let generics_f=generics_fn();
             // let generics_g=generics_fn();
-            // let generics_j=generics_fn();
+            let generics_j0=generics_fn();
+            let generics_j1=generics_fn();
             // let generics_k=generics_fn();
 
             let generics  =&struct_.generics;
@@ -166,34 +169,33 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
             // let original_types_e=struct_.fields.iter().map(|x|&x.original_ty);
             // let original_types_f=struct_.fields.iter().map(|x|&x.original_ty);
 
-            
             let specified_ir_iv=derived.into_runtime.inner.to_specified();
 
+
             let ir_type_ident=match specified_ir_iv {
-                ImplVariant::Unspecified(_)=>unreachable!("because of Void"),
+                ImplVariant::Unspecified(_v)=>{
+                    // let _:VoidLike=v;
+                    panic!("WTF:file:{} line:{}",file!(),line!())
+                },
                 ImplVariant::NoImpls       =>None,
                 ImplVariant::DefaultImpls  =>Some(original_path),
-                ImplVariant::Remote  {type_,..}=>Some(type_),
                 ImplVariant::Internal{type_,..}=>Some(type_),
             };
 
             let constructor=ToTokenFnMut::new(|tstream|{
                 match ( specified_ir_iv , self.decls.enum_or_struct ){
-                    (ImplVariant::Unspecified(_),_)|(ImplVariant::NoImpls,_)=>
-                        unreachable!("because of Void"),
+                    (ImplVariant::Unspecified(_),_)|(ImplVariant::NoImpls,_)=>{}
                     (ImplVariant::DefaultImpls,_)=>{
                         enum_path.to_tokens(tstream);
                         original_variant_name.to_tokens(tstream);
                     }
-                     (ImplVariant::Remote  {type_,..},EnumOrStruct::Enum)
-                    |(ImplVariant::Internal{type_,..},EnumOrStruct::Enum)
+                    (ImplVariant::Internal{type_,..},EnumOrStruct::Enum)
                     =>{
                         type_.to_tokens(tstream);
-                        token::Colon2::new(span).to_tokens(tstream);
+                        token::Colon2::default().to_tokens(tstream);
                         original_variant_name.to_tokens(tstream);
                     }
-                     (ImplVariant::Remote  {type_,..},EnumOrStruct::Struct)
-                    |(ImplVariant::Internal{type_,..},EnumOrStruct::Struct)
+                    (ImplVariant::Internal{type_,..},EnumOrStruct::Struct)
                     =>{
                         type_.to_tokens(tstream);
                     }
@@ -205,9 +207,6 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                     self.decls,ImplIndex::IntoRuntime,let (variant_attrs,variant_bounds)
                 );
 
-                let field_runt_conv_a=struct_.fields.iter().map(|x|&x.delegated.into_runtime);
-                let field_runt_conv_b=struct_.fields.iter().map(|x|&x.delegated.into_runtime);
-
                 tokens.append_all(quote!{
                     #variant_attrs
                     impl<#(#original_generics,)* #generics > 
@@ -215,16 +214,13 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                     for #struct_name<#generics #priv_suffix>
                     where 
                         #where_preds
-                        #( #field_runt_conv_a:IntoRuntime<#original_types_a,#generics_d> ,)*
+                        #( #generics_e_0:IntoRuntime<#original_types_a> ,)*
                         #variant_bounds
                     {
                         fn to_runtime()->#ir_type_ident < #(#original_generics_c,)* > {
                             #constructor {
                                 #(
-                                    #field_names_z:
-                                        <   #field_runt_conv_b
-                                            as IntoRuntime<#original_types_b,#generics_e>
-                                        >::to_runtime(),
+                                    #field_names_z:#generics_e::to_runtime(),
                                 )*
                             }
                         }
@@ -237,9 +233,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                     let generics_h=generics_fn();
                     let field_names_y=struct_.fields.iter().map(|x|&x.original_name);
                     let original_types_d=struct_.fields.iter().map(|x|&x.original_ty);
-                    let field_runt_conv_d=struct_.fields.iter().map(|x|&x.delegated.into_runtime);
-                    let field_runt_conv_e=struct_.fields.iter().map(|x|&x.delegated.into_runtime);
-
+                    
                     tokens.append_all(quote!{
                         #variant_attrs
                         impl<#(#original_generics,)* #generics > 
@@ -247,13 +241,13 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                         for #struct_name<#generics #priv_suffix>
                         where 
                             #where_preds
-                            #( #field_runt_conv_d:IntoConstant<#original_types_d,#generics_h> ,)*
+                            #( #generics_j0:IntoConstant<#original_types_d,#generics_h> ,)*
                             #variant_bounds
                         {
                             const VALUE: #ir_type_ident < #(#original_generics_c,)* > =
                                 #constructor {
                                     #(
-                                        #field_names_y:#field_runt_conv_e::VALUE,
+                                        #field_names_y:#generics_j1::VALUE,
                                     )*
                                 };
                         }
@@ -311,10 +305,14 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
 
             let const_bounds_wclause=c_or_r_bound_wclause(ConstOrRuntime::Const);
             let const_bounds_b=struct_.fields.iter().map(|f| &f.const_bound );
+            let const_bounds_opt_colon=struct_.fields.iter()
+                .map(|f| f.const_bound.is_empty().if_false(|| token.colon ) );
             // let const_bounds_c=struct_.fields.iter().map(|f| &f.const_bound );
 
             let runt_bounds_wclause=c_or_r_bound_wclause(ConstOrRuntime::Runtime);
             let runt_bounds_b=struct_.fields.iter().map(|f| &f.runt_bound );
+            let runt_bounds_opt_colon=struct_.fields.iter()
+                .map(|f| f.runt_bound.is_empty().if_false(|| token.colon ) );
             // let runt_bounds_c=struct_.fields.iter().map(|f| &f.runt_bound );
 
             let field_accessor_a=struct_.fields.iter().map(|f| &f.accessor_ident );
@@ -342,7 +340,9 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                     #(
                         #field_name_vis_a
                         #(#[doc=#field_docs_a])*
-                        type #field_names_d: #const_bounds_b ;
+                        type #field_names_d
+                            #const_bounds_opt_colon
+                            #const_bounds_b ;
                     )*
                 }
                 impl<#generics> #trait_ident for #struct_name<#generics #priv_suffix>
@@ -430,7 +430,9 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                         #(
                             #field_name_vis_d
                             #(#[doc=#field_docs_b])*
-                            type #field_names_rt_a: #runt_bounds_b ;
+                            type #field_names_rt_a
+                                #runt_bounds_opt_colon
+                                #runt_bounds_b ;
                         )*
                     }
 

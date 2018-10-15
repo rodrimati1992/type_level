@@ -52,6 +52,7 @@ impl<'a> ToTokens for DerivedTraits<'a>{
                 
             });
 
+            let s_attr_cfg=&struct_.attribute_settings;
 
             {
                 let tlist=TListFrom::new(generics_1b);
@@ -60,18 +61,24 @@ impl<'a> ToTokens for DerivedTraits<'a>{
                     self.decls,ImplIndex::AsTList,let (impl_attrs,impl_bounds)
                 );
 
-                tokens.append_all(quote!{
-                    #impl_attrs
-                    impl<#generics_1> AsTList_ for #struct_name<#generics_1 #priv_suffix>
-                    where 
-                        #impl_bounds
-                    {
-                        type Output=#tlist;
-                    }
-                });
+                if 
+                    d_attr_cfg.derived.as_t_list.inner.is_implemented()||
+                    s_attr_cfg.derived.as_t_list.inner
+                        .specified_or(ImplVariant::NoImpls)
+                        .is_implemented()
+                {
+                    tokens.append_all(quote!{
+                        #impl_attrs
+                        impl<#generics_1> AsTList_ for #struct_name<#generics_1 #priv_suffix>
+                        where 
+                            #impl_bounds
+                        {
+                            type Output=#tlist;
+                        }
+                    });
+                }
             }
 
-            let s_attr_cfg=&struct_.attribute_settings;
 
             {
                 annotations_and_bounds!(outer;

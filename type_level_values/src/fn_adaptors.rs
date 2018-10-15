@@ -1,14 +1,14 @@
 /*!
 Operator adaptors for TypeFn_ implementors.
 
-Contains types for converting operators to a different arity(amount of parameters),
-transforming one input to an operator before applying it,etc.
+
+
 */
 
 use prelude::*;
 
 use crate_::field_traits::{MapFieldOp};
-use crate_::ops::{Insert_};
+use crate_::collection_ops::{Insert_};
 
 type_fn!{
     captures(Op,Rhs)
@@ -202,12 +202,4 @@ pub type IgnoreFirst<First, Second> = TypeFn<Ignoring<First>, Second>;
 type_fn!{
     /// Type-level version of "|x| x ".
     pub fn IdentityFn[P](P){P}
-}
-
-type_fn!{
-    captures(F)
-    /// A type-level version of "|x| f((x,)) "
-    pub fn TupledIn[Input](Input)
-    where[ F: TypeFn_<(Input,)>, ]
-    { F::Output }
 }

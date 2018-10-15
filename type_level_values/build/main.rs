@@ -1,5 +1,12 @@
 extern crate rustc_version;
+#[macro_use]
+extern crate bitflags;
+extern crate core_extensions;
+
 use rustc_version::{version, Version};
+
+
+pub mod test;
 
 fn main() {
     let rver = version().unwrap();
@@ -13,4 +20,7 @@ fn main() {
     if Version::new(1, 27, 0) <= rver {
         println!("cargo:rustc-cfg=rust_1_27");
     }
+
+    //#[cfg(test)]
+    self::test::build_tests().unwrap();
 }

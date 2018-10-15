@@ -1,7 +1,8 @@
 use prelude::*;
 
 use ops::const_from::ConstFrom_;
-use ops::{ConstEq, ConstOrd};
+use ops::{ConstEq, ConstOrd,AssertEq};
+use collection_ops::{Reverse_,Reverse};
 
 use typenum::consts::{U0, U1, U2};
 
@@ -28,6 +29,22 @@ pub enum Ordering {
     #[typelevel(rename = "Greater_", rename_trait = "GreaterTrait")]
     Greater,
 }
+
+//////////////////////////////////////////////////////////////////////////////////
+
+
+impl Reverse_ for Less_{
+    type Output=Greater_;
+}
+
+impl Reverse_ for Equal_{
+    type Output=Equal_;
+}
+
+impl Reverse_ for Greater_{
+    type Output=Less_;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -183,6 +200,12 @@ mod tests {
         assert_eq!(Greater_.into_runtime(), StdOrdering::Greater);
     }
 
+    #[test]
+    fn cmp_ordering_reverse() {
+        let _: AssertEq<Reverse<Less_>,Greater_>;
+        let _: AssertEq<Reverse<Equal_>,Equal_>;
+        let _: AssertEq<Reverse<Greater_>,Less_>;
+    }
     #[test]
     fn cmp_ordering_comparison() {
         let _: True = <ConstEq<Less_, Less_>>::MTVAL;

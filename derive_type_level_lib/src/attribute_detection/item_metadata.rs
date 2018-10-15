@@ -2,7 +2,7 @@ use syn::{NestedMeta, WherePredicate};
 
 use quote::{ToTokens, TokenStreamExt};
 
-use proc_macro2::{Span, TokenStream};
+use proc_macro2::{TokenStream};
 
 use syn::token::Comma;
 
@@ -164,7 +164,7 @@ pub(crate) struct BoundTokens<'a> {
 
 impl<'a> ToTokens for BoundTokens<'a> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let comma = Comma::new(Span::call_site());
+        let comma = Comma::default();
         for bound in self.bounds {
             bound.to_tokens(tokens);
             comma.to_tokens(tokens);
@@ -182,7 +182,7 @@ pub(crate) struct BoundTokensChain<'a> {
 
 impl<'a> ToTokens for BoundTokensChain<'a> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let comma = Comma::new(Span::call_site());
+        let comma = Comma::default();
         for bound in self.bounds_outer {
             bound.to_tokens(tokens);
             comma.to_tokens(tokens);

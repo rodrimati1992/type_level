@@ -1,16 +1,18 @@
 [package]
 name = "type_level_values"
-version = "0.0.21"
+version = "0.0.23"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Crate for using type-level values and functions."
+documentation = "https://docs.rs/type_level_values/"
 readme="../readme.md"
 keywords = ["typelevel", "no-std"]
 categories = ["no-std"]
 repository = "https://github.com/rodrimati1992/type_level"
 include = [
     "Cargo.toml", 
-    "build.rs", 
+    "build/**/*.rs", 
+    "tests/**/*.rs", 
     "src/**/*.rs", 
     "docs/**/*.rs", 
     "docs/**/*.md", 
@@ -18,6 +20,7 @@ include = [
     "../APACHE_license", 
     "../MIT_license"
 ]
+build = "build/main.rs"
 
 [badges]
 travis-ci = { repository =  "rodrimati1992/type_level/" }
@@ -31,11 +34,22 @@ std=[]
 [dependencies]
 num-traits={version="0.2"}
 typenum = {version="1.10.0",features=["no_std"]}
-derive_type_level={path="../derive_type_level",version="0.0.21"}
+derive_type_level={path="../derive_type_level",version="0.0.23"}
+
+
+[dev-dependencies]
+derive_type_level_lib={path="../derive_type_level_lib",version="0.0.23"}
+lazy_static="1.0"
+quote = "0.6"
+
+[dev-dependencies.syn]
+version = "0.15"
+features=["extra-traits","visit","full"]
+
 
 
 [dependencies.core_extensions]
-version="0.1.3"
+version="0.1.4"
 default-features=false
 features=["typenum"]
 
@@ -48,7 +62,8 @@ optional=true
 
 [build-dependencies]
 rustc_version = "0.2"
-
+core_extensions = "0.1"
+bitflags="1.0"
 
 
 # env RUSTFLAGS="--emit asm"

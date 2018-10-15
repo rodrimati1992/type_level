@@ -1,6 +1,8 @@
 use crate_::ops::control_flow::If;
 use crate_::fn_adaptors::*;
 use crate_::fn_types::{AddOp, ConstEqOp, ConstLEOp, ConstNEOp, SubOp};
+use crate_::ops::{ConstEq};
+use crate_::collection_ops::{FoldL, InsertOp};
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_, OrderingTrait};
 use prelude::*;
 
@@ -244,9 +246,6 @@ macro_rules! range_ {
     ($start:ty =>        ) => ( $crate::std_types::range_from::ConstRangeFrom<$start> );
     (                    ) => ( $crate::std_types::range_full::ConstRangeFull );
 }
-
-use crate_::fn_adaptors::ApplyNth;
-use crate_::ops::{ConstEq, FoldL, InsertOp};
 
 #[cfg(test)]
 mod test_eq {
