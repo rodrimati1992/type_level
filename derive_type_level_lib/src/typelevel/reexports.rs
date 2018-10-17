@@ -35,13 +35,13 @@ impl<'a> ToTokens for ReExportPrinter<'a>{
         let mut priv_variants_reexports=Vec::<&'a Ident>::new();
 
         if ReExports::none_reexported()!=cfg.reexported {
-            if let Some(v)=sd.enum_trait{
-                pub_top_reexports.push(v);
-            }
             pub_top_reexports.push(sd.type_marker_struct);
         }
 
         if cfg.reexported.traits{
+            if let Some(v)=sd.enum_trait {
+                pub_top_reexports.push(v);
+            }
             for struct_ in &sd.declarations {
                 // pub_top_reexports.push(struct_.from_trait_ident );
                 pub_top_reexports.push(struct_.trait_ident );
@@ -67,7 +67,7 @@ impl<'a> ToTokens for ReExportPrinter<'a>{
                 priv_variants_reexports.push(struct_.discriminant_ident);
             }
         }
-        
+
         fn use_mod_with_vis<V:ToTokens>(
             vis:V,
             mods:&[&Ident],
@@ -75,7 +75,8 @@ impl<'a> ToTokens for ReExportPrinter<'a>{
             c_t:&CommonTokens,
             tokens:&mut TokenStream
         ){
-            to_stream!(tokens ;  vis,c_t.use_,c_t.low_self,c_t.colon2, );
+            if idents.is_empty() { return; }
+            to_stream!(tokens ; c_t.allow_unused_imports, vis,c_t.use_,c_t.low_self,c_t.colon2, );
             for submod in mods{
                 submod.to_tokens(tokens);
                 c_t.colon2.to_tokens(tokens);

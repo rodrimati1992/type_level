@@ -287,7 +287,7 @@ macro_rules! set_fields {
 
 
 
-
+#[cfg(test)]
 mod tests{
     use super::*;
 

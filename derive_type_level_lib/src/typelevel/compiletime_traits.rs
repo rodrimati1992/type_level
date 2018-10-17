@@ -135,7 +135,6 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
 
             let generics  =&struct_.generics;
             // let generics_rep=iter::repeat(generics);
-            // let field_names_b=struct_.fields.iter().map(|x|&x.name_ident);
 
             let field_mod_c=struct_.fields.iter().map(|x|{
                 match x.relative_priv {
@@ -281,7 +280,11 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                             ConstOrRuntime::Const  => for bound in bounds{
                                 let removed_self=SelfRemovedBound::new(
                                     bound.clone(),
-                                    |i:&Ident| self.decls.field_accessors.contains_key(i) 
+                                    |i:&Ident|{
+                                        struct_.assoc_ty_to_generics
+                                            .get(i)
+                                            .map(|x| (*x).clone() )
+                                    }
                                 );
                                 removed_self.to_tokens(t_s);
                                 token.add.to_tokens(t_s);

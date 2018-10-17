@@ -124,7 +124,7 @@ Most attributes lists support these attributes:
     The generated items are for the Built-in traits and all the Automatically implementd Traits.
     Of the form `items( NameOfImpls0(..),NameOfImpls1(..), ... )`
     where NameOfImpls can be one of 
-    ConstEq/ConstOrd/GetDiscriminant/IntoConstType/IntoRuntime/AsTList/runtime_conv.
+    ConstEq/ConstOrd/IntoConstType/IntoRuntime/AsTList/runtime_conv.
 
 
 
@@ -188,11 +188,6 @@ Valid attributes inside items(impl_name( ... )):
     Currently only possible for Struct/Struct Variants.<br>
     Of the form `rename="name"`,the string must be a valid identifier.
 
-- accessor:
-    The name of the field accessor,declared in the fields submodule.
-    This accessor is used to access the contents of the field in GetField/SetField.<br>
-    Of the form `accessor="name"`,the string must be a valid identifier.
-        
 ## Built-in traits
 
 This derive macro allows deriving some traits declared in type_level_values ,

@@ -14,7 +14,7 @@ implementation detail of NonZero3DPoint.
 
 Here we declare a point which cannot be initialized with a x/y/z with a value of 0.
 
-The `typelevel(pub_trait_accessor)` attribute is used here to be able to access 
+The `typelevel(pub_trait_getter)` attribute is used here to be able to access 
 the value of the fields in the NonZero3DPointTrait trait,
 otherwise they would be innacessible outside of this module.
 
@@ -96,11 +96,11 @@ mod non_zero_3d_point{
     #[typelevel(reexport(Struct,Traits))]
     #[allow(dead_code)]
     pub struct NonZero3DPoint{
-        #[typelevel(pub_trait_accessor)]
+        #[typelevel(pub_trait_getter)]
         x:u64,
-        #[typelevel(pub_trait_accessor)]
+        #[typelevel(pub_trait_getter)]
         y:u64,
-        #[typelevel(pub_trait_accessor)]
+        #[typelevel(pub_trait_getter)]
         z:u64,
     }
 

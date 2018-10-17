@@ -562,13 +562,11 @@ fn reexport_attribute<'alloc>(
 pub(crate) struct FieldAttrs<'a> {
     /// Renames field on Some.
     pub(crate) rename: Option<&'a Ident>,
-    /// Renames the accessor struct on Some.
-    pub(crate) accessor: Option<&'a Ident>,
     /// the bounds for the field in the <Type>Trait trait.
     pub(crate) const_bound:Punctuated<TypeParamBound, Add>,
     /// the bounds for the field in the <Type>IntoRuntime trait.
     pub(crate) runt_bound:Punctuated<TypeParamBound, Add>,
-    pub(crate) pub_trait_accessor:bool,
+    pub(crate) pub_trait_getter:bool,
     pub(crate) docs:Vec<&'a str>,
 }
 
@@ -601,9 +599,6 @@ fn field_attrs_helper<'a>(
                 "rename" => {
                     settings.rename = Some(ident_from_nested(&value,arenas));
                 }
-                "accessor" => {
-                    settings.accessor = Some(ident_from_nested(&value,arenas));
-                }
                 "bound"|"bound_runt" => {
                     let str_=match value{
                         MyNested::Value(str_)=>str_,
@@ -618,8 +613,8 @@ fn field_attrs_helper<'a>(
 
                     bounds_from_str(str_,bounds);
                 }
-                "pub_trait_accessor"=>{
-                    settings.pub_trait_accessor=true;
+                "pub_trait_getter"=>{
+                    settings.pub_trait_getter=true;
                 }
                 "doc"=>{
                     match value {

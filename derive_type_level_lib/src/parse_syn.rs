@@ -1,5 +1,11 @@
 use syn;
 use syn::parse;
+use syn::TypeParamBound;
+use syn::token::Add;
+use syn::punctuated::Punctuated;
+
+
+use attribute_detection::shared::bounds_from_str;
 
 pub fn parse_error_msg<T,E>(invalid_msg:&str,str_:&str,e:E)->T
 where
@@ -37,6 +43,13 @@ pub fn parse_syn_attributes(str_:&str)->Vec<syn::Attribute>{
     syn::parse_str::<ParseOuter>(str_)
         .unwrap_or_else(|e|parse_error_msg("Invalid syn::Attribute",str_,e))
         .attributes
+}
+
+
+pub fn parse_bounds(str_:&str)->Punctuated<TypeParamBound,Add>{
+    let mut list=Punctuated::<TypeParamBound,Add>::new();
+    bounds_from_str(str_,&mut list);
+    list
 }
 
 

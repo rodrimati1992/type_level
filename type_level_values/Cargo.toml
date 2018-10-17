@@ -27,8 +27,9 @@ travis-ci = { repository =  "rodrimati1992/type_level/" }
 
 [features]
 default = ["std","serde"]
-large_tuples=[]
+large_tlist=[]
 std=[]
+passed_tests=[]
 
 
 [dependencies]
@@ -43,7 +44,7 @@ lazy_static="1.0"
 quote = "0.6"
 
 [dev-dependencies.syn]
-version = "0.15.11"
+version = "0.15"
 features=["extra-traits","visit","full"]
 
 

@@ -24,7 +24,7 @@ pub(crate) mod to_token_fn;
 pub(crate) mod find_type_param;
 pub(crate) mod tlist_tokens;
 pub(crate) mod token_suffixed;
-pub(crate) mod submod_visibility;
+pub mod submod_visibility;
 pub(crate) mod self_removed_bound;
 pub(crate) mod data_structure;
 pub mod common_tokens;
