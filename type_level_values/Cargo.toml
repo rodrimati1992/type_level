@@ -29,7 +29,10 @@ travis-ci = { repository =  "rodrimati1992/type_level/" }
 default = ["std","serde"]
 large_tlist=[]
 std=[]
-passed_tests=[]
+passed_tests=["priv_doctests"]
+
+# Hack used to test that certain things do not compile.
+priv_doctests=[]
 
 
 [dependencies]

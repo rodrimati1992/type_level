@@ -36,11 +36,11 @@ type_fn!{
 
     Equivalent to
     ```text
-    for<State> | State |{
-        if Pred(State) {
-            Then(State)
+    for<State> | state:State |{
+        if Pred(state) {
+            Then(state)
         }else{
-            Else(State)
+            Else(state)
         }
     }
     ```
@@ -51,6 +51,7 @@ type_fn!{
         IfHelper<state,Then,Else>:TypeFn_<Pred::Output,Output=out>,
     ]{ let out;out }
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 

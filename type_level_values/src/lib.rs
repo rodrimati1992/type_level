@@ -4,7 +4,7 @@ Crate for using type level values and functions.
 
 # Introduction 
 
-[For the introduction to this library go here.](./docs/introduction/index.html)
+[For the introduction to this library go here.](./docs/guide/introduction/index.html)
 
 # Guide
 
@@ -105,6 +105,9 @@ pub mod std_types;
 pub mod user_traits;
 pub mod util_types;
 pub mod initialization;
+
+#[cfg(feature="priv_doctests")]
+pub mod derive_tests;
 
 #[cfg(test)]
 pub(crate) mod testing;

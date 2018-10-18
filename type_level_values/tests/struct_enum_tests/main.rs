@@ -22,7 +22,7 @@ mod check_variants;
 #[cfg(feature="passed_tests")]
 mod test_reexports;
 
-// #[cfg(feature="passed_tests")]
+#[cfg(feature="passed_tests")]
 mod test_field_attrs;
 
 #[path="../shared/mod.rs"]

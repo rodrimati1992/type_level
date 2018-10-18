@@ -18,14 +18,17 @@ pub mod attribute_shared;
 
 pub mod reference_privacy;
 
+#[path = "appendix_control_flow.md"]
+pub mod appendix_control_flow;
+
 #[path = "appendix_error_messages.md"]
 pub mod appendix_error_messages;
 
 #[path = "appendix_patterns.md"]
 pub mod appendix_patterns;
 
-#[path = "appendix_function_composition.md"]
-pub mod appendix_function_composition;
+#[path = "appendix_functions.md"]
+pub mod appendix_functions;
 
 /**
 

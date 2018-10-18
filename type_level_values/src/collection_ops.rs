@@ -33,36 +33,47 @@ type_fn!{define_trait
 }
 
 type_fn!{define_trait
+    /// An iterator function that processes the collection incrementally from the start,
+    /// starting with the first element.
     trait=ReduceL_ [Func]
     type=ReduceL
     fn_type=ReduceLOp
 }
 
 type_fn!{define_trait
+    /// An iterator function that processes the collection incrementally from the end,
+    /// starting with the last element.
     trait=ReduceR_ [Func]
     type=ReduceR
     fn_type=ReduceROp
 }
 
 type_fn!{define_trait
+    /// Transforms the elements of the collection with the `Func` function.
     trait=Map_ [Func]
     type=Map
     fn_type=MapOp
 }
 
 type_fn!{define_trait
+    /// Returns the collection in which all the elements that 
+    /// do not satisfy the `Predicate` are removed.
+    ///
+    /// Predicate is the equivalent to `Fn(&T)->bool`,where T is the element type.
     trait=Filter_ [Predicate]
     type=Filter
     fn_type=FilterOp
 }
 
 type_fn!{define_trait
+    /// Removes the element at the `Ìndex` position from the collection.
     trait=Remove_ [Index]
     type=Remove
     fn_type=RemoveOp
 }
 
 type_fn!{define_trait
+    /// Inserts `Value` at the `Ìndex` position into the collection.
     trait=Insert_ [Index,Value]
     type=Insert
     fn_type=InsertOp
@@ -151,45 +162,6 @@ type_fn!{define_trait
     trait=Reverse_ []
     type=Reverse
     fn_type=ReverseOp
-}
-
-/// Checks whether the Collection contains Element.
-pub type Contains<Collection, Element> = TypeFn<ContainsOp, (Collection, Element)>;
-
-type_fn!{
-    /// Checks whether the Collection contains Element.
-    pub fn ContainsOp[Collection,Element](Collection,Element)
-    where[ AnyOp:TypeFn_<(Collection,EqualsElement),Output=Out> ]
-    {
-        let EqualsElement=ApplyRhs<ConstEqOp,Element>;
-        let Out;Out
-    }
-}
-
-/// Checks whether all elements of the Collection satisfy the Predicate
-pub type All<Collection, Predicate> = TypeFn<AllOp, (Collection, Predicate)>;
-
-type_fn!{
-    /// Checks whether all elements of the Collection satisfy the Predicate
-    pub fn AllOp[Collection,Predicate](Collection,Predicate)
-    where[ Collection:FoldL_<True,MappedUnary>,]
-    {
-        let MappedUnary=MapRhs<BitAndOp,Predicate>;
-        Collection::Output
-    }
-}
-
-/// Checks whether any element of the Collection satisfy the Predicate
-pub type Any<Collection, Predicate> = TypeFn<AnyOp, (Collection, Predicate)>;
-
-type_fn!{
-    /// Checks whether any element of the Collection satisfy the Predicate
-    pub fn AnyOp[Collection,Predicate](Collection,Predicate)
-    where[ Collection:FoldL_<False,MappedUnary> ]
-    {
-        let MappedUnary=MapRhs<BitOrOp,Predicate>;
-        Collection::Output
-    }
 }
 
 impl<This, Op, Val, Rem, Out> ReduceL_<Op> for This

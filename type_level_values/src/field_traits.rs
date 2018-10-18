@@ -221,7 +221,7 @@ type_fn!{
 /**
 Macro for setting the fields of a compile-time struct.
 
-When constructing a ConstValue prefer using the construct macro 
+When constructing a ConstValue prefer using [the construct macro](./macro.construct.html)
 instead to ensure that all fields are initialized.
 
 # Example 

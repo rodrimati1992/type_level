@@ -1,5 +1,56 @@
 /*!
 
+This library provides type-level functions,which are implementors of the TypeFn_ trait,
+providing a way to express and compose computations on the type-level.
+
+For more information on type-level functions go:
+
+- To the documentation of [the TypeFn_ trait](../../type_fn/trait.TypeFn_.html)
+
+- To the documentation of [the type_fn macro](../../macro.type_fn.html)
+
+# Multiple branch function.
+
+Functions can have multiple branches,where calling the function takes the 
+branch that matches the parameters,this is most useful for emulating match expressions.
+
+Note that because this is implemented as multiple impls of TypeFn_ for a struct,
+the multiple branches can't specialize any other branch.
+
+### Example
+
+Say that we want to implement the `Option::map_or_else` method on the type level.
+
+```
+#[macro_use]
+extern crate type_level_values;
+ 
+use type_level_values::prelude::*;
+use type_level_values::std_types::cmp_ordering::*;
+use type_level_values::ops::AssertEq;
+use type_level_values::fn_types::*;
+use type_level_values::fn_adaptors::*;
+
+
+type_fn!{
+    pub fn 
+        MapOrElse[V,Mapper,Else](Some_<V>,Mapper,Else)
+        where[ Mapper:TypeFn_<V> ]
+        { Mapper::Output }
+
+        MapOrElse[Mapper,Else](None_,Mapper,Else)
+        where[ Else:TypeFn_<()> ]
+        { Else::Output }
+}
+
+fn main(){
+    let _:AssertEq< TypeFn<MapOrElse,(None_     , ApplyRhs<AddOp,U10> , Const<U7> )> , U7 >;
+    let _:AssertEq< TypeFn<MapOrElse,(Some_<U100>, ApplyRhs<AddOp,U10> , Const<U7> )> , U110 >;
+}
+
+```
+
+# Function composition
 
 What this library calls function composition is taking 
 multiple functions and producing a type which implements TypeFn_.
