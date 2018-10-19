@@ -287,7 +287,7 @@ macro_rules! set_fields {
 
 
 
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests{
     use super::*;
 

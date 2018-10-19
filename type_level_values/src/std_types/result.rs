@@ -2,7 +2,7 @@ use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
 use crate_::fn_types::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
-use crate_::ops::{Unwrap_,Unwrap,UnwrapOr_,UnwrapOr};
+use crate_::ops::{Unwrap_,Unwrap,UnwrapOr_,UnwrapOr,IntoInner_};
 use crate_::collection_ops::{FoldL_, FoldR_, Len_, Map, Map_};
 use prelude::*;
 
@@ -94,12 +94,24 @@ impl<E,Def> UnwrapOr_<Def> for Err_<E> {
 
 /////////////////////////////
 
+
+impl<T> IntoInner_ for Ok_<T> {
+    type Output = T;
+}
+
+impl<T> IntoInner_ for Err_<T> {
+    type Output = T;
+}
+
+
+/////////////////////////////
+
 #[allow(dead_code)]
 fn tests() {
     use typenum::consts::{U0, U1};
 }
 
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests {
     use super::*;
 

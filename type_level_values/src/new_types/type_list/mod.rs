@@ -1,5 +1,5 @@
 mod generated_impls;
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests;
 
 use core_extensions::type_level_bool::{Boolean, False, True};
@@ -7,15 +7,15 @@ use core_extensions::type_level_bool::{Boolean, False, True};
 use crate_::extern_types::typenum::UnsignedInteger;
 use crate_::field_traits::{GetField_, SetField_};
 use crate_::ops::control_flow::{If, Lazy};
-use crate_::ops::AsTList_;
+use crate_::ops::{
+    AsTList_,
+    ConstEq,ConstNE_, ConstOrd,
+    ConstFrom_, 
+    UnwrapOp,
+};
 use crate_::fn_adaptors::*;
 use crate_::fn_types::{AddOp, ConstEqOp, ConstLtOp, ConstOrdOp, NotOp};
-use crate_::ops::{ConstEq, ConstFrom_, ConstNE_, ConstOrd};
-use crate_::collection_ops::{
-    Filter_, FoldL, FoldL_, FoldR, FoldR_, Insert,
-    Insert_, Len, Len_, Map, Map_, Pop, PopBack_, PopFront_, Pop_, Push, PushBack_, PushFront_,
-    PushOp, Push_, Remove, Remove_, Repeat, Repeat_, Reverse_, 
-};
+use crate_::collection_ops::*;
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_, OrderingTrait};
 use crate_::std_types::option::{None_, Some_};
 use crate_::std_types::tuples::TupleType;
@@ -317,6 +317,55 @@ impl<DefaultVal, Func> FoldL_<DefaultVal, Func> for tlist![] {
 
 impl<DefaultVal, Func> FoldR_<DefaultVal, Func> for tlist![] {
     type Output = DefaultVal;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+impl<DefaultVal, Func> TryFoldL_<DefaultVal, Func> for tlist![] {
+    type Output = TFVal<DefaultVal>;
+}
+
+impl<Curr,Rem, DefVal,Func,Out> TryFoldL_<DefVal, Func> for tlist![Curr,..Rem] 
+where TryFoldLHelper<Func>:TypeFn_<(TFVal<DefVal>,Self),Output=Out>
+{
+    type Output=Out;
+}
+
+
+type_fn!{
+    captures(F)
+    fn 
+        TryFoldLHelper[Accum,Curr,Rem](TFBreak<Accum>,tlist![Curr,..Rem]){ 
+            TFBreak<Accum> 
+        }
+        
+        TryFoldLHelper[Accum,Curr,Rem](TFVal<Accum>,tlist![Curr,..Rem])
+        where[
+            tlist![F,IntoTryFold]:TypeFn_<(Accum,Curr),Output=NewAccum>,
+            Self:TypeFn_<(NewAccum,Rem),Output=Out>
+        ]{
+            let NewAccum;let Out;
+            Out
+        }
+        
+        TryFoldLHelper[Accum](Accum,TNil){ Accum }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+impl<DefaultVal, Func> TryFoldR_<DefaultVal, Func> for tlist![] {
+    type Output = TFVal<DefaultVal>;
+}
+
+impl<Curr,Rem, DefaultVal,Reversed,Func> 
+    TryFoldR_<DefaultVal, Func> 
+for tlist![Curr,..Rem] 
+where 
+    Self:Reverse_<Output=Reversed>,
+    Reversed:TryFoldL_<DefaultVal,Func>,
+{
+    type Output=Reversed::Output;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

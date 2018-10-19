@@ -67,7 +67,7 @@ mod ord_for_numtype {
 
 }
 
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests {
     use super::*;
 

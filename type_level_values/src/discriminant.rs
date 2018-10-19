@@ -109,7 +109,7 @@ pub type GetVariantOf<This>=
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests{
     use super::*;
     use crate_::ops::*;

@@ -11,6 +11,7 @@ use crate_::field_traits::{
 };
 use crate_::fn_adaptors::*;
 use crate_::fn_types::*;
+use crate_::ops::{ConstFrom_,ConstInto_,ConstIntoOp};
 
 type_fn!{define_trait
     /// An iterator function that processes the collection incrementally from the start,
@@ -31,6 +32,7 @@ type_fn!{define_trait
     type=FoldR
     fn_type=FoldROp
 }
+
 
 type_fn!{define_trait
     /// An iterator function that processes the collection incrementally from the start,
@@ -179,3 +181,79 @@ where
 {
     type Output = Out;
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
+type_fn!{define_trait
+    /** 
+    An iterator function that processes the collection incrementally from the start,
+    starting with Defaultval and the first element,
+    returning early when Func returns a value that converts to TFBreak like Err_<_>/None_,
+    
+    If the collection is empty it must return TFVal<DefaultVal>.
+    */
+    trait=TryFoldL_ [DefaultVal,Func]
+    type=TryFoldL
+    fn_type=TryFoldLOp
+}
+
+type_fn!{define_trait
+    /** 
+    An iterator function that processes the collection incrementally from the end,
+    starting with Defaultval and the last element,
+    returning early when Func returns a value that converts to TFBreak like Err_<_>/None_,
+    
+    If the collection is empty it must return TFVal<DefaultVal>.
+    */
+    trait=TryFoldR_ [DefaultVal,Func]
+    type=TryFoldR
+    fn_type=TryFoldROp
+}
+
+
+#[derive(TypeLevel)]
+#[typelevel(reexport(Variants))]
+pub enum TryFold<T,B>{
+    TFVal(T),
+    TFBreak(B),
+}
+
+
+/** 
+Alias for converting a value to a TryFoldType.
+
+Type-level equivalent to:
+```ignore
+fn into_try_fold<S,T,B>(from:S)->TryFold<T,B>
+where S:Into<TryFold<T,B>>
+{ from.into() }`
+```
+
+*/
+pub type IntoTryFold=ApplyRhs<ConstIntoOp,TryFoldType>;
+
+
+macro_rules! define_conversions {
+    ( generics[$($generic:tt)*] $from:ty : $from_consttype:ty => $try_flow:ty ) => (
+        impl<$($generic)*> ConstFrom_<$from> for TryFoldType{
+            type Output=$try_flow;
+        }
+        impl<$($generic)*> ConstInto_<$from_consttype> for $try_flow{
+            type Output=$from;
+        }
+    )
+}
+
+define_conversions!{ generics[T] Ok_<T>:ResultType => TFVal<T> }
+define_conversions!{ generics[T] Err_<T>:ResultType => TFBreak<Err_<T>> }
+
+define_conversions!{ generics[T] Some_<T>:OptionType => TFVal<T> }
+define_conversions!{ generics[]  None_   :OptionType => TFBreak<None_> }
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+

@@ -488,5 +488,5 @@ impl<T> const_traits::ApplyConstParam_<T> for ConstWrapperCC {
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests;

@@ -247,7 +247,7 @@ macro_rules! range_ {
     (                    ) => ( $crate::std_types::range_full::ConstRangeFull );
 }
 
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod test_eq {
     use super::*;
 

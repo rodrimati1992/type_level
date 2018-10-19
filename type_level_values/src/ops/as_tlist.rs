@@ -35,7 +35,7 @@ where
 }
 
 
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod test{
     use super::*;
 

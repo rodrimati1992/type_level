@@ -30,10 +30,14 @@ pub trait ConstTypeOf_ {
 /// The ConstType of `Type`.
 pub type ConstTypeOf<This> = <This as ConstTypeOf_>::Type;
 
+type_fn!{alias ConstTypeOfOp[This]::Type =ConstTypeOf_ }
+
 /// The ConstType equivalent of Self.
 pub trait IntoConstType_ {
     type ToConst: ConstType;
 }
+
+type_fn!{alias IntoConstTypeOp[This]::ToConst =IntoConstType_ }
 
 /// The ConstType equivalent of `This`.
 pub type FromRuntime<This> = <This as IntoConstType_>::ToConst;

@@ -10,7 +10,7 @@ use crate_::discriminant::Discriminant;
 
 use prelude::*;
 
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests;
 mod tuple_impls;
 

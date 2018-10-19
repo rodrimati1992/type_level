@@ -1,8 +1,11 @@
 use prelude::*;
 
+use crate_::ops::IntegerConsts;
+
 use typenum::bit::{B0, B1};
 use typenum::marker_traits::{Bit, Integer, NonZero, Unsigned};
 use typenum::{Equal, Greater, Less, NInt, PInt, U0, UInt, UTerm, Z0};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -188,6 +191,17 @@ pub struct BitType;
 impl ConstType for BitType {}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+impl IntegerConsts for SignedInteger{
+    type Zero=Z0;
+    type One=P1;
+}
+
+impl IntegerConsts for UnsignedInteger{
+    type Zero=U0;
+    type One=U1;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 

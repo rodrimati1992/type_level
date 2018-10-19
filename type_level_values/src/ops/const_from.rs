@@ -28,8 +28,8 @@ where
     type Output = S::Output;
 }
 
-type_fn!{alias ConstFromOp[A,B]=ConstFrom_}
-type_fn!{alias ConstIntoOp[A,B]=ConstInto_}
+type_fn!{alias ConstFromOp[IntoConstType,From_]=ConstFrom_}
+type_fn!{alias ConstIntoOp[From_,IntoConstType]=ConstInto_}
 
 pub type ConstFrom<This, Other> = <This as ConstFrom_<Other>>::Output;
 
@@ -74,7 +74,7 @@ mod boolean_impls {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests {
     use super::*;
 

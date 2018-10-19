@@ -1,9 +1,9 @@
 use super::*;
 
-use crate_::fn_types::SubOp;
+use crate_::fn_types::{SubOp,DivOp};
 
 use crate_::field_traits::{GetField, SetField};
-use crate_::ops::{ConstInto};
+use crate_::ops::{ConstInto,AssertEq,ConstGEOp};
 use crate_::collection_ops::{PopBack, PopFront, PushBack, PushFront};
 
 #[test]
@@ -198,6 +198,87 @@ fn fold_l() {
     let _: (U0, U1, U2, U3) = FoldL::<tlist![U0, U1, U2, U3], (), PushOp>::MTVAL;
     let _: U32 = FoldL::<Repeat<TListType, U1, U64>, U96, SubOp>::MTVAL;
     let _: U1 = FoldL::<Repeat<TListType, U1, U64>, U65, SubOp>::MTVAL;
+}
+
+
+type_fn!{
+    pub fn NewSome[x](x){Some_<x>}
+}
+
+type_fn!{
+    fn SafeDiv[L,R](L,R)
+    where[
+        R:ConstEq_<U0,Output=is_0>,
+        If<Const<is_0>,
+            Const<None_>,
+            (ApplyLhs<DivOp,L>,NewSome),
+        >:TypeFn_<R,Output=Out>
+    ]{
+        let is_0;let Out;
+        Out
+    }
+}
+
+
+pub struct CannotSubstract<Lhs,Rhs>{
+    lhs:Lhs,
+    rhs:Rhs,
+}
+
+type_fn!{ fn make_ok[v](v){ Ok_<v> } }
+
+type_fn!{
+    fn safe_sub[Lhs,Rhs](Lhs,Rhs)
+    where [
+        If<ConstGEOp,
+            (SubOp,make_ok),
+            Const<Err_<CannotSubstract<Lhs,Rhs>>>
+        >:TypeFn_<(Lhs,Rhs),Output=Out>,
+    ]{
+        let Out;Out
+    }
+}
+
+
+#[test]
+fn try_fold_l() {
+
+    let _: AssertEq< TFVal<U10>, TryFoldL<tlist![]            , U10 , SafeDiv > >;
+    let _: AssertEq< TFVal<U5> , TryFoldL<tlist![U2]          , U10 , SafeDiv > >;
+    let _: AssertEq< TFVal<U2> , TryFoldL<tlist![U2,U2]       , U10 , SafeDiv > >;
+    let _: AssertEq< TFVal<U1> , TryFoldL<tlist![U2,U2,U2]    , U10 , SafeDiv > >;
+    let _: AssertEq< TFVal<U0> , TryFoldL<tlist![U2,U2,U2,U2] , U10 , SafeDiv > >;
+    let _: AssertEq< TFBreak<None_>, TryFoldL<tlist![U0,()]      , U10 , SafeDiv > >;
+
+    let _: AssertEq< TFVal<U4> , TryFoldL<tlist![]          , U4 , safe_sub > >;
+    let _: AssertEq< TFVal<U2> , TryFoldL<tlist![U2]       , U4 , safe_sub > >;
+    let _: AssertEq< TFVal<U0> , TryFoldL<tlist![U2,U2]    , U4 , safe_sub > >;
+    let _: AssertEq< 
+        TFBreak<Err_<CannotSubstract<U4,U5>>>, 
+        TryFoldL<tlist![U5,()], U4 , safe_sub > 
+    >;
+
+
+}
+
+#[test]
+fn try_fold_r() {
+
+    let _: AssertEq< TFVal<U10>, TryFoldR<tlist![]            , U10 , SafeDiv > >;
+    let _: AssertEq< TFVal<U5> , TryFoldR<tlist![U2]          , U10 , SafeDiv > >;
+    let _: AssertEq< TFVal<U2> , TryFoldR<tlist![U2,U2]       , U10 , SafeDiv > >;
+    let _: AssertEq< TFVal<U1> , TryFoldR<tlist![U2,U2,U2]    , U10 , SafeDiv > >;
+    let _: AssertEq< TFVal<U0> , TryFoldR<tlist![U2,U2,U2,U2] , U10 , SafeDiv > >;
+    let _: AssertEq< TFBreak<None_>, TryFoldR<tlist![(),U0]       , U10 , SafeDiv > >;
+
+    let _: AssertEq< TFVal<U4>, TryFoldR<tlist![]          , U4 , safe_sub > >;
+    let _: AssertEq< TFVal<U2> , TryFoldR<tlist![U2]       , U4 , safe_sub > >;
+    let _: AssertEq< TFVal<U0> , TryFoldR<tlist![U2,U2]    , U4 , safe_sub > >;
+    let _: AssertEq< 
+        TFBreak<Err_<CannotSubstract<U4,U5>>>, 
+        TryFoldR<tlist![(),U5], U4 , safe_sub > 
+    >;
+
 }
 
 #[test]

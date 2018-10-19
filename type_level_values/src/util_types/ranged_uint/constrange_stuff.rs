@@ -179,7 +179,7 @@ type_fn!{
         { L::Output }
 }
 
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod test{
     use super::*;
     #[test]

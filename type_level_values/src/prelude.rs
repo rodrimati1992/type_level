@@ -51,7 +51,8 @@ pub use user_traits::{
 pub use runtime_value::IntoConstant;
 
 pub use runtime_value::{
-    ConstTypeOf_,ConstTypeOf,ConstType,ConstValue, IntoConstType_,IntoRuntime,
+    ConstTypeOf_,ConstTypeOf,ConstTypeOfOp,
+    ConstType,ConstValue, IntoConstType_,IntoRuntime,
 };
 
 pub use discriminant::GetDiscriminant;

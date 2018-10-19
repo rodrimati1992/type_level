@@ -3,7 +3,7 @@ use core_extensions::Void;
 
 use crate_::fn_adaptors::ApplyRhs;
 use crate_::fn_types::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
-use crate_::ops::{Unwrap_,Unwrap,UnwrapOr_,UnwrapOr};
+use crate_::ops::{Unwrap_,Unwrap,UnwrapOr_,UnwrapOr,IntoInner_};
 use crate_::collection_ops::{FoldL, FoldL_, FoldR, FoldR_, Len_, Map, Map_};
 use prelude::*;
 
@@ -30,6 +30,17 @@ pub enum Option<T> {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
+impl<Op, T> Map_<Op> for Some_<T>
+where
+    Op: TypeFn_<T>,
+{
+    type Output = Some_<Op::Output>;
+}
+impl<Op> Map_<Op> for None_ {
+    type Output = None_;
+}
+///////////////////////////////////////////////////////////////////////////////////////
+
 impl<DefaultValue, Op, T> FoldR_<DefaultValue, Op> for Some_<T>
 where
     Op: TypeFn_<(DefaultValue, T)>,
@@ -40,17 +51,6 @@ impl<DefaultValue, Op> FoldR_<DefaultValue, Op> for None_ {
     type Output = DefaultValue;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-
-impl<Op, T> Map_<Op> for Some_<T>
-where
-    Op: TypeFn_<T>,
-{
-    type Output = Some_<Op::Output>;
-}
-impl<Op> Map_<Op> for None_ {
-    type Output = None_;
-}
 ///////////////////////////////////////////////////////////////////////////////////////
 
 impl<DefaultValue, Op, T> FoldL_<DefaultValue, Op> for Some_<T>
@@ -137,7 +137,18 @@ impl<T,Def> UnwrapOr_<Def> for Some_<T> {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#[cfg(test)]
+
+impl<> IntoInner_ for None_ {
+    type Output = ();
+}
+
+impl<T> IntoInner_ for Some_<T> {
+    type Output = T;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+#[cfg(all(test,feature="passed_tests"))]
 mod tests {
     use super::*;
 

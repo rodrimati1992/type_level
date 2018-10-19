@@ -1,7 +1,7 @@
 
 pub mod constrange_stuff;
 
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests;
 
 use core_extensions::{TryFrom, TryInto,BoolExt,OptionExt};
