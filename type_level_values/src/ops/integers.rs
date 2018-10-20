@@ -109,7 +109,7 @@ pub type SafeDiv<L,R>=
 pub type SafeDivOp=
     If<(ReturnRhs,IsZeroOp),
         Const<None_>,
-        (DivOp,_new_some),
+        (DivOp,NewSome),
     >;
 
 
@@ -126,7 +126,7 @@ pub type SafeSub<L,R>=
 /// if L>=R ,returns Some_<L - R>, otherwise returns None_.
 pub type SafeSubOp=
     If<ConstGEOp,
-        (SubOp,_new_some),
+        (SubOp,NewSome),
         Const<None_>
     >;
 
@@ -184,10 +184,6 @@ pub type SatSub<L,R>=
 /// Equivalent to `|lhs,rhs| lhs.saturating_sub(rhs) `
 pub type SatSubOp=
     If<ConstLtOp,(ReturnLhs,Get0Op),SubOp>;
-
-type_fn!{
-    fn _new_some[v](v){ Some_<v> }
-}
 
 
 //#[cfg(all(test,feature="passed_tests"))]

@@ -45,9 +45,9 @@ type_fn!{
     { IntoType::Output }
 }
 
-pub type ConstFrom<This, Other> = <This as ConstFrom_<Other>>::Output;
+pub type ConstFrom<IntoConstType,From_> = <IntoConstType as ConstFrom_<From_>>::Output;
 
-pub type ConstInto<This, Other> = <This as ConstInto_<Other>>::Output;
+pub type ConstInto<From_,IntoConstType> = <From_ as ConstInto_<IntoConstType>>::Output;
 
 mod boolean_impls {
     use super::*;

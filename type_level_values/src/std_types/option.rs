@@ -1,7 +1,7 @@
 use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
-use crate_::fn_adaptors::ApplyRhs;
+use crate_::fn_adaptors::{ApplyRhs,Const};
 use crate_::fn_types::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
 use crate_::ops::{Unwrap_,Unwrap,UnwrapOr_,UnwrapOr,IntoInner_};
 use crate_::collection_ops::{FoldL, FoldL_, FoldR, FoldR_, Len_, Map, Map_};
@@ -27,6 +27,13 @@ pub enum Option<T> {
     #[typelevel(rename = "None_")]
     None,
 }
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+type_fn!{
+    pub fn NewSome[v](v){ Some_<v> }
+}
+pub type NewNone=Const<None_>;
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

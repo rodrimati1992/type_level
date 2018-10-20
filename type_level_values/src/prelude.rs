@@ -29,9 +29,9 @@ pub use std_types::range_to::{ConstRangeTo, RangeToTrait};
 #[cfg(rust_1_26)]
 pub use std_types::range_to_inclusive::{ConstRangeToInclusive, RangeToInclusiveTrait};
 
-pub use std_types::option::{None_, OptionTrait, OptionType, Some_};
+pub use std_types::option::{None_, OptionTrait, OptionType, Some_,NewSome,NewNone};
 pub use std_types::phantomdata::{PhantomDataTrait, PhantomDataType};
-pub use std_types::result::{Err_, Ok_, ResultTrait, ResultType};
+pub use std_types::result::{Err_, Ok_, ResultTrait, ResultType,NewOk,NewErr};
 
 pub use core_extensions::type_level_bool::{Boolean, BooleanType, False, True};
 

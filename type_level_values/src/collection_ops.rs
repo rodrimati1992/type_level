@@ -11,7 +11,14 @@ use crate_::field_traits::{
 };
 use crate_::fn_adaptors::*;
 use crate_::fn_types::*;
-use crate_::ops::{ConstFrom_,ConstInto_,ConstIntoOp};
+use crate_::ops::{
+    ConstFrom_,
+    ConstInto_,ConstIntoOp,ConstIntoMt,
+    IntoInnerOp,IntoInner_,
+    If,
+    AssertFnRet,
+    ConstLtOp,
+};
 
 type_fn!{define_trait
     /// An iterator function that processes the collection incrementally from the start,
@@ -187,6 +194,82 @@ where
 /////////////////////////////////////////////////////////////////////////////////////////
 
 
+type_fn!{
+    fn FindOp[This,Pred](This,Pred)
+    where[
+        (
+            TryFoldLMt< None_, (ReturnRhs,If<Pred,(NewSome,NewTFBreak),(NewNone,NewTFVal)>) >,
+            IntoInnerOp
+        ):TypeFn_< This, Output=Out >
+    ]{ let Out; Out }
+}
+
+type_fn!{
+    captures(Func)
+    fn FindMt[This](This)
+    where[ FindOp:TypeFn_<(This,Func),Output=Out> ]
+    { let Out;Out }
+}
+
+
+
+type_fn!{
+    fn AllOp[This,Pred](This,Pred)
+    where[
+        (
+            TryFoldLMt<True,(ReturnRhs,Pred,If<IdentityFn,NewTFVal,NewTFBreak>)>,
+            IntoInnerOp
+        ):TypeFn_< This, Output=Out >
+    ]{ let Out; Out }
+}
+
+type_fn!{
+    captures(Func)
+    fn AllMt[This](This)
+    where[ AllOp:TypeFn_<(This,Func),Output=Out> ]
+    { let Out;Out }
+}
+
+
+
+type_fn!{
+    fn AnyOp[This,Pred](This,Pred)
+    where[
+        (
+            TryFoldLMt<False,(ReturnRhs,Pred,If<IdentityFn,NewTFBreak,NewTFVal>)>,
+            IntoInnerOp
+        ):TypeFn_< This, Output=Out >
+    ]{ let Out; Out }
+}
+
+type_fn!{
+    captures(Func)
+    fn AnyMt[This](This)
+    where[ AnyOp:TypeFn_<(This,Func),Output=Out> ]
+    { let Out;Out }
+}
+
+type_fn!{
+    fn ContainsOp[This,Elem](This,Elem)
+    where[
+        AnyOp:TypeFn_< (This,Pred), Output=Out >
+    ]{
+        let Pred= ApplyRhs<ConstEqOp,Elem> ; 
+        let Out; Out 
+    }
+}
+
+type_fn!{
+    captures(Elem)
+    fn ContainsMt[This](This)
+    where[ ContainsOp:TypeFn_<(This,Elem),Output=Out> ]
+    { let Out;Out }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
 type_fn!{define_trait
     /** 
     An iterator function that processes the collection incrementally from the start,
@@ -221,22 +304,27 @@ pub enum TryFold<T,B>{
     TFBreak(B),
 }
 
+type_fn!{
+    pub fn NewTFVal[v](v){ TFVal<v> }
+}
+type_fn!{
+    pub fn NewTFBreak[v](v){ TFBreak<v> }
+}
+
+impl<T> IntoInner_ for TFVal<T> {
+    type Output=T;
+}
+impl<T> IntoInner_ for TFBreak<T> {
+    type Output=T;
+}
 
 /** 
 Alias for converting a value to a TryFoldType.
-
-Type-level equivalent to:
-```ignore
-fn into_try_fold<S,T,B>(from:S)->TryFold<T,B>
-where S:Into<TryFold<T,B>>
-{ from.into() }`
-```
-
 */
-pub type IntoTryFold=ApplyRhs<ConstIntoOp,TryFoldType>;
+pub type IntoTryFold=ConstIntoMt<TryFoldType>;
 
 
-macro_rules! define_conversions {
+macro_rules! define_tryfold_conv {
     ( generics[$($generic:tt)*] $from:ty : $from_consttype:ty => $try_flow:ty ) => (
         impl<$($generic)*> ConstFrom_<$from> for TryFoldType{
             type Output=$try_flow;
@@ -247,11 +335,11 @@ macro_rules! define_conversions {
     )
 }
 
-define_conversions!{ generics[T] Ok_<T>:ResultType => TFVal<T> }
-define_conversions!{ generics[T] Err_<T>:ResultType => TFBreak<Err_<T>> }
+define_tryfold_conv!{ generics[T] Ok_<T>:ResultType => TFVal<T> }
+define_tryfold_conv!{ generics[T] Err_<T>:ResultType => TFBreak<Err_<T>> }
 
-define_conversions!{ generics[T] Some_<T>:OptionType => TFVal<T> }
-define_conversions!{ generics[]  None_   :OptionType => TFBreak<None_> }
+define_tryfold_conv!{ generics[T] Some_<T>:OptionType => TFVal<T> }
+define_tryfold_conv!{ generics[]  None_   :OptionType => TFBreak<None_> }
 
 
 
@@ -321,6 +409,14 @@ type_fn!{
     
 }
 
+type_fn!{
+    captures(Index)
+    pub fn RemoveMt[This](This)
+    where[ This:Remove_<Index,Output=Out> ]
+    { let Out;Out }
+    
+}
+
 
 type_fn!{
     captures(Value)
@@ -363,4 +459,96 @@ type_fn!{
     where[ This:TryFoldR_<DefaultVal,Func,Output=Out> ]
     { let Out;Out }
     
+}
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+#[cfg(test)]
+mod test{
+    use super::*;
+    type Val0=tlist![U10,U11,U12,U13,U14];
+    type ValEven=tlist![U10,U12,U14];
+    type ValOdd =tlist![U11,U13,U15];
+
+    type IsOdd =(ApplyRhs<BitAndOp,U1>,ApplyRhs<ConstEqOp,U1>);
+    type IsEven=(ApplyRhs<BitAndOp,U1>,ApplyRhs<ConstEqOp,U0>);
+    type IsEq<Val>=ApplyRhs<ConstEqOp,Val>;
+    type IsLt<Val>=ApplyRhs<ConstLtOp,Val>;
+    
+    #[test]
+    fn find_contains(){
+        type TestFind<Val,Func,Equal>=(
+            AssertFnRet<FindOp,(Val,Func), Equal >,
+            AssertFnRet<FindMt<Func>,Val, Equal >,
+        );
+        let _:TestFind<Val0,IsOdd , Some_<U11> >;
+        let _:TestFind<Val0,IsEven, Some_<U10> >;
+        let _:TestFind<ValEven,IsOdd , None_ >;
+        let _:TestFind<ValOdd ,IsEven, None_ >;
+
+        let _:TestFind<Val0,IsEq<U10>, Some_<U10> >;
+        let _:TestFind<Val0,IsEq<U11>, Some_<U11> >;
+        let _:TestFind<Val0,IsEq<U12>, Some_<U12> >;
+        let _:TestFind<Val0,IsEq<U13>, Some_<U13> >;
+        let _:TestFind<Val0,IsEq<U14>, Some_<U14> >;
+
+
+
+        type TestContains<Val,Elem,Equal>=(
+            AssertFnRet<ContainsOp,(Val,Elem), Equal >,
+            AssertFnRet<ContainsMt<Elem>,Val, Equal >,
+        );
+
+        let _:TestContains<ValEven,U10,True>;
+        let _:TestContains<ValEven,U12,True>;
+        let _:TestContains<ValEven,U14,True>;
+        let _:TestContains<ValOdd ,U11,True>;
+        let _:TestContains<ValOdd ,U13,True>;
+        let _:TestContains<ValOdd ,U15,True>;
+        
+        let _:TestContains<ValOdd ,U10,False>;
+        let _:TestContains<ValOdd ,U12,False>;
+        let _:TestContains<ValOdd ,U14,False>;
+        let _:TestContains<ValEven,U11,False>;
+        let _:TestContains<ValEven,U13,False>;
+        let _:TestContains<ValEven,U15,False>;
+    }
+
+    #[test]
+    fn all_any(){
+        type TestAll<Val,Func,Equal>=(
+            AssertFnRet<AllOp,(Val,Func), Equal >,
+            AssertFnRet<AllMt<Func>,Val, Equal >,
+        );
+
+        let _:TestAll<Val0,IsLt<U12>,False>;
+        let _:TestAll<Val0,IsLt<U13>,False>;
+        let _:TestAll<Val0,IsLt<U14>,False>;
+        let _:TestAll<Val0,IsLt<U15>,True>;
+        let _:TestAll<Val0,IsLt<U16>,True>;
+        let _:TestAll<Val0,IsLt<U17>,True>;
+
+
+
+        type TestAny<Val,Func,Equal>=(
+            AssertFnRet<AnyOp,(Val,Func), Equal >,
+            AssertFnRet<AnyMt<Func>,Val, Equal >,
+        );
+
+        let _:TestAny<Val0,IsLt<U8 >,False>;
+        let _:TestAny<Val0,IsLt<U9 >,False>;
+        let _:TestAny<Val0,IsLt<U10>,False>;
+        let _:TestAny<Val0,IsLt<U11>,True>;
+        let _:TestAny<Val0,IsLt<U12>,True>;
+        let _:TestAny<Val0,IsLt<U13>,True>;
+        let _:TestAny<Val0,IsLt<U14>,True>;
+        let _:TestAny<Val0,IsLt<U15>,True>;
+        let _:TestAny<Val0,IsLt<U16>,True>;
+    }
 }

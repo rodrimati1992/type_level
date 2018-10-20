@@ -392,14 +392,9 @@ impl<Mapper> Map_<Mapper> for TNil {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-type_fn!{
-    captures(predicate)
-    fn PredicateRhs[_0,T](_0,T)where[predicate:TypeFn_<T>]{ predicate::Output }
-}
-
 impl<T, Rem, Predicate, out> Filter_<Predicate> for TList<T, Rem>
 where
-    Self: FoldR_<TNil, If<PredicateRhs<Predicate>, PushOp>, Output = out>,
+    Self: FoldR_<TNil, If<(ReturnRhs,Predicate), PushOp,ReturnLhs>, Output = out>,
 {
     type Output = out;
 }

@@ -31,6 +31,15 @@ pub use self::type_level_Result::*;
 
 /////////////////////////////
 
+type_fn!{
+    pub fn NewOk[v](v){ Ok_<v> }
+}
+type_fn!{
+    pub fn NewErr[v](v){ Err_<v> }
+}
+
+/////////////////////////////
+
 impl<V, O> BitOr<O> for Ok_<V> {
     type Output = Self;
     fn bitor(self, _: O) -> Self {
