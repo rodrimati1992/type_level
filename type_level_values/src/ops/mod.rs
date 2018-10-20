@@ -42,8 +42,10 @@ pub use self::const_ord::{
 
 };
 
-pub use self::const_from::{ConstFrom, ConstFrom_, ConstFromOp};
-pub use self::const_from::{ConstInto, ConstInto_, ConstIntoOp};
+pub use self::const_from::{
+    ConstFrom, ConstFrom_, ConstFromOp,ConstFromMt,
+    ConstInto, ConstInto_, ConstIntoOp,ConstIntoMt,
+};
 
 pub use self::wrapper_ops::{
     Unwrap, UnwrapOp, Unwrap_,
@@ -57,6 +59,12 @@ pub use self::integers::{
     IntegerConsts,
     IsOne,IsOneOp,
     IsZero,IsZeroOp,
-    SafeDivOp,
-    SafeSubOp,
+    Get0,Get0Op,
+    Get1,Get1Op,
+    SafeDiv,SafeDivOp,
+    SafeSub,SafeSubOp,
+    Add1Op,Add1,
+    Sub1Op,Sub1,
+    SatSub1,SatSub1Op,
+    SatSub,SatSubOp,
 };

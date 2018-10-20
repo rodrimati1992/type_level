@@ -1,12 +1,13 @@
 use std_::cmp;
 use std_::fmt::{self,Debug};
-use std_::ops::{Add, Range, Shr, Sub};
+use std_::ops::{Add, Range, Shr, Sub,};
 
 use crate_::prelude::*;
 use crate_::fn_types::ConstLEOp;
+use crate_::ops::{SatSub1Op,Sub1,Add1,};
 
 #[allow(unused_imports)]
-use typenum::operator_aliases::{Sub1,Add1,Diff as Sub_,Sum,Shleft,Shright};
+use typenum::operator_aliases::{Diff as Sub_,Sum,Shleft,Shright};
 
 use num_traits::cast::AsPrimitive;
 
@@ -64,7 +65,7 @@ where
     ConstLEOp:TypeFn_<(End,Start),Output=IsEmpty>,
     IsEmpty:IntoRuntime<bool>,
     
-    SaturatingSub1:TypeFn_<End,Output=EndSub1>,
+    SatSub1Op:TypeFn_<End,Output=EndSub1>,
     EndSub1:IntoRuntime<RI>,
     
     IntTypeOfRange: TypeFn_<R, Output = SI>,
@@ -113,7 +114,7 @@ type_fn!{
     where[
         R     :RangeTrait,
         R::end:Sub<R::start,Output=N>,
-        SaturatingSub1:TypeFn_<N,Output=substart>,
+        SatSub1Op:TypeFn_<N,Output=substart>,
         IntTypeOf:TypeFn_<substart,Output=out>
     ]{
         let N;let out;let substart;
@@ -158,38 +159,10 @@ type_fn!{
        IntTypeHelper(False,False,False,False){ MaxUInt }
 }
 
-
-type_fn!{
-    /// Subtracts 1 from an unsigned integer.Stopping at 0.
-    pub fn SaturatingSub1[L](L)
-    where[
-        L:ConstEq_<U0>,
-        SaturatingSub1Helper:TypeFn_<(L::Output,L) ,Output=Out>
-    ]{
-        let Out;Out
-    }
-}
-
-type_fn!{
-    fn 
-        SaturatingSub1Helper(True,U0){U0}
-
-        SaturatingSub1Helper[L](False,L)
-        where[ L:Sub<U1> ]
-        { L::Output }
-}
-
 #[cfg(all(test,feature="passed_tests"))]
 mod test{
     use super::*;
-    #[test]
-    fn saturating_sub(){
-        let _:U0=TypeFn::<SaturatingSub1,U0>::MTVAL;
-        let _:U0=TypeFn::<SaturatingSub1,U1>::MTVAL;
-        let _:U1=TypeFn::<SaturatingSub1,U2>::MTVAL;
-        let _:U2=TypeFn::<SaturatingSub1,U3>::MTVAL;
-        let _:U3=TypeFn::<SaturatingSub1,U4>::MTVAL;
-    }
+
 
     #[test]
     fn int_type(){

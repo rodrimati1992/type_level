@@ -3,9 +3,13 @@ use prelude::*;
 use crate_::ops::*;
 use crate_::fn_types::{DivOp,SubOp};
 use crate_::fn_adaptors::{
+    IdentityFn,
     ReturnRhs,
+    ReturnLhs,
     Const,
 };
+
+use std_::ops::{Add,Sub};
 
 
 /// Integer constants for a ConstType,it is also be implemented for all values of a ConstType.
@@ -23,6 +27,16 @@ where
     type Zero=Type::Zero;
     type One =Type::One;
 }
+
+
+type_fn!{define_trait
+    /// Returns the base 2 logarithm of this number
+    trait=Log2_ []
+    type=Log2
+    fn_type=Log2Op
+}
+
+
 
 /// Returns whether N is 0.
 pub type IsOne<N>=
@@ -57,6 +71,38 @@ type_fn!{
 }
 
 
+
+
+/// Gets the value for 0 as defined by the type of N.
+pub type Get0<N>=TypeFn<Get0Op,N>;
+
+type_fn!{
+    /// Gets the value for 0 as defined by the type of N.
+    pub fn Get0Op[N](N)
+    where[ N:IntegerConsts<Zero=Out> ]
+    { let Out;Out }
+}
+
+
+
+/// Gets the value for 1 as defined by the type of N.
+pub type Get1<N>=TypeFn<Get1Op,N>;
+
+type_fn!{
+    /// Gets the value for 1 as defined by the type of N.
+    pub fn Get1Op[N](N)
+    where[ N:IntegerConsts<One=Out> ]
+    { let Out;Out }
+}
+
+
+
+/// Safe division function which returns None_ when the divisor is 0.
+/// 
+/// if R==0 ,returns None_, otherwise returns Some_<L / R>.
+pub type SafeDiv<L,R>=
+    TypeFn<SafeDivOp,(L,R)>;
+
 /// Safe division function which returns None_ when the divisor is 0.
 /// 
 /// if R==0 ,returns None_, otherwise returns Some_<L / R>.
@@ -65,6 +111,15 @@ pub type SafeDivOp=
         Const<None_>,
         (DivOp,_new_some),
     >;
+
+
+
+/// Safe unsigned subtraction function which returns None_ when Lhs < Rhs.
+/// 
+/// if L>=R ,returns Some_<L - R>, otherwise returns None_.
+pub type SafeSub<L,R>=
+    TypeFn<SafeSubOp,(L,R)>;
+
 
 /// Safe unsigned subtraction function which returns None_ when Lhs < Rhs.
 /// 
@@ -75,6 +130,60 @@ pub type SafeSubOp=
         Const<None_>
     >;
 
+
+/// Adds 1 to N.
+pub type Add1<N>=
+    TypeFn<Add1Op,N>;
+
+type_fn!{
+    /// Adds 1 to N.
+    pub fn Add1Op[N](N)
+    where[
+        N:IntegerConsts<One=One>,
+        N:Add<One,Output=Out>,
+    ]{
+        let One;let Out;
+        Out
+    }
+}    
+
+
+
+/// Substracts 1 from N.
+pub type Sub1<N>=
+    TypeFn<Sub1Op,N>;
+
+type_fn!{
+    /// Substracts 1 from N.
+    pub fn Sub1Op[N](N)
+    where[
+        N:IntegerConsts<One=One>,
+        N:Sub<One,Output=Out>,
+    ]{
+        let One;let Out;
+        Out
+    }
+}    
+
+
+
+pub type SatSub1<N>=
+    TypeFn<SatSub1Op,N>;
+
+/// Subtracts 1 from an unsigned integer.Stopping at 0.
+pub type SatSub1Op=
+    If<IsZeroOp,IdentityFn,Sub1Op>;
+
+
+
+pub type SatSub<L,R>=
+    TypeFn<SatSubOp,(L,R)>;
+
+/// Subtracts Rhs from Lhs returning 0 if Lhs <= Rhs.
+///
+/// Equivalent to `|lhs,rhs| lhs.saturating_sub(rhs) `
+pub type SatSubOp=
+    If<ConstLtOp,(ReturnLhs,Get0Op),SubOp>;
 
 type_fn!{
     fn _new_some[v](v){ Some_<v> }
@@ -94,7 +203,45 @@ mod tests{
             )
         )
     }
-    
+ 
+    #[test]
+    fn get_constants(){
+        type TestZero<N,Val>=(
+            AssertEq<Get0<N>,Val>,
+            AssertFnRet<Get0Op,N,Val>,
+        );
+        type TestOne<N,Val>=(
+            AssertEq<Get1<N>,Val>,
+            AssertFnRet<Get1Op,N,Val>,
+        );
+
+        let _:TestZero<U0,U0>;
+        let _:TestZero<U1,U0>;
+        let _:TestZero<U2,U0>;
+
+        let _:TestZero<N2,Z0>;
+        let _:TestZero<N1,Z0>;
+        let _:TestZero<Z0,Z0>;
+        let _:TestZero<P1,Z0>;
+        let _:TestZero<P2,Z0>;
+
+
+
+        let _:TestOne<U0,U1>;
+        let _:TestOne<U1,U1>;
+        let _:TestOne<U2,U1>;
+
+        let _:TestOne<N2,P1>;
+        let _:TestOne<N1,P1>;
+        let _:TestOne<Z0,P1>;
+        let _:TestOne<P1,P1>;
+        let _:TestOne<P2,P1>;
+
+
+
+    }
+
+
     #[test]
     fn is_one_zero(){
         let _:TypeFnEq!(IsZeroOp,IsZero,U0,True);
@@ -120,8 +267,10 @@ mod tests{
 
     #[test]
     fn safe_div(){
-        type Test<L,R,Val>=
-            AssertEq<TypeFn<SafeDivOp,(L,R)>,Val>;
+        type Test<L,R,Val>=(
+            AssertEq<TypeFn<SafeDivOp,(L,R)>,Val>,
+            AssertEq<SafeDiv<L,R>,Val>,
+        );
 
         let _:Test<U0,U0,None_>;
         let _:Test<U1,U0,None_>;
@@ -156,8 +305,10 @@ mod tests{
 
     #[test]
     fn safe_sub(){
-        type AssertSub<L,R,Val>=
-            AssertEq<TypeFn<SafeSubOp,(L,R)>,Val>;
+        type AssertSub<L,R,Val>=(
+            AssertFnRet<SafeSubOp,(L,R),Val>,
+            AssertEq<SafeSub<L,R>,Val>,
+        );
 
         type Test<L,R,Val>=(
             AssertSub<L,R,Some_<Val>>,
@@ -175,6 +326,68 @@ mod tests{
         let _:Test<U3,U0,U3>;
         let _:Test<U3,U1,U2>;
         let _:Test<U3,U2,U1>;
+    }
+
+    #[test]
+    fn add_sub_1(){
+        type TestAdd1<N,Val>=(
+            AssertEq<Add1<N>,Val>,
+            AssertFnRet<Add1Op,N,Val>,
+        );
+        type TestSub1<N,Val>=(
+            AssertEq<Sub1<N>,Val>,
+            AssertFnRet<Sub1Op,N,Val>,
+        );
+
+        let _:TestAdd1<U0,U1>;
+        let _:TestAdd1<U1,U2>;
+        let _:TestAdd1<U2,U3>;
+
+        let _:TestSub1<U1,U0>;
+        let _:TestSub1<U2,U1>;
+        let _:TestSub1<U3,U2>;
+    }
+
+    #[test]
+    fn saturating_sub(){
+        type Test0<N,Val>=(
+            AssertFnRet<SatSub1Op,N,Val>,
+            AssertEq<SatSub1<N>,Val>,
+        );
+
+        let _:Test0<U0,U0>;
+        let _:Test0<U1,U0>;
+        let _:Test0<U2,U1>;
+        let _:Test0<U3,U2>;
+        let _:Test0<U4,U3>;
+
+
+        type Test1<L,R,Val>=(
+            AssertFnRet<SatSubOp,(L,R),Val>,
+            AssertFnRet<SatSubOp,(R,L),Get0<L>>,
+            AssertEq<SatSub<L,R>,Val>,
+            AssertEq<SatSub<R,L>,Get0<L>>,
+        );
+
+        let _:Test1<U0,U0,U0>;
+        let _:Test1<U1,U1,U0>;
+        let _:Test1<U2,U2,U0>;
+        let _:Test1<U3,U3,U0>;
+        let _:Test1<U4,U4,U0>;
+
+        let _:Test1<U1,U0,U1>;
+        let _:Test1<U2,U1,U1>;
+        let _:Test1<U3,U2,U1>;
+        let _:Test1<U4,U3,U1>;
+        let _:Test1<U5,U4,U1>;
+        
+        let _:Test1<U2,U0,U2>;
+        let _:Test1<U3,U1,U2>;
+        let _:Test1<U4,U2,U2>;
+        let _:Test1<U5,U3,U2>;
+        let _:Test1<U6,U4,U2>;
+
+
 
     }
 }

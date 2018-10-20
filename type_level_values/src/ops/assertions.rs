@@ -54,22 +54,21 @@ type_fn!{
 }
 
 
- 
+
 type_fn!{define_trait
-    /// Asserts that `Func:TypeFn_<Self>` evaluates to Ret,returning Self unmodified.
-    trait=AssertFnRet_ [Func,Ret]
-    /// Asserts that `Func:TypeFn_<Val>` evaluates to Ret,returning Val unmodified.
+    /// Asserts that `Self:TypeFn_<Val>` evaluates to Ret,returning Val unmodified.
+    trait=AssertFnRet_ [Val,Ret]
+    /// Asserts that `Self:TypeFn_<Val>` evaluates to Ret,returning Val unmodified.
     type=AssertFnRet
-    /// Asserts that `Func:TypeFn_<Val>` evaluates to Ret,returning Val unmodified.
+    /// Asserts that `Self:TypeFn_<Val>` evaluates to Ret,returning Val unmodified.
     fn_type=AssertFnRetOp
 }
 
-
-impl<This,Func,Ret> AssertFnRet_<Func,Ret> for This
+impl<Val,Func,Ret> AssertFnRet_<Val,Ret> for Func
 where
-    Func:TypeFn_<This,Output=Ret>
+    Func:TypeFn_<Val,Output=Ret>
 {
-    type Output=This;
+    type Output=Val;
 }
 
 type_fn!{

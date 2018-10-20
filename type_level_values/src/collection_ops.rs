@@ -257,3 +257,110 @@ define_conversions!{ generics[]  None_   :OptionType => TFBreak<None_> }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+
+
+type_fn!{
+    captures(DefaultVal,Func)
+    pub fn FoldLMt[This](This)
+    where[ This:FoldL_<DefaultVal,Func,Output=Out> ]
+    { let Out;Out }
+    
+}
+
+
+type_fn!{
+    captures(DefaultVal,Func)
+    pub fn FoldRMt[This](This)
+    where[ This:FoldR_<DefaultVal,Func,Output=Out> ]
+    { let Out;Out }
+    
+}
+
+
+type_fn!{
+    captures(Func)
+    pub fn ReduceLMt[This](This)
+    where[ This:ReduceL_<Func,Output=Out> ]
+    { let Out;Out }
+    
+}
+
+
+type_fn!{
+    captures(Func)
+    pub fn ReduceRMt[This](This)
+    where[ This:ReduceR_<Func,Output=Out> ]
+    { let Out;Out }
+    
+}
+
+
+type_fn!{
+    captures(Func)
+    pub fn MapMt[This](This)
+    where[ This:Map_<Func,Output=Out> ]
+    { let Out;Out }
+    
+}
+
+
+type_fn!{
+    captures(Predicate)
+    pub fn FilterMt[This](This)
+    where[ This:Filter_<Predicate,Output=Out> ]
+    { let Out;Out }
+    
+}
+
+
+type_fn!{
+    captures(Index,Value)
+    pub fn InsertMt[This](This)
+    where[ This:Insert_<Index,Value,Output=Out> ]
+    { let Out;Out }
+    
+}
+
+
+type_fn!{
+    captures(Value)
+    pub fn PushMt[This](This)
+    where[ This:Push_<Value,Output=Out> ]
+    { let Out;Out }
+    
+}
+
+
+type_fn!{
+    captures(Value)
+    pub fn PushBackMt[This](This)
+    where[ This:PushBack_<Value,Output=Out> ]
+    { let Out;Out }
+    
+}
+
+
+type_fn!{
+    captures(Value)
+    pub fn PushFrontMt[This](This)
+    where[ This:PushFront_<Value,Output=Out> ]
+    { let Out;Out }
+    
+}
+
+type_fn!{
+    captures(DefaultVal,Func)
+    pub fn TryFoldLMt[This](This)
+    where[ This:TryFoldL_<DefaultVal,Func,Output=Out> ]
+    { let Out;Out }
+    
+}
+
+
+type_fn!{
+    captures(DefaultVal,Func)
+    pub fn TryFoldRMt[This](This)
+    where[ This:TryFoldR_<DefaultVal,Func,Output=Out> ]
+    { let Out;Out }
+    
+}

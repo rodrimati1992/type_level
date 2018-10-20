@@ -31,6 +31,20 @@ where
 type_fn!{alias ConstFromOp[IntoConstType,From_]=ConstFrom_}
 type_fn!{alias ConstIntoOp[From_,IntoConstType]=ConstInto_}
 
+type_fn!{
+    captures(IntoType)
+    pub fn ConstIntoMt[This](This)
+    where[ This:ConstInto_<IntoType> ]
+    { This::Output }
+}
+
+type_fn!{
+    captures(IntoType)
+    pub fn ConstFromMt[This](This)
+    where[ IntoType:ConstFrom_<This> ]
+    { IntoType::Output }
+}
+
 pub type ConstFrom<This, Other> = <This as ConstFrom_<Other>>::Output;
 
 pub type ConstInto<This, Other> = <This as ConstInto_<Other>>::Output;

@@ -126,7 +126,8 @@ mod numtype_impls {
 
 }
 
-#[cfg(all(test,feature="passed_tests"))]
+// #[cfg(all(test,feature="passed_tests"))]
+#[cfg(test)]
 mod tests {
     use super::*;
     use typenum::consts::{U0, U1, U2};
@@ -144,12 +145,20 @@ mod tests {
 
     #[test]
     pub fn test_typenum() {
+        let _: False = ConstLt::<U0, U0>::MTVAL;
         let _: True = ConstLt::<U0, U1>::MTVAL;
         let _: False = ConstLt::<U1, U1>::MTVAL;
+        let _: False = ConstLt::<U2, U0>::MTVAL;
+        let _: False = ConstLt::<U2, U1>::MTVAL;
+        let _: False = ConstLt::<U2, U2>::MTVAL;
+        let _: True = ConstLt::<U2, U3>::MTVAL;
 
         let _: True = ConstLE::<U0, U1>::MTVAL;
         let _: True = ConstLE::<U1, U1>::MTVAL;
+        let _: False = ConstLE::<U2, U0>::MTVAL;
         let _: False = ConstLE::<U2, U1>::MTVAL;
+        let _: True = ConstLE::<U2, U2>::MTVAL;
+        let _: True = ConstLE::<U2, U3>::MTVAL;
 
         let _: False = ConstGt::<U0, U1>::MTVAL;
         let _: False = ConstGt::<U1, U1>::MTVAL;
@@ -157,7 +166,11 @@ mod tests {
 
         let _: False = ConstGE::<U0, U1>::MTVAL;
         let _: True = ConstGE::<U1, U1>::MTVAL;
+        let _: True = ConstGE::<U2, U0>::MTVAL;
         let _: True = ConstGE::<U2, U1>::MTVAL;
+        let _: True = ConstGE::<U2, U2>::MTVAL;
+        let _: False = ConstGE::<U2, U3>::MTVAL;
+        let _: False = ConstGE::<U2, U4>::MTVAL;
 
         let _: Less_ = ConstOrd::<U1, U2>::MTVAL;
         let _: Equal_ = ConstOrd::<U1, U1>::MTVAL;

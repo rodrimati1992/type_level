@@ -3,7 +3,7 @@ use super::*;
 use crate_::fn_types::{SubOp,DivOp};
 
 use crate_::field_traits::{GetField, SetField};
-use crate_::ops::{ConstInto,AssertEq,ConstGEOp};
+use crate_::ops::{ConstInto,AssertEq,ConstGEOp,Add1Op};
 use crate_::collection_ops::{PopBack, PopFront, PushBack, PushFront};
 
 #[test]
@@ -326,6 +326,11 @@ fn repeat() {
     let _: Repeat<TListType, U0, U2> = <tlist![U0, U0]>::MTVAL;
     let _: Repeat<TListType, U0, U3> = <tlist![U0, U0, U0]>::MTVAL;
     let _: Repeat<TListType, U0, U4> = <tlist![U0, U0, U0, U0]>::MTVAL;
+
+    let _: AssertEq< 
+        Map<Repeat<TListType, U0, U100>,Const<()>>,
+        Repeat<TListType,(),U100 > 
+    >;
 }
 
 #[test]
@@ -351,6 +356,8 @@ fn repeat_expr() {
     let _: tlist![U0;U2] = <tlist![U0, U0]>::MTVAL;
     let _: tlist![U0;U3] = <tlist![U0, U0, U0]>::MTVAL;
     let _: tlist![U0;U4] = <tlist![U0, U0, U0, U0]>::MTVAL;
+
+    let _: AssertEq< FoldL<tlist![U1;U511] , U0 , AddOp > ,U511 >;
 }
 
 #[test]
