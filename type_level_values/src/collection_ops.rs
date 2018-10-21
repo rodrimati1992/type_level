@@ -198,7 +198,7 @@ type_fn!{
     fn FindOp[This,Pred](This,Pred)
     where[
         (
-            TryFoldLMt< None_, (ReturnRhs,If<Pred,(NewSome,NewTFBreak),(NewNone,NewTFVal)>) >,
+            TryFoldLMt< None_, (GetRhs,If<Pred,(NewSome,NewTFBreak),(NewNone,NewTFVal)>) >,
             IntoInnerOp
         ):TypeFn_< This, Output=Out >
     ]{ let Out; Out }
@@ -217,7 +217,7 @@ type_fn!{
     fn AllOp[This,Pred](This,Pred)
     where[
         (
-            TryFoldLMt<True,(ReturnRhs,Pred,If<IdentityFn,NewTFVal,NewTFBreak>)>,
+            TryFoldLMt<True,(GetRhs,Pred,If<IdentityFn,NewTFVal,NewTFBreak>)>,
             IntoInnerOp
         ):TypeFn_< This, Output=Out >
     ]{ let Out; Out }
@@ -236,7 +236,7 @@ type_fn!{
     fn AnyOp[This,Pred](This,Pred)
     where[
         (
-            TryFoldLMt<False,(ReturnRhs,Pred,If<IdentityFn,NewTFBreak,NewTFVal>)>,
+            TryFoldLMt<False,(GetRhs,Pred,If<IdentityFn,NewTFBreak,NewTFVal>)>,
             IntoInnerOp
         ):TypeFn_< This, Output=Out >
     ]{ let Out; Out }

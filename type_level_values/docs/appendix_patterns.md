@@ -183,7 +183,11 @@ The naming convention for traits declared alongside their TypeFn_ and type alias
     This type simple delegates to the trait in the where clause of its TypeFn_ impl,
     with the Self type as the first parameter of the function.
 
-
+- A TypeFn_ which applies every parameter except for the Self parameter:`<Operation>Mt`.
+    This type simple delegates to the trait in the where clause of its TypeFn_ impl,
+    with the Self type as the only parameter of the function
+    (the rest are captured as generic parameters to the type).
+    
 
 
 

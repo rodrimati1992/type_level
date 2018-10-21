@@ -173,7 +173,7 @@ Copying one field into another.
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
 use type_level_values::fn_types::*;
-use type_level_values::field_traits::{GetFieldOp,MapIntoFieldOp};
+use type_level_values::field_traits::{GetFieldMt,MapIntoFieldOp};
 
 
 fn main(){
@@ -181,7 +181,7 @@ fn main(){
     type CopyField<From,To>=
         ApplyNonSelf<
             MapIntoFieldOp,
-            (To,ApplyRhs<GetFieldOp,From>)
+            (To,GetFieldMt<From>)
         >;
 
     let _:AssertEq<

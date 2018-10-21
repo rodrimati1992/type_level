@@ -61,11 +61,6 @@ use function composition where a tuple composed of TypeFn_ is itself
 a TypeFn_ that passes its parameter to the first function,
 and then passes the return value of each function as the parameter to the next,
 returning the return value of the last function.
-<br>
-They also use the ApplyNonSelf function adaptor,which allows us to
-adapt any function (with 3 or more parameters) taking Game as the first parameter 
-to only take Game as a parameter by `partially applying` the rest of the parameters.
-
 
 The `S:GameOverTrait`/`S:DemoTrait`/`S:PlayingTrait`  constraints were used instead of 
 the enum variants themselves (GameOver/Demo/Playing) because this produces better error messages
@@ -165,8 +160,7 @@ extern crate type_level_values;
 
 use type_level_values::prelude::*;
 use type_level_values::fn_types::{ConstLEOp};
-use type_level_values::fn_adaptors::ApplyNonSelf;
-use type_level_values::field_traits::{SetField,SetField_,SetFieldOp};
+use type_level_values::field_traits::{SetField,SetField_,SetFieldMt};
 
 use std::ops::{Add,Sub};
 
@@ -251,7 +245,7 @@ type_fn!{
         S:GameOverTrait,
         (
             TakeCoins<U1>,
-            ApplyNonSelf<SetFieldOp,(game_f::state,Playing)>,
+            SetFieldMt<game_f::state,Playing>,
         ):TypeFn_<G,Output=NewGame> 
     ]{ let NewGame;NewGame }
 
@@ -260,7 +254,7 @@ type_fn!{
         S:DemoTrait,
         (
             TakeCoins<U1>,
-            ApplyNonSelf<SetFieldOp,(game_f::state,Playing)>,
+            SetFieldMt<game_f::state,Playing>,
         ):TypeFn_<G,Output=NewGame> 
     ]{ let NewGame;NewGame }
 

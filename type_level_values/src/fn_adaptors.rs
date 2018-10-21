@@ -119,6 +119,13 @@ fn main(){
 */
 pub type ApplyNonSelf<Op, Params> = ApplyNonNth<Op, U0, Params>;
 
+/**
+Applies the Self parameter for a function,which is by convention the first.
+
+This only works with functions that take at least 2 parameters other than Self.
+*/
+pub type ApplySelf<Op, This> = ApplyNth<Op, U0, This>;
+
 type_fn!{
     captures(Op, Mapper)
     /// Type-level version of "|l,r|Op(Mapper(l),r)"
@@ -176,11 +183,11 @@ type_fn!{
 
 type_fn!{
     /// Type-level version of "|l,_|l"
-    pub fn ReturnLhs[L,R](L,R){ L }
+    pub fn GetLhs[L,R](L,R){ L }
 }
 type_fn!{
     /// Type-level version of "|_,r|r"
-    pub fn ReturnRhs[L,R](L,R){ R }
+    pub fn GetRhs[L,R](L,R){ R }
 }
 
 type_fn!{

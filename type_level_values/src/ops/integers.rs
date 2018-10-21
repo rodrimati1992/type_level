@@ -4,8 +4,8 @@ use crate_::ops::*;
 use crate_::fn_types::{DivOp,SubOp};
 use crate_::fn_adaptors::{
     IdentityFn,
-    ReturnRhs,
-    ReturnLhs,
+    GetRhs,
+    GetLhs,
     Const,
 };
 
@@ -107,7 +107,7 @@ pub type SafeDiv<L,R>=
 /// 
 /// if R==0 ,returns None_, otherwise returns Some_<L / R>.
 pub type SafeDivOp=
-    If<(ReturnRhs,IsZeroOp),
+    If<(GetRhs,IsZeroOp),
         Const<None_>,
         (DivOp,NewSome),
     >;
@@ -183,7 +183,7 @@ pub type SatSub<L,R>=
 ///
 /// Equivalent to `|lhs,rhs| lhs.saturating_sub(rhs) `
 pub type SatSubOp=
-    If<ConstLtOp,(ReturnLhs,Get0Op),SubOp>;
+    If<ConstLtOp,(GetLhs,Get0Op),SubOp>;
 
 
 //#[cfg(all(test,feature="passed_tests"))]

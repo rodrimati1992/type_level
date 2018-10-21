@@ -394,7 +394,7 @@ impl<Mapper> Map_<Mapper> for TNil {
 
 impl<T, Rem, Predicate, out> Filter_<Predicate> for TList<T, Rem>
 where
-    Self: FoldR_<TNil, If<(ReturnRhs,Predicate), PushOp,ReturnLhs>, Output = out>,
+    Self: FoldR_<TNil, If<(GetRhs,Predicate), PushOp,GetLhs>, Output = out>,
 {
     type Output = out;
 }

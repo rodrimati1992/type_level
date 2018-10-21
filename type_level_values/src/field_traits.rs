@@ -36,12 +36,26 @@ pub trait GetFieldRuntime_<Field, RuntimeType>: GetField_<Field> {
 //////////////////////////////////////////////////////////////////////////////////////////
 
 type_fn!{
-    /// Equivalent to `|Struct,Field| Struct[Field] `.
+    /// Equivalent to `|This,Field| This[Field] `.
     alias GetFieldOp[This,Field]=GetField_
 }
 
-/// Returns the compile-time value of a field.
+/// Equivalent to `|This,Field| This[Field] `.
 pub type GetField<This, FieldName> = <This as GetField_<FieldName>>::Output;
+
+type_fn!{
+    /// Equivalent to `|This| This[Field] `.
+    captures(Field)
+    pub fn GetFieldMt[This](This)
+    where[ This:GetField_<Field> ]
+    { This::Output }
+}
+
+type_fn!{
+    pub fn GetFieldRuntimeOp[This,Field,RuntimeTy](This,Field,RuntimeTy)
+    where[ This:GetFieldRuntime_<Field,RuntimeTy> ]
+    { This::Runtime }
+}
 
 /// Returns the runtime type of a field.
 pub type GetFieldRuntime<This, FieldName, RuntimeTy> =
@@ -59,8 +73,16 @@ pub trait SetField_<Field, Value: ?Sized>: Sized {
 pub type SetField<This, FieldName, Value> = <This as SetField_<FieldName, Value>>::Output;
 
 type_fn!{
-    /// Equivalent to `|Struct,Field,Value|{ Struct[Field]=Value; Struct }`.
+    /// Equivalent to `|This,Field,Value|{ This[Field]=Value; This }`.
     alias SetFieldOp[This,Field,Value]=SetField_
+}
+
+type_fn!{
+    captures(Field,Value)
+    /// Equivalent to `|This|{ This[Field]=Value; This }`.
+    pub fn SetFieldMt[This](This)
+    where[ This:SetField_<Field,Value> ]
+    { This::Output }
 }
 
 
@@ -143,6 +165,7 @@ where
 }
 
 
+
 /// Sets the values of fields in This initializing all the fields with FVPairs.
 ///
 /// `FVPairs` example:tlist![ (field::x,U10), (field::y,U5) ] .
@@ -173,6 +196,16 @@ type_fn!{
 }
 
 type_fn!{
+    captures(FVPairs)
+    /// Sets the values of fields in FVPairs.
+    ///
+    /// `FVPairs` example:tlist![ (field::x,U10), (field::y,U5) ] .
+    pub fn SetFieldsMt[This](This)
+    where[ This:SetFields_<FVPairs> ]
+    { This::Output }
+}
+
+type_fn!{
     /// Type-level equivalent of `|Struc,(Field,Value)|{ Struc[Field]=Value; Struc }`
     pub fn SetFieldValuePair[Struc,Field,Value](Struc,(Field,Value))
     where [ Struc:SetField_<Field,Value,Output=Out> ]
@@ -197,6 +230,14 @@ type_fn!{
     }
 }
 
+type_fn!{
+    captures(Field, Mapper)
+    /// Type-level equivalent of "|This|{ This[Field]=Mapper(This[Field]); This }".
+    pub fn MapFieldMt[This](This)
+    where[ MapFieldOp:TypeFn_<(This, Field, Mapper),Output=Out> ]
+    { let Out;Out }
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Type-level equivalent of "|This, Field, Mapper|{ This[Field]=Mapper(This); This }".
@@ -214,6 +255,14 @@ type_fn!{
     }
 }
 
+
+type_fn!{
+    captures(Field, Mapper)
+    /// Type-level equivalent of "|This|{ This[Field]=Mapper(This); This }".
+    pub fn MapIntoFieldMt[This](This)
+    where[ MapIntoFieldOp:TypeFn_<(This, Field, Mapper),Output=Out> ]
+    { let Out;Out }
+}
 //////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -287,7 +336,8 @@ macro_rules! set_fields {
 
 
 
-#[cfg(all(test,feature="passed_tests"))]
+// #[cfg(all(test,feature="passed_tests"))]
+#[cfg(test)]
 mod tests{
     use super::*;
 
@@ -323,8 +373,10 @@ mod tests{
 
     #[test]
     fn test_get_field(){
-        type Test<This,Index,Value>=
-            AssEqTy<GetField<This,Index>,Value>;
+        type Test<This,Index,Value>=(
+            AssertEq<GetField<This,Index>,Value>,
+            AssertFnRet<GetFieldMt<Index>,This,Value>,
+        );
 
         let _:Test<Some_<True>,U0,True>;
         let _:Test<Some_<False>,U0,False>;
@@ -358,8 +410,10 @@ mod tests{
 
     #[test]
     fn test_set_field(){
-        type Test<This,Index,Value,NewValue>=
-            AssEqTy<SetField<This,Index,Value>,NewValue>;
+        type Test<This,Index,Value,NewValue>=(
+            AssertEq<SetField<This,Index,Value>,NewValue>,
+            AssertFnRet<SetFieldMt<Index,Value>,NewValue>,
+        );
 
         let _:Test<Some_<True> ,U0,False,Some_<False> >;
         let _:Test<Some_<False>,U0,True,Some_<True>>;
@@ -393,7 +447,7 @@ mod tests{
 
     #[test]
     fn test_set_fields(){
-        let _:AssEqTy<
+        let _:AssertEq<
             set_fields!{ConstTuple2<(),()> =>
                 U0=U10,
                 U1=U20,
@@ -401,7 +455,7 @@ mod tests{
             ConstTuple2<U10,U20>
         >;
         
-        let _:AssEqTy<
+        let _:AssertEq<
             set_fields!{ConstTuple3<(),(),()> =>
                 U0=U10,
                 U1=U20,
@@ -410,14 +464,14 @@ mod tests{
             ConstTuple3<U10,U20,U30>
         >;
         
-        let _:AssEqTy<
+        let _:AssertEq<
             set_fields!{ConstRange<(),()> =>
                 range_f::start=U10,
                 range_f::end  =U20,
             },
             ConstRange<U10 ,U20>
         >;
-        let _:AssEqTy<
+        let _:AssertEq<
             set_fields!{ConstRange<(),()> =>
                 range_f::start=U10,
                 range_f::end  =U20,
@@ -425,22 +479,79 @@ mod tests{
             ConstRange<U10,U20>
         >;
 
-        let _:AssEqTy<
-            set_fields!{ConstRectangle<(),(),(),()> =>
-                rect_f::x=U0,
-                rect_f::y=U10,
-                rect_f::w=U20,
-                rect_f::h=U30,
-            },
+
+        type TestSetFields<This,FVPairs,Expected>=(
+            AssertFnRet<SetFieldsOp,(This,FVPairs),Expected>,
+            AssertFnRet<SetFieldsMt<FVPairs>,This,Expected>,
+            AssertEq<<This as SetFields_<FVPairs>>::Output,Expected>,
+        );
+
+
+        let _:TestSetFields<
+            ConstRectangle<(),(),(),()>,
+            tlist![  
+                (rect_f::x,U0),
+                (rect_f::y,U10),
+                (rect_f::w,U20),
+                (rect_f::h,U30),
+            ],
             ConstRectangle<U0,U10,U20,U30>
         >;
+        let _:TestSetFields<
+            ConstTuple2<(),()>,
+            tlist![
+                (U0,U10),
+                (U1,U20),
+            ],
+            ConstTuple2<U10,U20>
+        >;
+        
+        let _:TestSetFields<
+            ConstTuple3<(),(),()>,
+            tlist![
+                (U0,U10),
+                (U1,U20),
+                (U2,U30),
+            ],
+            ConstTuple3<U10,U20,U30>
+        >;
+        
+        let _:TestSetFields<
+            ConstRange<(),()>,
+            tlist![
+                (range_f::start,U10),
+                (range_f::end  ,U20),
+            ],
+            ConstRange<U10 ,U20>
+        >;
+        let _:TestSetFields<
+            ConstRange<(),()>,
+            tlist![
+                (range_f::start,U10),
+                (range_f::end  ,U20),
+            ],
+            ConstRange<U10,U20>
+        >;
+
+        let _:TestSetFields<
+            ConstRectangle<(),(),(),()>,
+            tlist![
+                (rect_f::x,U0),
+                (rect_f::y,U10),
+                (rect_f::w,U20),
+                (rect_f::h,U30),
+            ],
+            ConstRectangle<U0,U10,U20,U30>
+        >;  
+
+        
     }
 
     #[test]
     fn test_set_fields_to(){
         type Test<This,Fields,To,Equals>=(
-            AssEqTy<TypeFn<SetFieldsToOp<To>,(This,Fields)>,Equals>,
-            AssEqTy<SetFieldsTo<This,Fields,To>,Equals>,
+            AssertEq<TypeFn<SetFieldsToOp<To>,(This,Fields)>,Equals>,
+            AssertEq<SetFieldsTo<This,Fields,To>,Equals>,
         );
         let _:Test<
             ConstRectangle<U100,U100,U100,U100>,
@@ -485,8 +596,9 @@ mod tests{
     #[test]
     fn map_field(){
         type Test<This,Field,Mapper,Equals>=(
-            AssEqTy<TypeFn<MapFieldOp,(This,Field,Mapper)>,Equals>,
-            AssEqTy<MapField<This,Field,Mapper>,Equals>,
+            AssertFnRet<MapFieldOp,(This,Field,Mapper),Equals>,
+            AssertFnRet<MapFieldMt<Field,Mapper>,This,Equals>,
+            AssertEq<MapField<This,Field,Mapper>,Equals>,
         );
         
 
@@ -558,10 +670,11 @@ mod tests{
     #[test]
     fn map_into_field(){
         type Test<This,Field,Mapper,Equals>=(
-            AssEqTy<TypeFn<MapIntoFieldOp,(This,Field,Mapper)>,Equals>,
-            AssEqTy<MapIntoField<This,Field,Mapper>,Equals>,
+            AssertFnRet<MapIntoFieldOp,(This,Field,Mapper),Equals>,
+            AssertFnRet<MapIntoFieldMt<Field,Mapper>,This,Equals>,
+            AssertEq<MapIntoField<This,Field,Mapper>,Equals>,
         );
-        type SubField<Field>=tlist![ ApplyRhs<GetFieldOp,Field>,Sub1Op ];
+        type SubField<Field>=tlist![ GetFieldMt<Field>,Sub1Op ];
 
         let _:Test<
             ConstRectangle<U10,U20,U30,U40>,

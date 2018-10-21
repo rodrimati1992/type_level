@@ -199,16 +199,17 @@ fn set_field() {
 
 #[test]
 fn type_fn_() {
-    let _: U0 = TypeFn::<tuple_![], U0>::MTVAL;
-    let _: U1 = TypeFn::<tuple_![ApplyRhs<AddOp,U1>], U0>::MTVAL;
-    let _: U2 = TypeFn::<tuple_![ApplyRhs<AddOp,U1>,ApplyRhs<AddOp,U1 >], U0>::MTVAL;
-    let _: U21 = TypeFn::<tuple_![ApplyRhs<AddOp,U1>,ApplyRhs<AddOp,U10>], U10>::MTVAL;
-    let _: U41 = TypeFn::<
+    let _: AssertFnRet<tuple_![], U0,U0>;
+    let _: AssertFnRet<tuple_![ApplyRhs<AddOp,U1>], U0,U1>;
+    let _: AssertFnRet<tuple_![ApplyRhs<AddOp,U1>,ApplyRhs<AddOp,U1 >], U0,U2>;
+    let _: AssertFnRet<tuple_![ApplyRhs<AddOp,U1>,ApplyRhs<AddOp,U10>], U10,U21>;
+    let _: AssertFnRet<
         tuple_![
             ApplyRhs<AddOp,U1>,
             ApplyRhs<AddOp,U10>,
             ApplyRhs<AddOp,U20>
         ],
         U10,
-    >::MTVAL;
+        U41
+    >;
 }
