@@ -28,6 +28,7 @@ type_fn!{define_trait
     trait=FoldL_ [DefaultVal,Func]
     type=FoldL
     fn_type=FoldLOp
+    method_like=FoldLMt
 }
 
 type_fn!{define_trait
@@ -38,6 +39,7 @@ type_fn!{define_trait
     trait=FoldR_ [DefaultVal,Func]
     type=FoldR
     fn_type=FoldROp
+    method_like=FoldRMt
 }
 
 
@@ -47,6 +49,7 @@ type_fn!{define_trait
     trait=ReduceL_ [Func]
     type=ReduceL
     fn_type=ReduceLOp
+    method_like=ReduceLMt
 }
 
 type_fn!{define_trait
@@ -55,6 +58,7 @@ type_fn!{define_trait
     trait=ReduceR_ [Func]
     type=ReduceR
     fn_type=ReduceROp
+    method_like=ReduceRMt
 }
 
 type_fn!{define_trait
@@ -62,6 +66,7 @@ type_fn!{define_trait
     trait=Map_ [Func]
     type=Map
     fn_type=MapOp
+    method_like=MapMt
 }
 
 type_fn!{define_trait
@@ -72,6 +77,7 @@ type_fn!{define_trait
     trait=Filter_ [Predicate]
     type=Filter
     fn_type=FilterOp
+    method_like=FilterMt
 }
 
 type_fn!{define_trait
@@ -79,6 +85,7 @@ type_fn!{define_trait
     trait=Remove_ [Index]
     type=Remove
     fn_type=RemoveOp
+    method_like=RemoveMt
 }
 
 type_fn!{define_trait
@@ -86,6 +93,7 @@ type_fn!{define_trait
     trait=Insert_ [Index,Value]
     type=Insert
     fn_type=InsertOp
+    method_like=InsertMt
 }
 
 type_fn!{define_trait
@@ -96,6 +104,7 @@ type_fn!{define_trait
     trait=Push_ [Value]
     type=Push
     fn_type=PushOp
+    method_like=PushMt
 }
 
 type_fn!{define_trait
@@ -116,6 +125,7 @@ type_fn!{define_trait
     trait=PushBack_ [Value]
     type=PushBack
     fn_type=PushBackOp
+    method_like=PushBackMt
 }
 
 type_fn!{define_trait
@@ -136,6 +146,7 @@ type_fn!{define_trait
     trait=PushFront_ [Value]
     type=PushFront
     fn_type=PushFrontOp
+    method_like=PushFrontMt
 }
 
 type_fn!{define_trait
@@ -252,9 +263,8 @@ type_fn!{
 type_fn!{
     fn ContainsOp[This,Elem](This,Elem)
     where[
-        AnyOp:TypeFn_< (This,Pred), Output=Out >
+        AnyOp:TypeFn_< (This,ConstEqMt<Elem>), Output=Out >
     ]{
-        let Pred= ApplyRhs<ConstEqOp,Elem> ; 
         let Out; Out 
     }
 }
@@ -281,6 +291,7 @@ type_fn!{define_trait
     trait=TryFoldL_ [DefaultVal,Func]
     type=TryFoldL
     fn_type=TryFoldLOp
+    method_like=TryFoldLMt
 }
 
 type_fn!{define_trait
@@ -294,6 +305,7 @@ type_fn!{define_trait
     trait=TryFoldR_ [DefaultVal,Func]
     type=TryFoldR
     fn_type=TryFoldROp
+    method_like=TryFoldRMt
 }
 
 
@@ -342,129 +354,6 @@ define_tryfold_conv!{ generics[T] Some_<T>:OptionType => TFVal<T> }
 define_tryfold_conv!{ generics[]  None_   :OptionType => TFBreak<None_> }
 
 
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-type_fn!{
-    captures(DefaultVal,Func)
-    pub fn FoldLMt[This](This)
-    where[ This:FoldL_<DefaultVal,Func,Output=Out> ]
-    { let Out;Out }
-    
-}
-
-
-type_fn!{
-    captures(DefaultVal,Func)
-    pub fn FoldRMt[This](This)
-    where[ This:FoldR_<DefaultVal,Func,Output=Out> ]
-    { let Out;Out }
-    
-}
-
-
-type_fn!{
-    captures(Func)
-    pub fn ReduceLMt[This](This)
-    where[ This:ReduceL_<Func,Output=Out> ]
-    { let Out;Out }
-    
-}
-
-
-type_fn!{
-    captures(Func)
-    pub fn ReduceRMt[This](This)
-    where[ This:ReduceR_<Func,Output=Out> ]
-    { let Out;Out }
-    
-}
-
-
-type_fn!{
-    captures(Func)
-    pub fn MapMt[This](This)
-    where[ This:Map_<Func,Output=Out> ]
-    { let Out;Out }
-    
-}
-
-
-type_fn!{
-    captures(Predicate)
-    pub fn FilterMt[This](This)
-    where[ This:Filter_<Predicate,Output=Out> ]
-    { let Out;Out }
-    
-}
-
-
-type_fn!{
-    captures(Index,Value)
-    pub fn InsertMt[This](This)
-    where[ This:Insert_<Index,Value,Output=Out> ]
-    { let Out;Out }
-    
-}
-
-type_fn!{
-    captures(Index)
-    pub fn RemoveMt[This](This)
-    where[ This:Remove_<Index,Output=Out> ]
-    { let Out;Out }
-    
-}
-
-
-type_fn!{
-    captures(Value)
-    pub fn PushMt[This](This)
-    where[ This:Push_<Value,Output=Out> ]
-    { let Out;Out }
-    
-}
-
-
-type_fn!{
-    captures(Value)
-    pub fn PushBackMt[This](This)
-    where[ This:PushBack_<Value,Output=Out> ]
-    { let Out;Out }
-    
-}
-
-
-type_fn!{
-    captures(Value)
-    pub fn PushFrontMt[This](This)
-    where[ This:PushFront_<Value,Output=Out> ]
-    { let Out;Out }
-    
-}
-
-type_fn!{
-    captures(DefaultVal,Func)
-    pub fn TryFoldLMt[This](This)
-    where[ This:TryFoldL_<DefaultVal,Func,Output=Out> ]
-    { let Out;Out }
-    
-}
-
-
-type_fn!{
-    captures(DefaultVal,Func)
-    pub fn TryFoldRMt[This](This)
-    where[ This:TryFoldR_<DefaultVal,Func,Output=Out> ]
-    { let Out;Out }
-    
-}
-
-
-
-
-
 /////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -476,16 +365,16 @@ mod test{
     type ValEven=tlist![U10,U12,U14];
     type ValOdd =tlist![U11,U13,U15];
 
-    type IsOdd =(ApplyRhs<BitAndOp,U1>,ApplyRhs<ConstEqOp,U1>);
-    type IsEven=(ApplyRhs<BitAndOp,U1>,ApplyRhs<ConstEqOp,U0>);
-    type IsEq<Val>=ApplyRhs<ConstEqOp,Val>;
-    type IsLt<Val>=ApplyRhs<ConstLtOp,Val>;
+    type IsOdd =(BitAndMt<U1>,ConstEqMt<U1>);
+    type IsEven=(BitAndMt<U1>,ConstEqMt<U0>);
+    type IsEq<Val>=ConstEqMt<Val>;
+    type IsLt<Val>=ConstLtMt<Val>;
     
     #[test]
     fn find_contains(){
         type TestFind<Val,Func,Equal>=(
-            AssertFnRet<FindOp,(Val,Func), Equal >,
-            AssertFnRet<FindMt<Func>,Val, Equal >,
+            AssertFnRet<(Val,Func),FindOp, Equal >,
+            AssertFnRet<Val,FindMt<Func>, Equal >,
         );
         let _:TestFind<Val0,IsOdd , Some_<U11> >;
         let _:TestFind<Val0,IsEven, Some_<U10> >;
@@ -501,8 +390,8 @@ mod test{
 
 
         type TestContains<Val,Elem,Equal>=(
-            AssertFnRet<ContainsOp,(Val,Elem), Equal >,
-            AssertFnRet<ContainsMt<Elem>,Val, Equal >,
+            AssertFnRet<(Val,Elem),ContainsOp,Equal >,
+            AssertFnRet<Val,ContainsMt<Elem>,Equal >,
         );
 
         let _:TestContains<ValEven,U10,True>;
@@ -523,8 +412,8 @@ mod test{
     #[test]
     fn all_any(){
         type TestAll<Val,Func,Equal>=(
-            AssertFnRet<AllOp,(Val,Func), Equal >,
-            AssertFnRet<AllMt<Func>,Val, Equal >,
+            AssertFnRet<(Val,Func),AllOp,Equal >,
+            AssertFnRet<Val,AllMt<Func>, Equal >,
         );
 
         let _:TestAll<Val0,IsLt<U12>,False>;
@@ -537,8 +426,8 @@ mod test{
 
 
         type TestAny<Val,Func,Equal>=(
-            AssertFnRet<AnyOp,(Val,Func), Equal >,
-            AssertFnRet<AnyMt<Func>,Val, Equal >,
+            AssertFnRet<(Val,Func),AnyOp, Equal >,
+            AssertFnRet<Val,AnyMt<Func>, Equal >,
         );
 
         let _:TestAny<Val0,IsLt<U8 >,False>;

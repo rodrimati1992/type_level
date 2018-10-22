@@ -240,7 +240,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                         for #struct_name<#generics #priv_suffix>
                         where 
                             #where_preds
-                            #( #generics_j0:IntoConstant<#original_types_d,#generics_h> ,)*
+                            #( #generics_j0:IntoConstant<#original_types_d> ,)*
                             #variant_bounds
                         {
                             const VALUE: #ir_type_ident < #(#original_generics_c,)* > =

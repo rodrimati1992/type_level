@@ -2,9 +2,19 @@ use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
 use crate_::fn_adaptors::{ApplyRhs,Const};
-use crate_::fn_types::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
-use crate_::ops::{Unwrap_,Unwrap,UnwrapOr_,UnwrapOr,IntoInner_};
-use crate_::collection_ops::{FoldL, FoldL_, FoldR, FoldR_, Len_, Map, Map_};
+use crate_::fn_types::{BitAndOp, BitOrOp, DivOp,MulMt, NotOp,ConstEqMt};
+use crate_::ops::{
+    Unwrap_,Unwrap,UnwrapOr,UnwrapOrElse_,
+    IntoInner_,
+    If,
+    AssertEq,
+};
+use crate_::collection_ops::{
+    FoldL, FoldL_, FoldR, FoldR_, 
+    Len_, 
+    Map, Map_,
+    Filter_,Filter,
+};
 use prelude::*;
 
 use std_::fmt::Debug;
@@ -37,6 +47,18 @@ pub type NewNone=Const<None_>;
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
+impl<Func,Params> TypeFn_<Params> for Some_<Func>
+where
+    Func: TypeFn_<Params>,
+{
+    type Output = Func::Output;
+}
+impl<Params> TypeFn_<Params> for None_ {
+    type Output = Params;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
 impl<Op, T> Map_<Op> for Some_<T>
 where
     Op: TypeFn_<T>,
@@ -44,6 +66,17 @@ where
     type Output = Some_<Op::Output>;
 }
 impl<Op> Map_<Op> for None_ {
+    type Output = None_;
+}
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<Pred,Out, T> Filter_<Pred> for Some_<T>
+where
+    If<Pred,NewSome,NewNone>: TypeFn_<T,Output=Out>,
+{
+    type Output = Out;
+}
+impl<Pred> Filter_<Pred> for None_ {
     type Output = None_;
 }
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -134,11 +167,14 @@ impl<T> Unwrap_ for Some_<T> {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-impl<Def> UnwrapOr_<Def> for None_ {
-    type Output = Def;
+impl<DefFunc> UnwrapOrElse_<DefFunc> for None_ 
+where 
+    DefFunc:TypeFn_<()>
+{
+    type Output = DefFunc::Output;
 }
 
-impl<T,Def> UnwrapOr_<Def> for Some_<T> {
+impl<T,DefFunc> UnwrapOrElse_<DefFunc> for Some_<T> {
     type Output = T;
 }
 
@@ -170,14 +206,19 @@ mod tests {
 
     #[test]
     fn option_iteration() {
-        let _: U1 = <FoldR<None_, U1, DivOp>>::MTVAL;
-        let _: U2 = <FoldR<Some_<U2>, U4, DivOp>>::MTVAL;
+        let _: AssertEq<U1,FoldR<None_, U1, DivOp>>;
+        let _: AssertEq<U2,FoldR<Some_<U2>, U4, DivOp>>;
 
-        let _: U1 = <FoldL<None_, U1, DivOp>>::MTVAL;
-        let _: U2 = <FoldL<Some_<U2>, U4, DivOp>>::MTVAL;
+        let _: AssertEq<U1,FoldL<None_, U1, DivOp>>;
+        let _: AssertEq<U2,FoldL<Some_<U2>, U4, DivOp>>;
 
-        let _: Some_<U6> = <Map<Some_<U3>, ApplyRhs<MulOp, U2>>>::MTVAL;
-        let _: None_ = <Map<None_, ApplyRhs<MulOp, U2>>>::MTVAL;
+        let _: AssertEq<Some_<U6>,Map<Some_<U3>, MulMt<U2>>>;
+        let _: AssertEq<None_,Map<None_, MulMt<U2>>>;
+
+        let _: AssertEq< Some_<U3> , Filter<Some_<U3>, ConstEqMt<U3>>>;
+        let _: AssertEq< None_ , Filter<Some_<U3>, ConstEqMt<U0>>>;
+        let _: AssertEq< None_ , Filter<None_,Const<True>>>;
+        let _: AssertEq< None_ , Filter<None_,Const<False>>>;
     }
 
     #[test]

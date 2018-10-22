@@ -78,14 +78,13 @@ A more advanced version,using function composition
 # #[macro_use]
 # extern crate type_level_values;
 
-use type_level_values::fn_adaptors::ApplyRhs;
-use type_level_values::fn_types::{MulOp,AddOp};
+use type_level_values::fn_types::{MulOp,AddMt};
 use type_level_values::prelude::*;
 
 
 type_fn!{
     pub fn MulAdd[L,R](L,R)
-    where[ tlist![ MulOp, ApplyRhs<AddOp,R> ]:TypeFn_<(L,R),Output=out> ]
+    where[ tlist![ MulOp, AddMt<R> ]:TypeFn_<(L,R),Output=out> ]
     { let out;out }
 }
 
@@ -168,7 +167,7 @@ fn main(){
 
 
 */
-pub trait TypeFn_<Params> {
+pub trait TypeFn_<Params:?Sized> {
     /// The return value of the function
     type Output;
 }
@@ -220,9 +219,9 @@ The `<visibility_specifier>` gets translated to the visibility of the constructo
 generated struct.
 
 
-# Declaring a TypeFn_ alias for a pre-existing trait
+# Declaring a TypeFn_/method_like alias for a pre-existing trait
 
-# Syntax
+### Syntax for TypeFn_
 
 ```ignore
 
@@ -232,6 +231,22 @@ alias <function_name>
 $( where[ <where_predicates> ] )?
 
 ```
+### Syntax for Methodlike
+
+```ignore
+
+$(#[<attribute>])*
+method_like_alias <function_name> 
+[<self_identifier> $( ,<type_param> )*] $( ::$assoc_ty:ident )? =<trait_name> 
+$( where[ <where_predicates> ] )?
+
+```
+
+method_like is a TypeFn_ which captures all parameters except for the first one,
+allowing one to it in a list of functions,which act like a method chain.
+
+Capturing parameters means that they are generic parameters to the struct representing the 
+type-level function.
 
 ### Example
 
@@ -239,13 +254,17 @@ $( where[ <where_predicates> ] )?
 #[macro_use]
 extern crate type_level_values;
 
-use std::ops::{Add,Deref};
+use std::ops::{Add,Sub,Deref};
 use type_level_values::runtime_value::ConstTypeOf_;
 use type_level_values::ops::*;
 use type_level_values::prelude::*;
 use type_level_values::extern_types::typenum::UnsignedInteger;
 
 type_fn!{alias AdditionOp[This,Rhs]=Add}
+type_fn!{method_like_alias AdditionMt[This,Rhs]=Add}
+
+type_fn!{alias SubsOp[This,Rhs]=Sub}
+type_fn!{method_like_alias SubsMt[This,Rhs]=Sub}
 
 type_fn!{alias DerefOp[This]::Target=Deref}
 
@@ -255,6 +274,17 @@ fn main(){
     let _:U10=TypeFn::<AdditionOp,(U2,U8)>::MTVAL;
     let _:U16=TypeFn::<AdditionOp,(U2,U14)>::MTVAL;
     
+    let _:U10=TypeFn::<AdditionMt<U2>,U8>::MTVAL;
+    let _:U16=TypeFn::<AdditionMt<U2>,U14>::MTVAL;
+    
+
+    let _:U6=TypeFn::<SubsOp,(U8,U2)>::MTVAL;
+    let _:U12=TypeFn::<SubsOp,(U14,U2)>::MTVAL;
+    
+    let _:U6=TypeFn::<SubsMt<U2>,U8>::MTVAL;
+    let _:U12=TypeFn::<SubsMt<U2>,U14>::MTVAL;
+    
+
     let _:VariantPhantom<usize> =
         TypeFn::<DerefOp,Box<usize>>::T;
     let _:VariantPhantom<String>=
@@ -271,17 +301,24 @@ fn main(){
 
 ```
 
-# Defining a new trait ,type alias and TypeFn_ for that trait 
+# Defining/Using a trait ,declaring a type alias and TypeFn_ for that trait 
 
-This is the way to define a trait for type-level values,
-defining a type alias for the trait,
-and defining a TypeFn_ which delegates to the trait.
+define_trait:declares a trait,
+use_trait   :does not declare a trait,
+
+Both of them:
+
+- Define a type alias for the trait,
+
+- Define a TypeFn_ which delegates to the trait,
+
+- Optionally define a method-like TypeFn_ for the trait.
 
 ### Syntax
 
 ```text
 
-define_trait
+define_trait | use_trait
 
 $( #[ <attribute_for_trait> ] )*
 trait= <name_of_trait> [ $( <type_parameter_of_trait> ),* ]
@@ -292,6 +329,11 @@ type= <name_of_type_alias> t
     
 $( #[ <attribute_for_TypeFn_impl_block> ] )*
 fn_type=$op_name:ident
+
+$(
+    $( #[ <attribute_for_method_like_TypeFn_impl_block> ] )*
+    method_like=$method_like_name:ident
+)?
 
 ```
 
@@ -309,6 +351,7 @@ type_fn!{define_trait
     trait=Rotate_[By]
     type=Rotate
     fn_type=RotateOp
+    method_like=RotateMt
 }
 
 impl<This,By,Res0,Res1> Rotate_<By> for This
@@ -319,6 +362,16 @@ where
     type Output=Res1;
 }
 
+
+
+type_fn!{use_trait
+    trait=Sub[Rhs]
+    type=Subing
+    fn_type=SubingOp
+    method_like=SubingMt
+}
+
+
 fn main(){
 
     let _:U8=Rotate::<U2,U6>::MTVAL;
@@ -326,6 +379,20 @@ fn main(){
 
     let _:U8=TypeFn::<RotateOp,(U2,U6)>::MTVAL;
     let _:U1=TypeFn::<RotateOp,(U11,U6)>::MTVAL;
+
+    let _:U8=TypeFn::<RotateMt<U6>,U2>::MTVAL;
+    let _:U1=TypeFn::<RotateMt<U6>,U11>::MTVAL;
+
+
+
+    let _:U14=Subing::<U20,U6>::MTVAL;
+    let _:U5=Subing::<U11,U6>::MTVAL;
+
+    let _:U14=TypeFn::<SubingOp,(U20,U6)>::MTVAL;
+    let _:U5=TypeFn::<SubingOp,(U11,U6)>::MTVAL;
+
+    let _:U14=TypeFn::<SubingMt<U6>,U20>::MTVAL;
+    let _:U5=TypeFn::<SubingMt<U6>,U11>::MTVAL;
 
 }
 
@@ -338,19 +405,50 @@ fn main(){
 #[macro_export]
 macro_rules! type_fn {
     (   $(#[$attr_op:meta])*
-        alias $op_name:ident[$lhs:ident$(,$param:ident)*] $(::$assoc_ty:ident)* =$trait_name:ident
+        alias $op_name:ident[$lhs:ident$(,$param:ident)* $(,)*] 
+            $(::$assoc_ty:ident)* =$trait_name:ident
         $(where[$($bound:tt)*])*
     ) => {
         $(#[$attr_op])*
-        ///
-        /// A type-level function.Implements TypeFn<> for the trait of a similar name.
-        ///
-        /// To instantiate a runtime value of this function use `Type::CW`/`<Type>::CW`.
+        /**
+        A type-level function.Implements TypeFn<> for the trait of a similar name.
+        
+        To instantiate a runtime value of this function use `Type::CW`/`<Type>::CW`.
+        */
         #[allow(non_camel_case_types)]
         pub struct $op_name;
 
         #[allow(non_camel_case_types)]
         impl<$lhs$(,$param)*> $crate::type_fn::TypeFn_<($lhs $(,$param)*)> for $op_name
+        where
+            $lhs:$trait_name< $($param),* >,
+            type_fn!( inner_alias_associated_type; $lhs $(::$assoc_ty)* ):Sized,
+            $($($bound)*)*
+        {
+            type Output=type_fn!( inner_alias_associated_type; $lhs $(::$assoc_ty)* );
+        }
+    };
+    (   $(#[$attr_op:meta])*
+        method_like_alias 
+            $op_name:ident[$lhs:ident$(,$param:ident)* $(,)* ] 
+            $(::$assoc_ty:ident)* =$trait_name:ident
+        $(where[$($bound:tt)*])*
+    ) => {
+        $(#[$attr_op])*
+        /**
+        A type-level function.
+        
+        Implements TypeFn<> for the trait of a similar name.
+        
+        This is defined to encourage function composition,emulating method chains.
+        
+        To instantiate a runtime value of this function use `Type::CW`/`<Type>::CW`.
+        */
+        #[allow(non_camel_case_types)]
+        pub struct $op_name<$($param),*>($($param),*);
+
+        #[allow(non_camel_case_types)]
+        impl<$lhs$(,$param)*> $crate::type_fn::TypeFn_<$lhs> for $op_name<$($param),*>
         where
             $lhs:$trait_name< $($param),* >,
             type_fn!( inner_alias_associated_type; $lhs $(::$assoc_ty)* ):Sized,
@@ -365,10 +463,48 @@ macro_rules! type_fn {
     (inner_alias_associated_type; $lhs:ident )=>{
         $lhs::Output
     };
-    (define_trait
+    (outer_alias_associated_type; [$($anything:tt)*] :: $assoc:ident )=>{
+        $($anything)* ::$assoc
+    };
+    (outer_alias_associated_type; [$($anything:tt)*] )=>{
+        $($anything)* ::Output
+    };
+    (define_trait;method_like;[$($anything:tt)*][]) => {};
+    (define_trait;method_like;
+        [
+            params[$($params:tt)*]
+            trait=$trait_name:ident
+            $(::$assoc_ty:ident)*
+            $(where[$($bound:tt)*])*
+        ]
+        [
+            $(#[$attr_mt:meta])*
+            method_like=$mt_name:ident
+        ]
+    ) => {
+        type_fn!{
+            $(#[$attr_mt])*
+            method_like_alias $mt_name[__Self, $($params)* ] $(::$assoc_ty)* =$trait_name
+            $(where[$($bound)*])*
+        }
+    };
+    (define_trait;declaring_trait;
 
         $(#[$attr_trait:meta])*
-        trait=$trait_name:ident[$($param:ident),*]
+        trait=$trait_name:ident[$($param:ident $(= $param_default:ty)* ),*]
+
+        $($tokens:tt)*
+    )=>{
+        $(#[$attr_trait])*
+        pub trait $trait_name< $($param $(= $param_default)* ),* >{
+            type Output;
+        }
+    };
+    (use_trait
+
+        $(#[$attr_trait:meta])*
+        trait=$trait_name:ident[$($param:ident $(= $param_default:ty)* ),*]$(::$assoc_ty:ident)*
+
         $(where[$($bound:tt)*])*
 
         $(#[$attr_type:meta])*
@@ -376,25 +512,50 @@ macro_rules! type_fn {
 
         $(#[$attr_op:meta])*
         fn_type=$op_name:ident
+        
+        $(
+            $(#[$attr_mt:meta])*
+            method_like=$mt_name:ident
+        )*
     ) => {
 
         type_fn!{
             $(#[$attr_op])*
-            alias $op_name[__Self $(,$param)*]=$trait_name
+            alias $op_name[__Self $(,$param)*] $(::$assoc_ty)* =$trait_name
             $(where[$($bound)*])*
         }
-
-        $(#[$attr_trait])*
-        pub trait $trait_name< $($param),* >{
-            type Output;
+        
+        type_fn!{
+            define_trait;method_like;
+            [
+                params[$($param),*]
+                trait=$trait_name
+                $(::$assoc_ty)*
+                $(where[$($bound)*])*
+            ]
+            [$(
+                $(#[$attr_mt])*
+                method_like=$mt_name
+            )*]
+            
         }
 
         $(#[$attr_type])*
         ///
-        /// A type-level function.Type alias for the trait of a similar name.
+        /// A type alias for the trait of a similar name.
         #[allow(non_camel_case_types)]
-        pub type $type_alias_name<__Self $(,$param)* >=
-            <__Self as $trait_name<$($param),*>>::Output;
+        pub type $type_alias_name<__Self $(,$param $(= $param_default)* )* >=
+            type_fn!(
+                outer_alias_associated_type;
+                [ <__Self as $trait_name<$($param),*>> ]
+                $(::$assoc_ty)*
+            );
+    };
+    (define_trait
+        $($tokens:tt)*
+    ) => {
+        type_fn!{ define_trait;declaring_trait; $($tokens)* }
+        type_fn!{ use_trait $($tokens)* }
     };
     (
         $(#[$attr_above:meta])*

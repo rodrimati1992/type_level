@@ -16,7 +16,7 @@ use crate_::ops::{
     UnwrapOp,
 };
 use crate_::fn_adaptors::*;
-use crate_::fn_types::{AddOp,BitAndOp, ConstEqOp, ConstLtOp, ConstOrdOp, NotOp};
+use crate_::fn_types::{AddOp,BitAndMt, ConstEqOp, ConstLtOp, ConstOrdOp, NotOp};
 use crate_::collection_ops::*;
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_, OrderingTrait};
 use crate_::std_types::option::{None_, Some_};
@@ -632,7 +632,7 @@ macro_rules! fixed_size_impls {
             RepeatHelper[Rep](False,Rep)
             where[
                 (   
-                    ApplyRhs<BitAndOp,U31>,
+                    BitAndMt<U31>,
                     ApplyLhs<RepeatHelper<V>,True>
                 ):TypeFn_<Rep,Output=Rem0>,
                 Rep:Shr<U5,Output=Shr5Rep>,
@@ -656,7 +656,7 @@ macro_rules! fixed_size_impls {
         #[allow(dead_code)]
         type RepeatHelper3<ExpectedBit,V,Rem>=
             tlist![
-                ApplyRhs<BitAndOp,ExpectedBit >,
+                BitAndMt<ExpectedBit>,
                 ApplyLhs<RepeatHelper2<V,Rem>,ExpectedBit>
             ];
 

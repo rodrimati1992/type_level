@@ -25,6 +25,7 @@ pub mod wrapper_ops;
 pub use self::assertions::{
     AssertEq, AssertEqOp, AssertEq_,
     AssertFunc_,AssertFuncOp,AssertFunc ,AssertFuncMt,
+    AssertThat_,AssertThatOp,AssertThat ,//AssertThatMt,
     AssertFnRet_,AssertFnRetOp,AssertFnRet,AssertFnRetMt
 };
 pub use self::as_tlist::{
@@ -32,28 +33,30 @@ pub use self::as_tlist::{
 };
 
 pub use self::const_eq::{
-    ConstEq, ConstEq_,ConstEqOp, 
-    ConstNE, ConstNE_,ConstNEOp,
+    ConstEq, ConstEq_,ConstEqOp,ConstEqMt, 
+    ConstNE, ConstNE_,ConstNEOp,ConstNEMt,
 };
 pub use self::const_ord::{
-    ConstOrd, ConstOrd_,
+    ConstOrd, ConstOrd_,ConstOrdOp,
     ConstLt  ,ConstLE  ,ConstGt  ,ConstGE  ,
     ConstLtOp,ConstLEOp,ConstGtOp,ConstGEOp,
+    ConstLtMt,ConstLEMt,ConstGtMt,ConstGEMt,
 
 };
 
 pub use self::const_from::{
-    ConstFrom, ConstFrom_, ConstFromOp,ConstFromMt,
+    ConstFrom, ConstFrom_, ConstFromOp,
     ConstInto, ConstInto_, ConstIntoOp,ConstIntoMt,
 };
 
 pub use self::wrapper_ops::{
     Unwrap, UnwrapOp, Unwrap_,
-    UnwrapOr, UnwrapOrOp, UnwrapOr_,
-    IntoInner_,IntoInner,IntoInnerOp,
+    UnwrapOr, UnwrapOrOp, UnwrapOr_,UnwrapOrMt,
+    UnwrapOrElse, UnwrapOrElseOp, UnwrapOrElse_,UnwrapOrElseMt,
+    IntoInner,IntoInnerOp,IntoInner_,
 };
 
-pub use self::control_flow::{If, IfEager, Lazy, LogicalAnd, LogicalOr};
+pub use self::control_flow::{If, IfEager, Lazy};
 
 pub use self::integers::{
     IntegerConsts,

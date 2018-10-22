@@ -1,6 +1,6 @@
 use prelude::*;
 use crate_::fn_adaptors::*;
-use crate_::fn_types::{AddOp, ConstEqOp, ConstLEOp, ConstNEOp, SubOp};
+use crate_::fn_types::{AddOp, ConstEqOp, ConstLEOp, ConstNEOp, SubOp,SubRevMt};
 use crate_::ops::{
     AssertEq,
     ConstEq,ConstOrd_,ConstLtOp,ConstGEOp,
@@ -629,7 +629,7 @@ mod test_eq {
     #[test]
     fn map(){
         type TestA<Rang,Val>=
-            AssertEq<Map<Rang,ApplyLhs<SubOp,U10>>,Val>;
+            AssertEq<Map<Rang,SubRevMt<U10>>,Val>;
 
         let _:TestA<ConstRange<U2,U0>,tlist![]>;
         let _:TestA<ConstRange<U2,U1>,tlist![]>;

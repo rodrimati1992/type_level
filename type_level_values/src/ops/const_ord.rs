@@ -29,6 +29,9 @@ type_fn!{
     ]{ let Out;Out }
 }
 
+pub type ConstLtMt<R>=
+    ApplyRhs<ConstLtOp,R>;
+
 
 /// Returns whether L <= R.
 ///
@@ -43,6 +46,9 @@ type_fn!{
         _IsLessOrEqual:TypeFn_<L::Output,Output=Out>,
     ]{ let Out;Out }
 }
+
+pub type ConstLEMt<R>=
+    ApplyRhs<ConstLEOp,R>;
 
 
 /// Returns whether L > R.
@@ -59,6 +65,9 @@ type_fn!{
     ]{ let Out;Out }
 }
 
+pub type ConstGtMt<R>=
+    ApplyRhs<ConstGtOp,R>;
+
 
 /// Returns whether L >= R.
 ///
@@ -73,6 +82,10 @@ type_fn!{
         _IsGreaterOrEqual:TypeFn_<L::Output,Output=Out>,
     ]{ let Out;Out }
 }
+
+pub type ConstGEMt<R>=
+    ApplyRhs<ConstGEOp,R>;
+
 
 
 type_fn!{

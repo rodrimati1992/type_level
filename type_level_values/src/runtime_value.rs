@@ -68,7 +68,7 @@ pub trait IntoRuntime<To> {
 
 #[cfg(rust_1_22)]
 /// Converts a compile-time value into a runtime value
-pub trait IntoConstant<To, From = Self> {
+pub trait IntoConstant<To> {
     const VALUE: To;
 }
 

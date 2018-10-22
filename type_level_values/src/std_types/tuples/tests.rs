@@ -135,7 +135,7 @@ fn fold_r() {
 
 #[test]
 fn map() {
-    type AddOne = ApplyRhs<AddOp, U1>;
+    type AddOne = AddMt< U1>;
     let _: tuple_![] = Map::<tuple_![], AddOne>::MTVAL;
     let _: tuple_![U1,] = Map::<tuple_![U0], AddOne>::MTVAL;
     let _: tuple_![U1, U2] = Map::<tuple_![U0, U1], AddOne>::MTVAL;
@@ -199,17 +199,17 @@ fn set_field() {
 
 #[test]
 fn type_fn_() {
-    let _: AssertFnRet<tuple_![], U0,U0>;
-    let _: AssertFnRet<tuple_![ApplyRhs<AddOp,U1>], U0,U1>;
-    let _: AssertFnRet<tuple_![ApplyRhs<AddOp,U1>,ApplyRhs<AddOp,U1 >], U0,U2>;
-    let _: AssertFnRet<tuple_![ApplyRhs<AddOp,U1>,ApplyRhs<AddOp,U10>], U10,U21>;
+    let _: AssertFnRet<U0,tuple_![],U0>;
+    let _: AssertFnRet<U0,tuple_![AddMt<U1>],U1>;
+    let _: AssertFnRet<U0,tuple_![AddMt<U1>,AddMt<U1 >],U2>;
+    let _: AssertFnRet<U10,tuple_![AddMt<U1>,AddMt<U10>],U21>;
     let _: AssertFnRet<
-        tuple_![
-            ApplyRhs<AddOp,U1>,
-            ApplyRhs<AddOp,U10>,
-            ApplyRhs<AddOp,U20>
-        ],
         U10,
+        tuple_![
+            AddMt<U1>,
+            AddMt<U10>,
+            AddMt<U20>
+        ],
         U41
     >;
 }

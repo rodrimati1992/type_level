@@ -2,7 +2,7 @@ use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
 use crate_::fn_types::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
-use crate_::ops::{Unwrap_,Unwrap,UnwrapOr_,UnwrapOr,IntoInner_};
+use crate_::ops::{Unwrap_,Unwrap,UnwrapOrElse_,UnwrapOr,IntoInner_};
 use crate_::collection_ops::{FoldL_, FoldR_, Len_, Map, Map_};
 use prelude::*;
 
@@ -93,12 +93,15 @@ impl<T> Unwrap_ for Ok_<T> {
 
 /////////////////////////////
 
-impl<T,Def> UnwrapOr_<Def> for Ok_<T> {
+impl<T,Def> UnwrapOrElse_<Def> for Ok_<T> {
     type Output = T;
 }
 
-impl<E,Def> UnwrapOr_<Def> for Err_<E> {
-    type Output = Def;
+impl<E,Def> UnwrapOrElse_<Def> for Err_<E> 
+where 
+    Def:TypeFn_<E>
+{
+    type Output = Def::Output;
 }
 
 /////////////////////////////

@@ -1,6 +1,6 @@
 use prelude::*;
 
-use crate_::ops::{IntegerConsts,AssertEq,AssertFnRet};
+use crate_::ops::{IntegerConsts,AssertEq};
 
 use typenum::bit::{B0, B1};
 use typenum::marker_traits::{Bit, Integer, NonZero, Unsigned};

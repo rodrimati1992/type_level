@@ -27,6 +27,16 @@ type_fn!{
 }
 
 type_fn!{
+    /// Type-level version of |l,r| func(r,l)
+    captures(Func)
+    pub fn Flip[L,R](L,R)
+    where[ Func:TypeFn_<(R,L)> ]
+    {
+        Func::Output
+    }
+}
+
+type_fn!{
     /// Applies a parameter of a TypeFn_< SomeTuple > ,
     /// reducing the arity of the resulting TypeFn_<> by 1.
     /// 

@@ -28,26 +28,18 @@ where
     type Output = S::Output;
 }
 
-type_fn!{alias ConstFromOp[IntoConstType,From_]=ConstFrom_}
-type_fn!{alias ConstIntoOp[From_,IntoConstType]=ConstInto_}
-
-type_fn!{
-    captures(IntoType)
-    pub fn ConstIntoMt[This](This)
-    where[ This:ConstInto_<IntoType> ]
-    { This::Output }
+type_fn!{use_trait 
+    trait=ConstFrom_ [From_]
+    type=ConstFrom
+    fn_type=ConstFromOp
 }
 
-type_fn!{
-    captures(IntoType)
-    pub fn ConstFromMt[This](This)
-    where[ IntoType:ConstFrom_<This> ]
-    { IntoType::Output }
+type_fn!{use_trait 
+    trait=ConstInto_ [IntoConstType]
+    type=ConstInto
+    fn_type=ConstIntoOp
+    method_like=ConstIntoMt
 }
-
-pub type ConstFrom<IntoConstType,From_> = <IntoConstType as ConstFrom_<From_>>::Output;
-
-pub type ConstInto<From_,IntoConstType> = <From_ as ConstInto_<IntoConstType>>::Output;
 
 mod boolean_impls {
     use super::*;
