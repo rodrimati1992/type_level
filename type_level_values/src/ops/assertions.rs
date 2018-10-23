@@ -25,15 +25,8 @@ type_fn!{define_trait
     type=AssertEq
     /// Asserts that Self is the same type as R.
     fn_type=AssertEqOp
-}
-
-
-type_fn!{
-    captures(Rhs)
     /// Asserts that This is the same type as Rhs.
-    pub fn AssertEqMt[This](This)
-    where[ This:AssertEq_<Rhs> ]
-    { Rhs }
+    method_like=AssertEqMt
 }
 
 
@@ -70,6 +63,8 @@ type_fn!{define_trait
     type=AssertFunc
     /// Asserts that Func implements `TypeFn_<Val>`,returning Val unmodified.
     fn_type=AssertFuncOp
+    /// Asserts that Func implements `TypeFn_<Val>`,returning Val unmodified.
+    method_like=AssertFuncMt
 }
 
 impl<This,Func> AssertFunc_<Func> for This
@@ -78,18 +73,6 @@ where
 {
     type Output=This;
 }
-
-
-type_fn!{
-    captures(Func)
-    /** 
-    Asserts that Func implements `TypeFn_<Val>`,returning Val unmodified.
-    */
-    pub fn AssertFuncMt[Val](Val)
-    where[ Func:TypeFn_<Val> ]
-    { Val }
-}
-
 
 
 //////////////////////////////////////////////////////////////
@@ -117,6 +100,8 @@ type_fn!{define_trait
     type=AssertFnRet
     /// Asserts that `Func:TypeFn_<This>` evaluates to Ret,returning This unmodified.
     fn_type=AssertFnRetOp
+    /// Asserts that `Func:TypeFn_<This>` evaluates to Ret,returning This unmodified.
+    method_like=AssertFnRetMt
 }
 
 
@@ -126,15 +111,6 @@ where
 {
     type Output=This;
 }
-
-type_fn!{
-    captures(Func,Ret)
-    /// Asserts that `Func:TypeFn_<This>` evaluates to Ret,returning This unmodified.
-    pub fn AssertFnRetMt[Val](Val)
-    where[ Func:TypeFn_<Val,Output=Ret> ]
-    { Val }
-}
-
 
 
 //////////////////////////////////////////////////////////////
@@ -164,6 +140,8 @@ type_fn!{define_trait
     type=AssertThat
     /// Asserts that `Self` satisfies the `Pred` predicate
     fn_type=AssertThatOp
+    /// Asserts that `This` satisfies the `Pred` predicate
+    method_like=AssertThatMt
 }
 
 impl<This,Pred,Out> TypeFn_<(This,Pred)> for AssertThatOp
@@ -173,13 +151,12 @@ where
     type Output=Out;
 }
 
-type_fn!{
-    captures(Pred,Msg=())
-    /// Asserts that `This` satisfies the `Pred` predicate
-    pub fn AssertThatMt[This](This)
-    where[ This:AssertThat_<Pred,Msg> ]
-    { This }
-}
+// type_fn!{
+//     captures(Pred,Msg=())
+//     pub fn AssertThatMt[This](This)
+//     where[ This:AssertThat_<Pred,Msg> ]
+//     { This }
+// }
 
 impl<This,Pred,Msg> AssertThat_<Pred,Msg> for This
 where
@@ -221,7 +198,7 @@ type_fn!{
 mod tests{
     use super::*;
     use crate_::ops::*;
-    use crate_::fn_types::*;
+    use crate_::std_ops::*;
     use crate_::fn_adaptors::*;
 
     #[test]

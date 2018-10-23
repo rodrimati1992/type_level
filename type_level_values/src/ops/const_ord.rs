@@ -1,5 +1,5 @@
 use crate_::fn_adaptors::*;
-use crate_::fn_types::*;
+use crate_::std_ops::*;
 use crate_::ops::{ConstEq, VariantAsTList, VariantAsTList_};
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_, OrderingTrait, OrderingType};
 use prelude::*;

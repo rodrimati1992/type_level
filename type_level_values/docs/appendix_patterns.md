@@ -60,7 +60,7 @@ Let's implement a TypeFn_ that compares two 8-ary tuples.
 # use type_level_values::prelude::*;
 # use type_level_values::std_types::cmp_ordering::OrderingTrait;
 # use type_level_values::ops::*;
-# use type_level_values::fn_types::*;
+# use type_level_values::std_ops::*;
 # use type_level_values::fn_adaptors::*;
 
 
@@ -173,7 +173,8 @@ fn main(){
 
 The naming convention for traits declared alongside their TypeFn_ and type alias is :
     
-- The trait:`<Operation>_`.
+- The trait:
+    `<Operation>_`.Generally defined with a single associated type `type Output;`.
 
 - The type alias:`<Operation>`.
     This type alias simple delegates to the trait,
@@ -183,10 +184,10 @@ The naming convention for traits declared alongside their TypeFn_ and type alias
     This type simple delegates to the trait in the where clause of its TypeFn_ impl,
     with the Self type as the first parameter of the function.
 
-- A TypeFn_ which applies every parameter except for the Self parameter:`<Operation>Mt`.
+- The method-like TypeFn_ :`<Operation>Mt`.
     This type simple delegates to the trait in the where clause of its TypeFn_ impl,
     with the Self type as the only parameter of the function
-    (the rest are captured as generic parameters to the type).
+    (the rest are generic parameters of the type).
     
 
 

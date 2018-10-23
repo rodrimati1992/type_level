@@ -23,51 +23,84 @@ pub mod wrapper_ops;
 //     ToResultOp,
 // };
 pub use self::assertions::{
-    AssertEq, AssertEqOp, AssertEq_,
-    AssertFunc_,AssertFuncOp,AssertFunc ,AssertFuncMt,
-    AssertThat_,AssertThatOp,AssertThat ,//AssertThatMt,
-    AssertFnRet_,AssertFnRetOp,AssertFnRet,AssertFnRetMt
+    AssertEq_,AssertEqOp, AssertEqMt, 
+    AssertFunc_,AssertFuncOp,AssertFuncMt,
+    AssertThat_,AssertThatOp,
+    AssertFnRet_,AssertFnRetOp,AssertFnRetMt
 };
 pub use self::as_tlist::{
-    AsTList, AsTListOp, AsTList_, VariantAsTList, VariantAsTListOp, VariantAsTList_,
+    AsTListOp, AsTList_, 
+    VariantAsTListOp, VariantAsTList_,
 };
 
 pub use self::const_eq::{
-    ConstEq, ConstEq_,ConstEqOp,ConstEqMt, 
-    ConstNE, ConstNE_,ConstNEOp,ConstNEMt,
+    ConstEq_,ConstEqOp,ConstEqMt, 
+    ConstNE_,ConstNEOp,ConstNEMt,
 };
 pub use self::const_ord::{
     ConstOrd, ConstOrd_,ConstOrdOp,
-    ConstLt  ,ConstLE  ,ConstGt  ,ConstGE  ,
     ConstLtOp,ConstLEOp,ConstGtOp,ConstGEOp,
     ConstLtMt,ConstLEMt,ConstGtMt,ConstGEMt,
 
 };
 
 pub use self::const_from::{
-    ConstFrom, ConstFrom_, ConstFromOp,
-    ConstInto, ConstInto_, ConstIntoOp,ConstIntoMt,
+    ConstFrom_, ConstFromOp,
+    ConstInto_, ConstIntoOp,ConstIntoMt,
 };
 
 pub use self::wrapper_ops::{
-    Unwrap, UnwrapOp, Unwrap_,
-    UnwrapOr, UnwrapOrOp, UnwrapOr_,UnwrapOrMt,
-    UnwrapOrElse, UnwrapOrElseOp, UnwrapOrElse_,UnwrapOrElseMt,
-    IntoInner,IntoInnerOp,IntoInner_,
+    UnwrapOp, Unwrap_,
+    UnwrapOrOp, UnwrapOr_,UnwrapOrMt,
+    UnwrapOrElseOp, UnwrapOrElse_,UnwrapOrElseMt,
+    IntoInnerOp,IntoInner_,
 };
 
 pub use self::control_flow::{If, IfEager, Lazy};
 
 pub use self::integers::{
     IntegerConsts,
-    IsOne,IsOneOp,
-    IsZero,IsZeroOp,
-    Get0,Get0Op,
-    Get1,Get1Op,
-    SafeDiv,SafeDivOp,
-    SafeSub,SafeSubOp,
-    Add1Op,Add1,
-    Sub1Op,Sub1,
-    SatSub1,SatSub1Op,
-    SatSub,SatSubOp,
+    IsOneOp,
+    Get0Op,Get1Op,
+    Add1,Add1Op,
+    Sub1,Sub1Op,
+    SatSub_ ,SatSub ,SatSubOp ,SatSubMt ,
+    SafeDiv_,SafeDiv,SafeDivOp,SafeDivMt,
+    SafeSub_,SafeSub,SafeSubOp,SafeSubMt,
+    SatSub1_,SatSub1,SatSub1Op,SatSub1Mt,
+    IsZero_ ,IsZero ,IsZeroOp ,IsZeroMt ,
 };
+
+
+pub(crate) mod type_aliases{
+    pub use crate_::ops::assertions::{
+        AssertEq,AssertFunc,AssertThat,AssertFnRet,
+    };
+    pub use crate_::ops::as_tlist::{
+        AsTList,VariantAsTList,
+    };
+
+    pub use crate_::ops::const_eq::{
+        ConstEq,ConstNE,
+    };
+    pub use crate_::ops::const_ord::{
+        ConstLt  ,ConstLE  ,ConstGt  ,ConstGE  ,
+    };
+
+    pub use crate_::ops::const_from::{
+        ConstFrom,ConstInto,
+    };
+
+    pub use crate_::ops::wrapper_ops::{
+        Unwrap,UnwrapOr,UnwrapOrElse,IntoInner,
+    };
+
+    pub use crate_::ops::control_flow::{If, IfEager, Lazy};
+
+    pub use crate_::ops::integers::{
+        IsOne,IsZero,Get0,Get1,SafeDiv,SafeSub,Add1,Sub1,SatSub1,SatSub,
+    };
+
+}
+
+pub use self::type_aliases::*;

@@ -3,12 +3,9 @@ use super::*;
 
 use crate_::field_traits::{GetFieldMt, MapFieldMt};
 use crate_::fn_adaptors::*;
-use crate_::fn_types::*;
+use crate_::std_ops::*;
 
 use core_extensions::type_level_bool::False;
-use typenum::consts::{
-    U0, U1, U10, U11, U12, U13, U14, U15, U16, U2, U3, U4, U5, U6, U7, U8, U9, Z0,
-};
 
 #[derive(Debug, Clone, TypeLevel,PartialEq)]
 #[typelevel(

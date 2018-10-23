@@ -37,7 +37,7 @@ pub use initialization as __initialization;
 
 pub use new_types::{TList, TNil};
 
-pub mod typenum_reexports {
+pub mod integer_reexports {
     pub use typenum::consts::{
         U0, U1, U10, U11, U12, U13, U14, U15, U16, U17, U18, U19, U2, U20, U21, U22, U23, U24,
         U25, U26, U27, U28, U29, U3, U30, U31, U32, U33, U34, U35, U36, U37, U38, U39, U4, U40,

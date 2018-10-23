@@ -14,9 +14,10 @@ use crate_::ops::{
     ConstEq,ConstNE_, ConstOrd,
     ConstFrom_, 
     UnwrapOp,
+    ConstEqOp, ConstLtOp, ConstOrdOp,
 };
 use crate_::fn_adaptors::*;
-use crate_::fn_types::{AddOp,BitAndMt, ConstEqOp, ConstLtOp, ConstOrdOp, NotOp};
+use crate_::std_ops::{AddOp,BitAndMt,NotOp};
 use crate_::collection_ops::*;
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_, OrderingTrait};
 use crate_::std_types::option::{None_, Some_};

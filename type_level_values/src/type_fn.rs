@@ -45,7 +45,7 @@ Implementing a multiply add operation.
 # #[macro_use]
 # extern crate type_level_values;
 
-use type_level_values::fn_types::{MulOp,AddOp};
+use type_level_values::std_ops::{MulOp,AddOp};
 use type_level_values::prelude::*;
 
 
@@ -78,7 +78,7 @@ A more advanced version,using function composition
 # #[macro_use]
 # extern crate type_level_values;
 
-use type_level_values::fn_types::{MulOp,AddMt};
+use type_level_values::std_ops::{MulOp,AddMt};
 use type_level_values::prelude::*;
 
 
@@ -430,7 +430,7 @@ macro_rules! type_fn {
     };
     (   $(#[$attr_op:meta])*
         method_like_alias 
-            $op_name:ident[$lhs:ident$(,$param:ident)* $(,)* ] 
+            $op_name:ident[$lhs:ident $(,$param:ident $( = $def_ty:ty )* )* $(,)* ] 
             $(::$assoc_ty:ident)* =$trait_name:ident
         $(where[$($bound:tt)*])*
     ) => {
@@ -445,7 +445,7 @@ macro_rules! type_fn {
         To instantiate a runtime value of this function use `Type::CW`/`<Type>::CW`.
         */
         #[allow(non_camel_case_types)]
-        pub struct $op_name<$($param),*>($($param),*);
+        pub struct $op_name<$($param $(= $def_ty )* ),*>($($param),*);
 
         #[allow(non_camel_case_types)]
         impl<$lhs$(,$param)*> $crate::type_fn::TypeFn_<$lhs> for $op_name<$($param),*>
@@ -528,7 +528,7 @@ macro_rules! type_fn {
         type_fn!{
             define_trait;method_like;
             [
-                params[$($param),*]
+                params[$($param $(= $param_default)* ),*]
                 trait=$trait_name
                 $(::$assoc_ty)*
                 $(where[$($bound)*])*

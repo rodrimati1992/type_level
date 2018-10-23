@@ -2,26 +2,29 @@ use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
 use crate_::fn_adaptors::{ApplyRhs,Const};
-use crate_::fn_types::{BitAndOp, BitOrOp, DivOp,MulMt, NotOp,ConstEqMt};
+use crate_::std_ops::{BitAndOp, BitOrOp, DivOp,MulMt, NotOp};
 use crate_::ops::{
     Unwrap_,Unwrap,UnwrapOr,UnwrapOrElse_,
     IntoInner_,
     If,
     AssertEq,
+    ConstEqMt,
+    ConstIntoMt,
+    SafeDivOp,
 };
 use crate_::collection_ops::{
     FoldL, FoldL_, FoldR, FoldR_, 
+    TryFoldL, TryFoldL_, TryFoldR, TryFoldR_, 
     Len_, 
     Map, Map_,
     Filter_,Filter,
+    TryFoldType,TFVal,TFBreak,
 };
 use prelude::*;
 
 use std_::fmt::Debug;
 use std_::ops::{BitAnd, BitOr};
 use std_::option::Option as StdOption;
-
-use typenum::consts::{U0, U1, U2, U3, U4, U5, U6, U7, U8};
 
 #[derive(TypeLevel)]
 #[typelevel(
@@ -101,6 +104,30 @@ where
 }
 impl<DefaultValue, Op> FoldL_<DefaultValue, Op> for None_ {
     type Output = DefaultValue;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<DefaultValue, Op, T,Out> TryFoldR_<DefaultValue, Op> for Some_<T>
+where
+    (Op,ConstIntoMt<TryFoldType>): TypeFn_<(DefaultValue, T),Output=Out>,
+{
+    type Output = Out;
+}
+impl<DefaultValue, Op> TryFoldR_<DefaultValue, Op> for None_ {
+    type Output = TFVal<DefaultValue>;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<DefaultValue, Op, T,Out> TryFoldL_<DefaultValue, Op> for Some_<T>
+where
+    (Op,ConstIntoMt<TryFoldType>): TypeFn_<(DefaultValue, T),Output=Out>,
+{
+    type Output = Out;
+}
+impl<DefaultValue, Op> TryFoldL_<DefaultValue, Op> for None_ {
+    type Output = TFVal<DefaultValue>;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -191,7 +218,8 @@ impl<T> IntoInner_ for Some_<T> {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#[cfg(all(test,feature="passed_tests"))]
+#[cfg(test)]
+// #[cfg(all(test,feature="passed_tests"))]
 mod tests {
     use super::*;
 
@@ -206,11 +234,22 @@ mod tests {
 
     #[test]
     fn option_iteration() {
-        let _: AssertEq<U1,FoldR<None_, U1, DivOp>>;
-        let _: AssertEq<U2,FoldR<Some_<U2>, U4, DivOp>>;
+        type TestFold<This,DefaultValue,Func,Res>=(
+            AssertEq<FoldL<This, DefaultValue, Func>,Res>,
+            AssertEq<FoldR<This, DefaultValue, Func>,Res>,
+        );
+        let _: TestFold<None_, U1, DivOp,U1>;
+        let _: TestFold<Some_<U2>, U4, DivOp,U2>;
 
-        let _: AssertEq<U1,FoldL<None_, U1, DivOp>>;
-        let _: AssertEq<U2,FoldL<Some_<U2>, U4, DivOp>>;
+
+        type TestTryFold<This,DefaultValue,Func,Res>=(
+            AssertEq<TryFoldL<This, DefaultValue, Func>,Res>,
+            AssertEq<TryFoldR<This, DefaultValue, Func>,Res>,
+        );
+        let _: TestTryFold<None_    , U8, SafeDivOp,TFVal<U8>>;
+        let _: TestTryFold<None_    , U0, SafeDivOp,TFVal<U0>>;
+        let _: TestTryFold<Some_<U2>, U8, SafeDivOp,TFVal<U4>>;
+        let _: TestTryFold<Some_<U0>, U8, SafeDivOp,TFBreak<None_>>;
 
         let _: AssertEq<Some_<U6>,Map<Some_<U3>, MulMt<U2>>>;
         let _: AssertEq<None_,Map<None_, MulMt<U2>>>;

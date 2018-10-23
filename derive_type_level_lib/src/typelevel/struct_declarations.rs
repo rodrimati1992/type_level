@@ -574,7 +574,7 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                     /// This is the accessor for the field of the same name.
                     #vis_kind_submod_rep struct #fields_1a;
                 )*
-                #vis_kind_submod use super::typenum_reexports::{
+                #vis_kind_submod use super::integer_reexports::{
                     #( #fields_1b, )*
                 };
 

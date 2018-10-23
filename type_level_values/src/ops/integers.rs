@@ -1,7 +1,7 @@
 use prelude::*;
 
 use crate_::ops::*;
-use crate_::fn_types::{DivOp,SubOp};
+use crate_::std_ops::{DivOp,SubOp};
 use crate_::fn_adaptors::{
     IdentityFn,
     GetRhs,
@@ -16,6 +16,9 @@ use std_::ops::{Add,Sub};
 pub trait IntegerConsts{
     type Zero;
     type One;
+
+    type Min;
+    type Max;
 }
 
 
@@ -26,37 +29,104 @@ where
 {
     type Zero=Type::Zero;
     type One =Type::One;
+    type Min=Type::Min;
+    type Max=Type::Max;
 }
 
 
 type_fn!{define_trait
-    /// Returns the base 2 logarithm of this number
-    trait=Log2_ []
-    type=Log2
-    fn_type=Log2Op
+    /// Subtracts Rhs from Lhs returning 0 if Lhs <= Rhs.
+    ///
+    /// Equivalent to `|lhs,rhs| lhs.saturating_sub(rhs) `
+    trait=SatSub_ [R]
+    /// Subtracts Rhs from Lhs returning 0 if Lhs <= Rhs.
+    ///
+    /// Equivalent to `|lhs,rhs| lhs.saturating_sub(rhs) `
+    type=SatSub
+    /// Subtracts Rhs from Lhs returning 0 if Lhs <= Rhs.
+    ///
+    /// Equivalent to `|lhs,rhs| lhs.saturating_sub(rhs) `
+    fn_type=SatSubOp
+    /// Subtracts Rhs from Lhs returning 0 if Lhs <= Rhs.
+    ///
+    /// Equivalent to `|lhs,rhs| lhs.saturating_sub(rhs) `
+    method_like=SatSubMt
 }
 
 
+type_fn!{define_trait
+    /// Safe division function which returns None_ when the divisor is 0.
+    /// 
+    /// if R==0 ,returns None_, otherwise returns Some_<L / R>.
+    trait=SafeDiv_ [R]
+    /// Safe division function which returns None_ when the divisor is 0.
+    /// 
+    /// if R==0 ,returns None_, otherwise returns Some_<L / R>.
+    type=SafeDiv
+    /// Safe division function which returns None_ when the divisor is 0.
+    /// 
+    /// if R==0 ,returns None_, otherwise returns Some_<L / R>.
+    fn_type=SafeDivOp
+    /// Safe division function which returns None_ when the divisor is 0.
+    /// 
+    /// if R==0 ,returns None_, otherwise returns Some_<L / R>.
+    method_like=SafeDivMt
+}
 
-/// Returns whether N is 0.
-pub type IsOne<N>=
-    TypeFn<IsOneOp,N>;
+type_fn!{define_trait
+    /// Safe unsigned subtraction function which returns None_ when subtracting would overflow.
+    /// 
+    /// if L>=R ,returns Some_<L - R>, otherwise returns None_.
+    trait=SafeSub_ [R]
+    /// Safe unsigned subtraction function which returns None_ when subtracting would overflow.
+    /// 
+    /// if L>=R ,returns Some_<L - R>, otherwise returns None_.
+    type=SafeSub
+    /// Safe unsigned subtraction function which returns None_ when subtracting would overflow.
+    /// 
+    /// if L>=R ,returns Some_<L - R>, otherwise returns None_.
+    fn_type=SafeSubOp
+    /// Safe unsigned subtraction function which returns None_ when subtracting would overflow.
+    /// 
+    /// if L>=R ,returns Some_<L - R>, otherwise returns None_.
+    method_like=SafeSubMt
+}
+
+
+type_fn!{define_trait
+    /// Subtracts 1 from Self,stopping at te minimum value.
+    ///
+    /// Equivalent to `|lhs| lhs.saturating_sub(1) `
+    trait=SatSub1_ []
+    /// Subtracts 1 from Self,stopping at te minimum value.
+    ///
+    /// Equivalent to `|lhs| lhs.saturating_sub(1) `
+    type=SatSub1
+    /// Subtracts 1 from Self,stopping at te minimum value.
+    ///
+    /// Equivalent to `|lhs| lhs.saturating_sub(1) `
+    fn_type=SatSub1Op
+    /// Subtracts 1 from Self,stopping at te minimum value.
+    ///
+    /// Equivalent to `|lhs| lhs.saturating_sub(1) `
+    method_like=SatSub1Mt
+}
+
+type_fn!{define_trait
+    /// Returns whether N is 0.
+    trait=IsZero_ []
+    /// Returns whether N is 0.
+    type=IsZero
+    /// Returns whether N is 0.
+    fn_type=IsZeroOp
+    /// Returns whether N is 0.
+    method_like=IsZeroMt
+}
+
 
 /// Returns whether N is 1.
-pub type IsZero<N>=
-    TypeFn<IsZeroOp,N>;
-
-type_fn!{
-    /// Returns whether Val is 0.
-    pub fn IsZeroOp[N](N)
-    where[
-        N:IntegerConsts<Zero=Zero>,
-        N:ConstEq_<Zero,Output=Out>,
-    ]{
-        let Zero;let Out;
-        Out
-    }
-}
+pub type IsOne<N>=
+    TypeFn<IsOneOp,N>;
 
 type_fn!{
     /// Returns whether Val is 1.
@@ -70,6 +140,38 @@ type_fn!{
     }
 }
 
+
+/// Returns whether N is 0.
+pub type IsMin<N>=
+    TypeFn<IsMinOp,N>;
+
+/// Returns whether N is 1.
+pub type IsMax<N>=
+    TypeFn<IsMaxOp,N>;
+
+type_fn!{
+    /// Returns whether Val is the mimimum value of the type.
+    pub fn IsMinOp[N](N)
+    where[
+        N:IntegerConsts<Min=Min>,
+        Some_<N>:ConstEq_<Min,Output=Out>,
+    ]{ 
+        let Min;
+        let Out;Out 
+    }
+}
+
+type_fn!{
+    /// Returns whether Val is 1.
+    pub fn IsMaxOp[N](N)
+    where[
+        N:IntegerConsts<Max=Max>,
+        Some_<N>:ConstEq_<Max,Output=Out>,
+    ]{ 
+        let Max;
+        let Out;Out 
+    }
+}
 
 
 
@@ -95,40 +197,27 @@ type_fn!{
     { let Out;Out }
 }
 
+/// Gets the value for 0 as defined by the type of N.
+pub type GetMin<N>=TypeFn<GetMinOp,N>;
 
-
-/// Safe division function which returns None_ when the divisor is 0.
-/// 
-/// if R==0 ,returns None_, otherwise returns Some_<L / R>.
-pub type SafeDiv<L,R>=
-    TypeFn<SafeDivOp,(L,R)>;
-
-/// Safe division function which returns None_ when the divisor is 0.
-/// 
-/// if R==0 ,returns None_, otherwise returns Some_<L / R>.
-pub type SafeDivOp=
-    If<(GetRhs,IsZeroOp),
-        Const<None_>,
-        (DivOp,NewSome),
-    >;
+type_fn!{
+    /// Gets the value for the minimum value as defined by the type of N.
+    pub fn GetMinOp[N](N)
+    where[ N:IntegerConsts<Min=Out> ]
+    { let Out;Out }
+}
 
 
 
-/// Safe unsigned subtraction function which returns None_ when Lhs < Rhs.
-/// 
-/// if L>=R ,returns Some_<L - R>, otherwise returns None_.
-pub type SafeSub<L,R>=
-    TypeFn<SafeSubOp,(L,R)>;
+/// Gets the value for 1 as defined by the type of N.
+pub type GetMax<N>=TypeFn<GetMaxOp,N>;
 
-
-/// Safe unsigned subtraction function which returns None_ when Lhs < Rhs.
-/// 
-/// if L>=R ,returns Some_<L - R>, otherwise returns None_.
-pub type SafeSubOp=
-    If<ConstGEOp,
-        (SubOp,NewSome),
-        Const<None_>
-    >;
+type_fn!{
+    /// Gets the value for the maximum value as defined by the type of N.
+    pub fn GetMaxOp[N](N)
+    where[ N:IntegerConsts<Max=Out> ]
+    { let Out;Out }
+}
 
 
 /// Adds 1 to N.
@@ -164,26 +253,6 @@ type_fn!{
         Out
     }
 }    
-
-
-
-pub type SatSub1<N>=
-    TypeFn<SatSub1Op,N>;
-
-/// Subtracts 1 from an unsigned integer.Stopping at 0.
-pub type SatSub1Op=
-    If<IsZeroOp,IdentityFn,Sub1Op>;
-
-
-
-pub type SatSub<L,R>=
-    TypeFn<SatSubOp,(L,R)>;
-
-/// Subtracts Rhs from Lhs returning 0 if Lhs <= Rhs.
-///
-/// Equivalent to `|lhs,rhs| lhs.saturating_sub(rhs) `
-pub type SatSubOp=
-    If<ConstLtOp,(GetLhs,Get0Op),SubOp>;
 
 
 //#[cfg(all(test,feature="passed_tests"))]
@@ -306,22 +375,56 @@ mod tests{
             AssertEq<SafeSub<L,R>,Val>,
         );
 
-        type Test<L,R,Val>=(
+        type TestUns<L,R,Val>=(
             AssertSub<L,R,Some_<Val>>,
             AssertSub<R,L,None_>,
+        );
+        type TestSig<L,R,Val>=(
+            AssertSub<L,R,Some_<Val>>,
         );
 
         let _:AssertSub<U0,U0,Some_<U0>>;
         let _:AssertSub<U1,U1,Some_<U0>>;
         let _:AssertSub<U2,U2,Some_<U0>>;
         let _:AssertSub<U3,U3,Some_<U0>>;
+        
+        let _:TestUns<U1,U0,U1>;
+        let _:TestUns<U2,U0,U2>;
+        let _:TestUns<U2,U1,U1>;
+        let _:TestUns<U3,U0,U3>;
+        let _:TestUns<U3,U1,U2>;
+        let _:TestUns<U3,U2,U1>;
 
-        let _:Test<U1,U0,U1>;
-        let _:Test<U2,U0,U2>;
-        let _:Test<U2,U1,U1>;
-        let _:Test<U3,U0,U3>;
-        let _:Test<U3,U1,U2>;
-        let _:Test<U3,U2,U1>;
+
+
+        let _:AssertSub<N3,N3,Some_<Z0>>;
+        let _:AssertSub<N2,N2,Some_<Z0>>;
+        let _:AssertSub<N1,N1,Some_<Z0>>;
+        let _:AssertSub<Z0,Z0,Some_<Z0>>;
+        let _:AssertSub<P1,P1,Some_<Z0>>;
+        let _:AssertSub<P2,P2,Some_<Z0>>;
+        let _:AssertSub<P3,P3,Some_<Z0>>;
+
+        let _:TestSig<N1,N3,P2>;
+        let _:TestSig<N1,N2,P1>;
+        let _:TestSig<N1,Z0,N1>;
+        let _:TestSig<N1,P1,N2>;
+        let _:TestSig<N1,P2,N3>;
+        
+        let _:TestSig<Z0,N3,P3>;
+        let _:TestSig<Z0,N2,P2>;
+        let _:TestSig<Z0,N1,P1>;
+        let _:TestSig<Z0,P1,N1>;
+        let _:TestSig<Z0,P2,N2>;
+        let _:TestSig<Z0,P3,N3>;
+        
+        let _:TestSig<P1,N3,P4>;
+        let _:TestSig<P1,N2,P3>;
+        let _:TestSig<P1,N1,P2>;
+        let _:TestSig<P1,Z0,P1>;
+        let _:TestSig<P1,P2,N1>;        
+        
+
     }
 
     #[test]
@@ -342,6 +445,19 @@ mod tests{
         let _:TestSub1<U1,U0>;
         let _:TestSub1<U2,U1>;
         let _:TestSub1<U3,U2>;
+        
+        let _:TestAdd1<N2,N1>;
+        let _:TestAdd1<N1,Z0>;
+        let _:TestAdd1<Z0,P1>;
+        let _:TestAdd1<P1,P2>;
+        let _:TestAdd1<P2,P3>;
+
+        let _:TestSub1<N2,N3>;
+        let _:TestSub1<N1,N2>;
+        let _:TestSub1<Z0,N1>;
+        let _:TestSub1<P1,Z0>;
+        let _:TestSub1<P2,P1>;
+
     }
 
     #[test]
@@ -351,39 +467,74 @@ mod tests{
             AssertEq<SatSub1<N>,Val>,
         );
 
+
         let _:Test0<U0,U0>;
         let _:Test0<U1,U0>;
         let _:Test0<U2,U1>;
         let _:Test0<U3,U2>;
         let _:Test0<U4,U3>;
+        
+        let _:Test0<N2,N3>;
+        let _:Test0<N1,N2>;
+        let _:Test0<Z0,N1>;
+        let _:Test0<P1,Z0>;
+        let _:Test0<P2,P1>;
+        let _:Test0<P3,P2>;
+        let _:Test0<P4,P3>;
 
-
-        type Test1<L,R,Val>=(
+        type TestUns<L,R,Val>=(
             AssertFnRet<(L,R),SatSubOp,Val>,
             AssertFnRet<(R,L),SatSubOp,Get0<L>>,
             AssertEq<SatSub<L,R>,Val>,
             AssertEq<SatSub<R,L>,Get0<L>>,
         );
+        type TestSig<L,R,Val>=(
+            AssertFnRet<(L,R),SatSubOp,Val>,
+            AssertEq<SatSub<L,R>,Val>,
+        );
 
-        let _:Test1<U0,U0,U0>;
-        let _:Test1<U1,U1,U0>;
-        let _:Test1<U2,U2,U0>;
-        let _:Test1<U3,U3,U0>;
-        let _:Test1<U4,U4,U0>;
+        let _:TestUns<U0,U0,U0>;
+        let _:TestUns<U1,U1,U0>;
+        let _:TestUns<U2,U2,U0>;
+        let _:TestUns<U3,U3,U0>;
+        let _:TestUns<U4,U4,U0>;
 
-        let _:Test1<U1,U0,U1>;
-        let _:Test1<U2,U1,U1>;
-        let _:Test1<U3,U2,U1>;
-        let _:Test1<U4,U3,U1>;
-        let _:Test1<U5,U4,U1>;
+        let _:TestUns<U1,U0,U1>;
+        let _:TestUns<U2,U1,U1>;
+        let _:TestUns<U3,U2,U1>;
+        let _:TestUns<U4,U3,U1>;
+        let _:TestUns<U5,U4,U1>;
         
-        let _:Test1<U2,U0,U2>;
-        let _:Test1<U3,U1,U2>;
-        let _:Test1<U4,U2,U2>;
-        let _:Test1<U5,U3,U2>;
-        let _:Test1<U6,U4,U2>;
+        let _:TestUns<U2,U0,U2>;
+        let _:TestUns<U3,U1,U2>;
+        let _:TestUns<U4,U2,U2>;
+        let _:TestUns<U5,U3,U2>;
+        let _:TestUns<U6,U4,U2>;
 
 
+
+        let _:TestSig<N1,N3,P2>;
+        let _:TestSig<N1,N2,P1>;
+        let _:TestSig<N1,N1,Z0>;
+        let _:TestSig<N1,Z0,N1>;
+        let _:TestSig<N1,P1,N2>;
+        let _:TestSig<N1,P2,N3>;
+        
+        let _:TestSig<Z0,N3,P3>;
+        let _:TestSig<Z0,N2,P2>;
+        let _:TestSig<Z0,N1,P1>;
+        let _:TestSig<Z0,Z0,Z0>;
+        let _:TestSig<Z0,P1,N1>;
+        let _:TestSig<Z0,P2,N2>;
+        let _:TestSig<Z0,P3,N3>;
+        
+        let _:TestSig<P1,N3,P4>;
+        let _:TestSig<P1,N2,P3>;
+        let _:TestSig<P1,N1,P2>;
+        let _:TestSig<P1,Z0,P1>;
+        let _:TestSig<P1,P1,Z0>;
+        let _:TestSig<P1,P2,N1>;
+        
 
     }
 }

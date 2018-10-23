@@ -76,14 +76,37 @@ have type parameters to emulate closures.
 
 This helper function makes `Ammount` coins disappear from the arcade.
 
-This demonstrates a capture clause ,
-which is the way to pass data to the function without having to pass it as a function parameter,
-this is often useful if the parameter does not change between multiple function calls.
+The MapFieldMt and SubMt functions are method-like functions
+which captures all the parameters exceot fir the 'Self' parameter 
+(which is by convention the first parameter of the *Op equivalent function).
 
+This is equivalent to :
+```ignore
+fn take_coins(ammount:u32)->impl FnOnce(Game)->Game {
+    move|game| {
+        game.map_field( 
+            game_f::coins, 
+            |field| field-ammound 
+        )
+    }
+}
+```
 
 //@use_codeblock:insert-coins-fn,ignore
 
 This helper function inserts `Ammount` coins into the arcade.
+
+This is equivalent to :
+```ignore
+fn insert_coins(ammount:u32)->impl FnOnce(Game)->Game {
+    move|game|{
+        game.map_field( 
+            game_f::coins, 
+            |field| field+ammound 
+        )
+    }
+}
+```
 
 //@use_codeblock:initial-game-type,ignore
 
@@ -157,12 +180,10 @@ extern crate derive_type_level;
 #[macro_use]
 extern crate type_level_values;
 
-
 use type_level_values::prelude::*;
-use type_level_values::fn_types::{ConstLEOp};
-use type_level_values::field_traits::{SetField,SetField_,SetFieldMt};
-
-use std::ops::{Add,Sub};
+use type_level_values::ops::{};
+use type_level_values::std_ops::{AddMt,SubMt};
+use type_level_values::field_traits::{SetField_,SetFieldMt,MapFieldMt};
 
 //@codeblock-start:states-enum
 
@@ -277,19 +298,12 @@ type_fn!{
 
 //@codeblock-start:take-coins-fn
 
-type_fn!{
-    captures(Ammount)
-    pub fn TakeCoins[G](G)
-    where[
-        G:GameTrait,
-        G::coins:Sub<Ammount,Output=NewCoins>,
-        G:SetField_<game_f::coins,NewCoins,Output=NewGame>,
-    ]{
-        let NewCoins;
-        let NewGame;
-        NewGame
-    }
-}
+
+pub type TakeCoins<Ammount>=
+    MapFieldMt<
+        game_f::coins,
+        SubMt<Ammount>,
+    >;
 
 //@codeblock-end:take-coins-fn
 
@@ -298,19 +312,11 @@ type_fn!{
 
 //@codeblock-start:insert-coins-fn
 
-type_fn!{
-    captures(Ammount)
-    pub fn InsertCoins[G](G)
-    where[
-        G:GameTrait,
-        G::coins:Add<Ammount,Output=NewCoins>,
-        G:SetField_<game_f::coins,NewCoins,Output=NewGame>,
-    ]{
-        let NewCoins;
-        let NewGame;
-        NewGame
-    }
-}
+pub type InsertCoins<Ammount>=
+    MapFieldMt<
+        game_f::coins,
+        AddMt<Ammount>,
+    >;
 
 //@codeblock-end  :insert-coins-fn
 
@@ -361,7 +367,7 @@ impl<Game> ArcadeMachine<Game>{
 //@codeblock-end:arcade-action
 
 
-fn main(){
+pub fn main(){
     //@codeblock-start:main
     
     ArcadeMachine::new()

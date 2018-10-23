@@ -1,24 +1,25 @@
 /*!
-These are TypeFn_ aliases of pre-existing trait.
+These define TypeFn_ aliases of standard library traits,type aliases for them,
+and reversed versions of non-commutative binary operators.
 */
 
 use prelude::*;
 
 use std_::ops::{
-    Add as Add, BitAnd as BitAnd, BitOr as BitOr, BitXor as BitXor, Div as Div,
-    Index as Index, IndexMut as IndexMut, Mul as Mul, Neg as Neg, Not as Not,
-    Rem as Rem, Shl as Shl, Shr as Shr, Sub as Sub,
+    Add, BitAnd, BitOr, BitXor, Deref,Div,
+    Index, IndexMut, Mul, Neg, Not,
+    Rem, Shl, Shr, Sub,
 };
-use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_};
-use crate_::ops::{ConstEq_, ConstNE_};
-
-
+// use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_};
 use fn_adaptors::*;
-use crate_::collection_ops::*;
+// use crate_::collection_ops::*;
 
 macro_rules! declare_rev_and_method_like {
     (  
         operator=$op:ty,
+
+        $(#[$type_meta:meta])*
+        type=$type_ident:ident,
 
         $(#[$rev_meta:meta])*
         rev=$rev_ident:ident,
@@ -26,6 +27,9 @@ macro_rules! declare_rev_and_method_like {
         $(#[$method_like_meta:meta])*
         rev_method_like=$mt_ident:ident,
     ) => (
+        $(#[$type_meta])*
+        pub type $type_ident<L,R>=TypeFn<$op,(R,L)>;
+
         $(#[$rev_meta])*
         pub type $rev_ident=Flip<$op>;
 
@@ -71,6 +75,7 @@ type_fn!{use_trait
 
 declare_rev_and_method_like!{
     operator=DivOp,
+    type=DivRev,
     rev=DivRevOp,
     rev_method_like=DivRevMt,
 }
@@ -80,6 +85,12 @@ type_fn!{use_trait
     type=IndexTA
     fn_type=IndexOp
     method_like=IndexMt
+}
+type_fn!{use_trait 
+    trait=Deref []::Target
+    type=DerefTA
+    fn_type=DerefOp
+    method_like=DerefMt
 }
 
 type_fn!{use_trait 
@@ -112,6 +123,7 @@ type_fn!{use_trait
 
 declare_rev_and_method_like!{
     operator=RemOp,
+    type=RemRev,
     rev=RemRevOp,
     rev_method_like=RemRevMt,
 }
@@ -126,6 +138,7 @@ type_fn!{use_trait
 
 declare_rev_and_method_like!{
     operator=ShlOp,
+    type=ShlRev,
     rev=ShlRevOp,
     rev_method_like=ShlRevMt,
 }
@@ -139,6 +152,7 @@ type_fn!{use_trait
 
 declare_rev_and_method_like!{
     operator=ShrOp,
+    type=ShrRev,
     rev=ShrRevOp,
     rev_method_like=ShrRevMt,
 }
@@ -153,24 +167,8 @@ type_fn!{use_trait
 
 declare_rev_and_method_like!{
     operator=SubOp,
+    type=SubRev,
     rev=SubRevOp,
     rev_method_like=SubRevMt,
 }
 
-
-pub use crate_::ops::const_ord::{
-    ConstOrdOp,
-    ConstLtOp,ConstLtMt,
-    ConstLEOp,ConstLEMt,
-    ConstGtOp,ConstGtMt,
-    ConstGEOp,ConstGEMt,
-};
-pub use crate_::ops::const_eq::{
-    ConstEqOp,ConstEqMt,
-    ConstNEOp,ConstNEMt,
-};
-pub use crate_::ops::const_from::{
-    ConstFromOp,
-    ConstIntoOp,
-    ConstIntoMt,
-};

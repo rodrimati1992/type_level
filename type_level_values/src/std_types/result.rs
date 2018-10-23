@@ -1,7 +1,7 @@
 use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
-use crate_::fn_types::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
+use crate_::std_ops::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
 use crate_::ops::{Unwrap_,Unwrap,UnwrapOrElse_,UnwrapOr,IntoInner_};
 use crate_::collection_ops::{FoldL_, FoldR_, Len_, Map, Map_};
 use prelude::*;
@@ -9,7 +9,7 @@ use prelude::*;
 use std_::ops::{BitAnd, BitOr};
 use std_::result::Result as StdResult;
 
-use typenum::consts::{U0, U1, U2, U3, U4, U5, U6, U7, U8};
+
 
 #[derive(TypeLevel)]
 #[typelevel(
@@ -117,11 +117,6 @@ impl<T> IntoInner_ for Err_<T> {
 
 
 /////////////////////////////
-
-#[allow(dead_code)]
-fn tests() {
-    use typenum::consts::{U0, U1};
-}
 
 #[cfg(all(test,feature="passed_tests"))]
 mod tests {

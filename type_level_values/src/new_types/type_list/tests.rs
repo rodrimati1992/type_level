@@ -1,13 +1,13 @@
 use super::*;
 
-use crate_::fn_types::{SubOp,AddMt};
+use crate_::std_ops::{SubOp,AddMt};
 
 use crate_::field_traits::{GetField, SetField};
 use crate_::ops::{
     AssertEq,AssertFnRet,ConstGEOp,
     Add1Op,Add1Op as AddOne,SafeDivOp,
     ConstInto,ConstIntoMt,
-    ConstFrom,ConstFromMt,
+    ConstFrom,
     ConstEqMt,
 };
 use crate_::collection_ops::*;
@@ -425,7 +425,6 @@ fn into_() {
         AssertEq<ConstInto<From_,Type>,Expected>,
         AssertFnRet<From_,ConstIntoMt<Type>,Expected>,
         AssertEq<ConstFrom<Type,From_>,Expected>,
-        AssertFnRet<From_,ConstFromMt<Type>,Expected>,
     );
 
     let _:TestInto<(), TListType,tlist![]>;

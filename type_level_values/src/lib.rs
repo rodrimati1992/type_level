@@ -26,7 +26,13 @@ Derive macros from `derive_type_level`:
 
 Miscelaneous things:
 
-- [Privacy: Details on how TypeLevel deals with privacy.](./docs/reference_privacy/index.html)
+- [Control Flow: 
+    On how to do control flow on the type-level.
+](./docs/appendix_control_flow/index.html)
+
+- [Privacy: 
+    Details on how TypeLevel deals with privacy.
+](./docs/reference_privacy/index.html)
 
 - [reading error messages: 
     How to read error messages by the compiler.
@@ -83,7 +89,7 @@ extern crate num_traits;
 
 #[macro_use]
 pub mod type_fn;
-pub mod fn_types;
+pub mod std_ops;
 pub mod fn_adaptors;
 
 

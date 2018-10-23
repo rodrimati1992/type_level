@@ -26,12 +26,12 @@ macro_rules! with_docs {
     )
 }
 
-with_docs!{
-    #[cfg(rust_1_26)]
-    pub mod ranged_uint;
-}
+// with_docs!{
+//     #[cfg(rust_1_26)]
+//     pub mod ranged_uint;
+// }
 
-with_docs!{
-    #[cfg(not(rust_1_26))]
-    pub mod ranged_uint{}
-}
+// with_docs!{
+//     #[cfg(not(rust_1_26))]
+//     pub mod ranged_uint{}
+// }

@@ -24,8 +24,6 @@ use syn::{
     Fields,
     Ident,
     ItemUse,
-    Path as SynPath,
-    WherePredicate,
 };
 
 
@@ -43,28 +41,10 @@ pub(crate) enum Privacy{
     Inherited,
 }
 
-#[derive(Debug,Copy,Clone,PartialEq,Eq,Hash)]
-pub(crate) enum Exhaustiveness{
-    /// Means that a list is exhaustive.
-    Exhaustive,
-    /// Means that a list is inexhaustive,listing only the things we want to check.
-    Inexhaustive,
-}
-
-use self::Exhaustiveness::{ Exhaustive,Inexhaustive };
-
-#[derive(Copy,Clone,PartialEq,Eq)]
-pub(crate) enum AccessorKind{
-    Struct,
-    Integer,
-}
-
 
 pub(crate) struct Variants<'a>{
     pub(crate) name:&'a str,
-    pub(crate) variants:Vec<Variant<'a>>,
-    /// Whether this lists all variants not.
-    pub(crate) variants_exhaus:Exhaustiveness,
+    pub(crate) variants:Vec<Variant<'a>>
 }
 
 
@@ -74,7 +54,103 @@ pub(crate) struct Variant<'a>{
     pub(crate) wr_trait:&'a str,
     #[allow(dead_code)]
     pub(crate) kind:VariantKind,
-    pub(crate) fields:Option<Vec< Field<'a> >>,
+    pub(crate) fields:Vec< Field<'a> >,
+}
+
+
+pub(crate) struct Field<'a>{
+    pub(crate) attributes:Cow<'a,str>,
+    pub(crate) privacy:Privacy,
+    pub(crate) name:Cow<'a,str>,
+    pub(crate) trait_base:Cow<'a,str>,
+    pub(crate) accessor:Cow<'a,str>,
+    pub(crate) accessor_kind:AccessorKind,
+    pub(crate) bound:Option<&'a str>,
+    pub(crate) bound_runt:Option<&'a str>,
+    pub(crate) pub_assoc_ty:bool,
+    pub(crate) visibility:&'a str,
+}
+
+impl<'a> Field<'a>{
+    pub(crate) fn named(
+        attributes:&'a str,
+        privacy:Privacy,
+        name:&'a str,
+        visibility:&'a str,
+    )->Self{
+        Self{
+            attributes:attributes.into(),
+            privacy,
+            name:name.into(),
+            trait_base:name.into(),
+            accessor  :name.into(),
+            accessor_kind:AccessorKind::Struct,
+            bound:None,
+            bound_runt:None,
+            pub_assoc_ty:false,
+            visibility,
+        }
+    }
+    pub(crate) fn positional(
+        attributes:&'a str,
+        privacy:Privacy,
+        name:&'a str,
+        visibility:&'a str,
+    )->Self{
+        let (acc,ak)=match privacy {
+            Privacy::Inherited=>(format!("U{}"     ,name),AccessorKind::Integer),
+            Privacy::Private  =>(format!("field_{}",name),AccessorKind::Struct),
+        };
+        Self{
+            attributes:attributes.into(),
+            privacy,
+            name:name.into(),
+            trait_base:format!("field_{}",name).into(),
+            accessor:acc.into(),
+            accessor_kind:ak,
+            bound:None,
+            bound_runt:None,
+            pub_assoc_ty:false,
+            visibility,
+        }
+    }
+    pub(crate) fn ren_acc<S>(
+        attributes:&'a str,
+        privacy:Privacy,
+        name:&'a str,
+        rename:S,
+        visibility:&'a str,
+    )->Self
+    where S:Into<Cow<'a,str>>,
+    {
+        let rename=rename.into();
+        Field{
+            attributes:attributes.into(),
+            privacy,
+            name:name.into(),
+            trait_base:rename.clone(),
+            accessor:rename.clone(),
+            accessor_kind:AccessorKind::Struct,
+            bound:None,
+            bound_runt:None,
+            pub_assoc_ty:false,
+            visibility,
+        }
+    }
+
+    pub(crate) fn assoc_ty_privacy(&self)->Privacy{
+        if self.pub_assoc_ty {
+            Privacy::Inherited
+        }else{
+            self.privacy
+        }
+    }
+}
+
+#[derive(Copy,Clone,PartialEq,Eq)]
+pub(crate) enum AccessorKind{
+    Struct,
+    Integer,
 }
 
 
@@ -91,10 +167,6 @@ pub(crate) static FIELD_ALL_ATTR:&str=r###"
 pub(crate) static PUB_DSUPER:&str="pub(in super::super)";
 
 
-pub(crate) fn empty_slice<'a,T>()->&'a [T]{
-    &[]
-}
-
 
 pub(crate) fn test_reexport(
     variants:&Variants,
@@ -103,19 +175,10 @@ pub(crate) fn test_reexport(
     reexported:&[&str],
     derive_str:&str,
 ){
-    let mut accessor_exhaus=Exhaustiveness::Exhaustive;
-
     let accessor_structs:HashMap<Ident,Vec<syn::Attribute>>=variants.variants.iter()
-        .flat_map(|variant|{
-            if let Exhaustiveness::Inexhaustive=variant.fields_exhaus {
-                accessor_exhaus=Exhaustiveness::Inexhaustive;
-            }
-            variant.fields.as_ref().unwrap_or_else(empty_slice)
-        })
-        .filter_map(|f|{
-            (f.accessor_kind==AccessorKind::Struct)
-                .if_true(|| (parse_ident(&f.accessor),&*f.attributes) )
-        })
+        .flat_map(|x|&x.fields)
+        .filter(|f| f.accessor_kind==AccessorKind::Struct )
+        .map(|f| (parse_ident(&f.accessor),&*f.attributes) )
         .chain( iter::once( (parse_ident("All"),FIELD_ALL_ATTR) ) )
         .map(|(a,b)| (a,parse_syn_attributes(b)) )
         .collect();
@@ -132,7 +195,6 @@ pub(crate) fn test_reexport(
 
         match test_reexport_inner(
             &type_level_mod,
-            accessor_exhaus,
             variant,
             ctokens,
             accessor_structs.take(),
@@ -167,12 +229,10 @@ pub(crate) fn test_reexport(
 }
 
 
-fn test_reexport_inner<'a>(variants_exhaus
+fn test_reexport_inner<'a>(
     type_level_mod:&str,
-    accessor_exhaus:Exhaustiveness,
     variant:&Variant<'a>,
     ctokens:&CommonTokens,
-    mut impl_blocks:Option<HashMap<SynPath,ImplBlock<'a>>>,
     mut accessor_structs:Option<HashMap<Ident,Vec<syn::Attribute>>>,
     reexported_dunder:&[ItemUse],
     reexported:&[ItemUse],
@@ -184,23 +244,21 @@ fn test_reexport_inner<'a>(variants_exhaus
     let mut reexported_dunder:HashSet<_>=reexported_dunder.iter().collect();
     let mut reexported       :HashSet<_>=reexported       .iter().collect();
 
-    let fields:Option<_>=variant.fields.as_ref();
+    let fields=&variant.fields;
 
     let mut trait_tys_map:HashMap<Ident,&Field>=Default::default();
     let mut wr_tys_map   :HashMap<Ident,&Field>=Default::default();
 
-    if let Some(fields)=fields {
-        for field in fields {
-            let trait_name=match field.assoc_ty_privacy() {
-                Privacy::Inherited=>"",
-                Privacy::Private=>"priv_",
-            }.piped(|x| format!("{}{}",x,field.trait_base) );
+    for field in fields {
+        let trait_name=match field.assoc_ty_privacy() {
+            Privacy::Inherited=>"",
+            Privacy::Private=>"priv_",
+        }.piped(|x| format!("{}{}",x,field.trait_base) );
 
-            let rt_name=format!("rt_{}",trait_name);
+        let rt_name=format!("rt_{}",trait_name);
 
-            trait_tys_map.insert( parse_ident(&trait_name    ) , field);
-            wr_tys_map   .insert( parse_ident(&rt_name       ) , field);
-        }
+        trait_tys_map.insert( parse_ident(&trait_name    ) , field);
+        wr_tys_map   .insert( parse_ident(&rt_name       ) , field);
     }
 
     let mut errors=Vec::new();
@@ -255,14 +313,13 @@ fn test_reexport_inner<'a>(variants_exhaus
                                 attrs
                             ));
                         }
-                    None if accessor_exhaus==Exhaustiveness::Exhaustive =>{
+                    None=>{
                         errors.push(format!(
                             "accessor struct '{}' not in the list of accessor structs:{:#?}",
                             struct_.ident,
                             accessor_structs.keys().collect::<Vec<_>>()
                         ));
                     }
-                    None=>{}
                 }
             }
             (Some(ref reexports),VisitItem::EndOfMod) if !reexports.is_empty() =>{
@@ -277,38 +334,36 @@ fn test_reexport_inner<'a>(variants_exhaus
                 }
                 visited_const_value=true;
 
-                if let Some(fields)=fields {
-                    let s_fields=match struct_.fields {
-                        Fields::Named(ref fields)=>Some(&fields.named),
-                        Fields::Unnamed(ref fields)=>Some(&fields.unnamed),
-                        Fields::Unit=>None
+                let s_fields=match struct_.fields {
+                    Fields::Named(ref fields)=>Some(&fields.named),
+                    Fields::Unnamed(ref fields)=>Some(&fields.unnamed),
+                    Fields::Unit=>None
+                };
+
+                for (i,(s_field,field)) in
+                    s_fields.into_iter().flat_map(|x|x).zip(fields).enumerate() 
+                {
+                    let same_field=match s_field.ident.as_ref() {
+                        Some(fieldname)=>fieldname == &*field.name,
+                        None=> field.name.parse().unwrap_or(!0usize)==i,
                     };
 
-                    for (i,(s_field,field)) in
-                        s_fields.into_iter().flat_map(|x|x).zip(fields).enumerate() 
-                    {
-                        let same_field=match s_field.ident.as_ref() {
-                            Some(fieldname)=>fieldname == &*field.name,
-                            None=> field.name.parse().unwrap_or(!0usize)==i,
-                        };
+                    if !same_field {
+                        errors.push(format!(
+                            "expected field {}.{} found field {}",
+                            struct_.ident ,field.name ,s_field.ident.or_index(i)
+                        ));
+                    }
 
-                        if !same_field {
-                            errors.push(format!(
-                                "expected field {}.{} found field {}",
-                                struct_.ident ,field.name ,s_field.ident.or_index(i)
-                            ));
-                        }
+                    let expected_vis =parse_visibility(field.visibility);
 
-                        let expected_vis =parse_visibility(field.visibility);
-
-                        if  expected_vis!= s_field.vis {
-                            errors.push(format!(
-                                "visibility of {}.{} is {} when it should be {}",
-                                struct_.ident ,s_field.ident.or_index(i) ,
-                                tokens_to_string(&s_field.vis) ,
-                                tokens_to_string(expected_vis)
-                            ));
-                        }
+                    if  expected_vis!= s_field.vis {
+                        errors.push(format!(
+                            "visibility of {}.{} is {} when it should be {}",
+                            struct_.ident ,s_field.ident.or_index(i) ,
+                            tokens_to_string(&s_field.vis) ,
+                            tokens_to_string(expected_vis)
+                        ));
                     }
                 }
             }
@@ -344,7 +399,7 @@ fn test_reexport_inner<'a>(variants_exhaus
                         }
                     };
                     let bounds=match visiting_trait {
-                        VisitingTrait::VT_Trait      =>field.bound,
+                        VisitingTrait::VT_Trait=>field.bound,
                         VisitingTrait::VT_WithRuntime=>field.bound_runt,
                     }.map(|x| parse_bounds(x) );
 

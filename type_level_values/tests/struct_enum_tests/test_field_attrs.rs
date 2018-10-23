@@ -171,7 +171,7 @@ fn tests_TupleStruct(){
         &struct_fields,
         &CommonTokens::new(),
         &[
-            "pub use super :: typenum_reexports :: { U0 , U1 , } ;",
+            "pub use super :: integer_reexports :: { U0 , U1 , } ;",
         ],
         &[
             "pub use super::__fields::{U0,U1,} ;",
@@ -236,7 +236,7 @@ fn tests_BracedStruct(){
         &struct_fields,
         &CommonTokens::new(),
         &[
-            "pub use super :: typenum_reexports ::{ } ;"
+            "pub use super :: integer_reexports ::{ } ;"
         ],
         &[
             "pub use super :: __fields :: { a , b , } ;",
@@ -329,7 +329,7 @@ fn tests_AnEnum(){
         &enum_fields,
         &CommonTokens::new(),
         &[
-            "pub ( in super :: super ) use super :: typenum_reexports :: { U0 , } ;"
+            "pub ( in super :: super ) use super :: integer_reexports :: { U0 , } ;"
         ],
         &[
             "pub ( in super :: super ) use super :: __fields :: { U0 , a , b , uh , } ;",

@@ -4,7 +4,6 @@ use prelude::*;
 use core_extensions::type_level_bool::{Boolean, BooleanType, False, True};
 use core_extensions::Void;
 
-use typenum::consts::{U0, U1};
 
 impl ConstType for BooleanType {}
 
@@ -79,7 +78,6 @@ impl IntoConstType_ for bool {
 pub mod boolean_variants {
     use super::*;
     use discriminant::{Discriminant, DiscriminantFor};
-    use typenum::consts::{U0, U1};
 
     pub type FalseVariant = Discriminant<False, BooleanType, U0>;
     pub type TrueVariant = Discriminant<True, BooleanType, U1>;

@@ -1,6 +1,8 @@
 use prelude::*;
 
-use crate_::ops::{IntegerConsts,AssertEq};
+use crate_::fn_adaptors::{Const,GetRhs};
+use crate_::ops::*;
+use crate_::std_ops::*;
 
 use typenum::bit::{B0, B1};
 use typenum::marker_traits::{Bit, Integer, NonZero, Unsigned};
@@ -30,6 +32,7 @@ impl ConstTypeOf_ for Z0 {
 impl ConstTypeOf_ for UTerm {
     type Type = UnsignedInteger;
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -196,15 +199,145 @@ impl ConstType for BitType {}
 impl IntegerConsts for SignedInteger{
     type Zero=Z0;
     type One=P1;
+
+    type Min=None_;
+    type Max=None_;
 }
 
 impl IntegerConsts for UnsignedInteger{
     type Zero=U0;
     type One=U1;
+
+    type Min=Some_<U0>;
+    type Max=None_;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+macro_rules! with_function {
+    (unsigned; $bin_op:ident[ $($params:ident),* $(,)* ] , $function:ty ) => (
+        impl<$($params,)* U,B,Out> $bin_op<$($params,)*> for UInt<U, B> 
+        where
+            U: Unsigned + Default + Copy, 
+            B: Bit + Default + Copy,
+            $function:TypeFn_<(Self$(,$params)*),Output=Out>,
+        {
+            type Output = Out;
+        }
+        impl<$($params,)* Out> $bin_op<$($params,)*> for UTerm 
+        where 
+            $function:TypeFn_<(Self$(,$params)*),Output=Out>,
+        {
+            type Output = Out;
+        }
+    );
+    (signed; $bin_op:ident [ $($params:ident),* $(,)* ] , $function:ty ) => (
+        impl<$($params,)* U,Out> $bin_op<$($params,)*> for NInt<U> 
+        where
+            U: Unsigned + Default + NonZero + Copy,
+            $function:TypeFn_<(Self $(,$params)*),Output=Out>,
+        {
+            type Output = Out;
+        }
+        impl<$($params,)* U,Out> $bin_op<$($params,)*> for PInt<U> 
+        where
+            U: Unsigned + Default + NonZero + Copy,
+            $function:TypeFn_<(Self $(,$params)*),Output=Out>,
+        {
+            type Output = Out;
+        }
+        impl<$($params,)* Out> $bin_op<$($params,)*> for Z0 
+        where 
+            $function:TypeFn_<(Self $(,$params)*),Output=Out>,
+        {
+            type Output = Out;
+        }
+
+    )
+}
+
+
+impl<R,U,B,Out> SatSub_<R> for UInt<U, B> 
+where
+    U: Unsigned + Default + Copy, 
+    B: Bit + Default + Copy,
+    If<ConstGEOp, SubOp,Const<U0> >:TypeFn_<(Self,R),Output=Out>
+{
+    type Output = Out;
+}
+impl<R> SatSub_<R> for UTerm {
+    type Output = UTerm;
+}
+
+with_function!{ signed; SatSub_[R] , SubOp }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+impl<U,B,Out> SatSub1_ for UInt<U, B> 
+where
+    U: Unsigned + Default + Copy, 
+    B: Bit + Default + Copy,
+    Sub1Op:TypeFn_<Self,Output=Out>
+{
+    type Output = Out;
+}
+impl SatSub1_ for UTerm {
+    type Output = UTerm;
+}
+
+with_function!{ signed; SatSub1_[] , Sub1Op }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+with_function!{ signed; SafeSub_[R] , (SubOp,NewSome) }
+with_function!{ unsigned; SafeSub_[R] , SafeSubHelper }
+
+type SafeSubHelper=
+    If<ConstGEOp,(SubOp,NewSome),NewNone>;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+with_function!{ unsigned; SafeDiv_[R] , SafeDivHelper }
+with_function!{ signed; SafeDiv_[R] , SafeDivHelper }
+
+type SafeDivHelper=
+    If<(GetRhs,IsZeroOp),NewNone,(DivOp,NewSome)>;
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl< U,B> IsZero_ for UInt<U, B> 
+where
+    U: Unsigned + Default + Copy, 
+    B: Bit + Default + Copy,
+{
+    type Output = False;
+}
+impl<> IsZero_ for UTerm {
+    type Output = True;
+}
+impl< U> IsZero_ for NInt<U> 
+where
+    U: Unsigned + Default + NonZero + Copy,
+{
+    type Output = False;
+}
+impl< U> IsZero_ for PInt<U> 
+where
+    U: Unsigned + Default + NonZero + Copy,
+{
+    type Output = False;
+}
+impl<> IsZero_ for Z0 {
+    type Output = True;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 

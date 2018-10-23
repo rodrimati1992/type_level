@@ -28,7 +28,7 @@ extern crate type_level_values;
 use type_level_values::prelude::*;
 use type_level_values::std_types::cmp_ordering::*;
 use type_level_values::ops::AssertEq;
-use type_level_values::fn_types::*;
+use type_level_values::std_ops::*;
 use type_level_values::fn_adaptors::*;
 
 
@@ -87,7 +87,7 @@ Creating a function which multiplies a number by 2.
 # use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
-use type_level_values::fn_types::*;
+use type_level_values::std_ops::*;
 
 fn main(){
     type Mul2=ApplyRhs<MulOp,U2>;
@@ -113,7 +113,7 @@ Creating a function which sets a field to U0.
 # use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
-use type_level_values::fn_types::*;
+use type_level_values::std_ops::*;
 use type_level_values::field_traits::{SetFieldOp};
 
 fn main(){
@@ -140,7 +140,7 @@ Creating a function which divides a field by 2.
 # use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
-use type_level_values::fn_types::*;
+use type_level_values::std_ops::*;
 use type_level_values::field_traits::{MapFieldOp};
 
 fn main(){
@@ -172,7 +172,7 @@ Copying one field into another.
 # use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
-use type_level_values::fn_types::*;
+use type_level_values::std_ops::*;
 use type_level_values::field_traits::{GetFieldMt,MapIntoFieldOp};
 
 
@@ -293,7 +293,7 @@ Implementing a multiply-add function.
 # use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
-use type_level_values::fn_types::*;
+use type_level_values::std_ops::*;
 
 fn main(){
 

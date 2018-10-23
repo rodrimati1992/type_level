@@ -3,7 +3,12 @@ use super::*;
 use super::RangeTypes;
 
 #[allow(unused_imports)]
-use typenum::operator_aliases::{Sub1,Add1,Diff as Sub_,Sum,Shleft,Shright};
+use crate_::ops::{
+    Sub1,Add1,
+};
+use crate_::std_ops::{
+    SubTA,AddTA,ShlTA,ShrTA,
+};
 
 use std::mem;
 
@@ -12,8 +17,8 @@ fn size_of_(){
 
     macro_rules! for_size {
         ( $shift:ty , $equiv_type:ty ) => {{
-            type Shifted=Shleft<U1,$shift>;
-            type Unshifted=Shright<Shifted,U8>;
+            type Shifted=ShlTA<U1,$shift>;
+            type Unshifted=ShrTA<Shifted,U8>;
             assert_eq!(size_of::<$equiv_type>(), size_of::<RangedUIntL<U0, Add1<Unshifted>>>());
             assert_eq!(size_of::<$equiv_type>(), size_of::<RangedUIntL<U0, Sub1<Shifted>>>());
             assert_eq!(size_of::<$equiv_type>(), size_of::<RangedUIntL<U0, Shifted>>());
@@ -108,8 +113,8 @@ fn values(){
     }
 
     {
-        type Start=Shleft<U1,U16>;
-        type End  =Sum<Start,Shleft<U1,U16>>;
+        type Start=ShlTA<U1,U16>;
+        type End  =AddTA<Start,ShlTA<U1,U16>>;
 
         test_values!{
             start=Start,
@@ -120,8 +125,8 @@ fn values(){
         }
     }
     {
-        type Start=Shleft<U1,U32>;
-        type End  =Sum<Start,Shleft<U1,U16>>;
+        type Start=ShlTA<U1,U32>;
+        type End  =AddTA<Start,ShlTA<U1,U16>>;
 
         let off=0x1_0000_0000;
 
@@ -142,8 +147,8 @@ fn values(){
         }
     }
     {
-        type Start=Shleft<U1,U32>;
-        type End  =Sum<Start,Sub1<Shleft<U1,U32>>>;
+        type Start=ShlTA<U1,U32>;
+        type End  =AddTA<Start,Sub1<ShlTA<U1,U32>>>;
 
         let off=0x1_0000_0000;
 
@@ -163,7 +168,7 @@ fn values(){
     }
     {
         type Start=U0;
-        type End  =Shleft<U1,U8>;
+        type End  =ShlTA<U1,U8>;
 
         let last=0xff;
 
@@ -182,7 +187,7 @@ fn values(){
     }
     {
         type Start=U0;
-        type End  =Shleft<U1,U16>;
+        type End  =ShlTA<U1,U16>;
 
         let last=0xffff;
 
@@ -201,7 +206,7 @@ fn values(){
     }
     {
         type Start=U0;
-        type End  =Shleft<U1,U32>;
+        type End  =ShlTA<U1,U32>;
 
         let last=0xffff_ffff;
 
@@ -220,7 +225,7 @@ fn values(){
     }
     {
         type Start=U10;
-        type End  =Sub_<Shleft<U1,U64>,U10>;
+        type End  =SubTA<ShlTA<U1,U64>,U10>;
 
         let lastu64=0xffff_ffff_ffff_ffff;
 
@@ -299,8 +304,8 @@ fn test_range_my_types(){
     }
 
     {
-        type Start=Shleft<U1,U16>;
-        type End  =Sum<Start,Shleft<U1,U16>>;
+        type Start=ShlTA<U1,U16>;
+        type End  =AddTA<Start,ShlTA<U1,U16>>;
 
         test_range_my_types!{
             (Start,End),
@@ -311,8 +316,8 @@ fn test_range_my_types(){
         }
     }
     {
-        type Start=Shleft<U1,U32>;
-        type End  =Sum<Start,Shleft<U1,U16>>;
+        type Start=ShlTA<U1,U32>;
+        type End  =AddTA<Start,ShlTA<U1,U16>>;
         test_range_my_types!{
             (Start,End),
             is_empty=false,
@@ -322,8 +327,8 @@ fn test_range_my_types(){
         }
     }
     {
-        type Start=Shleft<U1,U32>;
-        type End  =Sum<Start,Sub1<Shleft<U1,U32>>>;
+        type Start=ShlTA<U1,U32>;
+        type End  =AddTA<Start,Sub1<ShlTA<U1,U32>>>;
         test_range_my_types!{
             (Start,End),
             is_empty=false,
@@ -334,7 +339,7 @@ fn test_range_my_types(){
     }
     {
         type Start=U0;
-        type End  =Shleft<U1,U8>;
+        type End  =ShlTA<U1,U8>;
         test_range_my_types!{
             (Start,End),
             is_empty=false,
@@ -345,7 +350,7 @@ fn test_range_my_types(){
     }
     {
         type Start=U0;
-        type End  =Shleft<U1,U16>;
+        type End  =ShlTA<U1,U16>;
         test_range_my_types!{
             (Start,End),
             is_empty=false,
@@ -356,7 +361,7 @@ fn test_range_my_types(){
     }
     {
         type Start=U0;
-        type End  =Shleft<U1,U32>;
+        type End  =ShlTA<U1,U32>;
         test_range_my_types!{
             (Start,End),
             is_empty=false,
@@ -367,7 +372,7 @@ fn test_range_my_types(){
     }
     {
         type Start=U10;
-        type End  =Sub_<Shleft<U1,U64>,U10>;
+        type End  =SubTA<ShlTA<U1,U64>,U10>;
         test_range_my_types!{
             (Start,End),
             is_empty=false,
@@ -378,7 +383,7 @@ fn test_range_my_types(){
     }
     {
         type Start=U0;
-        type End  =Shleft<U1,U64>;
+        type End  =ShlTA<U1,U64>;
         test_range_my_types!{
             (Start,End),
             is_empty=false,

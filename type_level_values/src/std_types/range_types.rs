@@ -1,9 +1,11 @@
 use prelude::*;
 use crate_::fn_adaptors::*;
-use crate_::fn_types::{AddOp, ConstEqOp, ConstLEOp, ConstNEOp, SubOp,SubRevMt};
+use crate_::std_ops::{AddOp, SubOp,SubRevMt};
 use crate_::ops::{
     AssertEq,
-    ConstEq,ConstOrd_,ConstLtOp,ConstGEOp,
+    ConstOrd_,
+    ConstEq,ConstEqOp,
+    ConstLtOp,ConstGEOp, ConstLEOp, ConstNEOp,
     Add1Op,SatSub1Op,SatSubOp,Sub1Op,IsZeroOp,SafeSubOp,
     ConstIntoMt,ConstInto_,ConstInto,
     If,

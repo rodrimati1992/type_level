@@ -259,7 +259,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         .map(|(field_i,field_tmc)|{
             quote!{
                 impl < #(#generic_params,)*> 
-                    GetField_<ConstDependentField<typenum_reexports::#field_i>> 
+                    GetField_<ConstDependentField<integer_reexports::#field_i>> 
                 for #name #ty_generics
                 where 
                     #(#where_clause,)*
@@ -334,7 +334,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
                 #bounds_cli
                 #(
                     __Other:SameFieldLayout<
-                        ConstDependentField<typenum_reexports::#field_indices>,
+                        ConstDependentField<integer_reexports::#field_indices>,
                         Self
                     >,
                 )*

@@ -72,7 +72,7 @@ extern crate type_level_values;
 use type_level_values::prelude::*;
 use type_level_values::ops::*;
 use type_level_values::fn_adaptors::*;
-use type_level_values::fn_types::*;
+use type_level_values::std_ops::*;
 
 type_fn!{
     pub fn SafeDiv[Dividend,Divisor](Dividend,Divisor)
@@ -159,6 +159,9 @@ These are some iterative operations defined on collections:
     takes an initial value,and a function which incrementally consumes the collection 
     by mutating the initial value.
 
+- TryFoldL/TryFoldR: 
+    Like FoldR,with the ability to return early on a value that converts to TFBreak is found.
+
 - ReduceL/ReduceR: 
     Similar to FoldL and FoldR,
     except that it takes the first/last element of the collection instead of an initial value.
@@ -176,7 +179,7 @@ use type_level_values::prelude::*;
 use type_level_values::ops::*;
 use type_level_values::collection_ops::*;
 use type_level_values::fn_adaptors::*;
-use type_level_values::fn_types::*;
+use type_level_values::std_ops::*;
 
 fn main(){
 

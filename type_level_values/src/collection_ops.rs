@@ -10,14 +10,14 @@ use crate_::field_traits::{
     GetField, GetFieldOp, MapField, MapFieldOp, MapIntoField, MapIntoFieldOp, SetField,
 };
 use crate_::fn_adaptors::*;
-use crate_::fn_types::*;
+use crate_::std_ops::*;
 use crate_::ops::{
     ConstFrom_,
     ConstInto_,ConstIntoOp,ConstIntoMt,
     IntoInnerOp,IntoInner_,
     If,
     AssertFnRet,
-    ConstLtOp,
+    ConstLtOp,ConstLtMt,ConstEqMt,
 };
 
 type_fn!{define_trait

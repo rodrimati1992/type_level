@@ -55,7 +55,7 @@ impl<'a> ToTokens for VariantsMod<'a>{
                 use self::variants::*;
                 pub mod variants{
                     use super::*;
-                    use super::typenum_reexports::*;
+                    use super::integer_reexports::*;
                     
                     #(
                         #vis_submod2_rep_b struct #discriminant_idents_e;
