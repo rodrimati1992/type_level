@@ -244,6 +244,6 @@ pub enum RangedIntParseError<N> {
 
 
 
-fn what(){
-    let _=RangedInt::<i8,Z0,N10>::new(0);
-}
+// fn what(){
+//     let _=RangedInt::<i8,N129,N129>::new(0);
+// }

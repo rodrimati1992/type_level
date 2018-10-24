@@ -184,9 +184,12 @@ pub struct PredicateAndValue<Pred,Val>(VariantPhantom<(Pred,Val)>);
 type_fn!{
     captures(Pred,This,Msg)
     pub fn 
-        AssertThatHelper(False){ 
+        AssertThatHelper(False)
+        where [
+            Msg:TypeFn_<()>,
+        ]{ 
             AssertionFailure<
-                Message<Msg>,
+                Message<Msg::Output>,
                 PredicateAndValue<Pred,This>
             >
         }

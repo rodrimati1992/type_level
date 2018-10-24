@@ -54,7 +54,7 @@ impl<T0, Rem0> ConstEq_<TNil> for TList<T0, Rem0> {
 impl<T0, T1, Rem0, Rem1, out> ConstEq_<TList<T1, Rem1>> for TList<T0, Rem0>
 where
     T0: ConstEq_<T1>,
-    If<Const<T0::Output>, Lazy<ConstEqOp, (Rem0, Rem1)>, Const<False>>: TypeFn_<(), Output = out>,
+    If<T0::Output, Lazy<ConstEqOp, (Rem0, Rem1)>, Const<False>>: TypeFn_<(), Output = out>,
     out: Boolean,
 {
     type Output = out;
@@ -75,7 +75,7 @@ impl<T0, T1, Rem0, Rem1, ordering, out> ConstOrd_<TList<T1, Rem1>> for TList<T0,
 where
     T0: ConstOrd_<T1, Output = ordering>,
     ordering: OrderingTrait + ConstEq_<Equal_>,
-    If<Const<ordering::Output>, Lazy<ConstOrdOp, (Rem0, Rem1)>, Const<ordering>>:
+    If<ordering::Output, Lazy<ConstOrdOp, (Rem0, Rem1)>, Const<ordering>>:
         TypeFn_<(), Output = out>,
     out: OrderingTrait,
 {

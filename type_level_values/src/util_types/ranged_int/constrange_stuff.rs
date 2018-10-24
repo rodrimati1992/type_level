@@ -8,14 +8,15 @@ use crate_::prelude::*;
 use crate_::fn_adaptors::{
     Const,
     IdentityFn,
+    GetLhs,
 };
 use crate_::extern_types::typenum::{UnsignedInteger,SignedInteger};
 use crate_::std_types::range::{RangeTrait,fields as range_f};
-use crate_::collection_ops::{Map_,MapMt};
+use crate_::collection_ops::{Map_,MapMt,AllMt};
 use crate_::std_ops::{SubTA,SubRevOp,ShlTA,ShlMt,ShrTA,ShrMt,NegOp,NegTA,BitAndOp};
 use crate_::field_traits::GetFieldMt;
 use crate_::ops::{
-    ConstLEOp,ConstGEMt,ConstEqMt,ConstLtMt,ConstLEMt,
+    ConstLEOp,ConstLtOp,ConstGEMt,ConstEqMt,ConstLtMt,ConstLEMt,
     Sub1Op,SatSubMt,Sub1,
     Add1,Add1Op,
     AssertThatOp,AssertFnRet,
@@ -148,28 +149,32 @@ type_fn!{
         R:RangeTrait,
         RangeFromIntType:TypeFn_<Type,Output=TypeRange>,
         TypeRange:RangeTrait,
-        ConstLEOp:TypeFn_<(TypeRange::start,R::start),Output=start_fits>,
-        ConstLEOp:TypeFn_<(R::end,TypeRange::end),Output=end_fits>,
+        ConstLEOp:TypeFn_<(TypeRange::start,R::start),Output=start_fits_a>,
+        ConstLtOp:TypeFn_<(R::start,TypeRange::end),Output=start_fits_b>,
+        ConstLEOp:TypeFn_<(TypeRange::start,R::end),Output=end_fits_a>,
+        ConstLEOp:TypeFn_<(R::end,TypeRange::end),Output=end_fits_b>,
         
-        (
-            (TypeRange::start,R::start),
-            (TypeRange::end,R::end),
-        ):Map_<(MinMaxOp,SubRevOp),Output=(start_dist,end_dist)>,
-
         AssertThatOp:TypeFn_<(
-            (start_fits,end_fits),
-            BitAndOp,
-            DistanceToExpected<start_dist,end_dist>
+            (
+                (start_fits_a,start_fits_b,end_fits_a,end_fits_b),
+                R,
+            ),
+            (GetLhs,AllMt<IdentityFn>),
+            Const<ConstRangeOutsideIntegerType>
         )>,
     ]{
         let TypeRange;
-        let start_fits;let end_fits;
-        let start_dist;let end_dist;
+        let start_fits_a;
+        let start_fits_b;
+        let end_fits_a;
+        let end_fits_b;
         ()
     }
 }
 
-pub struct DistanceToExpected<start_dist,end_dist>(start_dist,end_dist);
+
+
+pub struct ConstRangeOutsideIntegerType;
 
 
 type_fn!{
@@ -342,29 +347,17 @@ mod test{
         let _:Test<u64,ShlTA<U1,U63>>;
         let _:Test<u64,ShlTA<U1,U64>,Sub1Op>;
 
-        type Pow2Signed<Type,Power,After=IdentityFn>=
-            Test<
-                Type,
-                U1,
-                (
-                    ShlMt<Power>,
-                    ConstIntoMt<SignedInteger>,
-                    After,
-                ),
-            >;
+        type GetAfter<Power,After>=(
+            ShlMt<Power>,
+            ConstIntoMt<SignedInteger>,
+            After,
+        );
 
-        type Pow2Neg<Type,Power,After=IdentityFn>=
-            Pow2Signed<Type,Power,(NegOp,After)>;
+        type Pow2Signed<Type,Power,After=IdentityFn>=(
+            Test<Type,U1,GetAfter<Power,After>>,
+            Test<Type,U1,GetAfter<Power,(After,NegOp)>>,
+        );
 
-        let _:Pow2Neg<i8,U7,Add1Op>;
-        let _:Pow2Neg<i8,U6>;
-        let _:Pow2Neg<i8,U5>;
-        let _:Pow2Neg<i8,U4>;
-        let _:Pow2Neg<i8,U3>;
-        let _:Pow2Neg<i8,U2>;
-        let _:Pow2Neg<i8,U1>;
-        let _:Pow2Neg<i8,U0>;
-        let _:Pow2Signed<i8,U0>;
         let _:Pow2Signed<i8,U0>;
         let _:Pow2Signed<i8,U1>;
         let _:Pow2Signed<i8,U2>;
@@ -373,6 +366,27 @@ mod test{
         let _:Pow2Signed<i8,U5>;
         let _:Pow2Signed<i8,U6>;
         let _:Pow2Signed<i8,U7,Sub1Op>;
+        let _:Pow2Signed<i16,U8>;
+        let _:Pow2Signed<i16,U9>;
+        let _:Pow2Signed<i16,U10>;
+        let _:Pow2Signed<i16,U11>;
+        let _:Pow2Signed<i16,U12>;
+        let _:Pow2Signed<i16,U13>;
+        let _:Pow2Signed<i16,U14>;
+        let _:Pow2Signed<i16,U15,Sub1Op>;
+        let _:Pow2Signed<i32,U16>;
+        let _:Pow2Signed<i32,U17>;
+        let _:Pow2Signed<i32,U18>;
+        let _:Pow2Signed<i32,U29>;
+        let _:Pow2Signed<i32,U30>;
+        let _:Pow2Signed<i32,U31,Sub1Op>;
+        let _:Pow2Signed<i64,U32>;
+        let _:Pow2Signed<i64,U33>;
+        let _:Pow2Signed<i64,U34>;
+        let _:Pow2Signed<i64,U60>;
+        let _:Pow2Signed<i64,U61>;
+        let _:Pow2Signed<i64,U62>;
+        let _:Pow2Signed<i64,U63,Sub1Op>;
         
 
         
