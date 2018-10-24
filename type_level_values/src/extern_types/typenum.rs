@@ -36,8 +36,12 @@ impl ConstTypeOf_ for UTerm {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+trait Dummy00<T>{
+    const VALUE_00:T;
+}
+
 macro_rules! from_const {
-    (signed $([ $(#[$attr:meta])* $type:ty,$constant:ident ])* ) => {
+    (signed $([ $(#[$attr:meta])* $type:ty,$constant:ident,$unsigned_const:ident ])* ) => {
         $(
             $(#[$attr])*
             impl<U: Unsigned +Default + NonZero+Copy> IntoRuntime<$type> for PInt<U>{
@@ -45,10 +49,19 @@ macro_rules! from_const {
                     <PInt<U> as Integer>::$constant
                 }
             }
+
+
+            $(#[$attr])*
+            impl<U: Unsigned +Default + NonZero+Copy> Dummy00<$type> for NInt<U>{
+                // Emulating 2's complement negation to avoid typenum bug 
+                // with the minimum signed integers
+                const VALUE_00:$type=(!<U as Unsigned>::$unsigned_const + 1)as $type;
+            }
+
             $(#[$attr])*
             impl<U: Unsigned +Default + NonZero+Copy> IntoRuntime<$type> for NInt<U>{
                 fn to_runtime()->$type{
-                    <NInt<U> as Integer>::$constant
+                    <Self as Dummy00<$type>>::VALUE_00
                 }
             }
             $(#[$attr])*
@@ -67,7 +80,7 @@ macro_rules! from_const {
             $(#[$attr])*
             #[cfg(rust_1_22)]
             impl<U: Unsigned +Default + NonZero+Copy> IntoConstant<$type> for NInt<U>{
-                const VALUE:$type=<NInt<U> as Integer>::$constant;
+                const VALUE:$type=<Self as Dummy00<$type>>::VALUE_00;
             }
 
             $(#[$attr])*
@@ -113,11 +126,11 @@ macro_rules! from_const {
 }
 
 from_const!{signed
-    [i8   ,I8]
-    [i16  ,I16]
-    [i32  ,I32]
-    [isize,ISIZE]
-    [i64  ,I64]
+    [i8   ,I8   ,U8]
+    [i16  ,I16  ,U16]
+    [i32  ,I32  ,U32]
+    [isize,ISIZE,USIZE]
+    [i64  ,I64  ,U64]
     // Re-enable one typenum does not require nightly to compile with the i128 feature.
     //[#[cfg(feature="i128")] i128 ,I128]
 }
@@ -192,6 +205,31 @@ impl ConstType for UnsignedInteger {}
 pub struct BitType;
 
 impl ConstType for BitType {}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+impl ConstFrom_<UTerm> for SignedInteger {
+    type Output=Z0;
+}
+
+impl ConstFrom_<Z0> for UnsignedInteger {
+    type Output=UTerm;
+}
+
+impl<U,B> ConstFrom_<UInt<U, B>> for SignedInteger
+where
+    U: Unsigned + Default + Copy, 
+    B: Bit + Default + Copy,
+{
+    type Output = PInt<UInt<U, B>> ;
+}
+impl<U> ConstFrom_<PInt<U>> for UnsignedInteger
+where
+    U: Unsigned + Default + NonZero + Copy,
+{
+    type Output = U;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -335,6 +373,35 @@ where
 }
 impl<> IsZero_ for Z0 {
     type Output = True;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl< U,B> AbsVal_ for UInt<U, B> 
+where
+    U: Unsigned + Default + Copy, 
+    B: Bit + Default + Copy,
+{
+    type Output = Self;
+}
+impl<> AbsVal_ for UTerm {
+    type Output = Self;
+}
+impl< U> AbsVal_ for NInt<U> 
+where
+    U: Unsigned + Default + NonZero + Copy,
+{
+    type Output = PInt<U>;
+}
+impl< U> AbsVal_ for PInt<U> 
+where
+    U: Unsigned + Default + NonZero + Copy,
+{
+    type Output = Self;
+}
+impl<> AbsVal_ for Z0 {
+    type Output = Self;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

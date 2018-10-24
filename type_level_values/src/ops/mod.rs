@@ -42,6 +42,9 @@ pub use self::const_ord::{
     ConstLtOp,ConstLEOp,ConstGtOp,ConstGEOp,
     ConstLtMt,ConstLEMt,ConstGtMt,ConstGEMt,
 
+    Min,Min_,MinOp,MinMt,
+    Max,Max_,MaxOp,MaxMt,
+    MinMax,MinMax_,MinMaxOp,MinMaxMt,
 };
 
 pub use self::const_from::{
@@ -64,11 +67,12 @@ pub use self::integers::{
     Get0Op,Get1Op,
     Add1,Add1Op,
     Sub1,Sub1Op,
+    AbsVal_ ,AbsVal ,AbsValOp ,
     SatSub_ ,SatSub ,SatSubOp ,SatSubMt ,
     SafeDiv_,SafeDiv,SafeDivOp,SafeDivMt,
     SafeSub_,SafeSub,SafeSubOp,SafeSubMt,
-    SatSub1_,SatSub1,SatSub1Op,SatSub1Mt,
-    IsZero_ ,IsZero ,IsZeroOp ,IsZeroMt ,
+    SatSub1_,SatSub1,SatSub1Op,
+    IsZero_ ,IsZero ,IsZeroOp ,
 };
 
 

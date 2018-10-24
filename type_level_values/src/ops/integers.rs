@@ -55,40 +55,44 @@ type_fn!{define_trait
 
 
 type_fn!{define_trait
-    /// Safe division function which returns None_ when the divisor is 0.
+    /// Safe division function which returns None_ when 
+    /// the divisor is 0 (or the division would overflow) .
     /// 
-    /// if R==0 ,returns None_, otherwise returns Some_<L / R>.
+    /// Equivalent to `|lhs,rhs| lhs.checked_div(rhs) `
     trait=SafeDiv_ [R]
-    /// Safe division function which returns None_ when the divisor is 0.
+    /// Safe division function which returns None_ when 
+    /// the divisor is 0 (or the division would overflow) .
     /// 
-    /// if R==0 ,returns None_, otherwise returns Some_<L / R>.
+    /// Equivalent to `|lhs,rhs| lhs.checked_div(rhs) `
     type=SafeDiv
-    /// Safe division function which returns None_ when the divisor is 0.
+    /// Safe division function which returns None_ when 
+    /// the divisor is 0 (or the division would overflow) .
     /// 
-    /// if R==0 ,returns None_, otherwise returns Some_<L / R>.
+    /// Equivalent to `|lhs,rhs| lhs.checked_div(rhs) `
     fn_type=SafeDivOp
-    /// Safe division function which returns None_ when the divisor is 0.
+    /// Safe division function which returns None_ when 
+    /// the divisor is 0 (or the division would overflow) .
     /// 
-    /// if R==0 ,returns None_, otherwise returns Some_<L / R>.
+    /// Equivalent to `|lhs,rhs| lhs.checked_div(rhs) `
     method_like=SafeDivMt
 }
 
 type_fn!{define_trait
     /// Safe unsigned subtraction function which returns None_ when subtracting would overflow.
     /// 
-    /// if L>=R ,returns Some_<L - R>, otherwise returns None_.
+    /// Equivalent to `|lhs,rhs| lhs.checked_sub(rhs) `
     trait=SafeSub_ [R]
     /// Safe unsigned subtraction function which returns None_ when subtracting would overflow.
     /// 
-    /// if L>=R ,returns Some_<L - R>, otherwise returns None_.
+    /// Equivalent to `|lhs,rhs| lhs.checked_sub(rhs) `
     type=SafeSub
     /// Safe unsigned subtraction function which returns None_ when subtracting would overflow.
     /// 
-    /// if L>=R ,returns Some_<L - R>, otherwise returns None_.
+    /// Equivalent to `|lhs,rhs| lhs.checked_sub(rhs) `
     fn_type=SafeSubOp
     /// Safe unsigned subtraction function which returns None_ when subtracting would overflow.
     /// 
-    /// if L>=R ,returns Some_<L - R>, otherwise returns None_.
+    /// Equivalent to `|lhs,rhs| lhs.checked_sub(rhs) `
     method_like=SafeSubMt
 }
 
@@ -106,10 +110,6 @@ type_fn!{define_trait
     ///
     /// Equivalent to `|lhs| lhs.saturating_sub(1) `
     fn_type=SatSub1Op
-    /// Subtracts 1 from Self,stopping at te minimum value.
-    ///
-    /// Equivalent to `|lhs| lhs.saturating_sub(1) `
-    method_like=SatSub1Mt
 }
 
 type_fn!{define_trait
@@ -119,8 +119,15 @@ type_fn!{define_trait
     type=IsZero
     /// Returns whether N is 0.
     fn_type=IsZeroOp
-    /// Returns whether N is 0.
-    method_like=IsZeroMt
+}
+
+type_fn!{define_trait
+    /// Returns the absolute value (with the same ConstType).
+    trait=AbsVal_ []
+    /// Returns the absolute value (with the same ConstType).
+    type=AbsVal
+    /// Returns the absolute value (with the same ConstType).
+    fn_type=AbsValOp
 }
 
 
@@ -156,8 +163,8 @@ type_fn!{
         N:IntegerConsts<Min=Min>,
         Some_<N>:ConstEq_<Min,Output=Out>,
     ]{ 
-        let Min;
-        let Out;Out 
+        let Min;let Out;
+        Out 
     }
 }
 
@@ -168,8 +175,8 @@ type_fn!{
         N:IntegerConsts<Max=Max>,
         Some_<N>:ConstEq_<Max,Output=Out>,
     ]{ 
-        let Max;
-        let Out;Out 
+        let Max;let Out;
+        Out 
     }
 }
 
@@ -253,6 +260,7 @@ type_fn!{
         Out
     }
 }    
+
 
 
 //#[cfg(all(test,feature="passed_tests"))]
@@ -536,5 +544,27 @@ mod tests{
         let _:TestSig<P1,P2,N1>;
         
 
+    }
+
+    #[test]
+    fn absolute_val(){
+        type Test<val,expected>=
+            AssertEq<
+                AbsVal<val>,
+                expected
+            >;
+
+        let _:Test< N3,P3 >;
+        let _:Test< N2,P2 >;
+        let _:Test< N1,P1 >;
+        let _:Test< Z0,Z0 >;
+        let _:Test< P1,P1 >;
+        let _:Test< P2,P2 >;
+        let _:Test< P3,P3 >;
+
+        let _:Test< U0,U0 >;
+        let _:Test< U1,U1 >;
+        let _:Test< U2,U2 >;
+        let _:Test< U3,U3 >;
     }
 }
