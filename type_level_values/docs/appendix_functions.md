@@ -18,7 +18,7 @@ where the parameters and the function are reversed,
 most useful when composing multiple functions such that they span multiple lines.
 
 An example of using it in a where clause:
-```
+```ignore
 (L,R):Piped_<(
     MinMaxOp, 
     SubRevOp,

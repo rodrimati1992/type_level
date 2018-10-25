@@ -97,12 +97,11 @@ impl<N,R,Start,End,vars,IntRange>
 where
     R:TypeIdentity<Type=ConstRange<Start,End>>,
     RangeFromIntType:TypeFn_<N,Output=IntRange>,
-    (Start,End):
-        Piped_<(
-            MapMt<ConstTypeOfOp>,
-            ValidateConstTypes,
-            MapMt<RangedTraitHelper<N,R,IntRange,Start,End>>,
-        ),Output=Some_<vars>>,
+    (Start,End):Piped_<(
+        MapMt<ConstTypeOfOp>,
+        ValidateConstTypes,
+        MapMt<RangedTraitHelper<N,R,IntRange,Start,End>>,
+    ),Output=Some_<vars>>,
 
     vars:RangedVarsTrait,
     vars::is_empty:IntoRuntime<bool>,

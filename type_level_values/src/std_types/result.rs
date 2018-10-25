@@ -2,7 +2,13 @@ use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
 use crate_::std_ops::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
-use crate_::ops::{Unwrap_,Unwrap,UnwrapOrElse_,UnwrapOr,IntoInner_};
+use crate_::ops::{
+    AssertConstTypeMt,AssertEq,AssertFnRet,
+    Unwrap_,Unwrap,UnwrapOrElse_,UnwrapOr,
+    IntoInner_,
+    Add1Op,
+    AndThen_,OrElse_,AndThenMt,OrElseMt,
+};
 use crate_::collection_ops::{FoldL_, FoldR_, Len_, Map, Map_};
 use prelude::*;
 
@@ -36,6 +42,66 @@ type_fn!{
 }
 type_fn!{
     pub fn NewErr[v](v){ Err_<v> }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<T,Func,Out> Map_<Func> for Ok_<T>
+where Func:TypeFn_<T,Output=Out>,
+{
+    type Output=Ok_<Out>;
+}
+
+impl<T,Func> Map_<Func> for Err_<T>{
+    type Output=Self;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+type_fn!{
+    pub fn 
+        MapErrOp[T,Func](Ok_<T>,Func){ Ok_<T>  }
+        
+        MapErrOp[T,Func](Err_<T>,Func)
+        where[ Func:TypeFn_<T> ]
+        { Err_<Func::Output> }
+}
+
+type_fn!{
+    captures(Func)
+    pub fn 
+        MapErrMt[T](Ok_<T>){ Ok_<T>  }
+        
+        MapErrMt[T](Err_<T>)
+        where[ Func:TypeFn_<T> ]
+        { Err_<Func::Output> }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<T,Func,Out> AndThen_<Func> for Ok_<T>
+where
+    (Func,AssertConstTypeMt<ResultType>):TypeFn_<T,Output=Out>
+{
+    type Output=Out;
+}
+
+impl<E,Func> AndThen_<Func> for Err_<E>{
+    type Output=Self;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+
+impl<T,Func> OrElse_<Func> for Ok_<T>{
+    type Output=Self;
+}
+
+impl<E,Func,Out> OrElse_<Func> for Err_<E>
+where
+    (Func,AssertConstTypeMt<ResultType>):TypeFn_<E,Output=Out>
+{
+    type Output=Out;
 }
 
 /////////////////////////////
@@ -118,7 +184,8 @@ impl<T> IntoInner_ for Err_<T> {
 
 /////////////////////////////
 
-#[cfg(all(test,feature="passed_tests"))]
+#[cfg(test)]
+// #[cfg(all(test,feature="passed_tests"))]
 mod tests {
     use super::*;
 
@@ -146,21 +213,67 @@ mod tests {
 
     #[test]
     fn result_functions() {
-        let _: AssEqTy<TypeFn<IsOk, Err_<False>>,False>;
-        let _: AssEqTy<TypeFn<IsOk, Ok_<U1>>,True>;
+        let _: AssertEq<TypeFn<IsOk, Err_<False>>,False>;
+        let _: AssertEq<TypeFn<IsOk, Ok_<U1>>,True>;
 
-        let _: AssEqTy<TypeFn<IsErr, Err_<False>>,True>;
-        let _: AssEqTy<TypeFn<IsErr, Ok_<U1>>,False>;
+        let _: AssertEq<TypeFn<IsErr, Err_<False>>,True>;
+        let _: AssertEq<TypeFn<IsErr, Ok_<U1>>,False>;
 
-        let _: AssEqTy<Unwrap<Ok_<U0>>,U0>;
-        let _: AssEqTy<Unwrap<Ok_<U1>>,U1>;
+        let _: AssertEq<Unwrap<Ok_<U0>>,U0>;
+        let _: AssertEq<Unwrap<Ok_<U1>>,U1>;
 
-        let _: AssEqTy<UnwrapOr<Ok_<U0>,False>,U0>;
-        let _: AssEqTy<UnwrapOr<Ok_<U1>,False>,U1>;
-        let _: AssEqTy<UnwrapOr<Err_<U100>,U400>,U400>;
-        let _: AssEqTy<UnwrapOr<Err_<U100>,U200>,U200>;
-
+        let _: AssertEq<UnwrapOr<Ok_<U0>,False>,U0>;
+        let _: AssertEq<UnwrapOr<Ok_<U1>,False>,U1>;
+        let _: AssertEq<UnwrapOr<Err_<U100>,U400>,U400>;
+        let _: AssertEq<UnwrapOr<Err_<U100>,U200>,U200>;
 
     }
 
+    #[test]
+    fn mapping(){
+        type Test0<Val,Func,Expected>=
+            AssertEq<Map<Val,Func>,Expected>;
+
+        let _:Test0<Ok_<U0>,Add1Op,Ok_<U1>>;
+        let _:Test0<Ok_<U1>,Add1Op,Ok_<U2>>;
+        let _:Test0<Err_<U0>,Add1Op,Err_<U0>>;
+        let _:Test0<Err_<U1>,Add1Op,Err_<U1>>;
+        
+        type Test1<Val,Func,Expected>=(
+            AssertFnRet<(Val,Func),MapErrOp,Expected>,
+            AssertFnRet<Val,MapErrMt<Func>,Expected>,
+        );
+
+        let _:Test1<Err_<U0>,Add1Op,Err_<U1>>;
+        let _:Test1<Err_<U1>,Add1Op,Err_<U2>>;
+        let _:Test1<Ok_<U0>,Add1Op,Ok_<U0>>;
+        let _:Test1<Ok_<U1>,Add1Op,Ok_<U1>>;
+        
+    }
+
+    #[test]
+    fn and_then_or_else(){
+        type TestAT<Val,Func,Expected>=
+            AssertFnRet<Val,AndThenMt<Func>,Expected>;
+
+        type TestOE<Val,Func,Expected>=
+            AssertFnRet<Val,OrElseMt<Func>,Expected>;
+
+        type AddOk=(Add1Op,NewOk);
+        type AddErr=(Add1Op,NewErr);
+
+
+        let _:TestAT<Ok_<U0>,AddOk,Ok_<U1>>;
+        let _:TestAT<Ok_<U1>,AddOk,Ok_<U2>>;
+        let _:TestAT<Ok_<U0>,AddErr,Err_<U1>>;
+        let _:TestAT<Ok_<U1>,AddErr,Err_<U2>>;
+        let _:TestAT<Ok_<U1>,(AddErr,AndThenMt<AddErr>,AndThenMt<AddErr>),Err_<U2>>;
+
+        let _:TestOE<Err_<U0>,AddErr,Err_<U1>>;
+        let _:TestOE<Err_<U1>,AddErr,Err_<U2>>;
+        let _:TestOE<Err_<U0>,AddOk,Ok_<U1>>;
+        let _:TestOE<Err_<U1>,AddOk,Ok_<U2>>;
+        let _:TestOE<Err_<U1>,(AddOk,OrElseMt<AddOk>,OrElseMt<AddOk>),Ok_<U2>>;
+
+    }
 }

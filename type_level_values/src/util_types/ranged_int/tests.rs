@@ -468,11 +468,35 @@ fn test_range_my_types(){
     }
 
 
+
+    {
+        type Start=Z0;
+        type End  =Z0;
+        test_range_my_types!{
+            (Start,End),
+            is_empty=true,
+            repr=i8,
+            start=0,
+            end=Some(0),
+        }
+    }
+    {
+        type Start=N1;
+        type End  =N1;
+        test_range_my_types!{
+            (Start,End),
+            is_empty=true,
+            repr=i8,
+            start=-1,
+            end=Some(-1),
+        }
+    }
+    
+
     type MinSignedRange<Shift>=TypeFn<
         (ShlOp,ConstIntoMt<SignedInteger>,NegOp),
         (U1,Shift)
     >;
-
     {
         type Start=MinSignedRange<U7>;
         type End  =MinSignedRange<U7>;

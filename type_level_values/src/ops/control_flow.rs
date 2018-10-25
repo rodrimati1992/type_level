@@ -13,7 +13,7 @@ use std_::ops::Add;
 /// Equivalent to creating an `impl Fn()->T`.
 pub struct Lazy<Function, Params>(Function, Params);
 
-impl<Function, Params> TypeFn_<()> for Lazy<Function, Params>
+impl<Function, Params,_0> TypeFn_<_0> for Lazy<Function, Params>
 where
     Function: TypeFn_<Params>,
 {

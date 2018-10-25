@@ -162,7 +162,7 @@ This is also an example about how a ConstMethod can be private.
 # extern crate derive_type_level;
 
 # use type_level_values::prelude::*;
-use type_level_values::ops::If;
+use type_level_values::ops::{If,ConstLEMt,Sub1Op};
 use type_level_values::std_ops::*;
 use type_level_values::fn_adaptors::Const;
 
@@ -247,9 +247,9 @@ pub mod bounded_channel{
         where [
             I:OpenTrait,
             I::remaining : Piped_<
-                If<ConstLEMt<U1>
+                If<ConstLEMt<U1>,
                     Const<Closed>,
-                    (Sub1Op,NewOpen)
+                    (Sub1Op,NewOpen),
                 >,Output=Out
             >,
         ]

@@ -22,7 +22,7 @@ use type_level_values::prelude::*;
 use type_level_values::ops::*;
 use type_level_values::std_ops::*;
 
-#fn main{
+# fn main(){
 
 type IsEven=(
     BitAndMt<U1>,
@@ -36,7 +36,7 @@ let _:AssertEq< TypeFn<IsEven,U3>,False >;
 let _:AssertEq< TypeFn<IsEven,U4>,True >;
 let _:AssertEq< TypeFn<IsEven,U5>,False >;
 
-#}
+# }
 
 ```
 

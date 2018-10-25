@@ -4,13 +4,15 @@ use core_extensions::Void;
 use crate_::fn_adaptors::{ApplyRhs,Const};
 use crate_::std_ops::{BitAndOp, BitOrOp, DivOp,MulMt, NotOp};
 use crate_::ops::{
+    Lazy,
     Unwrap_,Unwrap,UnwrapOr,UnwrapOrElse_,
+    AndThen_,OrElse_,AndThenMt,OrElseMt,
     IntoInner_,
     If,
-    AssertEq,
+    AssertEq,AssertFnRet,AssertConstTypeMt,
     ConstEqMt,
     ConstIntoMt,
-    SafeDivOp,
+    SafeDivOp,Add1Op,
 };
 use crate_::collection_ops::{
     FoldL, FoldL_, FoldR, FoldR_, 
@@ -81,6 +83,33 @@ where
 }
 impl<Pred> Filter_<Pred> for None_ {
     type Output = None_;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<T,Func,Out> AndThen_<Func> for Some_<T>
+where
+    (Func,AssertConstTypeMt<OptionType>):TypeFn_<T,Output=Out>
+{
+    type Output=Out;
+}
+
+impl<Func> AndThen_<Func> for None_{
+    type Output=Self;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<T,Func> OrElse_<Func> for Some_<T>{
+    type Output=Self;
+}
+
+
+impl<Func,Out> OrElse_<Func> for None_
+where
+    (Func,AssertConstTypeMt<OptionType>):TypeFn_<(),Output=Out>
+{
+    type Output=Out;
 }
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -184,7 +213,10 @@ type_fn!{
            IsSome[T](Some_<T>){True}
 }
 
-pub type IsNone = (IsSome, NotOp);
+type_fn!{
+    pub fn IsNone(None_){True}
+           IsNone[T](Some_<T>){False}
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -230,6 +262,8 @@ mod tests {
 
         assert_eq!(Some_(U0::CW).into_runtime(), Some(0));
         assert_eq!(None_.into_runtime(), None::<Void>);
+        assert_eq!(None_.into_runtime(), None::<()>);
+        assert_eq!(None_.into_runtime(), None::<u32>);
     }
 
     #[test]
@@ -287,6 +321,44 @@ mod tests {
         let _:AssEqTy<UnwrapOr<Some_<U0>,U100>,U0>;
         let _:AssEqTy<UnwrapOr<Some_<U1>,U100>,U1>;
         let _:AssEqTy<UnwrapOr<None_    ,U200>,U200>;
+    }
+
+    #[test]
+    fn mapping(){
+        type Test0<Val,Func,Expected>=
+            AssertEq<Map<Val,Func>,Expected>;
+
+        let _:Test0<Some_<U0>,Add1Op,Some_<U1>>;
+        let _:Test0<Some_<U1>,Add1Op,Some_<U2>>;
+        let _:Test0<None_,Add1Op,None_>;
+        
+    }
+
+    #[test]
+    fn and_then_or_else(){
+        type TestAT<Val,Func,Expected>=
+            AssertFnRet<Val,AndThenMt<Func>,Expected>;
+
+        type TestOE<Val,Func,Expected>=
+            AssertFnRet<Val,OrElseMt<Func>,Expected>;
+
+        type AddSome=(Add1Op,NewSome);
+
+        let _:TestAT<Some_<U0>,NewNone,None_>;
+        let _:TestAT<Some_<U0>,AddSome,Some_<U1>>;
+        let _:TestAT<Some_<U1>,NewNone,None_>;
+        let _:TestAT<Some_<U1>,AddSome,Some_<U2>>;
+        
+        let _:TestOE<Some_<U0>,NewNone,Some_<U0>>;
+        let _:TestOE<Some_<U0>,AddSome,Some_<U0>>;
+        let _:TestOE<Some_<U1>,NewNone,Some_<U1>>;
+        let _:TestOE<Some_<U1>,AddSome,Some_<U1>>;
+        
+        let _:TestAT<None_,NewNone,None_>;
+        let _:TestAT<None_,Lazy<NewSome,U10>,None_>;
+        let _:TestOE<None_,NewNone,None_>;
+        let _:TestOE<None_,Lazy<NewSome,U10>,Some_<U10>>;
+
     }
 
 }

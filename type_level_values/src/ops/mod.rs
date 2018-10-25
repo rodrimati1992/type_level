@@ -26,7 +26,8 @@ pub use self::assertions::{
     AssertEq_,AssertEqOp, AssertEqMt, 
     AssertFunc_,AssertFuncOp,AssertFuncMt,
     AssertThat_,AssertThatOp,
-    AssertFnRet_,AssertFnRetOp,AssertFnRetMt
+    AssertFnRet_,AssertFnRetOp,AssertFnRetMt,
+    AssertConstType_,AssertConstTypeOp,AssertConstTypeMt,
 };
 pub use self::as_tlist::{
     AsTListOp, AsTList_, 
@@ -57,6 +58,8 @@ pub use self::wrapper_ops::{
     UnwrapOrOp, UnwrapOr_,UnwrapOrMt,
     UnwrapOrElseOp, UnwrapOrElse_,UnwrapOrElseMt,
     IntoInnerOp,IntoInner_,
+    AndThenOp, AndThen_,AndThenMt,
+    OrElseOp, OrElse_,OrElseMt,
 };
 
 pub use self::control_flow::{If,  Lazy};
@@ -78,7 +81,7 @@ pub use self::integers::{
 
 pub(crate) mod type_aliases{
     pub use crate_::ops::assertions::{
-        AssertEq,AssertFunc,AssertThat,AssertFnRet,
+        AssertEq,AssertFunc,AssertThat,AssertFnRet,AssertConstType,
     };
     pub use crate_::ops::as_tlist::{
         AsTList,VariantAsTList,
@@ -96,7 +99,7 @@ pub(crate) mod type_aliases{
     };
 
     pub use crate_::ops::wrapper_ops::{
-        Unwrap,UnwrapOr,UnwrapOrElse,IntoInner,
+        Unwrap,UnwrapOr,UnwrapOrElse,IntoInner,AndThen,OrElse,
     };
 
     pub use crate_::ops::control_flow::{If,  Lazy};

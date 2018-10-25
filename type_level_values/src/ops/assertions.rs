@@ -115,6 +115,44 @@ where
 
 //////////////////////////////////////////////////////////////
 
+type_fn!{define_trait
+    /** 
+    Asserts that `Self` is of `ConstTypeFor` ConstType
+    
+    # Failing assertions.
+
+    Assertions that fail produce a compile-time error which mentions the 
+    Self,Pred,and Msg values.
+
+    ```compile_fail
+    use type_level_values::prelude::*;
+    use type_level_values::ops::*;
+
+    let _:AssertConstType< U1,BooleanType >;
+
+    ```
+
+    */
+    trait=AssertConstType_ [ConstTypeFor]
+    /// Asserts that `Self` is of `ConstTypeFor` ConstType
+    type=AssertConstType
+    /// Asserts that `Self` is of `ConstTypeFor` ConstType
+    fn_type=AssertConstTypeOp
+    /// Asserts that `This` is of `ConstTypeFor` ConstType
+    method_like=AssertConstTypeMt
+}
+
+
+impl<This,ConstTypeFor> AssertConstType_<ConstTypeFor> for This
+where
+    ConstTypeOfOp:TypeFn_<This,Output=ConstTypeFor>,
+{
+    type Output=Self;
+}
+
+
+//////////////////////////////////////////////////////////////
+
 
 
 type_fn!{define_trait
