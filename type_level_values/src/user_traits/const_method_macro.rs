@@ -162,7 +162,9 @@ This is also an example about how a ConstMethod can be private.
 # extern crate derive_type_level;
 
 # use type_level_values::prelude::*;
-use type_level_values::ops::IfEager;
+use type_level_values::ops::If;
+use type_level_values::std_ops::*;
+use type_level_values::fn_adaptors::Const;
 
 use std::ops::Sub;
 use std::sync::mpsc::{self, Receiver as MPSCReceiver, RecvError, SendError, Sender as MPSCSender};
@@ -233,6 +235,10 @@ pub mod bounded_channel{
         }
     }
 
+    type_fn!{
+        pub fn NewOpen[v](v){ Open<v> }
+    }
+
     const_method!{
         type ConstConstructor[T]=( ChannelEndCC<T> )
         type AllowedConversions=( allowed_conversions::ByVal )
@@ -240,13 +246,16 @@ pub mod bounded_channel{
         fn TransferValue[I](I,())
         where [
             I:OpenTrait,
-            I::remaining :Sub<U1,Output=var0>+ConstEq_<U1,Output=is_1>,
-            is_1:Boolean,
-            IfEager< is_1, Closed, Open<var0> >:TypeFn_<(),Output=var1>
+            I::remaining : Piped_<
+                If<ConstLEMt<U1>
+                    Const<Closed>,
+                    (Sub1Op,NewOpen)
+                >,Output=Out
+            >,
         ]
         {
-            let var0;let is_1;let var1;
-            var1
+            let Out;
+            Out
         }
     }
 }

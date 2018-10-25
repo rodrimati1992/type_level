@@ -2,26 +2,17 @@
 
 This appendix demonstrates how to do control flow on the type level.
 
-# If expressions
+# Sequences
 
-If expressions have 2 type-level equivalents:
+Sequences are tuples or type-level-lists where every element implements TypeFn_ and
+the result of evaluating every function if fed to the next function.
+This,in combination with the Piped_ trait , \*Mt functions and unary \*Op functions,
+allows emulating method chains.
 
-- [IfEager](../../ops/control_flow/struct.IfEager.html):
-    which evaluates the then and else branches before they are taken,
-    <br>
-    Use this if computing both branches if cheap and does not cause a compile-time error
-    (ie:attempting to divide by 0).
 
-- [If](../../ops/control_flow/struct.If.html):
-    which only evaluates the branch that was taken,
-    but requires using type-level functions for either branch.
-    <br>
-    Use this if the branch that was not taken would have caused a compile-time error
-    (ie:attempting to divide by 0).
+### Example
 
-### `IfEager` Example
-
-Implementing a TypeFn_ which skips even numbers.
+Implementing a function which returns whether a number is even.
 
 ```
 #[macro_use]
@@ -29,22 +20,67 @@ extern crate type_level_values;
 
 use type_level_values::prelude::*;
 use type_level_values::ops::*;
+use type_level_values::std_ops::*;
 
-use std::ops::{Add,Rem};
+#fn main{
 
-type_fn!{
-    pub fn SkipEven[N](N)
-    where[
-        N:Rem<U2,Output=tmp0>,
-        N:Add<U1,Output=plus1>,
-        tmp0:ConstEq_<U0,Output=is_even>,
-         IfEager< is_even , plus1 , N >:TypeFn_<(),Output=Out>
-    ]{ 
-        let tmp0;let plus1;let is_even;
-        let Out;
-        Out 
-    }
-}
+type IsEven=(
+    BitAndMt<U1>,
+    ConstEqMt<U0>,
+);
+
+let _:AssertEq< TypeFn<IsEven,U0>,True >;
+let _:AssertEq< TypeFn<IsEven,U1>,False >;
+let _:AssertEq< TypeFn<IsEven,U2>,True >;
+let _:AssertEq< TypeFn<IsEven,U3>,False >;
+let _:AssertEq< TypeFn<IsEven,U4>,True >;
+let _:AssertEq< TypeFn<IsEven,U5>,False >;
+
+#}
+
+```
+
+As you can see,this example makes use of the \*Mt variants of the operators,
+which apply every parameter except for the Self parameter (which is by convention the first),
+emulating a method chain.
+
+This example is equivalent to this:
+```ignore
+let is_even=|x| x.bit_and(1).eq(0) ;
+
+assert_eq!(is_even(0),true);
+assert_eq!(is_even(1),false);
+assert_eq!(is_even(2),true);
+assert_eq!(is_even(3),false);
+```
+
+
+# If expressions
+
+If expressions take a predicate function ,a Then function,
+and an Else  function (with a default value of IdentityFn) as type parameters.
+
+If implements TypeFn_ taking some state ,first passing it to the predicate,
+and if the predicate returns True it runs the Then function with the state,
+if the predicate returns False it runs the Else function,
+returning the result of whichever function run.
+
+If only evaluates the branch that was taken,meaning that if the branch 
+was not taken the constraints of the function are not enforced.
+
+### `If` Example 0
+
+Reimplementing a function that skips even numbers:
+
+```
+#[macro_use]
+extern crate type_level_values;
+
+use type_level_values::prelude::*;
+use type_level_values::ops::*;
+use type_level_values::std_ops::*;
+
+type SkipEven=If< ( BitAndMt<U1>, ConstEqMt<U0> ) , Add1Op >;
 
 fn main(){
     let _:AssertEq< TypeFn<SkipEven,U0> , U1 >;
@@ -55,10 +91,9 @@ fn main(){
     let _:AssertEq< TypeFn<SkipEven,U5> , U5 >;
     let _:AssertEq< TypeFn<SkipEven,U6> , U7 >;
 }
-
 ```
-
-### `If` Example
+<
+### `If` Example 1
 
 Implementing a function which returns 0 when dividing by 0.
 
@@ -74,15 +109,11 @@ use type_level_values::ops::*;
 use type_level_values::fn_adaptors::*;
 use type_level_values::std_ops::*;
 
-type_fn!{
-    pub fn SafeDiv[Dividend,Divisor](Dividend,Divisor)
-    where[
-        If<ApplyLhs<ConstEqOp,U0>,
-            Const<U0>,
-            ApplyLhs<DivOp,Dividend>,
-        >:TypeFn_<Divisor,Output=Out>
-    ]{ let Out;Out }
-}
+type SafeDiv=
+    If<(GetRhs,ConstEqMt<U0>),
+        Const<U0>,
+        DivOp,
+    >;
 
 fn main(){
     let _:AssertEq< TypeFn<SafeDiv,(U10,U0)> , U0 >;
@@ -92,6 +123,8 @@ fn main(){
 }
 
 ```
+
+GetRhs here is a function adaptor which returns the second parameter of a binary function.
 
 
 # match expressions
@@ -191,8 +224,8 @@ fn main(){
     let _:AssertEq< FoldR  <Val0,U10,SubOp> , U4 >;
     let _:AssertEq< ReduceR<Val0    ,SubOp> , U0 >;
 
-    let _:AssertEq< Map<Val0,ApplyLhs<SubOp,U10>> , tlist![U9,U8,U7] >;
-    let _:AssertEq< Map<Val0,ApplyLhs<AddOp,U1 >> , tlist![U2,U3,U4] >;
+    let _:AssertEq< Map<Val0,SubRevMt<U10>> , tlist![U9,U8,U7] >;
+    let _:AssertEq< Map<Val0,AddMt<U1>> , tlist![U2,U3,U4] >;
     
 }
 

@@ -10,6 +10,15 @@ use prelude::*;
 use crate_::field_traits::{MapFieldOp};
 use crate_::collection_ops::{Insert_};
 
+pub use crate_::type_fn::{
+    TypeFn_,
+    TypeFn,
+    TypeFnMt,
+    Piped_,
+    Piped,
+    PipedOp,
+};
+
 type_fn!{
     captures(Op,Rhs)
     /// Type-level version of "|x|Op(x,Rhs)"

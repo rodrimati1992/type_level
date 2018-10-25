@@ -5,7 +5,7 @@
 
 #![deny(overflowing_literals)]
 
-// use type_level_values::ops::{IfEager, TypeFn, TypeFn_};
+// use type_level_values::ops::{ TypeFn, TypeFn_};
 use type_level_values::prelude::*;
 
 use type_level_values::core_extensions::Void;

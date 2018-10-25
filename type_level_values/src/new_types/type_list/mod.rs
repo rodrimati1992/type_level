@@ -11,10 +11,12 @@ use crate_::field_traits::{GetField_, SetField_};
 use crate_::ops::control_flow::{If, Lazy};
 use crate_::ops::{
     AsTList_,
-    ConstEq,ConstNE_, ConstOrd,
+    ConstEq,ConstEqOp,ConstEqMt,
+    ConstNE_, 
+    ConstOrd,ConstOrdOp,
+    ConstLtOp, 
     ConstFrom_, 
     UnwrapOp,
-    ConstEqOp, ConstLtOp, ConstOrdOp,
 };
 use crate_::fn_adaptors::*;
 use crate_::std_ops::{AddOp,BitAndMt,NotOp};
@@ -53,8 +55,10 @@ impl<T0, Rem0> ConstEq_<TNil> for TList<T0, Rem0> {
 }
 impl<T0, T1, Rem0, Rem1, out> ConstEq_<TList<T1, Rem1>> for TList<T0, Rem0>
 where
-    T0: ConstEq_<T1>,
-    If<T0::Output, Lazy<ConstEqOp, (Rem0, Rem1)>, Const<False>>: TypeFn_<(), Output = out>,
+    (T0,T1): Piped_<
+        If<ConstEqOp, Lazy<ConstEqOp, (Rem0, Rem1)>, Const<False>>,
+        Output = out
+    >,
     out: Boolean,
 {
     type Output = out;
@@ -71,12 +75,12 @@ impl<T1, Rem1> ConstOrd_<TList<T1, Rem1>> for TNil {
 impl<T0, Rem0> ConstOrd_<TNil> for TList<T0, Rem0> {
     type Output = Greater_;
 }
-impl<T0, T1, Rem0, Rem1, ordering, out> ConstOrd_<TList<T1, Rem1>> for TList<T0, Rem0>
+impl<T0, T1, Rem0, Rem1, out> ConstOrd_<TList<T1, Rem1>> for TList<T0, Rem0>
 where
-    T0: ConstOrd_<T1, Output = ordering>,
-    ordering: OrderingTrait + ConstEq_<Equal_>,
-    If<ordering::Output, Lazy<ConstOrdOp, (Rem0, Rem1)>, Const<ordering>>:
-        TypeFn_<(), Output = out>,
+    (T0,T1):Piped_<(
+        ConstOrdOp,
+        If<ConstEqMt<Equal_>, Lazy<ConstOrdOp, (Rem0, Rem1)>>,
+    ),Output = out>,
     out: OrderingTrait,
 {
     type Output = out;
@@ -661,30 +665,6 @@ macro_rules! fixed_size_impls {
                 ApplyLhs<RepeatHelper2<V,Rem>,ExpectedBit>
             ];
 
-        #[doc(hidden)]
-        type RepeatHelperR64<V,Rem>=
-            tlist![
-                V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
-                V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
-                V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
-                V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
-                ..Rem
-            ];
-        
-        #[doc(hidden)]
-        type RepeatHelperR128<V,Rem>=
-            RepeatHelperR64<
-                V,
-                RepeatHelperR64<V,Rem>
-            >;
-        
-        #[doc(hidden)]
-        type RepeatHelperR256<V,Rem>=
-            RepeatHelperR128<
-                V,
-                RepeatHelperR128<V,Rem>
-            >;
-
         type_fn!{
             captures(V,Rem)
             fn 
@@ -699,13 +679,47 @@ macro_rules! fixed_size_impls {
                 ]
             }
             RepeatHelper2(U2,U2){
-                RepeatHelperR64<V,Rem>
+                tlist![
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    ..Rem
+                ]
             }
             RepeatHelper2(U4,U4){
-                RepeatHelperR128<V,Rem>
+                tlist![
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    ..Rem
+                ]
             }
             RepeatHelper2(U8,U8){
-                RepeatHelperR256<V,Rem>
+                tlist![
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    ..Rem
+                ]
             }
 
 
@@ -823,3 +837,6 @@ fixed_size_impls!{with-idents;
 
 #[cfg(feature = "large_tlist")]
 mod large_impls;
+
+
+

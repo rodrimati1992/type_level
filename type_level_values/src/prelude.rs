@@ -57,10 +57,13 @@ pub use runtime_value::{
 
 pub use discriminant::GetDiscriminant;
 
-pub use type_fn::{
+pub use crate_::type_fn::{
     TypeFn_,
     TypeFn,
+    Piped_,
+    Piped,
 };
+
 pub use ops::{
     ConstEq_, 
     ConstOrd_, 

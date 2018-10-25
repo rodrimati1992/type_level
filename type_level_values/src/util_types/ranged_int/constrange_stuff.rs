@@ -74,7 +74,10 @@ type_fn!{
     where[
         IntRange:RangeTrait,
         ConstLEOp:TypeFn_<(End,Start),Output=IsEmpty>,
-        If<ConstLtMt<IntRange::end>,NewSome,NewNone>:TypeFn_<End,Output=OptEnd>,
+        End:Piped_<
+            If<ConstLtMt<IntRange::end>,NewSome,NewNone>,
+            Output=OptEnd
+        >,
         OptEnd:Map_<SatSubMt<Start>,Output=RLen>,
         AssertRangeFitsInType: TypeFn_<(N,R)>,
     ]{
@@ -94,11 +97,12 @@ impl<N,R,Start,End,vars,IntRange>
 where
     R:TypeIdentity<Type=ConstRange<Start,End>>,
     RangeFromIntType:TypeFn_<N,Output=IntRange>,
-    (
-        MapMt<ConstTypeOfOp>,
-        ValidateConstTypes,
-        MapMt<RangedTraitHelper<N,R,IntRange,Start,End>>,
-    ):TypeFn_<(Start,End),Output=Some_<vars>>,
+    (Start,End):
+        Piped_<(
+            MapMt<ConstTypeOfOp>,
+            ValidateConstTypes,
+            MapMt<RangedTraitHelper<N,R,IntRange,Start,End>>,
+        ),Output=Some_<vars>>,
 
     vars:RangedVarsTrait,
     vars::is_empty:IntoRuntime<bool>,
@@ -227,11 +231,10 @@ type UWordEnd = ShlTA<U1,U64>;
 #[cfg(target_pointer_width = "128")]
 type UWordEnd = ShlTA<U1,U128>;
 
-type IWordEnd = TypeFn<(
-    Const<UWordEnd>,
+type IWordEnd = Piped<UWordEnd,(
     ShrMt<U1>,
     ConstIntoMt<SignedInteger>,
-),()>;
+)>;
 
 
 type_fn!{

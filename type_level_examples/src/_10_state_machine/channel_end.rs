@@ -13,7 +13,8 @@ use type_level_values::core_extensions::{Void,CallInto, TryFrom,TypePanic};
 
 use super::generic_variant::{Impossible, MapVariants, VariantsTrait};
 
-use super::ranged_usize::{RangedUsize, RangedUsizeBounds, UsizeOutsideRange};
+use super::ranged_usize::{RangedUsize, RangedTrait, IntOutsideRange};
+
 
 pub type CEResult<T> = ::std::result::Result<T, ProtocolViolation>;
 
@@ -124,7 +125,7 @@ type_fn!{
     /// based on the transfer direction and whether this is a server or a client
     ///
     /// fn GetTransferMethod( channel_end:ChannelEnd , transfer_to:TransferTo )->TransferMethod
-    pub fn
+    fn
         GetTransferMethod[T](Server,TransferTo<Server,T>){ Receive<T> }
         GetTransferMethod[T](Client,TransferTo<Server,T>){ Send_<T> }
         GetTransferMethod[T](Server,TransferTo<Client,T>){ Send_<T> }
@@ -139,11 +140,7 @@ pub struct Erased;
 //////////////////////////////////////////////////////////////////////////////////////////
 
 type_fn!{
-    pub fn ToUnit[T](T){ () }
-}
-
-type_fn!{
-    pub fn WrapPhantom[T](T){ ConstWrapper<T> }
+    fn WrapPhantom[T](T){ ConstWrapper<T> }
 }
 
 type_fn!{
@@ -291,13 +288,13 @@ mod channel {
     }
 
     type_fn!{
-        pub fn
+        fn
             BranchIfNotChooser( Server,Client ){ () }
             BranchIfNotChooser( Client,Server ){ () }
     }
 
     type_fn!{
-        pub fn
+        fn
             BranchIfChooser( Client,Client ){ () }
             BranchIfChooser( Server,Server ){ () }
     }
@@ -334,9 +331,9 @@ mod channel {
         pub fn validate_choice(
             &self,
             index: usize,
-        ) -> Result<RangedUsize<U0, Len>, UsizeOutsideRange>
+        ) -> Result<RangedUsize<U0, Len>, IntOutsideRange<usize>>
         where
-            RangedUsize<U0, Len>: TryFrom<usize, Error = UsizeOutsideRange>,
+            RangedUsize<U0, Len>: TryFrom<usize, Error = IntOutsideRange<usize>>,
         {
             index.try_into()
         }
@@ -348,9 +345,10 @@ mod channel {
         /// Returns a VariantPhantom wrapping the type used to choose which branch to take.
         pub fn choice_range(&self) -> Range<usize>
         where
-            RangedUsize<U0, Len>: RangedUsizeBounds,
+            RangedUsize<U0, Len>: RangedTrait<Integer=usize>,
         {
-            RangedUsize::<U0, Len>::get_range()
+            RangedUsize::<U0, Len>::start()..
+            RangedUsize::<U0, Len>::end().unwrap_or(!0usize)
         }
 
         pub fn choose<F>(self, index: RangedUsize<U0, Len>, f: F) -> CEResult<Channel<CEnd, Rem>>

@@ -59,7 +59,7 @@ pub use self::wrapper_ops::{
     IntoInnerOp,IntoInner_,
 };
 
-pub use self::control_flow::{If, IfEager, Lazy};
+pub use self::control_flow::{If,  Lazy};
 
 pub use self::integers::{
     IntegerConsts,
@@ -99,7 +99,7 @@ pub(crate) mod type_aliases{
         Unwrap,UnwrapOr,UnwrapOrElse,IntoInner,
     };
 
-    pub use crate_::ops::control_flow::{If, IfEager, Lazy};
+    pub use crate_::ops::control_flow::{If,  Lazy};
 
     pub use crate_::ops::integers::{
         IsOne,IsZero,Get0,Get1,SafeDiv,SafeSub,Add1,Sub1,SatSub1,SatSub,

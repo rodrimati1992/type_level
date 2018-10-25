@@ -52,6 +52,60 @@ macro_rules! tlist {
             $repeat
         >
     };
+    ($elem_0:ty,$elem_1:ty,$elem_2:ty,$elem_3:ty,$elem_4:ty, $($rest:tt)*) => {
+        $crate::new_types::TList<
+            $elem_0,
+            $crate::new_types::TList<
+                $elem_1,
+                $crate::new_types::TList<
+                    $elem_2,
+                    $crate::new_types::TList<
+                        $elem_3,
+                        $crate::new_types::TList<
+                            $elem_4,
+                            tlist![$($rest)*]
+                        >
+                    >
+                >
+            >
+        >
+    };
+    ($elem_0:ty,$elem_1:ty,$elem_2:ty,$elem_3:ty, $($rest:tt)*) => {
+        $crate::new_types::TList<
+            $elem_0,
+            $crate::new_types::TList<
+                $elem_1,
+                $crate::new_types::TList<
+                    $elem_2,
+                    $crate::new_types::TList<
+                        $elem_3,
+                        tlist![$($rest)*]
+                    >
+                >
+            >
+        >
+    };
+    ($elem_0:ty,$elem_1:ty,$elem_2:ty, $($rest:tt)*) => {
+        $crate::new_types::TList<
+            $elem_0,
+            $crate::new_types::TList<
+                $elem_1,
+                $crate::new_types::TList<
+                    $elem_2,
+                    tlist![$($rest)*]
+                >
+            >
+        >
+    };
+    ($elem_0:ty,$elem_1:ty, $($rest:tt)*) => {
+        $crate::new_types::TList<
+            $elem_0,
+            $crate::new_types::TList<
+                $elem_1,
+                tlist![$($rest)*]
+            >
+        >
+    };
     ($current:ty, $($rest:tt)*) => {
         $crate::new_types::TList<$current,tlist![$($rest)*]>
     };

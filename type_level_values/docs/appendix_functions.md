@@ -3,11 +3,38 @@
 This library provides type-level functions,which are implementors of the TypeFn_ trait,
 providing a way to express and compose computations on the type-level.
 
-For more information on type-level functions go:
+For more information go:
 
 - To the documentation of [the TypeFn_ trait](../../type_fn/trait.TypeFn_.html)
 
 - To the documentation of [the type_fn macro](../../macro.type_fn.html)
+
+- To the [appendix on control flow](../appendix_control_flow/index.html)
+
+# Piped
+
+Piped_ is an alternative syntax for calling a function,
+where the parameters and the function are reversed,
+most useful when composing multiple functions such that they span multiple lines.
+
+An example of using it in a where clause:
+```
+(L,R):Piped_<(
+    MinMaxOp, 
+    SubRevOp,
+    If<ConstLtMt<U10>,
+        /*Then*/(
+            MulMt<U2>,
+        ),/*Else*/(
+            DivMt<U2>,
+            SatSub1Op,
+        ),
+    >
+),Output=Out >,
+```
+    
+An example of using it in a type alias:
+`type MulAdd<L,R>=Piped<L,(MutMt<R>,AddMt<R>)>;`
 
 # Multiple branch function.
 
@@ -200,10 +227,10 @@ fn main(){
 ```
 
 
-# Tuples/type-level-lists of TypeFn_
+# Sequencing
 
-If all elements implement TypeFn_ the collection implements TypeFn_,
-all elements of which take the return value of the previous TypeFn_
+Sequences are tuples or type-level-lists where every element implements TypeFn_ and
+the result of evaluating every function if fed to the next function.
 
 
 ### Example 1
@@ -299,7 +326,7 @@ fn main(){
 
     type_fn!{
         pub fn MulAdd[L,R](L,R)
-        where[ (MulOp,ApplyLhs<AddOp,R>):TypeFn_<(L,R),Output=Out>  ]
+        where[ (L,R):Piped_<(MulOp,AddMt<R>),Output=Out>  ]
         { let Out;Out }
     }
 
@@ -314,7 +341,6 @@ fn main(){
 }
 
 ```
-
 
 
 */

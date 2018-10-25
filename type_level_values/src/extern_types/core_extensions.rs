@@ -73,15 +73,6 @@ impl IntoConstType_ for bool {
 
 //////////////////////////////////////////////////////////////////////////////////
 
-impl<Params> TypeFn_<Params> for True {
-    type Output=True;
-}
-
-impl<Params> TypeFn_<Params> for False {
-    type Output=False;
-}
-
-//////////////////////////////////////////////////////////////////////////////////
 
 pub mod boolean_variants {
     use super::*;

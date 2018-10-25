@@ -85,7 +85,7 @@ fn values(){
             for number in vec![$($outside,)*]{
                 assert_eq!(
                     new(number),
-                    Err(UIntOutsideRange {
+                    Err(IntOutsideRange {
                         value:number ,
                         start: <UsedRIR as RangedTrait>::start(),
                         end: <UsedRIR as RangedTrait>::end(),

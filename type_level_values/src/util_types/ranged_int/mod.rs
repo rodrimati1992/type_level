@@ -104,7 +104,7 @@ where
 
 impl<N,R> RangedIntR<N,R>{
     /// Constructs this ranged integer,inferring the range.
-    pub fn new(n: N) -> Result<Self,UIntOutsideRange<N>> 
+    pub fn new(n: N) -> Result<Self,IntOutsideRange<N>> 
     where
         Self: RangedTrait<Integer=N>,
     {
@@ -115,7 +115,7 @@ impl<N,R> RangedIntR<N,R>{
             })
         } else {
             let start=Self::start();
-            Err(UIntOutsideRange {
+            Err(IntOutsideRange {
                 value:n,
                 len:Self::len(),
                 start: Self::start(),
@@ -125,7 +125,7 @@ impl<N,R> RangedIntR<N,R>{
     }
 
     /// Constructs this ranged integer,passing the ConstRange by value.
-    pub fn with_range(n: N, _range: R) -> Result<Self,UIntOutsideRange<N>> 
+    pub fn with_range(n: N, _range: R) -> Result<Self,IntOutsideRange<N>> 
     where
         Self: RangedTrait<Integer=N>,
     {
@@ -197,7 +197,7 @@ impl<N,R> TryFrom<N> for RangedIntR<N,R>
 where
     Self: RangedTrait<Integer=N>,
 {
-    type Error = UIntOutsideRange<N>;
+    type Error = IntOutsideRange<N>;
     fn try_from(value: N) -> Result<Self, Self::Error> {
         Self::new(value)
     }
@@ -212,7 +212,7 @@ where
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         s.parse::<N>()
-            .map_err(|_| RangedIntParseError::InvalidUInt {
+            .map_err(|_| RangedIntParseError::InvalidInt {
                 #[cfg(feature="std")]
                 str_: s.into(),
                 start: Self::start(),
@@ -223,7 +223,7 @@ where
 }
 
 #[derive(Debug,Copy, Clone,PartialEq)]
-pub struct UIntOutsideRange<N> {
+pub struct IntOutsideRange<N> {
     pub value: N,
     pub start: N,
     pub len:Option<N>,
@@ -233,12 +233,12 @@ pub struct UIntOutsideRange<N> {
 
 #[derive(Debug, Clone)]
 pub enum RangedIntParseError<N> {
-    InvalidUInt { 
+    InvalidInt { 
         #[cfg(feature="std")]
         str_: String, 
         start: N,
     },
-    OutsideRange(UIntOutsideRange<N>),
+    OutsideRange(IntOutsideRange<N>),
 }
 
 

@@ -63,7 +63,7 @@ To use this crate in no_std contexts disable the default-feature.
 
 */
 
-#![recursion_limit = "160"]
+#![recursion_limit = "96"]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(non_camel_case_types)]
 #![allow(unused_imports)]
