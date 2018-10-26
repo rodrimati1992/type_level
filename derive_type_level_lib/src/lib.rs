@@ -29,7 +29,7 @@ pub(crate) mod self_removed_bound;
 pub(crate) mod data_structure;
 pub mod common_tokens;
 pub mod typelevel;
-pub mod const_constructor;
+pub mod mutconstvalue;
 pub mod doc_code_snippets;
 pub mod parse_syn;
 pub(crate) mod void_like;

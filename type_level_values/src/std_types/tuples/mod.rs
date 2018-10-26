@@ -10,7 +10,7 @@ use crate_::collection_ops::{
     ReverseOp,
 };
 use crate_::field_traits::{GetField_, SetField_};
-use crate_::discriminant::Discriminant;
+use crate_::discriminant::{Discriminant,UIntFromDiscriminant};
 
 use prelude::*;
 
@@ -52,6 +52,7 @@ macro_rules! impl_tuple_trait {
 
             impl<$($tparams),*>  GetDiscriminant for ($($tparams,)*){
                 type Discriminant=Tuple_Discr;
+                type UIntDiscr=TypeFn<UIntFromDiscriminant,Tuple_Discr>;
                 type Variant=TupleType;
             }
 

@@ -23,10 +23,16 @@ use self::type_level_Mutability::{Immutable, MutabilityTrait, Mutable};
 
 /////////////////////////////////////////////////////////////////////
 
-/// A Wrapper type whose mutability is a const-parameter.
-/// Many impls are implemented on [MutabilityWrapper].
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Ord, PartialOrd,ConstConstructor)]
-#[cconstructor(Type="MutabilityWrapper",ConstParam="M")]
+#[derive(MutConstValue)]
+#[mcv(
+    doc="
+        A Wrapper type whose mutability is a const-parameter.
+        Many impls are implemented on [MutabilityWrapper].
+    ",
+    derive(Debug, Copy, Clone, PartialEq, Eq, Ord, PartialOrd),
+    Type="MutabilityWrapper",
+    Param ="M",
+)]
 pub struct MutabilityWrapperInner<T, M> {
     value: T,
     mutability: M,

@@ -311,6 +311,7 @@ type_fn!{define_trait
 
 #[derive(TypeLevel)]
 #[typelevel(reexport(Variants))]
+#[typelevel(items(runtime_conv(NoImpls)))]
 pub enum TryFold<T,B>{
     TFVal(T),
     TFBreak(B),

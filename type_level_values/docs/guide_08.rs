@@ -336,8 +336,11 @@ pub type InitialGame=construct!(GameType=>
 
 //@codeblock-start:arcade-machine-struct
 
-#[derive(Copy,Clone,Debug,ConstConstructor)]
-#[cconstructor(Type="ArcadeMachine",ConstParam="G")]
+#[derive(MutConstValue)]
+#[mcv(
+    derive(Copy,Clone,Debug),
+    Type="ArcadeMachine",Param ="G",
+)]
 pub struct ArcadeMachineInner<G>(pub ConstWrapper<G>);
 
 //@codeblock-end  :arcade-machine-struct

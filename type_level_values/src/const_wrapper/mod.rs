@@ -61,7 +61,7 @@ impl<T:?Sized> WrapperTrait for ConstWrapper<T> {
 
 impl<T:?Sized> GetDiscriminant for ConstWrapper<T>{
     type Discriminant=Discriminant<ConstWrapperType,ConstWrapperType, U0>;
-
+    type UIntDiscr=U0;
     type Variant=ConstWrapperType;
 }
 

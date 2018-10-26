@@ -81,6 +81,8 @@ where
     type Output = I0::Output;
 }
 
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Returns the discriminant of an enum variant.
@@ -88,6 +90,9 @@ pub trait GetDiscriminant {
     /// The discriminant for this ConstValue.
     ///     
     type Discriminant;
+
+    /// This is the unsigned integer of the discriminant of this ConstValue.
+    type UIntDiscr;
 
     /// The marker type used to have the name of the variant of this ConstValue in error messages.
     ///
@@ -100,16 +105,45 @@ pub trait GetDiscriminant {
 pub type GetDiscrOf<This>=
     <This as GetDiscriminant>::Discriminant;
 
+/// Gets the the unsigned integer of the discriminant of this ConstValue..
+pub type GetUIntDiscrOf<This>=
+    <This as GetDiscriminant>::UIntDiscr;
+
 
 /// Gets the marker type used to have the name of the variant of this ConstValue in error messages.
 pub type GetVariantOf<This>=
     <This as GetDiscriminant>::Variant;
 
 
+type_fn!{
+    pub fn UIntFromDiscriminant[N, T, I](Discriminant<N, T, I>){ I }
+}
+
+type_fn!{
+    pub fn GetDiscrOp[This](This)
+    where[ This:GetDiscriminant ]
+    { This::Discriminant }
+}
+
+type_fn!{
+    pub fn GetUIntDiscrOp[This](This)
+    where[ This:GetDiscriminant ]
+    { This::UIntDiscr }
+}
+
+type_fn!{
+    pub fn GetVariantOp[This](This)
+    where[ This:GetDiscriminant ]
+    { This::Variant }
+}
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#[cfg(all(test,feature="passed_tests"))]
+#[cfg(test)]
+// #[cfg(all(test,feature="passed_tests"))]
 mod tests{
     use super::*;
     use crate_::ops::*;
@@ -124,26 +158,55 @@ mod tests{
             Ok__Discr,Ok__Variant,
             Err__Discr,Err__Variant,
         };
+        use std_types::range   ::type_level_Range  ::RangeType;
         use std_types::range   ::type_level_Range  ::variants::{Range_Discr  ,Range_Variant};
+        use std_types::range_to::type_level_RangeTo::RangeToType;
         use std_types::range_to::type_level_RangeTo::variants::{RangeTo_Discr,RangeTo_Variant};
 
-        let _:AssertEq< GetDiscrOf<Some_<()>> , Some__Discr >;
-        let _:AssertEq< GetVariantOf<Some_<()>> , Some__Variant >;
+        type TestDiscr<This,Expected>=(
+            AssertEq<GetDiscrOf<This>,Expected>,
+            AssertFnRet<This,GetDiscrOp,Expected>,
+        );
+        type TestVariant<This,Expected>=(
+            AssertEq<GetVariantOf<This>,Expected>,
+            AssertFnRet<This,GetVariantOp,Expected>,
+        );
+        type TestUIntDiscr<This,Expected>=(
+            AssertEq<GetUIntDiscrOf<This>,Expected>,
+            AssertFnRet<This,GetUIntDiscrOp,Expected>,
+        );
 
-        let _:AssertEq< GetDiscrOf<Ok_<()>> , Ok__Discr >;
-        let _:AssertEq< GetVariantOf<Ok_<()>> , Ok__Variant >;
+        let _:TestDiscr<Some_<False>, Some__Discr>;
+        let _:TestDiscr<Some_<False>, Discriminant<Some__Variant,OptionType,U0>>;
+        let _:TestVariant<Some_<False> , Some__Variant >;
+        let _:TestUIntDiscr<Some_<False> , U0 >;
 
-        let _:AssertEq< GetDiscrOf<Err_<()>> , Err__Discr >;
-        let _:AssertEq< GetVariantOf<Err_<()>> , Err__Variant >;
+        let _:TestDiscr<None_, Discriminant<None__Variant,OptionType,U1> >;
+        let _:TestDiscr<None_, None__Discr >;
+        let _:TestVariant<None_ , None__Variant >;
+        let _:TestUIntDiscr<None_ , U1 >;
 
-        let _:AssertEq< GetDiscrOf<None_> , None__Discr >;
-        let _:AssertEq< GetVariantOf<None_> , None__Variant >;
 
-        let _:AssertEq< GetDiscrOf<ConstRange<U0,U0>> , Range_Discr >;
-        let _:AssertEq< GetVariantOf<ConstRange<U0,U0>> , Range_Variant >;
+        let _:TestDiscr<Ok_<False>, Discriminant<Ok__Variant,ResultType,U0> >;
+        let _:TestDiscr<Ok_<False>, Ok__Discr >;
+        let _:TestVariant<Ok_<False> , Ok__Variant >;
+        let _:TestUIntDiscr<Ok_<False> , U0 >;
 
-        let _:AssertEq< GetDiscrOf<ConstRangeTo<U0>> , RangeTo_Discr >;
-        let _:AssertEq< GetVariantOf<ConstRangeTo<U0>> , RangeTo_Variant >;
+        let _:TestDiscr<Err_<False>, Discriminant<Err__Variant,ResultType,U1> >;
+        let _:TestDiscr<Err_<False>, Err__Discr >;
+        let _:TestVariant<Err_<False> , Err__Variant >;
+        let _:TestUIntDiscr<Err_<False> , U1 >;
+
+
+        let _:TestDiscr<ConstRange<U0,U0> , Discriminant<Range_Variant,RangeType,U0> >;
+        let _:TestDiscr<ConstRange<U0,U0> , Range_Discr >;
+        let _:TestVariant<ConstRange<U0,U0> , Range_Variant >;
+        let _:TestUIntDiscr<ConstRange<U0,U0> , U0 >;
+
+        let _:TestDiscr<ConstRangeTo<U0> , Discriminant<RangeTo_Variant,RangeToType,U0> >;
+        let _:TestDiscr<ConstRangeTo<U0> , RangeTo_Discr >;
+        let _:TestVariant<ConstRangeTo<U0> , RangeTo_Variant >;
+        let _:TestUIntDiscr<ConstRangeTo<U0> , U0 >;
 
 
     }

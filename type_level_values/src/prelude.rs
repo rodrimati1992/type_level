@@ -30,7 +30,9 @@ pub use std_types::range_to::{ConstRangeTo, RangeToTrait};
 pub use std_types::range_to_inclusive::{ConstRangeToInclusive, RangeToInclusiveTrait};
 
 pub use std_types::option::{None_, OptionTrait, OptionType, Some_,NewSome,NewNone};
-pub use std_types::phantomdata::{PhantomDataTrait, PhantomDataType};
+pub use std_types::phantomdata::{
+    PhantomDataTrait, PhantomDataType,NewPhantomData,NewVariantPhantom
+};
 pub use std_types::result::{Err_, Ok_, ResultTrait, ResultType,NewOk,NewErr};
 
 pub use core_extensions::type_level_bool::{Boolean, BooleanType, False, True};
@@ -71,6 +73,7 @@ pub use ops::{
 
 pub use const_wrapper::{
     AsConstWrapper, ConstWrapper, ConstWrapperFromTrait, UnwrapConst,WrapperTrait,
+    NewConstWrapper,
 };
 
 pub use core_extensions::{

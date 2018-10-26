@@ -212,20 +212,21 @@ pub struct IsMutRef;
 
 pub mod rectangle {
     use super::*;
-
-    /// A rectangle where certain fields are inaccessible based on a const parameter.
-    /// Many impls are also implemented on [Rectangle].
-    #[derive(Copy, Clone, Default, Debug, PartialEq, ConstConstructor)]
-    #[cconstructor(
+    #[derive(MutConstValue)]
+    #[mcv(
+        doc="
+            A rectangle where certain fields are inaccessible based on a const parameter.
+            Many impls are also implemented on [Rectangle].
+        ",
+        derive(Copy, Clone, Default, Debug, PartialEq),
+        repr(C),
         Type(
             name = "Rectangle",
             doc = "A rectangle where certain fields are inaccessible based on a const parameter.",
             doc = "Many impls are also implemented on [RectangleInner].",
         ),
-        ConstParam = "I",
-        ConstConstructor = "RectangleCC",
+        Param = "I",
     )]
-    #[repr(C)]
     pub struct RectangleInner<I, P> {
         x: u32,
         y: u32,

@@ -10,8 +10,8 @@ pub mod doc_code_snippets_macro;
 #[path = "attribute_typelevel.md"]
 pub mod attribute_typelevel;
 
-#[path = "attribute_const_constructor.md"]
-pub mod attribute_const_constructor;
+#[path = "attribute_mut_const_value.md"]
+pub mod attribute_mut_const_value;
 
 #[path = "attribute_shared.md"]
 pub mod attribute_shared;
@@ -61,7 +61,5 @@ pub mod guide{
     include!{"./guide_10.rs"}
 
     include!{"./guide_11.rs"}
-
-    include!{"./guide_12.rs"}
 }
 

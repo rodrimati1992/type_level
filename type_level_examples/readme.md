@@ -8,7 +8,7 @@ To run the examples do `cargo run -- ` and then add one of the arguments from th
 **Please create issues for any problem.**
 
 This crate uses [`derive_type_level`](https://crates.io/crates/derive_type_level) to access the 
-`TypeLevel` and ConstConstructor derive macros,
+`TypeLevel` and `MutConstValue` derive macros,
 and [`type_level_values`](https://crates.io/crates/type_level_values)
 for types and traits related to type-level values and functions.
 

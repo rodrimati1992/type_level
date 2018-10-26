@@ -47,10 +47,13 @@ pub type AnimalInitialized = SetField<AnimalInitialization_Uninit, ai_field::All
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-type AnimalBuilder<I> = AnimalBuilderInner<ConstWrapper<I>>;
+type AnimalBuilder<I> = AnimalBuilder_Ty<ConstWrapper<I>>;
 
-#[derive(ConstConstructor)]
-#[cconstructor(Type(use_ = "AnimalBuilder"), ConstParam = "I")]
+#[derive(MutConstValue)]
+#[mcv(
+    Type(use_ = "AnimalBuilder"), 
+    Param = "I"
+)]
 pub struct AnimalBuilderInner<I>
 where
     I: IntoRuntime<AnimalInitialization>,

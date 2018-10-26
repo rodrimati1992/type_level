@@ -33,9 +33,12 @@ pub struct Reversed(pub bool);
 /// The way to deserialize a SortedList.After deserializing it,call SortedList::initialize.
 pub type DeserializeSortedList<T> = SortedList<T, Uninitialized>;
 
-/// A List that is sorted (its type being SortedList<T>) .
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, ConstConstructor)]
-#[cconstructor(Type= "SortedList", ConstParam = "I=Initialized")]
+#[derive(MutConstValue)]
+#[mcv(
+    doc="A List that is sorted (its type being SortedList<T>) .",
+    derive(Debug, PartialEq, Eq, PartialOrd, Ord),
+    Type= "SortedList", Param = "I=Initialized",
+)]
 pub struct SortedListInner<T, I> {
     list: Vec<T>,
 

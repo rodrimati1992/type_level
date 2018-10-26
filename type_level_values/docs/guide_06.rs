@@ -179,8 +179,12 @@ pub type AllInitialized=SetField<
 
 //@codeblock-start:builder_struct_decl
 
-#[derive(Clone,Default, Debug, ConstConstructor)]
-#[cconstructor(Type = "TetrisBuilder",ConstParam = "C")]
+
+#[derive(MutConstValue)]
+#[mcv(
+    derive(Clone,Default, Debug),
+    Type = "TetrisBuilder",Param = "C",
+)]
 pub struct TetrisBuilderInner<C>{
     l_pieces:Option<usize>,
     i_pieces:Option<usize>,

@@ -1,4 +1,4 @@
-//! Traits implemented by the ConstConstructor derive macro.
+//! Traits implemented by the MutConstValue derive macro.
 //!
 
 use super::*;
@@ -63,7 +63,7 @@ determine the layout of the type.
 
 To ensure that the Const-parameter does not affect the layout:
 
-- Use the ConstConstructor derive macro which automatically implements this trait.
+- Use the `MutConstValue` derive macro which automatically implements this trait.
 
 - Or implement this trait manually.
 

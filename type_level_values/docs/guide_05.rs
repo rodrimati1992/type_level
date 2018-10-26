@@ -194,8 +194,11 @@ mod rectangle{
 
     //@codeblock-start:rect_decl
 
-    #[derive(Default,Debug,Copy,Clone,ConstConstructor)]
-    #[cconstructor(Type="Rectangle",ConstParam="C")]
+    #[derive(MutConstValue)]
+    #[mcv(
+        derive(Default,Debug,Copy,Clone),
+        Type="Rectangle",Param="C",
+    )]
     pub struct RectangleInner<C>{
         x:u32,
         y:u32,

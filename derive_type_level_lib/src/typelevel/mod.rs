@@ -135,6 +135,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         #[allow(unused_imports)]
         #vis mod #created_module { 
             use super::*;
+            use type_level_values;
             use type_level_values::reexports::*;
 
             #struct_decls

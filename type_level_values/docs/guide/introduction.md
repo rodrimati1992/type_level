@@ -17,12 +17,14 @@ can think in terms of type-level functions and values.
 # Defining a ConstValue.
 
 To define ConstValue simply use the TypeLevel macro on a type definition.
+Currently it is not possible to define a type using the TypeLevel derive macro inside a function,
+since the macro generates a module,and Rust does not allow defining modules inside functions.
 
 Go to 
 [attribute_typelevel](../attribute_typelevel/index.html) 
 for more details on using the TypeLevel derive macro.
 
-An example:
+### ConstValue example
 
 ```
 
@@ -45,10 +47,10 @@ pub enum Direction{
 
 # Defining a type using a ConstValue.
 
-To define such a type we use the ConstConstructor macro
+To define such a type we use the MutConstValue macro
 
-Go to [attribute_const_constructor](../attribute_const_constructor/index.html) for more details on 
-the ConstConstructor derive macro.
+Go to [attribute_const_constructor](../attribute_mut_const_value/index.html) for more details on 
+the MutConstValue derive macro.
 
 This is an example example of a wrapper type 
 in which the mutability of its contents is determined by a ConstValue parameter.
@@ -90,8 +92,15 @@ pub enum Mutability{
 }
 
 
-#[derive(Debug,Copy,Clone,ConstConstructor)]
-#[cconstructor(Type="Wrapper",ConstParam="Mut")]
+#[derive(MutConstValue)]
+#[mcv(
+    doc="
+        This is the doc-comment that gets applied to Wrapper_Ty,
+        to which attributes get delegated to. 
+    ",
+    derive(Debug,Copy,Clone),
+    Type="Wrapper",Param ="Mut",
+)]
 pub struct WrapperInner<T,Mut>{
     value:T,
     mutability:ConstWrapper<Mut>,

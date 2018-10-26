@@ -5,10 +5,10 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 
-#[proc_macro_derive(ConstConstructor, attributes(cconstructor))]
-pub fn derive_const_constructor(input: TokenStream) -> TokenStream {
+#[proc_macro_derive(MutConstValue, attributes(mcv))]
+pub fn derive_mutconstvalue(input: TokenStream) -> TokenStream {
     // (quote!{}).into()
-    derive_type_level_lib::const_constructor::derive_from_token_stream(input.into()).into()
+    derive_type_level_lib::mutconstvalue::derive_from_token_stream(input.into()).into()
 }
 
 #[proc_macro_derive(TypeLevel, attributes(typelevel))]

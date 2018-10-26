@@ -35,7 +35,7 @@ Trait/Type glossary:
 
 //@use_codeblock:struct_decl,ignore
 
-The ConstConstructor derive macro generates the type alias `RangedUsize` ,
+The MutConstValue derive macro generates the type alias `RangedUsize` ,
 which passes `R` wrapped inside a ConstWrapper.
 
 
@@ -96,11 +96,15 @@ use type_level_values::prelude::*;
 use std::ops::Range;
 
 
-/// Type that wraps and limits the range of a usize,
-/// using a ConstRange to determine the range it is limited to.
-///
-#[derive(Debug,Copy,Clone,PartialEq,PartialOrd,Eq,Ord,ConstConstructor)]
-#[cconstructor(Type="RangedUsize",ConstParam="R")]
+#[derive(MutConstValue)]
+#[mcv(
+    doc="
+        Type that wraps and limits the range of a usize,
+        using a ConstRange to determine the range it is limited to.
+    ",
+    derive(Debug,Copy,Clone,PartialEq,PartialOrd,Eq,Ord),
+    Type="RangedUsize",Param="R",
+)]
 pub struct RangedUsizeInner<R>{
     range:ConstWrapper<R>,
     n:usize,

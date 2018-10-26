@@ -21,7 +21,7 @@ Derive macros from `derive_type_level`:
     
 - [TypeLevel derive macro.](./docs/attribute_typelevel/index.html) 
 
-- [ConstConstructor derive macro.](./docs/attribute_const_constructor/index.html)
+- [MutConstValue derive macro.](./docs/attribute_mut_const_value/index.html)
 
 
 Miscelaneous things:
@@ -40,7 +40,7 @@ Miscelaneous things:
 
 - [Patterns: Programming patterns in this library.](./docs/appendix_patterns/index.html)
 
-- [type-level-function composition](./docs/appendix_function_composition/index.html)
+- [type-level-functions](./docs/appendix_functions/index.html)
 
 # Documentation
 

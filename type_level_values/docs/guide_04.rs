@@ -91,8 +91,11 @@ pub enum DebugImpl{
 
 //@codeblock-start:struct_decl
 
-#[derive(ConstConstructor)]
-#[cconstructor(Type="DebugWrapper",ConstParam="C" )]
+#[derive(MutConstValue)]
+#[mcv(
+    derive(Copy,Clone),
+    Type="DebugWrapper",Param="C" ,
+)]
 pub struct DebugWrapperInner<T,C>{
     pub value:T,
     impl_:ConstWrapper<C>,

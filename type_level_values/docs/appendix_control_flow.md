@@ -2,6 +2,17 @@
 
 This appendix demonstrates how to do control flow on the type level.
 
+<br><br>
+
+For information on type-level-functions go:
+
+- To the documentation of [the TypeFn_ trait](../../type_fn/trait.TypeFn_.html)
+
+- To the documentation of [the type_fn macro](../../macro.type_fn.html)
+
+- To the [appendix on functions](../appendix_functions/index.html)
+
+
 # Sequences
 
 Sequences are tuples or type-level-lists where every element implements TypeFn_ and
@@ -96,9 +107,6 @@ fn main(){
 ### `If` Example 1
 
 Implementing a function which returns 0 when dividing by 0.
-
-This requires `If` instead of `ÌfEager` since the branch that performs the division must only 
-be evaluated when the divisor is known not to be 0.
 
 ```
 #[macro_use]

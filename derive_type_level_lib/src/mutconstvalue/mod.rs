@@ -1,6 +1,7 @@
 // use std::cmp::max;
 // use std::iter;
 
+use parse_syn;
 use std::collections::{HashSet};
 
 
@@ -10,7 +11,7 @@ use super::{
     // ArenasRef,
 };
 
-use attribute_detection::const_constructor::{
+use attribute_detection::mutconstvalue::{
     CCAttributes,
     TypeDeclVariant,
 };
@@ -32,7 +33,7 @@ use quote::{
 
 // use core_extensions::IterCloner;
 use core_extensions::SelfOps;
-// use core_extensions::iterators::ReplaceNth;
+use core_extensions::iterators::IteratorExt;
 
 use proc_macro2::{TokenStream};
 
@@ -47,10 +48,12 @@ use ::to_token_fn::{
 
 use ::print_derive_tokens;
 
+use std::mem;
 
 pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     use syn::token::Comma;
     let comma=Comma::default();
+    let attrs=mem::replace(&mut ast.attrs,Vec::new());
     ast.generics.make_where_clause();
     for generic in &mut ast.generics.params {
         match *generic {
@@ -61,37 +64,48 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
             _=>{}
         }
     }
-    if ast.generics.params.empty_or_trailing() {
+    if !ast.generics.params.trailing_punct() {
         ast.generics.params.push_punct(comma);
     }
-    let ast=ast;
-
+    
     let arenas=Arenas::default();
-    let ds=DataStructure::new(&ast);
-    let attrs=&CCAttributes::new(&ast.attrs,&arenas);
-    let vis=&ast.vis;
-    let name=&ds.name;
+    let attrs=&CCAttributes::new(&attrs,&arenas);
+    let vis =ast.vis.clone();
+    let original_name=ast.ident.clone();
+
+
+    let field_tys:HashSet<syn::Type>;
+
+    {
+        let ds=DataStructure::new(&ast);
+        
+        field_tys=ds.variants
+            .iter()
+            .flat_map(|v| &v.fields )
+            .map(|f| f.ty.clone() )
+            .collect();
+    }
+    
+    let new_ident=&|s:String|{
+        &*arenas.idents.alloc(parse_syn::parse_ident(&s))
+    };
+
+    let created_module=format!("const_constructor_{}",original_name).piped(new_ident);
 
     if attrs.skip_derive {
         return quote!();
     }
 
-    let new_ident=&|s:String|{
-        &*arenas.idents.alloc(Ident::new(&s,name.span())) 
-    };
     let help_message="\n\
         Help:\n\
         \n\
         Required parameters:\n\t\
-            #[cconstructor(Type=\"Foo\",ConstParam=\"Const\")]\n\
-        \n\
-        Optional parameters:\n\t\
-            #[cconstructor(ConstConstructor=\"FooCC\")]\n\
+            #[mcv(Type=\"Foo\",Param =\"Const\")]\n\
         \n\
     ";
 
-    let ref attrs_cc_impl =attrs.impls.const_constructor.impl_annotations();
-    let ref bounds_cc_impl =attrs.impls.const_constructor.bound_tokens();
+    // let ref attrs_cc_impl =attrs.impls.const_constructor.impl_annotations();
+    // let ref bounds_cc_impl =attrs.impls.const_constructor.bound_tokens();
 
     let ref attrs_acp=attrs.impls.apply_const_param.impl_annotations();
     let ref bounds_acp=attrs.impls.apply_const_param.bound_tokens();
@@ -102,8 +116,8 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     let ref attrs_gcp=attrs.impls.get_const_param.impl_annotations();
     let ref bounds_gcp=attrs.impls.get_const_param.bound_tokens();
 
-    let ref attrs_cc_type=attrs.const_constructor.impl_annotations();
-    let ref bounds_cc_type=attrs.const_constructor.bound_tokens();
+    // let ref attrs_cc_type=attrs.const_constructor.impl_annotations();
+    // let ref bounds_cc_type=attrs.const_constructor.bound_tokens();
 
     let ref attrs_cli =attrs.impls.const_layout_independent.impl_annotations();
     let ref bounds_cli=attrs.impls.const_layout_independent.bound_tokens();
@@ -111,23 +125,27 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     let ref attrs_type_alias=attrs.type_alias.impl_annotations();
     
 
-    let created_module=format!("const_constructor_{}",name).piped(new_ident);
-
     let type_alias=&attrs.type_alias.inner.decl.unwrap_or_else(||{
         panic!("must pass the 'Type' parameter.\n{}",help_message);
     });
     let type_alias_ident=type_alias.ident();
 
-    let const_constructor=&attrs.const_constructor.inner.decl.unwrap_or_else(||{
-        TypeDeclVariant::Name(new_ident(format!("{}CC",type_alias_ident)))
-    });
-    let const_constructor_ident=const_constructor.ident();
+    let const_constructor_ident=new_ident(format!("{}CC",type_alias_ident));
+
+    attrs.attrs.bounds.iter().cloned()
+        .extending( &mut ast.generics.make_where_clause().predicates );
+
+    let delegated_attrs=&attrs.attrs.attrs;
+    let delegated_docs =&attrs.attrs.docs;
+    let name=new_ident(format!("{}_Ty",type_alias_ident));
+
+    ast.ident=name.clone();
 
     let const_param_for_alias=new_ident(format!("__ConstParam"));
     // let const_param_for_alias_rep=iter::repeat(const_param_for_alias);
     let (const_param_ident,const_param_default)=
         attrs.const_param.unwrap_or_else(||{
-            panic!("must pass the 'ConstParam' parameter.\n{}",help_message);
+            panic!("must pass the 'Param' parameter.\n{}",help_message);
         });
 
 
@@ -188,13 +206,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     
     let ref generic_params=generics.params;
 
-    let field_tys:HashSet<&syn::Type>=ds.variants
-        .iter()
-        .flat_map(|v| &v.fields )
-        .map(|f| f.ty )
-        .collect();
-
-
+    
     let ref field_tys_mentioning_const={
         let const_finder=FindTypeParam::new(const_param_ident);
 
@@ -207,23 +219,25 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         panic!("Const-parameter '{}' is never used", const_param_ident);
     }
 
-
     let (_, ty_generics, where_clause) = generics.split_for_impl();
     let where_clause=&where_clause.unwrap().predicates;
 
-
-
-    let ext_methods_allowed=attrs.extension_methods.inner.is_allowed;
+    let ext_methods_allowed=attrs.extension_methods.is_allowed;
     let ext_methods_allowed_ty= new_ident(["False","True"][ext_methods_allowed as usize].into());
     
-    let ref attrs_allowed_ops=attrs.extension_methods.impl_annotations();
-    let ref bounds_allowed_ops=attrs.extension_methods.bound_tokens();
-
-    
     let mut tokens=TokenStream::new();
+    
+
+    tokens.append_all(quote!{
+        #(#[#delegated_attrs])*
+        #(#[doc=#delegated_docs])*
+        #ast
+    });
 
     if let TypeDeclVariant::Name(_)=*type_alias {
         tokens.append_all(quote!{
+            #[allow(dead_code)]
+            #[allow(non_camel_case_types)]
             #attrs_type_alias
             #vis type #type_alias_ident< 
                 #(#lifetimes,)*
@@ -232,14 +246,14 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
             >=#name < #type_alias_gen_params >;
         });
     }
-    if let TypeDeclVariant::Name(_)=*const_constructor {
+    {
         let const_constructor_doc=format!("The ConstConstructor for {}",name);
         tokens.append_all(quote!{
-            #attrs_cc_type
+            // #attrs_cc_type
             #[doc=#const_constructor_doc]
             #vis struct #const_constructor_ident< #remaining_generics >
             where 
-                #bounds_cc_type
+                // #bounds_cc_type
             {
                 _marker: 
                     ::type_level_values::reexports::VariantPhantom<(
@@ -297,22 +311,19 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
 
             #(#field_accessors)*
 
-            #attrs_allowed_ops
             impl<#remaining_generics> AllowedOps 
             for #const_constructor_ident< #remaining_g_params > 
-            where 
-                #bounds_allowed_ops
             {
                 type ExtensionMethods=type_level_bool::#ext_methods_allowed_ty;
             }
 
-            #attrs_cc_impl
+            // #attrs_cc_impl
             impl< #remaining_generics > 
                 ConstConstructor
             for #const_constructor_ident< #remaining_g_params > 
             where 
-                #bounds_cc_impl
-                #bounds_cc_type
+                // #bounds_cc_impl
+                // #bounds_cc_type
             {}
             
             #attrs_gcc
@@ -320,7 +331,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
             where 
                 #(#where_clause,)*
                 #bounds_gcc
-                #bounds_cc_type
+                // #bounds_cc_type
                 Self:GetConstParam_,
             {
                 type Constructor = #const_constructor_ident< #remaining_g_params >;
@@ -358,7 +369,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
             where 
                 #(#where_clause,)*
                 #bounds_acp
-                #bounds_cc_type
+                // #bounds_cc_type
                 ConstWrapper<#const_param_for_alias>:TypeIdentity<Type=#const_param_ident>,
                 #name #ty_generics:TypeIdentity<Type=__Output>,
                 __Output:

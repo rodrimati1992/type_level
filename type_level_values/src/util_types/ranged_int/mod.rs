@@ -92,8 +92,11 @@ macro_rules! new_ranged{( $ty:ty, $num:expr )=>{
 ```
 
 */
-#[derive(Debug, Copy, Clone, ConstConstructor)]
-#[cconstructor(Type = "RangedIntR", ConstParam = "R")]
+#[derive(MutConstValue)]
+#[mcv(
+    derive(Debug, Copy, Clone),
+    Type = "RangedIntR", Param = "R"
+)]
 pub struct RangedIntInner<N,R>
 where
     R: WrapperTrait,

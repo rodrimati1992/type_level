@@ -72,8 +72,10 @@ mod user{
         UserLevel,
     }
 
-    #[derive(ConstConstructor)]
-    #[cconstructor(Type = "User",ConstParam = "P")]
+    #[derive(MutConstValue)]
+    #[mcv(
+        Type = "User",Param = "P"
+    )]
     pub struct UserInner<P> {
         _privilege: ConstWrapper<P>,
     }

@@ -36,8 +36,10 @@ use self::type_level_State::{Closed, Open, OpenTrait};
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-#[derive(ConstConstructor)]
-#[cconstructor(Type = "ChannelEnd", ConstParam = "S")]
+#[derive(MutConstValue)]
+#[mcv(
+    Type = "ChannelEnd", Param = "S"
+)]
 pub struct ChannelEndInner<Chan, S: WrapperTrait> {
     channel: Chan,
     #[allow(dead_code)]

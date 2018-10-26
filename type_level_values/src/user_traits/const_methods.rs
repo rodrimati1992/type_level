@@ -119,11 +119,11 @@ This trait is Sealed and cannot be implemented outside the type_level_values cra
 
 use type_level_values::user_traits::builtin_constmethods::Ext_SetConstParam;
 
-#[derive(ConstConstructor)]
-#[cconstructor(
-    Type = "ConstUser",
-    ConstParam = "C",
-    extension_methods="false",
+#[derive(MutConstValue)]
+#[mcv(
+    derive(Debug,Copy,Clone),
+    Type = "ConstUser",Param = "C",
+    ExtensionMethods="false",
 )]
 pub struct ConstUserInner<C>{
     const_:ConstWrapper<C>,

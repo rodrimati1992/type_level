@@ -1,4 +1,4 @@
-use attribute_detection::const_constructor::{
+use attribute_detection::mutconstvalue::{
     ImplsIndex,
 };
 
@@ -22,7 +22,7 @@ pub fn extension_methods_attr()->AttrShape{
             AttrVariant{ kind:AttrKind::NameValue{value:"false".into()} , clarification:None},
             AttrVariant{ kind:AttrKind::NameValue{value:"true".into()} , clarification:None},
         ],
-        word:"extension_methods",
+        word:"ExtensionMethods",
         description:"\
             Determines whether extension ConstMethods are allowed to mutate 
             the Const-parameter of the derived type.\n\
@@ -78,35 +78,39 @@ pub fn const_param_attr()->AttrShape{
                 ".into())
             },
         ],
-        word:"ConstParam",
+        word:"Param",
         description:"(required attribute) \
             The identifier of the Const-parameter of this type.\
         ".into(),
     }
 }
 
-pub fn constconstructor_attr()->AttrShape{
-    AttrShape{
-        variants:vec![
-            AttrVariant{ 
-                kind:AttrKind::NameValue{value:"ident".into()} ,
-                clarification:Some("the string must be a valid identifier".into())
-            },
-            AttrVariant{ 
-                kind:AttrKind::List{value:" name=\"ident\" $(, <metadata_attribute> )* ".into()} , 
-                clarification:Some("the string must be a valid identifier".into())
-            },
-            AttrVariant{ 
-                kind:AttrKind::List{value:" use_=\"ident\"  $(, <metadata_attribute> )* ".into()} , 
-                clarification:Some(use_clarification("<ConstConstructor>"))
-            },
-        ],
-        word:"ConstConstructor",
-        description:"(optional attribute)\
-             Determines the name and other optional properties of the ConstConstructor.\
-        ".into(),
-    }
-}
+// pub fn constconstructor_attr()->AttrShape{
+//     AttrShape{
+//         variants:vec![
+//             AttrVariant{ 
+//                 kind:AttrKind::NameValue{value:"ident".into()} ,
+//                 clarification:Some("the string must be a valid identifier".into())
+//             },
+//             AttrVariant{ 
+//                 kind:AttrKind::List{
+//                     value:" name=\"ident\" $(, <metadata_attribute> )* ".into()
+//                 }, 
+//                 clarification:Some("the string must be a valid identifier".into())
+//             },
+//             AttrVariant{ 
+//                 kind:AttrKind::List{
+//                     value:" use_=\"ident\"  $(, <metadata_attribute> )* ".into()
+//                 },
+//                 clarification:Some(use_clarification("<ConstConstructor>"))
+//             },
+//         ],
+//         word:"ConstConstructor",
+//         description:"(optional attribute)\
+//              Determines the name and other optional properties of the ConstConstructor.\
+//         ".into(),
+//     }
+// }
 
 
 
@@ -163,15 +167,15 @@ pub fn type_subattrs()->ValidAttrs{
     type_subattr("<TypeAlias>")
 }
 
-pub fn constconstructor_subattrs()->ValidAttrs{
-    type_subattr("<ConstConstructor>")
-}
+// pub fn constconstructor_subattrs()->ValidAttrs{
+//     type_subattr("<ConstConstructor>")
+// }
 
-pub fn cconstructor_attrs()->ValidAttrs{
+pub fn mutconstvalue_attrs()->ValidAttrs{
     vec![
         type_attr(),
         const_param_attr(),
-        constconstructor_attr(),
+        // constconstructor_attr(),
         extension_methods_attr(),
         items_attr(),
     ].piped(ValidAttrs::new)

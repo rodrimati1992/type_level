@@ -1,7 +1,7 @@
 //! This module contains data structures for error reporting when parsing attributes.
 
 pub(crate) mod typelevel;
-pub(crate) mod const_constructor;
+pub(crate) mod mutconstvalue;
 
 
 use indexable_struct::GetEnumIndices;

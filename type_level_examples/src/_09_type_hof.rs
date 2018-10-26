@@ -97,11 +97,12 @@ pub struct CFParams {
 
 pub use self::type_level_CFParams::{CFParamsTrait, ConstCFParams};
 
-#[derive(Debug, Copy, Clone, ConstConstructor)]
-#[cconstructor(
-    // print_derive,
+#[derive(MutConstValue)]
+#[mcv(
+    derive(Debug, Copy, Clone),
+    // PrintDerive,
     Type = "CondType", 
-    ConstParam = "C"
+    Param = "C"
 )]
 pub struct CondTypeInner<T, C> {
     _marker: ConstWrapper<C>,

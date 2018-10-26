@@ -79,12 +79,17 @@ pub fn main_ () {
 
 pub type RangedInt<Start, End> = RangedIntR<ConstRange<Start, End>>;
 
-/// Ranged unsigned integer type,
-/// using a ConstRange to determine the range it is limited to.
-///
-/// The ConstRange also determines the integer type stored.
-#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord, ConstConstructor)]
-#[cconstructor(Type = "RangedIntR", ConstParam = "R")]
+#[derive(MutConstValue)]
+#[mcv(
+    doc="
+        Ranged unsigned integer type,
+        using a ConstRange to determine the range it is limited to.
+
+        The ConstRange also determines the integer type stored.
+    ",
+    derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord),
+    Type = "RangedIntR", Param = "R"
+)]
 pub struct RangedIntInner<R>
 where
     R: WrapperTrait,

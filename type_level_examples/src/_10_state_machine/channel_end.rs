@@ -182,10 +182,13 @@ pub struct InvalidOutsideLoop<T>(Void, T);
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-pub type Channel<CEnd, S> = ChannelInner<ConstWrapper<CEnd>, ConstWrapper<S>>;
+pub type Channel<CEnd, S> = Channel_Ty<ConstWrapper<CEnd>, ConstWrapper<S>>;
 
-#[derive(Debug, ConstConstructor)]
-#[cconstructor(Type(use_ = "Channel"), ConstParam = "S")]
+#[derive(MutConstValue)]
+#[mcv(
+    derive(Debug),
+    Type(use_ = "Channel"), Param = "S",
+)]
 pub struct ChannelInner<CEnd, S> {
     tx: MPSCSender<Message>,
     rx: MPSCReceiver<Message>,
