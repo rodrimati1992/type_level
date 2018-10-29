@@ -53,6 +53,24 @@ type_fn!{
     ]{ let out;out }
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////
+
+
+type_fn!{
+    captures(Msg)
+    /**
+    Immediately causes a compile-time error with the `Msg` message.
+    */
+    pub fn Panic[_0](_0)
+    where[ Panicking<Msg>:TypeIdentity<Type= IsPanicking > ]
+    { () }
+}
+
+
+#[doc(hidden)]
+pub struct Panicking<T>(T);
+#[doc(hidden)]
+pub struct IsPanicking;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////

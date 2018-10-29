@@ -87,14 +87,22 @@ extern crate serde;
 
 extern crate num_traits;
 
+
+
+include!( "./macros/const_method_macro.rs");
+include!( "./macros/construct.rs");
+include!( "./macros/set_fields.rs");
+include!( "./macros/tlist.rs");
+include!( "./macros/type_fn.rs");
+
+
+
 #[macro_use]
 pub mod type_fn;
 pub mod std_ops;
 pub mod fn_adaptors;
 
 
-#[macro_use]
-pub mod macros;
 #[macro_use]
 pub mod ops;
 
@@ -131,6 +139,8 @@ pub(crate) mod type_level_values {
 pub mod reexports ;
 
 // emulating Rust 2018 edition's crate:: prefix.
+// Used instead of it so as to stay compatible with Rust pre-1.30 .
 mod crate_ {
     pub(crate) use super::*;
 }
+

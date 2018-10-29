@@ -1,12 +1,15 @@
 #[allow(unused_imports)]
 use core_extensions::prelude::*;
 
-// use std::collections::{BTreeMap,HashMap,HashSet};
 // use std::borrow::Cow;
 use std::mem;
+use std::cmp::{PartialEq,Eq,Ord,PartialOrd};
+use std::hash::Hash;
 use std::fmt;
 #[allow(unused_imports)]
-use std::fmt::Write;
+use std::fmt::{Write,Debug};
+use std::rc::Rc;
+use std::collections::{HashMap,HashSet};
 
 use syn;
 use syn::{Ident};
@@ -17,8 +20,13 @@ use derive_type_level_lib::parse_syn::*;
 
 use derive_type_level_lib::indexable_struct::GetEnumIndices;
 
+use shared::utils::{
+    tokens_to_string,
+};
+
+
 declare_indexable_struct!{
-    enum index=ModIndex
+    enum index=TLModIndex
     #[derive(Default)]
     struct indexable=IndexableByMod
     variants=[ 
@@ -32,29 +40,61 @@ declare_indexable_struct!{
     multi_indices=[]
 }
 
-impl ModIndex{
-    pub(crate)fn new(ident:&Ident,tokens:&CommonTokens,type_level_mod:&Ident)->Option<ModIndex>{
-        Some(if ident==type_level_mod   { 
-            ModIndex::TypeLevelMod 
-        }else if *ident==tokens.dund_fields_mod { 
-            ModIndex::DunderFieldMod 
-        }else if *ident==tokens.fields_mod       { 
-            ModIndex::FieldsMod 
-        }else if *ident==tokens.priv_mod      { 
-            ModIndex::PrivateMod 
-        }else if *ident=="variants"      { 
-            ModIndex::VariantsMod
-        }else{ 
-            return None 
-        })
-    }
+pub(crate) fn type_level_modules(tokens:&CommonTokens,type_level_mod:Ident)->Module<TLModIndex>{
+    use self::TLModIndex as TLI;
+
+    let tl_mod=Module::new(type_level_mod,TLI::TypeLevelMod)
+        .add_submod(Module::new(parse_ident("variants")       ,TLI::VariantsMod))
+        .add_submod(Module::new(tokens.dund_fields_mod.clone(),TLI::DunderFieldMod))
+        .add_submod(Module::new(tokens.fields_mod.clone()     ,TLI::FieldsMod))
+        .add_submod(Module::new(tokens.priv_mod.clone()       ,TLI::PrivateMod));
+
+    Module::new(parse_ident("deriving"),TLI::DerivingMod)
+        .add_submod(tl_mod)
 }
 
-impl Default for ModIndex{
-    fn default()->Self{
-        ModIndex::DerivingMod
-    }
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug)]
+pub struct Module<I>{
+    pub name:Ident,
+    pub index:I,
+    pub nested:HashMap<Ident,Rc<Module<I>>>,
 }
+
+impl<I> Module<I>{
+    pub fn new(name:Ident,index:I)->Self{
+        Self{
+            name,
+            index,
+            nested:HashMap::new(),
+        }
+    }
+    pub fn add_submod(mut self,submod:Module<I>)->Self{
+        match self.nested.insert( submod.name.clone(), Rc::new(submod) ) {
+            Some(prev)=>
+                panic!("\
+                    Attempting to add '{}' submodule \
+                    which collides with a pre-existing module of the same name.\
+                "),
+            _=>{}
+        }
+        self
+    }
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+pub trait ModIndex:'static+Debug+Copy+PartialEq+PartialOrd+Ord+Eq+Hash{}
+
+impl<T> ModIndex for T
+where T:'static+Debug+Copy+PartialEq+PartialOrd+Ord+Eq+Hash
+{}
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -73,11 +113,15 @@ pub enum EnumOrStruct{
 pub enum VisitItem<'a>{
     Trait (&'a syn::ItemTrait),
     Struct(&'a syn::ItemStruct),
+    Enum  (&'a syn::ItemEnum),
     Type  (&'a syn::ItemType),
     Impl  (&'a syn::ItemImpl),
     Use   (&'a syn::ItemUse),
     /// Signals that all the items in the module were visited.
     EndOfMod,
+    /// Signals that all items have been visited,
+    /// allowing the user to output errors that don't fit anywhere else.
+    EndOfVisitor,
 }
 
 
@@ -90,37 +134,23 @@ pub enum VisitItemsErrorKind{
 
 
 #[derive(Debug,Clone)]
-pub struct VisitItemsError{
+struct VisitItemsError{
     kind:VisitItemsErrorKind,
-    mod_ind:ModIndex,
     message:String,
-}
-
-impl VisitItemsError{
-    pub fn new<S>(kind:VisitItemsErrorKind,message:S)->Self
-    where S:Into<String>
-    {
-        Self{
-            kind,
-            mod_ind:ModIndex::default(),
-            message:message.into(),
-        }
-    }
 }
 
 
 impl fmt::Display for VisitItemsError{
     fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{
         use self::VisitItemsErrorKind as VIEK;
-        writeln!(
+        write!(
             f,
-            "{} in module {:?} :\n{}",
+            "{}:\n{}\n\n",
             match self.kind {
                 VIEK::WrongDefinition=>"An item is defined wrong",
                 VIEK::UnexpectedItem=>"Did not expect item",
                 VIEK::ExpectedMoreItems=>"Expected more items",
             },
-            self.mod_ind,
             self.message
         )
     }
@@ -131,33 +161,136 @@ impl fmt::Display for VisitItemsError{
 
 
 #[derive(Debug,Clone)]
-pub(crate) struct Visiting<'a>{
-    current:ModIndex,
+struct ItemErrors<I>{
+    mod_index:I,
+    item:String,
     errors:Vec<VisitItemsError>,
-    ctokens:&'a CommonTokens,
-    type_level_mod:Ident,
+}
+
+impl<I> ItemErrors<I>
+where I:ModIndex
+{
+    fn new(mod_index:I,item:VisitItem,errors:Vec<VisitItemsError>)->Self{
+        let item=match item {
+            VisitItem::Trait (item_)=>{
+                tokens_to_string(item_)
+            }
+            VisitItem::Struct(item_)=>{
+                tokens_to_string(item_)
+            }
+            VisitItem::Enum  (item_)=>{
+                tokens_to_string(item_)
+
+            }
+            VisitItem::Type  (item_)=>{
+                tokens_to_string(item_)
+            }
+            VisitItem::Impl  (item_)=>{
+                tokens_to_string(item_)
+            }
+            VisitItem::Use   (item_)=>{
+                tokens_to_string(item_)
+            }
+            VisitItem::EndOfMod=>{
+                format!("End of {:?} Module",mod_index)
+            }
+            VisitItem::EndOfVisitor=>{
+                format!("Visiting Finished")
+            }
+        };
+        Self{
+            mod_index,
+            item,
+            errors,  
+        }
+    }
+}
+
+impl<I> fmt::Display for  ItemErrors<I>
+where I:ModIndex
+{
+    fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{
+        writeln!(f,"--------------------")?;
+        write!(f,"In Module {:?}:",self.mod_index)?;
+        write!(f,"item:\n{}\n\n",self.item)?;
+        for err in &self.errors {
+            fmt::Display::fmt(err,f)?;
+        }
+        Ok(())
+    }
 }
 
 
-pub struct VisitingCheck<'a:'b,'b,F>{
-    inner:&'b mut Visiting<'a>,
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+pub struct CheckDeriveParams<'a,I>{
+    pub mod_index:I,
+    pub item:VisitItem<'a>,
+    nested_errors:Vec<VisitItemsError>,
+}
+
+impl<'a,I> CheckDeriveParams<'a,I>
+where I:ModIndex
+{
+    pub fn push_err<S>(&mut self,kind:VisitItemsErrorKind,error:S)
+    where S:Into<String>
+    {
+        let e=VisitItemsError{ 
+            kind,
+            message:error.into() 
+        };
+        self.nested_errors.push(e);
+    }
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+#[derive(Debug,Clone)]
+pub(crate) struct Visiting<I>{
+    current:Rc<Module<I>>,
+    modules:Rc<Module<I>>,
+    errors:Vec<ItemErrors<I>>,
+}
+
+
+pub struct VisitingCheck<'a,I:'static,F>{
+    inner:&'a mut Visiting<I>,
     visitor:F,
 }
 
 
-impl<'a> Visiting<'a>{
-    pub fn new(ctokens:&'a CommonTokens,type_level_mod:&str)->Self{
+impl<I> Visiting<I>
+where I:ModIndex
+{
+    pub fn new(modules:Rc<Module<I>>)->Self{
+        Self::check_module_indices(&modules);
         Self{
-            current:ModIndex::DerivingMod,
+            current:modules.clone(),
+            modules:modules.clone(),
             errors:Vec::new(),
-            ctokens,
-            type_level_mod:parse_ident(type_level_mod),
+        }
+    }
+    pub fn check_module_indices(modules:&Module<I>)->HashSet<I>{
+        let mut set:HashSet<I>=Default::default();
+        Self::check_module_indices_inner(modules,&mut set);
+        set
+    }
+    pub fn check_module_indices_inner(module:&Module<I>,set:&mut HashSet<I>){
+        if let Some(ind)=set.replace(module.index) {
+            panic!("\n\nAttempting to inset module index twice:\n\t{:?}\n\n",ind);
+        }
+        for submod in module.nested.values() {
+            Self::check_module_indices_inner(submod,set);
         }
     }
 
-    pub fn check_derive<F>(&mut self,derive_output:&'a str,visitor:F)
+    pub fn check_derive<F>(&mut self,derive_output:&str,visitor:F)
     where
-        F:FnMut(ModIndex,VisitItem)->Result<(),VisitItemsError>
+        F:FnMut(&mut CheckDeriveParams<I>)
     {
         let derive_output:syn::File=syn::parse_str(derive_output).unwrap_or_else(|e|{
             panic!(
@@ -167,7 +300,10 @@ impl<'a> Visiting<'a>{
             )
         });
 
-        VisitingCheck{ inner:&mut *self,visitor }.visit_file(&derive_output);
+        VisitingCheck{ 
+            inner:&mut *self,
+            visitor 
+        }.start_visit(&derive_output);
 
         if self.errors.is_empty() {
             println!("\n\nno errors\n\n");
@@ -177,86 +313,83 @@ impl<'a> Visiting<'a>{
         let mut output=String::new();
         output.push_str("\n\n\n");
         for error in self.errors.drain(..) {
-            writeln!(output,"{S}{}{S}",error,S="\n\n----------------\n\n" ).drop_();
+            writeln!(output,"{S}{S}{}{S}{S}",error,S="\n\n----------------\n\n" ).drop_();
         }
         panic!("{}",output );
     }
 
 
-    fn check_module(
-        &self,
-        modind:ModIndex,
-    )->ModIndex{
-        use self::ModIndex as MI;
+    fn update_current_module(&mut self,ident:&Ident){
+        if let Some(next)= self.current.nested.get(ident).cloned() {
+            self.current=next;
+            return;
+        }
 
-        let current=match ( self.current, modind ) {
-             ( MI::DerivingMod  , ind@MI::TypeLevelMod )
-            |( MI::TypeLevelMod , ind@MI::DunderFieldMod )
-            |( MI::TypeLevelMod , ind@MI::FieldsMod )
-            |( MI::TypeLevelMod , ind@MI::PrivateMod )
-            |( MI::TypeLevelMod , ind@MI::VariantsMod )
-            =>ind,
-            (from,to)=>
-                panic!("cannot go from:{:?} to:{:?}", from,to),
-        };
-        current
+        let buffer=String::new().mutated(|buff|{
+            for key in self.current.nested.keys() {
+                write!(buff,"{},",key).drop_();
+            }
+        });
+        panic!(
+            "\n\nInvalid identifier for module:\n\t{}\nExpected one of:\n\t{}\n\n", 
+            ident,
+            buffer
+        );
     }
 
 }
 
 
-impl<'a,'b,F> VisitingCheck<'a,'b,F> 
+impl<'a,I,F> VisitingCheck<'a,I,F> 
 where
-    F:FnMut(ModIndex,VisitItem)->Result<(),VisitItemsError>
+    I:ModIndex,
+    F:FnMut(&mut CheckDeriveParams<I>)
 {
+    fn start_visit(&mut self,derive_output:&syn::File){
+        self.visit_file(derive_output);
+        self.call_closure(VisitItem::EndOfVisitor);
+    }
     fn call_closure(&mut self,item:VisitItem){
-        let current=self.inner.current;
+        let current=self.inner.current.index;
 
-        if let Err(mut e)=(self.visitor)(current,item) {
-            e.mod_ind=current;
-            self.inner.errors.push(e);
+        let mut params=CheckDeriveParams{
+            mod_index:current,
+            item,
+            nested_errors:Vec::new(),
+        };
+        (self.visitor)(&mut params);
+
+        if !params.nested_errors.is_empty() {
+            let ierror=ItemErrors::new(current,item,params.nested_errors);
+            self.inner.errors.push(ierror);
         }
     }
-    fn nested_frame<NF>(&mut self,mod_:ModIndex,f:NF)
-    where
-        NF:FnOnce(&mut Self)
-    {
-        let replaced=mem::replace(&mut self.inner.current,mod_);
-        f(self);
-        self.inner.current=replaced;
-    }
 }
 
 
-impl<'a,'b,'ast,F> Visit<'ast> for VisitingCheck<'a,'b,F> 
+impl<'a,'ast,I,F> Visit<'ast> for VisitingCheck<'a,I,F> 
 where
-    F:FnMut(ModIndex,VisitItem)->Result<(),VisitItemsError>
+    I:ModIndex,
+    F:FnMut(&mut CheckDeriveParams<I>)
 {
     fn visit_item(&mut self, item: &'ast syn::Item){
         use syn::Item;
         match item {
-            &Item::Mod(ref v)=> self.visit_item_mod(v),
-            &Item::Impl(ref v)=>self.call_closure(VisitItem::Impl(v)),
-            &Item::Use(ref v)=>self.call_closure(VisitItem::Use(v)),
+            &Item::Mod   (ref mod_)=>{
+                let replaced=self.inner.current.clone();
+                let mod_ident=&mod_.ident;
+                self.inner.update_current_module(mod_ident);
+                visit::visit_item_mod(self,mod_);
+                self.call_closure(VisitItem::EndOfMod);
+                self.inner.current=replaced;
+            },
+            &Item::Impl  (ref v)=>self.call_closure(VisitItem::Impl(v)),
+            &Item::Use   (ref v)=>self.call_closure(VisitItem::Use(v)),
             &Item::Trait (ref v)=>self.call_closure(VisitItem::Trait(v)),
             &Item::Struct(ref v)=>self.call_closure(VisitItem::Struct(v)),
+            &Item::Enum  (ref v)=>self.call_closure(VisitItem::Enum(v)),
             &Item::Type  (ref v)=>self.call_closure(VisitItem::Type(v)),
             v=>panic!("unsupported item type:{:#?}",v)
         }
-    }
-    fn visit_item_mod(&mut self, mod_: &'ast syn::ItemMod){
-        let mod_ident=&mod_.ident;
-        let mod_ind=ModIndex::new(mod_ident,self.inner.ctokens,&self.inner.type_level_mod)
-            .unwrap_or_else(||{
-                panic!("invalid module:\n\t'{}'\n\nexpected one of:\n\t{}",
-                    mod_ident,
-                    ModIndex::indices_message(),
-                )
-            });
-        let inner_module=self.inner.check_module(mod_ind);
-        self.nested_frame(inner_module,|this|{
-            visit::visit_item_mod(this,mod_);
-            this.call_closure(VisitItem::EndOfMod);
-        });
     }
 }

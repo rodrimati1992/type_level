@@ -136,13 +136,17 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
             let generics  =&struct_.generics;
             // let generics_rep=iter::repeat(generics);
 
-            let field_mod_c=struct_.fields.iter().map(|x|{
+            let field_mod_fn=||struct_.fields.iter().map(|x|{
                 match x.relative_priv {
                     RelativePriv::Inherited=>&token.fields_mod ,
                     RelativePriv::MorePrivate=>&token.dund_fields_mod ,
                 }
             });
-            let field_names_c=struct_.fields.iter().map(|x|&x.accessor_ident);
+            let field_mod_c=field_mod_fn();
+            let field_mod_d=field_mod_fn();
+            let field_names_fn=||struct_.fields.iter().map(|x|&x.accessor_ident);
+            let field_names_c=field_names_fn();
+            let field_names_c_b=field_names_fn();
 
             let field_name_vis_fn=||{
                 struct_.fields.iter().map(|f|f.doc_hidden_attr())
@@ -257,6 +261,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
 
             
             let discriminant_ident=&struct_.discriminant_ident;
+            let discriminant_ident_b=&struct_.discriminant_ident;
 
             #[derive(Copy,Clone,PartialEq)]
             enum ConstOrRuntime{
@@ -350,6 +355,11 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                 }
                 impl<#generics> #trait_ident for #struct_name<#generics #priv_suffix>
                 where 
+                    Self:
+                        #supertrait+
+                        GetDiscriminant<Discriminant=variants::#discriminant_ident_b>+
+                        #(GetField_<#field_mod_d::#field_names_c_b> + )*
+                    ,
                     #const_bounds_wclause
                 {
                     #( 

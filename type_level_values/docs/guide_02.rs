@@ -116,7 +116,7 @@ pub enum Mutability {
         A Wrapper type which allows configuring whether its contents 
         are mutable or not with the `Mut` type parameter.
     ",
-    derive(Debug,Copy,Clone,PartialEq,PartialOrd,Eq,Ord),
+    derive(Debug,Clone,PartialEq,PartialOrd,Eq,Ord),
     Type="Wrapper",Param="Mut",
 )]
 pub struct _WrapperInner<T,Mut>{

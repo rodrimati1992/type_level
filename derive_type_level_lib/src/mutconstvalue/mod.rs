@@ -51,6 +51,9 @@ use ::print_derive_tokens;
 use std::mem;
 
 pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
+    // println!("{S}{S}{S}\n{}\n",ast.ident,S="-------------------------");
+
+
     use syn::token::Comma;
     let comma=Comma::default();
     let attrs=mem::replace(&mut ast.attrs,Vec::new());
@@ -93,6 +96,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     let created_module=format!("const_constructor_{}",original_name).piped(new_ident);
 
     if attrs.skip_derive {
+        // println!("skipping derive");
         return quote!();
     }
 

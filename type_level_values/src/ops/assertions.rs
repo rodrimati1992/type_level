@@ -34,7 +34,46 @@ impl<L,R> AssertEq_<R> for L
 where
     L:TypeIdentity<Type=R>
 {
-    type Output=R;
+    type Output=L;
+}
+
+
+//////////////////////////////////////////////////////////////
+
+
+type_fn!{define_trait
+    /**
+    Asserts that the ConstType of Self is the same as R.
+    
+    # Failing assertions.
+
+    Assertions that fail produce a compile-time error.
+
+    ```compile_fail
+    use type_level_values::prelude::*;
+    use type_level_values::ops::*;
+
+    let _:AssertEqConstType< U0,False >;
+    ```
+    
+    */
+    trait=AssertEqConstType_ [R]
+    /// Asserts that the ConstType of Self is the same as R.
+    type=AssertEqConstType
+    /// Asserts that the ConstType of Self is the same as R.
+    fn_type=AssertEqConstTypeOp
+    /// Asserts that the ConstType of This is the same as Rhs.
+    method_like=AssertEqConstTypeMt
+}
+
+
+impl<L,R,TL,TR> AssertEqConstType_<R> for L
+where
+    ConstTypeOfOp:TypeFn_<L,Output=TL>,
+    ConstTypeOfOp:TypeFn_<R,Output=TR>,
+    TL:TypeIdentity<Type=TR>,
+{
+    type Output=L;
 }
 
 
@@ -250,6 +289,25 @@ mod tests{
             L:AssertEq_<L,Output=L>,
             AssertEqOp:TypeFn_<(L,L),Output=L>,
             AssertEqMt<L>:TypeFn_<L,Output=L>,
+        {}
+
+        check::<U0>();
+        check::<U1>();
+        check::<U2>();
+        check::<U3>();
+        check::<()>();
+        check::<False>();
+        check::<True>();
+    }
+
+    #[test]
+    fn assert_eq_consttype(){
+        fn check< L >()
+        where
+            AssertEqConstType<L,L>:TypeIdentity<Type=L>,
+            L:AssertEqConstType_<L,Output=L>,
+            AssertEqConstTypeOp:TypeFn_<(L,L),Output=L>,
+            AssertEqConstTypeMt<L>:TypeFn_<L,Output=L>,
         {}
 
         check::<U0>();

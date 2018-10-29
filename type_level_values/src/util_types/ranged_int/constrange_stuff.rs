@@ -74,10 +74,7 @@ type_fn!{
     where[
         IntRange:RangeTrait,
         ConstLEOp:TypeFn_<(End,Start),Output=IsEmpty>,
-        End:Piped_<
-            If<ConstLtMt<IntRange::end>,NewSome,NewNone>,
-            Output=OptEnd
-        >,
+        End:Piped_< If<ConstLtMt<IntRange::end>,NewSome,NewNone>, Output=OptEnd >,
         OptEnd:Map_<SatSubMt<Start>,Output=RLen>,
         AssertRangeFitsInType: TypeFn_<(N,R)>,
     ]{

@@ -269,6 +269,11 @@ impl<'a> StructDeclarations<'a>{
                     let fieldname=FieldName::new(&v.ident);
                     let name_ident=field_attrs.rename.map_or(fieldname,FieldName::Named);
 
+                    let assoc_type=match name_ident {
+                        FieldName::Index(_    )=>&v.pattern_ident,
+                        FieldName::Named(ident)=>ident,
+                    };
+
                     let accessor_field_ident=match name_ident {
                         FieldName::Index(i)    =>
                             get_tuple_field_ident(i,relative_priv),
@@ -279,8 +284,7 @@ impl<'a> StructDeclarations<'a>{
                     let accessor_ident=accessor_field_ident.ident();
 
                     let suffixed_generic_parameter=|suffix:&str|->&'a Type{
-                        let x=parse_type(&format!("{}{}",accessor_ident,suffix));
-                        // let x=parse_type(&format!("{}{}",v.pattern_ident,suffix));
+                        let x=parse_type(&format!("{}{}",assoc_type,suffix));
                         arenas.types.alloc(x)
                     };
 
@@ -292,6 +296,7 @@ impl<'a> StructDeclarations<'a>{
                     let pub_trait_getter=
                         field_attrs.pub_trait_getter|| 
                         relative_priv==RP::Inherited;
+                    
 
                     {
                         let accessor=field_accessors.entry(accessor_ident).or_insert_with(||{
@@ -305,10 +310,6 @@ impl<'a> StructDeclarations<'a>{
                         }
                     }
 
-                    let assoc_type=match name_ident {
-                        FieldName::Index(_    )=>&v.pattern_ident,
-                        FieldName::Named(ident)=>ident,
-                    };
 
                     let assoc_type=if pub_trait_getter {
                         assoc_type
@@ -572,15 +573,15 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                 #(
                     #[derive(Clone,Copy)]
                     /// This is the accessor for the field of the same name.
-                    #vis_kind_submod_rep struct #fields_1a;
+                    pub struct #fields_1a;
                 )*
-                #vis_kind_submod use super::integer_reexports::{
+                pub use super::integer_reexports::{
                     #( #fields_1b, )*
                 };
 
                 /// This is the accessor for all the fields.
                 #[derive(Clone,Copy)]
-                #vis_kind_submod struct All;
+                pub struct All;
             }
 
             pub mod fields{
@@ -628,7 +629,6 @@ impl<'a> ToTokens for StructDeclarations<'a>{
             if let Some(enum_trait)=enum_trait{
                 tokens.append_all(quote!{
                     impl<#generics> #enum_trait for #s_name<#generics>
-                    where Self:#trait_ident,
                     {}
                 });
             }

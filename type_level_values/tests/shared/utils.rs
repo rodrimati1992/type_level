@@ -5,7 +5,7 @@ use core_extensions::prelude::*;
 use std::fmt::{self,Write};
 
 #[allow(dead_code)]
-pub(crate) fn display_totokens_list<I>(val:I)->AlwaysDisplay<String>
+pub(crate) fn display_totokens_list<I>(val:I,separator:&str)->AlwaysDisplay<String>
 where 
     I:IntoIterator,
     I::Item:ToTokens,
@@ -13,7 +13,7 @@ where
     let mut buffer=String::new();
     for elem in val{
         write_tokens(elem,&mut buffer);
-        buffer.push('\n');
+        buffer.push_str(separator);
     } 
     AlwaysDisplay( buffer )
 }
@@ -51,7 +51,7 @@ where T:ToTokens
 }
 
 #[allow(dead_code)]
-pub(crate) struct AlwaysDisplay<T>(T);
+pub(crate) struct AlwaysDisplay<T>(pub T);
 
 impl<T> fmt::Debug for AlwaysDisplay<T>
 where

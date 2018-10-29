@@ -150,9 +150,9 @@ pub struct ChannelEndInner<Chan, S: WrapperTrait> {
 
 #[derive(MutConstValue)]
 #[mcv(
-    doc="
+    doc = "
         This is a rectangle ,and this doc comment gets applied to Rectangle_Ty
-    ".
+    ",
     derive(Copy, Clone, Default, Debug, PartialEq),
     repr(C),
     Type(

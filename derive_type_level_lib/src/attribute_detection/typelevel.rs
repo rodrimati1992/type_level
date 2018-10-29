@@ -34,6 +34,9 @@ use syn::{
     self, Attribute, Ident, Meta, MetaList, NestedMeta, Path as SynPath, Visibility,TypeParamBound,
 };
 
+use quote::ToTokens;
+
+
 use std::marker::PhantomData;
 // use std::str::FromStr;
 
@@ -368,7 +371,10 @@ fn attr_settings_new_attr<'alloc>(
 ) {
     let meta_list:&'alloc MetaList = match attr.interpret_meta() {
         Some(Meta::List(meta_list)) => arenas.metalists.alloc(meta_list),
-        _ => return,
+        Some(_)=>{ return }
+        None=>{
+            panic!("not a valid attribute:\n{}\n",attr.into_token_stream() );
+        }
     };
 
     if meta_list.ident == "typelevel" {

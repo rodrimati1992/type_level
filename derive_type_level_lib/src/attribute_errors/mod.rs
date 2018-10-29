@@ -155,7 +155,7 @@ where
                 ).into()),
             }
         ],
-        word:"item",
+        word:"items",
         description,
     }
 }

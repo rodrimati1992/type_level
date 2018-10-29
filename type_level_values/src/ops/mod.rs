@@ -24,6 +24,7 @@ pub mod wrapper_ops;
 // };
 pub use self::assertions::{
     AssertEq_,AssertEqOp, AssertEqMt, 
+    AssertEqConstType_,AssertEqConstType,AssertEqConstTypeOp,AssertEqConstTypeMt,
     AssertFunc_,AssertFuncOp,AssertFuncMt,
     AssertThat_,AssertThatOp,
     AssertFnRet_,AssertFnRetOp,AssertFnRetMt,
@@ -62,7 +63,7 @@ pub use self::wrapper_ops::{
     OrElseOp, OrElse_,OrElseMt,
 };
 
-pub use self::control_flow::{If,  Lazy};
+pub use self::control_flow::{If,  Lazy,Panic};
 
 pub use self::integers::{
     IntegerConsts,

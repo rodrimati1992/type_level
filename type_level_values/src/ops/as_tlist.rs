@@ -4,7 +4,7 @@ use prelude::*;
 
 /// Converts a type to a tlist.
 pub trait AsTList_ {
-    type Output: TypeLevelListTrait;
+    type Output;
 }
 
 type_fn!{use_trait 

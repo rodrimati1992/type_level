@@ -28,6 +28,7 @@ use syn::{
     Meta,
 };
 
+use quote::ToTokens;
 // use std::str::FromStr;
 
 
@@ -175,6 +176,10 @@ impl<'alloc> CCAttributes<'alloc>{
     pub(crate)fn new(attributes:&'alloc [Attribute],arenas:ArenasRef<'alloc>)->Self{
         let mut this=Self::default();
 
+        // for attr in attributes{
+        //     println!("attribute:\n----------\n{}\n----------\n",attr.into_token_stream());
+        // }
+
         for attr in attributes{
             constructor_inner(attr,&mut this,arenas);
         }
@@ -194,13 +199,25 @@ fn constructor_inner<'alloc>(
 ){
     let meta_list = match attrs.interpret_meta() {
         Some(Meta::List(meta_list)) => arenas.metalists.alloc(meta_list),
-        _ => return,
+        Some(_)=>{ return }
+        None=>{
+            panic!("not a valid attribute:\n{}\n",attrs.into_token_stream() );
+        }
     };
 
+    // {
+    //     for nested0_syn in &meta_list.nested {
+    //         let nested0: MyMeta = nested0_syn.into_with(arenas);
+    //         println!("word:{}", &nested0.word.str);
+    //     }
+    // }
+
+    
     if meta_list.ident == "mcv" {
         for nested0_syn in &meta_list.nested {
             let nested0: MyMeta = nested0_syn.into_with(arenas);
             let word = &*nested0.word.str;
+            
 
             if let Ok(_)=this.attrs.update_with_meta(&nested0,arenas) {
                 continue;

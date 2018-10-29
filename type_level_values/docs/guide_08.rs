@@ -122,7 +122,7 @@ where the state of the arcade machine is in the `G` ConstValue-parameter.
 This is the constructor for the arcade machine,creating it with no coins and in the Demo state.
 
 Note that the built-in tuple struct constructor requires using the original type name 
-`ArcadeMachineInner` instead of `ArcadeMachine`.
+`ArcadeMachine_Ty` instead of `ArcadeMachine`.
 
 //@use_codeblock:arcade-action,ignore
 
@@ -349,7 +349,7 @@ pub struct ArcadeMachineInner<G>(pub ConstWrapper<G>);
 
 impl ArcadeMachine<InitialGame>{
     pub fn new()->Self{
-        ArcadeMachineInner(ConstWrapper::NEW)
+        ArcadeMachine_Ty(ConstWrapper::NEW)
     }
 }
 
@@ -363,7 +363,7 @@ impl<Game> ArcadeMachine<Game>{
     where 
         GameAction:TypeFn_<(Game,Action),Output=__NewGame>
     {
-        ArcadeMachineInner(ConstWrapper::NEW)
+        ArcadeMachine_Ty(ConstWrapper::NEW)
     }
 }
 

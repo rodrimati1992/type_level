@@ -1,6 +1,10 @@
 use super::*;
 
-use derive_type_level_lib::parse_syn::parse_syn_use;
+use derive_type_level_lib::parse_syn::{
+    parse_syn_use,
+    parse_ident,
+};
+
 
 
 mod reexp_s0{
@@ -249,11 +253,12 @@ fn text_reexport_inner(
 
     let mut found_reexports=false;
 
-    let mut visiting=Visiting::new(ctokens,"type_level_Reexport");
+    let tl_mods=type_level_modules(ctokens,parse_ident("type_level_Reexport"));
+    let mut visiting=Visiting::new(tl_mods.into());
 
-    visiting.check_derive(derive_str,move|mod_ind,item|{
-        if mod_ind!=ModIndex::DerivingMod { return Ok(()); } 
-        match item {
+    visiting.check_derive(derive_str,move|params|{
+        if params.mod_index!=TLModIndex::DerivingMod { return } 
+        match params.item {
             VisitItem::Use(use_)=>{
                 if !set.remove(use_) {
                     let s=format!(
@@ -261,18 +266,17 @@ fn text_reexport_inner(
                         tokens_to_string(use_),
                         totoken_iter_to_string(&set)
                     );
-                    return Err(VIError::new(VIErrorKind::UnexpectedItem,s))
+                    return params.push_err(VIErrorKind::UnexpectedItem,s);
                 }
                 if set.is_empty() {
                     found_reexports=true;
                 }
             }
             VisitItem::EndOfMod if !found_reexports =>{
-                return Err(VIError::new(VIErrorKind::ExpectedMoreItems,"expected item reexports"))
+                return params.push_err(VIErrorKind::ExpectedMoreItems,"expected item reexports")
             }
             _=>{}
         }
-        Ok(())
     });
     println!("\n\n");
 }

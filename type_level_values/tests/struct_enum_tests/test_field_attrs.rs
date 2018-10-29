@@ -1,22 +1,5 @@
 use super::*;
-
-use type_level_values::ops::AssertEq;
-use type_level_values::field_traits::GetField;
-use type_level_values::prelude::*;
-
-use shared::traits::{Trivial};
-use check_variants::{
-    VariantKind,
-    Privacy,
-    Variants,
-    Variant,
-    Field,
-    // AccessorKind,
-    SHARED_FIELD_ATTR,
-    PUB_DSUPER,
-    test_reexport,
-};
-
+use super::type_level_shared::*;
 
 
 
@@ -141,42 +124,40 @@ fn tests_TupleStruct(){
 
     use self::Privacy::*;
 
-    let struct_fields=Variants{
-        name:"TupleStruct",
-        variants:vec![
-            Variant{
-                const_value:"ConstTupleStruct",
-                dt_trait:"TupleStructTrait",
-                wr_trait:"TupleStructWithRuntime",
-                kind:VariantKind::Tupled,
-                fields:vec![
-                    Field::positional(SHARED_FIELD_ATTR,Inherited,"0","pub"),
-                    Field::positional(SHARED_FIELD_ATTR,Inherited,"1","pub"),
-                    Field::positional(SHARED_FIELD_ATTR,Private  ,"2",PUB_DSUPER).mutated(|f| {
-                        f.bound=Some("Trivial<Self::field_0>+Trivial<Self::priv_field_3>") ;
-                    }),
-                    Field::positional(SHARED_FIELD_ATTR,Private  ,"3","pub(crate)").mutated(|f| {
-                        f.bound_runt=Some("Trivial<Self::field_5>+Trivial<Self::priv_eeee>") ;
-                    }),
-                    Field::ren_acc   (SHARED_FIELD_ATTR,Private,"4","eeee","pub(in super)"),
-                    Field::positional(SHARED_FIELD_ATTR,Private,"5","pub(in super)").mutated(|f|{
-                        f.pub_assoc_ty=true;
-                    }),
-                ]
-            }
-        ],
-    };
-
-    test_reexport(
-        &struct_fields,
-        &CommonTokens::new(),
-        &[
+    let tl_mods=type_level_modules(&CommonTokens::new(),parse_ident("type_level_TupleStruct"));
+    let struct_fields=DataType::new("TupleStruct",tl_mods,Variants::typelevel())
+        .add_tl_variant(TLVariant{
+            const_value:"ConstTupleStruct",
+            dt_trait:"TupleStructTrait",
+            wr_trait:"TupleStructWithRuntime",
+            kind:VariantKind::Tupled,
+            fields:Some(vec![
+                Field::positional(SHARED_FIELD_ATTR,Inherited,"0","pub"),
+                Field::positional(SHARED_FIELD_ATTR,Inherited,"1","pub"),
+                Field::positional(SHARED_FIELD_ATTR,Private  ,"2",PUB_DSUPER).mutated(|f| {
+                    f.bound=Some("Trivial<Self::field_0>+Trivial<Self::priv_field_3>") ;
+                }),
+                Field::positional(SHARED_FIELD_ATTR,Private  ,"3","pub(crate)").mutated(|f| {
+                    f.bound_runt=Some("Trivial<Self::field_5>+Trivial<Self::priv_eeee>") ;
+                }),
+                Field::ren_acc   (SHARED_FIELD_ATTR,Private,"4","eeee","pub(in super)"),
+                Field::positional(SHARED_FIELD_ATTR,Private,"5","pub(in super)").mutated(|f|{
+                    f.pub_assoc_ty=true;
+                }),
+            ])
+        })
+        .add_reexports(TLModIndex::DunderFieldMod,[
             "pub use super :: integer_reexports :: { U0 , U1 , } ;",
-        ],
-        &[
+        ].iter().cloned())
+        .add_reexports(TLModIndex::FieldsMod,[
             "pub use super::__fields::{U0,U1,} ;",
             "pub(crate)use super::__fields::{eeee,field_2,field_3,field_5,All,} ;",
-        ],
+        ].iter().cloned());
+
+
+    test_typelevel_items(
+        struct_fields,
+        &CommonTokens::new(),
         TupleStruct::TYPELEVEL_DERIVE,
     );
 }
@@ -205,43 +186,42 @@ fn tests_BracedStruct(){
 
     use self::Privacy::*;
 
-    let struct_fields=Variants{
-        name:"BracedStruct",
-        variants:vec![
-            Variant{
-                const_value:"ConstBracedStruct",
-                dt_trait:"BracedStructTrait",
-                wr_trait:"BracedStructWithRuntime",
-                kind:VariantKind::Braced,
-                fields:vec![
-                    Field::named(SHARED_FIELD_ATTR,Inherited,"a","pub"),
-                    Field::named(SHARED_FIELD_ATTR,Inherited,"b","pub"),
-                    Field::named(SHARED_FIELD_ATTR,Private  ,"c",PUB_DSUPER).mutated(|f| {
-                        f.bound=Some("Trivial<Self::a>+Trivial<Self::priv_d>") ;
-                    }),
-                    Field::named(SHARED_FIELD_ATTR,Private  ,"d","pub(crate)").mutated(|f| {
-                        f.bound_runt=Some("Trivial<Self::priv_eeee>+Trivial<Self::f>") ;
-                    }),
-                    Field::named(SHARED_FIELD_ATTR,Private,"eeee","pub(in super)"),
-                    Field::named(SHARED_FIELD_ATTR,Private  ,"f","pub(in super)").mutated(|f|{
-                        f.pub_assoc_ty=true;
-                    }),
-                ]
-            }
-        ],
-    };
+    let ctokens=CommonTokens::new();
 
-
-    test_reexport(
-        &struct_fields,
-        &CommonTokens::new(),
-        &[
-            "pub use super :: integer_reexports ::{ } ;"
-        ],
-        &[
+    let tl_mods=type_level_modules(&ctokens,parse_ident("type_level_BracedStruct"));
+    let struct_fields=DataType::new("BracedStruct",tl_mods,Variants::typelevel())
+        .add_tl_variant(TLVariant{
+            const_value:"ConstBracedStruct",
+            dt_trait:"BracedStructTrait",
+            wr_trait:"BracedStructWithRuntime",
+            kind:VariantKind::Braced,
+            fields:Some(vec![
+                Field::named(SHARED_FIELD_ATTR,Inherited,"a","pub"),
+                Field::named(SHARED_FIELD_ATTR,Inherited,"b","pub"),
+                Field::named(SHARED_FIELD_ATTR,Private  ,"c",PUB_DSUPER).mutated(|f| {
+                    f.bound=Some("Trivial<Self::a>+Trivial<Self::priv_d>") ;
+                }),
+                Field::named(SHARED_FIELD_ATTR,Private  ,"d","pub(crate)").mutated(|f| {
+                    f.bound_runt=Some("Trivial<Self::priv_eeee>+Trivial<Self::f>") ;
+                }),
+                Field::named(SHARED_FIELD_ATTR,Private,"eeee","pub(in super)"),
+                Field::named(SHARED_FIELD_ATTR,Private  ,"f","pub(in super)").mutated(|f|{
+                    f.pub_assoc_ty=true;
+                }),
+            ])
+        })
+        .add_reexports(TLModIndex::DunderFieldMod,[
+            " pub use super :: integer_reexports ::{ } ; "
+        ].iter().cloned())
+        .add_reexports(TLModIndex::FieldsMod,[
             "pub use super :: __fields :: { a , b , } ;",
             "pub(crate) use super :: __fields::{ c , d , eeee , f , All ,} ;",
-        ],
+        ].iter().cloned());
+
+
+    test_typelevel_items(
+        struct_fields,
+        &ctokens,
         BracedStruct::TYPELEVEL_DERIVE,
     );
 }
@@ -285,56 +265,57 @@ fn tests_AnEnum(){
 
     let priv_="pub(in super)";
 
-    let enum_fields=Variants{
-        name:"AnEnum",
-        variants:vec![
-            Variant{
-                const_value:"VarA",
-                dt_trait:"VarATrait",
-                wr_trait:"VarAWithRuntime",
-                kind:VariantKind::Tupled,
-                fields:vec![
-                    Field::positional(SHARED_FIELD_ATTR,Inherited,"0",priv_),
-                ]
-            },
-            Variant{
-                const_value:"VarB",
-                dt_trait:"VarBTrait",
-                wr_trait:"VarBWithRuntime",
-                kind:VariantKind::Braced,
-                fields:vec![
-                    Field::named(SHARED_FIELD_ATTR,Inherited,"a",priv_),
-                    Field::named(SHARED_FIELD_ATTR,Inherited,"b",priv_).mutated(|f| {
-                        f.bound=Some("Trivial<U10>") ;
-                        f.bound_runt=Some("Trivial<Self::a>") ;
-                    }),
-                ]
-            },
-            Variant{
-                const_value:"VarC",
-                dt_trait:"VarCTrait",
-                wr_trait:"VarCWithRuntime",
-                kind:VariantKind::Tupled,
-                fields:vec![
-                    Field::positional(SHARED_FIELD_ATTR,Inherited,"0",priv_).mutated(|f| {
-                        f.bound=Some("Trivial<Self::uh>") ;
-                    }),
-                    Field::ren_acc(SHARED_FIELD_ATTR,Inherited,"1","uh",priv_),
-                ]
-            },
-        ],
-    };
+    let ctokens=CommonTokens::new();
 
-    test_reexport(
-        &enum_fields,
-        &CommonTokens::new(),
-        &[
-            "pub ( in super :: super ) use super :: integer_reexports :: { U0 , } ;"
-        ],
-        &[
+    let tl_mods=type_level_modules(&ctokens,parse_ident("type_level_AnEnum"));
+
+    let enum_fields=DataType::new("AnEnum",tl_mods,Variants::typelevel())
+        .add_tl_variant(TLVariant{
+            const_value:"VarA",
+            dt_trait:"VarATrait",
+            wr_trait:"VarAWithRuntime",
+            kind:VariantKind::Tupled,
+            fields:Some(vec![
+                Field::positional(SHARED_FIELD_ATTR,Inherited,"0",priv_),
+            ])
+        })
+        .add_tl_variant(TLVariant{
+            const_value:"VarB",
+            dt_trait:"VarBTrait",
+            wr_trait:"VarBWithRuntime",
+            kind:VariantKind::Braced,
+            fields:Some(vec![
+                Field::named(SHARED_FIELD_ATTR,Inherited,"a",priv_),
+                Field::named(SHARED_FIELD_ATTR,Inherited,"b",priv_).mutated(|f| {
+                    f.bound=Some("Trivial<U10>") ;
+                    f.bound_runt=Some("Trivial<Self::a>") ;
+                }),
+            ])
+        })
+        .add_tl_variant(TLVariant{
+            const_value:"VarC",
+            dt_trait:"VarCTrait",
+            wr_trait:"VarCWithRuntime",
+            kind:VariantKind::Tupled,
+            fields:Some(vec![
+                Field::positional(SHARED_FIELD_ATTR,Inherited,"0",priv_).mutated(|f| {
+                    f.bound=Some("Trivial<Self::uh>") ;
+                }),
+                Field::ren_acc(SHARED_FIELD_ATTR,Inherited,"1","uh",priv_),
+            ])
+        })
+        .add_reexports(TLModIndex::DunderFieldMod,[
+            "pub use super :: integer_reexports :: { U0 , } ;"
+        ].iter().cloned())
+        .add_reexports(TLModIndex::FieldsMod,[
             "pub ( in super :: super ) use super :: __fields :: { U0 , a , b , uh , } ;",
             "pub ( in super :: super ) use super :: __fields :: { All , } ;",
-        ],
+        ].iter().cloned());
+
+
+    test_typelevel_items(
+        enum_fields,
+        &ctokens,
         AnEnum::TYPELEVEL_DERIVE,
     );
 }
