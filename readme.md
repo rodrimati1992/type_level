@@ -11,7 +11,7 @@ For the api documentation go [here](https://docs.rs/type_level_values/).
 Or use `cargo doc --open` if you included this in your crate.
 
 For documentation outside of the API of type_level_values itself,
-including the `TypeLevel` and `ConstConstructor` derive macros,
+including the `TypeLevel` and `MutConstValue` derive macros,
 go to the `docs` submodule (in the documentation for type_level_values).
 
 ### Examples crate
@@ -112,8 +112,13 @@ macro_rules! declare_setter {( $($field:ident),* $(,)* ) => (
     >;
 
 
-    #[derive(Clone, Debug, ConstConstructor)]
-    #[cconstructor(Type = "TetrisBuilder",ConstParam = "C")]
+    #[derive(MutConstValue)]
+    #[mcv(
+        doc="These are the docs for TetrisBuilder_Ty.",
+        derive(Clone, Debug),
+        Type = "TetrisBuilder",
+        Param = "C",
+    )]
     pub struct TetrisBuilderInner<C>{
         $( $field:Option<usize>, )*
         initialization:ConstWrapper<C>,

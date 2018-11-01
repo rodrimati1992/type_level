@@ -10,13 +10,16 @@ pub mod doc_code_snippets_macro;
 #[path = "attribute_typelevel.md"]
 pub mod attribute_typelevel;
 
-#[path = "attribute_const_constructor.md"]
-pub mod attribute_const_constructor;
+#[path = "attribute_mut_const_value.md"]
+pub mod attribute_mut_const_value;
 
 #[path = "attribute_shared.md"]
 pub mod attribute_shared;
 
 pub mod reference_privacy;
+
+#[path = "appendix_control_flow.md"]
+pub mod appendix_control_flow;
 
 #[path = "appendix_error_messages.md"]
 pub mod appendix_error_messages;
@@ -24,8 +27,8 @@ pub mod appendix_error_messages;
 #[path = "appendix_patterns.md"]
 pub mod appendix_patterns;
 
-#[path = "appendix_function_composition.md"]
-pub mod appendix_function_composition;
+#[path = "appendix_functions.md"]
+pub mod appendix_functions;
 
 /**
 
@@ -58,7 +61,5 @@ pub mod guide{
     include!{"./guide_10.rs"}
 
     include!{"./guide_11.rs"}
-
-    include!{"./guide_12.rs"}
 }
 

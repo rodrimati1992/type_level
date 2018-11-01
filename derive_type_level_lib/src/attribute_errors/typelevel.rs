@@ -30,7 +30,7 @@ pub fn type_attrs()->ValidAttrs{
 
 pub fn field_attrs()->ValidAttrs{
     vec![
-        field_pub_trait_accessor(),
+        field_pub_trait_getter(),
         field_bound(),
         field_bound_runt(),
         field_rename(),
@@ -218,7 +218,7 @@ pub fn items_attr_internal()->AttrShape{
 
 
 
-pub fn field_pub_trait_accessor()->AttrShape{
+pub fn field_pub_trait_getter()->AttrShape{
     AttrShape{
         variants:vec![
             AttrVariant{
@@ -226,7 +226,7 @@ pub fn field_pub_trait_accessor()->AttrShape{
                 clarification:None,
             },
         ],
-        word:"pub_trait_accessor",
+        word:"pub_trait_getter",
         description:"\
             Allows accessing the value of a private field through the <DerivingType>Trait.\n\
             Does not allow using GetField to access the value of the field.\

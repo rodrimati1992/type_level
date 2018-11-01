@@ -40,14 +40,14 @@ use attribute_detection::shared::parse_type;
 
 
 #[derive(Debug)]
-pub(crate) struct FieldAccessor{
+pub(crate) struct FieldAccessorInfo<'a>{
     /// The ammount of times the field identifier is used for a public field.
     pub(crate) public_instances:usize,
-    pub(crate) is_tuple_field:bool,
+    pub(crate) accessor_field_ident:FieldAccessor<'a>,
 }
 
-impl FieldAccessor{
-    pub(crate) fn doc_hidden_attr<'a>(&self,common_tokens:&'a CommonTokens)->DocHiddenAttr<'a>{
+impl<'a> FieldAccessorInfo<'a>{
+    pub(crate) fn doc_hidden_attr(&self,common_tokens:&'a CommonTokens)->DocHiddenAttr<'a>{
         DocHiddenAttr::new(
             IsPublic(self.public_instances!=0),
             common_tokens
@@ -86,7 +86,7 @@ pub(crate) struct StructDeclarations<'a>{
     pub(crate) type_marker_struct:&'a Ident,
     pub(crate) enum_or_struct:EnumOrStruct,
     pub(crate) all_types:Vec<FieldTyAndMod<'a>>,
-    pub(crate) field_accessors:BTreeMap<&'a Ident,FieldAccessor>,
+    pub(crate) field_accessors:BTreeMap<&'a Ident,FieldAccessorInfo<'a>>,
     
     pub(crate) attribute_settings:&'a TLAttributes<'a>,
     pub(crate) declarations:Vec<StructDeclaration<'a>>,
@@ -109,6 +109,7 @@ pub(crate) struct StructDeclaration<'a>{
 
     pub(crate) generics:TokenStream,
     pub(crate) generics_2:TokenStream,
+    pub(crate) assoc_ty_to_generics:HashMap<&'a Ident,&'a Ident>,
     
 
     pub(crate) variant:&'a Struct<'a>,
@@ -122,7 +123,7 @@ pub(crate) struct FieldDeclaration<'a>{
     pub(crate) original_name:&'a FieldIdent<'a>,
     pub(crate) common_tokens:&'a CommonTokens,
     /// An attribute override allowing one to access the field through the \<DerivingType>Trait.
-    pub(crate) pub_trait_accessor:bool,
+    pub(crate) pub_trait_getter:bool,
     pub(crate) vis_kind:MyVisibility<'a>,
     pub(crate) name_ident:FieldName<'a>,
     pub(crate) accessor_ident:&'a Ident,
@@ -174,7 +175,7 @@ impl<'a> StructDeclarations<'a>{
 
         let mut declarations=Vec::new();
         let mut all_types=HashMap::<&'a Type,Option<&'a Type>>::new();
-        let mut field_accessors=BTreeMap::<&'a Ident,FieldAccessor>::new();
+        let mut field_accessors=BTreeMap::<&'a Ident,FieldAccessorInfo>::new();
 
         let vis_kind=MyVisibility::new(ds.vis,c_tokens);
 
@@ -211,52 +212,33 @@ impl<'a> StructDeclarations<'a>{
                 EnumOrStruct::Struct=>
                     Cow::Borrowed(outer_attr_sett),
             };
+            let mut assoc_ty_to_generics=HashMap::<&'a Ident,&'a Ident>::new();
+            let mut get_tuple_field_ident={
+                let mut tuple_fields=Vec::<FieldAccessor<'a>>::new();
+                
+                let alloc_ident=&alloc_ident;
+                move|i,priv_|{
+                    while tuple_fields.len() < i {
+                        let new_ident=variant
+                            .new_ident( format!("U{}",tuple_fields.len()) )
+                            .piped(alloc_ident)
+                            .piped(FieldAccessor::Integer);
+                        tuple_fields.push(new_ident);
+                    }
+                    let new_ident=match priv_ {
+                        RelativePriv::MorePrivate=>
+                            ident_from(&format!("field_{}",i)).piped(FieldAccessor::Struct),
+                        RelativePriv::Inherited  =>
+                            ident_from(&format!("U{}",i)).piped(FieldAccessor::Integer),
+                    };
+                    tuple_fields.push(new_ident);
+                    tuple_fields[i]
+                }
+            };
             let fields=variant.fields.iter()
                 .map(|v|{
-                    let mut get_tuple_field_ident={
-                        let mut tuple_fields=Vec::<&'a Ident>::new();
-                        
-                        let alloc_ident=&alloc_ident;
-                        move|i|{
-                            while tuple_fields.len() <= i {
-                                let new_ident=variant
-                                    .new_ident( format!("U{}",tuple_fields.len()) )
-                                    .piped(alloc_ident);
-                                tuple_fields.push( new_ident );
-                            }
-                            tuple_fields[i]
-                        }
-                    };
 
                     let field_attrs=FieldAttrs::new(&v.attrs,arenas);
-
-                    let name_ident=match (FieldName::new(&v.ident),field_attrs.rename) {
-                        (fieldname          ,None)=>
-                            fieldname,
-                        (FieldName::Index(_),Some(_))   =>
-                            panic!("cannot rename positional(tuple struct/variant) fields."),
-                        (FieldName::Named(_),Some(ident))=>
-                            FieldName::Named(ident),
-                    };
-
-                    let accessor_ident=match (name_ident,field_attrs.accessor) {
-                        (FieldName::Index(i)    ,None)=>
-                            get_tuple_field_ident(i),
-                        (FieldName::Named(ident),None)=>
-                            ident,
-                        (_                      ,Some(ident))=>
-                            ident,
-                    };
-
-                    let parse_alloc=|suffix:&str|->&'a Type{
-                        let x=parse_type(&format!("{}{}",v.pattern_ident,suffix));
-                        arenas.types.alloc(x)
-                    };
-
-                    let original_ty=v.ty;
-
-                    let generic  =parse_alloc("");
-                    let generic_2=parse_alloc("_TyB");
 
                     use self::RelativePriv as RP;
 
@@ -283,15 +265,44 @@ impl<'a> StructDeclarations<'a>{
                         }
                     };
 
-                    let pub_trait_accessor=
-                        field_attrs.pub_trait_accessor|| 
+
+                    let fieldname=FieldName::new(&v.ident);
+                    let name_ident=field_attrs.rename.map_or(fieldname,FieldName::Named);
+
+                    let assoc_type=match name_ident {
+                        FieldName::Index(_    )=>&v.pattern_ident,
+                        FieldName::Named(ident)=>ident,
+                    };
+
+                    let accessor_field_ident=match name_ident {
+                        FieldName::Index(i)    =>
+                            get_tuple_field_ident(i,relative_priv),
+                        FieldName::Named(ident)=>
+                            FieldAccessor::Struct(ident),
+                    };
+
+                    let accessor_ident=accessor_field_ident.ident();
+
+                    let suffixed_generic_parameter=|suffix:&str|->&'a Type{
+                        let x=parse_type(&format!("{}{}",assoc_type,suffix));
+                        arenas.types.alloc(x)
+                    };
+
+                    let original_ty=v.ty;
+
+                    let generic  =suffixed_generic_parameter("");
+                    let generic_2=suffixed_generic_parameter("_TyB");
+
+                    let pub_trait_getter=
+                        field_attrs.pub_trait_getter|| 
                         relative_priv==RP::Inherited;
+                    
 
                     {
                         let accessor=field_accessors.entry(accessor_ident).or_insert_with(||{
-                            FieldAccessor{
+                            FieldAccessorInfo{
                                 public_instances:0,
-                                is_tuple_field:matches!(FieldName::Index{..}= name_ident),
+                                accessor_field_ident,
                             }
                         });
                         if relative_priv==RP::Inherited{
@@ -299,24 +310,21 @@ impl<'a> StructDeclarations<'a>{
                         }
                     }
 
-                    let assoc_type=match name_ident {
-                        FieldName::Index(_    )=>&v.pattern_ident,
-                        FieldName::Named(ident)=>ident,
-                    };
 
-                    let assoc_type=if pub_trait_accessor {
+                    let assoc_type=if pub_trait_getter {
                         assoc_type
                     }else{
                         ident_from(&format!("priv_{}",assoc_type))
                     };
 
+                    assoc_ty_to_generics.insert(assoc_type,accessor_ident);
 
                     FieldDeclaration{
                         common_tokens:c_tokens,
                         docs:field_attrs.docs,
                         original_name:&v.ident,
                         vis_kind:field_vis_kind,
-                        pub_trait_accessor,
+                        pub_trait_getter,
                         relative_priv,
                         name_ident,
                         accessor_ident,
@@ -388,6 +396,7 @@ impl<'a> StructDeclarations<'a>{
                 attribute_settings:inner_attr_sett,
                 generics  ,
                 generics_2,
+                assoc_ty_to_generics,
                 fields,
             })
         }
@@ -492,9 +501,9 @@ impl<'a> ToTokens for StructDeclarations<'a>{
         let mut fields_1a=Vec::new();
         let mut fields_1b=Vec::new();
         for (k,acc) in &self.field_accessors {
-            match acc.is_tuple_field {
-                false=>&mut fields_1a,
-                true =>&mut fields_1b,
+            match acc.accessor_field_ident {
+                FieldAccessor::Struct (_)=>&mut fields_1a,
+                FieldAccessor::Integer(_)=>&mut fields_1b,
             }.push(k);
         }
         let fields_1a=&fields_1a;
@@ -564,15 +573,15 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                 #(
                     #[derive(Clone,Copy)]
                     /// This is the accessor for the field of the same name.
-                    #vis_kind_submod_rep struct #fields_1a;
+                    pub struct #fields_1a;
                 )*
-                #vis_kind_submod use super::typenum_reexports::{
+                pub use super::integer_reexports::{
                     #( #fields_1b, )*
                 };
 
                 /// This is the accessor for all the fields.
                 #[derive(Clone,Copy)]
-                #vis_kind_submod struct All;
+                pub struct All;
             }
 
             pub mod fields{
@@ -620,7 +629,6 @@ impl<'a> ToTokens for StructDeclarations<'a>{
             if let Some(enum_trait)=enum_trait{
                 tokens.append_all(quote!{
                     impl<#generics> #enum_trait for #s_name<#generics>
-                    where Self:#trait_ident,
                     {}
                 });
             }
@@ -701,7 +709,7 @@ impl<'a> ToTokens for PrivParam<'a>{
 impl<'a> FieldDeclaration<'a> {
     pub(crate) fn doc_hidden_attr(&self)->DocHiddenAttr{
         DocHiddenAttr::new(
-            IsPublic(self.pub_trait_accessor),
+            IsPublic(self.pub_trait_getter),
             self.common_tokens
         )
     }
@@ -709,6 +717,40 @@ impl<'a> FieldDeclaration<'a> {
 
 
 
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+#[derive(Copy,Clone,Debug,Ord,PartialOrd,Eq,PartialEq)]
+pub enum FieldAccessor<'a>{
+    /// The identifier of the struct that will be created
+    Struct (&'a Ident),
+    /// A type-level integer (currently typenum U0,U1,U2,etc)
+    Integer(&'a Ident),
+}
+
+
+impl<'a> FieldAccessor<'a>{
+    pub fn ident(self)->&'a Ident{
+        match self {
+            FieldAccessor::Struct(v)=>v,
+            FieldAccessor::Integer(v)=>v,
+        }
+    }
+    pub fn struct_ident(self)->Option<&'a Ident>{
+        match self{
+            FieldAccessor::Struct(v)=>Some(v),
+            _=>None
+        }
+    }
+    pub fn integer_ident(self)->Option<&'a Ident>{
+        match self{
+            FieldAccessor::Integer(v)=>Some(v),
+            _=>None
+        }
+    }
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////

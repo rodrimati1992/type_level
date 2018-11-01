@@ -61,11 +61,6 @@ use function composition where a tuple composed of TypeFn_ is itself
 a TypeFn_ that passes its parameter to the first function,
 and then passes the return value of each function as the parameter to the next,
 returning the return value of the last function.
-<br>
-They also use the ApplyNonSelf function adaptor,which allows us to
-adapt any function (with 3 or more parameters) taking Game as the first parameter 
-to only take Game as a parameter by `partially applying` the rest of the parameters.
-
 
 The `S:GameOverTrait`/`S:DemoTrait`/`S:PlayingTrait`  constraints were used instead of 
 the enum variants themselves (GameOver/Demo/Playing) because this produces better error messages
@@ -81,14 +76,37 @@ have type parameters to emulate closures.
 
 This helper function makes `Ammount` coins disappear from the arcade.
 
-This demonstrates a capture clause ,
-which is the way to pass data to the function without having to pass it as a function parameter,
-this is often useful if the parameter does not change between multiple function calls.
+The MapFieldMt and SubMt functions are method-like functions
+which captures all the parameters exceot fir the 'Self' parameter 
+(which is by convention the first parameter of the *Op equivalent function).
 
+This is equivalent to :
+```ignore
+fn take_coins(ammount:u32)->impl FnOnce(Game)->Game {
+    move|game| {
+        game.map_field( 
+            game_f::coins, 
+            |field| field-ammound 
+        )
+    }
+}
+```
 
 //@use_codeblock:insert-coins-fn,ignore
 
 This helper function inserts `Ammount` coins into the arcade.
+
+This is equivalent to :
+```ignore
+fn insert_coins(ammount:u32)->impl FnOnce(Game)->Game {
+    move|game|{
+        game.map_field( 
+            game_f::coins, 
+            |field| field+ammound 
+        )
+    }
+}
+```
 
 //@use_codeblock:initial-game-type,ignore
 
@@ -104,7 +122,7 @@ where the state of the arcade machine is in the `G` ConstValue-parameter.
 This is the constructor for the arcade machine,creating it with no coins and in the Demo state.
 
 Note that the built-in tuple struct constructor requires using the original type name 
-`ArcadeMachineInner` instead of `ArcadeMachine`.
+`ArcadeMachine_Ty` instead of `ArcadeMachine`.
 
 //@use_codeblock:arcade-action,ignore
 
@@ -162,13 +180,10 @@ extern crate derive_type_level;
 #[macro_use]
 extern crate type_level_values;
 
-
 use type_level_values::prelude::*;
-use type_level_values::fn_types::{ConstLEOp};
-use type_level_values::fn_adaptors::ApplyNonSelf;
-use type_level_values::field_traits::{SetField,SetField_,SetFieldOp};
-
-use std::ops::{Add,Sub};
+use type_level_values::ops::{};
+use type_level_values::std_ops::{AddMt,SubMt};
+use type_level_values::field_traits::{SetField_,SetFieldMt,MapFieldMt};
 
 //@codeblock-start:states-enum
 
@@ -251,7 +266,7 @@ type_fn!{
         S:GameOverTrait,
         (
             TakeCoins<U1>,
-            ApplyNonSelf<SetFieldOp,(game_f::state,Playing)>,
+            SetFieldMt<game_f::state,Playing>,
         ):TypeFn_<G,Output=NewGame> 
     ]{ let NewGame;NewGame }
 
@@ -260,7 +275,7 @@ type_fn!{
         S:DemoTrait,
         (
             TakeCoins<U1>,
-            ApplyNonSelf<SetFieldOp,(game_f::state,Playing)>,
+            SetFieldMt<game_f::state,Playing>,
         ):TypeFn_<G,Output=NewGame> 
     ]{ let NewGame;NewGame }
 
@@ -283,19 +298,12 @@ type_fn!{
 
 //@codeblock-start:take-coins-fn
 
-type_fn!{
-    captures(Ammount)
-    pub fn TakeCoins[G](G)
-    where[
-        G:GameTrait,
-        G::coins:Sub<Ammount,Output=NewCoins>,
-        G:SetField_<game_f::coins,NewCoins,Output=NewGame>,
-    ]{
-        let NewCoins;
-        let NewGame;
-        NewGame
-    }
-}
+
+pub type TakeCoins<Ammount>=
+    MapFieldMt<
+        game_f::coins,
+        SubMt<Ammount>,
+    >;
 
 //@codeblock-end:take-coins-fn
 
@@ -304,19 +312,11 @@ type_fn!{
 
 //@codeblock-start:insert-coins-fn
 
-type_fn!{
-    captures(Ammount)
-    pub fn InsertCoins[G](G)
-    where[
-        G:GameTrait,
-        G::coins:Add<Ammount,Output=NewCoins>,
-        G:SetField_<game_f::coins,NewCoins,Output=NewGame>,
-    ]{
-        let NewCoins;
-        let NewGame;
-        NewGame
-    }
-}
+pub type InsertCoins<Ammount>=
+    MapFieldMt<
+        game_f::coins,
+        AddMt<Ammount>,
+    >;
 
 //@codeblock-end  :insert-coins-fn
 
@@ -336,8 +336,11 @@ pub type InitialGame=construct!(GameType=>
 
 //@codeblock-start:arcade-machine-struct
 
-#[derive(Copy,Clone,Debug,ConstConstructor)]
-#[cconstructor(Type="ArcadeMachine",ConstParam="G")]
+#[derive(MutConstValue)]
+#[mcv(
+    derive(Copy,Clone,Debug),
+    Type="ArcadeMachine",Param ="G",
+)]
 pub struct ArcadeMachineInner<G>(pub ConstWrapper<G>);
 
 //@codeblock-end  :arcade-machine-struct
@@ -346,7 +349,7 @@ pub struct ArcadeMachineInner<G>(pub ConstWrapper<G>);
 
 impl ArcadeMachine<InitialGame>{
     pub fn new()->Self{
-        ArcadeMachineInner(ConstWrapper::NEW)
+        ArcadeMachine_Ty(ConstWrapper::NEW)
     }
 }
 
@@ -360,14 +363,14 @@ impl<Game> ArcadeMachine<Game>{
     where 
         GameAction:TypeFn_<(Game,Action),Output=__NewGame>
     {
-        ArcadeMachineInner(ConstWrapper::NEW)
+        ArcadeMachine_Ty(ConstWrapper::NEW)
     }
 }
 
 //@codeblock-end:arcade-action
 
 
-fn main(){
+pub fn main(){
     //@codeblock-start:main
     
     ArcadeMachine::new()

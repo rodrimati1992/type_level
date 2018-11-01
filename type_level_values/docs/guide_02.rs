@@ -34,18 +34,16 @@ ConstValue parameter
 Here is the zero-overhead wrapper struct that determines the mutability of its contents based on 
 the `Mut` parameter.
 
-The `ConstConstructor` derive macro generates the `Wrapper`
+The `MutConstValue` derive macro generates the `Wrapper`
 type alias which passes `Mut` wrapped inside a ConstWrapper
 so that `Mut` does not have to implement Debug/PartialEq/etc.
 
-Prefer using the type alias declared by ConstConstructor everywhere,
-except the ::std::ops::Drop trait since it requires 
-that the generic parameters stay generic and not be wrapped inside another type.
+Prefer using the type alias declared by MutConstValue everywhere,
+except for Drop,instead use the generated `Wrapper_Ty` type to 
+which all the attributes are delegated.
 
-The reason why Mut is wrapped inside a ConstWrapper in the field type is because
-this allows using the repr(transparent) attribute,which is used to guarantee
-that a wrapper type has the same representation as its only non-zero-sized field,
-and because Rust does not allow type parameters to not be used in a field.
+The reason why Mut is wrapped inside a ConstWrapper in the field type is 
+because Rust does not allow type parameters to not be used.
 
 
 //@use_codeblock:constructor,ignore
@@ -112,15 +110,24 @@ pub enum Mutability {
 
 //@codeblock-start:declare-struct
 
-///
-/// A Wrapper type which allows configuring whether its contents 
-/// are mutable or not with the `Mut` type parameter.
-///
-#[derive(Debug,Copy,Clone,PartialEq,PartialOrd,Eq,Ord,ConstConstructor)]
-#[cconstructor(Type="Wrapper",ConstParam="Mut")]
-pub struct WrapperInner<T,Mut>{
+#[derive(MutConstValue)]
+#[mcv(
+    doc="
+        A Wrapper type which allows configuring whether its contents 
+        are mutable or not with the `Mut` type parameter.
+    ",
+    derive(Debug,Clone,PartialEq,PartialOrd,Eq,Ord),
+    Type="Wrapper",Param="Mut",
+)]
+pub struct _WrapperInner<T,Mut>{
     mutability:ConstWrapper<Mut>,
     value:T,
+}
+
+impl<T,Mut> Drop for Wrapper_Ty<T,Mut>{
+    fn drop(&mut self){
+        println!("Inside Drop imlp for Wrapper<T,Mut> ");
+    }
 }
 
 //@codeblock-end:declare-struct

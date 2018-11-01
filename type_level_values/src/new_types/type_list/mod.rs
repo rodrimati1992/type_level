@@ -1,5 +1,7 @@
 mod generated_impls;
+
 #[cfg(test)]
+// #[cfg(all(test,feature="passed_tests"))]
 mod tests;
 
 use core_extensions::type_level_bool::{Boolean, False, True};
@@ -7,21 +9,24 @@ use core_extensions::type_level_bool::{Boolean, False, True};
 use crate_::extern_types::typenum::UnsignedInteger;
 use crate_::field_traits::{GetField_, SetField_};
 use crate_::ops::control_flow::{If, Lazy};
-use crate_::ops::AsTList_;
-use crate_::fn_adaptors::*;
-use crate_::fn_types::{AddOp, ConstEqOp, ConstLtOp, ConstOrdOp, NotOp};
-use crate_::ops::{ConstEq, ConstFrom_, ConstNE_, ConstOrd};
-use crate_::collection_ops::{
-    Filter_, FoldL, FoldL_, FoldR, FoldR_, Insert,
-    Insert_, Len, Len_, Map, Map_, Pop, PopBack_, PopFront_, Pop_, Push, PushBack_, PushFront_,
-    PushOp, Push_, Remove, Remove_, Repeat, Repeat_, Reverse_, 
+use crate_::ops::{
+    AsTList_,
+    ConstEq,ConstEqOp,ConstEqMt,
+    ConstNE_, 
+    ConstOrd,ConstOrdOp,
+    ConstLtOp, 
+    ConstFrom_, 
+    UnwrapOp,
 };
+use crate_::fn_adaptors::*;
+use crate_::std_ops::{AddOp,BitAndMt,NotOp};
+use crate_::collection_ops::*;
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_, OrderingTrait};
 use crate_::std_types::option::{None_, Some_};
 use crate_::std_types::tuples::TupleType;
 use prelude::*;
 
-use std_::ops::{Add, BitAnd, BitOr, Index, Sub};
+use std_::ops::{Add, BitAnd, BitOr,Shr, Index, Sub};
 
 #[derive(TypeLevel)]
 #[typelevel(
@@ -50,8 +55,10 @@ impl<T0, Rem0> ConstEq_<TNil> for TList<T0, Rem0> {
 }
 impl<T0, T1, Rem0, Rem1, out> ConstEq_<TList<T1, Rem1>> for TList<T0, Rem0>
 where
-    T0: ConstEq_<T1>,
-    If<Const<T0::Output>, Lazy<ConstEqOp, (Rem0, Rem1)>, Const<False>>: TypeFn_<(), Output = out>,
+    (T0,T1): Piped_<
+        If<ConstEqOp, Lazy<ConstEqOp, (Rem0, Rem1)>, Const<False>>,
+        Output = out
+    >,
     out: Boolean,
 {
     type Output = out;
@@ -68,12 +75,12 @@ impl<T1, Rem1> ConstOrd_<TList<T1, Rem1>> for TNil {
 impl<T0, Rem0> ConstOrd_<TNil> for TList<T0, Rem0> {
     type Output = Greater_;
 }
-impl<T0, T1, Rem0, Rem1, ordering, out> ConstOrd_<TList<T1, Rem1>> for TList<T0, Rem0>
+impl<T0, T1, Rem0, Rem1, out> ConstOrd_<TList<T1, Rem1>> for TList<T0, Rem0>
 where
-    T0: ConstOrd_<T1, Output = ordering>,
-    ordering: OrderingTrait + ConstEq_<Equal_>,
-    If<Const<ordering::Output>, Lazy<ConstOrdOp, (Rem0, Rem1)>, Const<ordering>>:
-        TypeFn_<(), Output = out>,
+    (T0,T1):Piped_<(
+        ConstOrdOp,
+        If<ConstEqMt<Equal_>, Lazy<ConstOrdOp, (Rem0, Rem1)>>,
+    ),Output = out>,
     out: OrderingTrait,
 {
     type Output = out;
@@ -321,6 +328,55 @@ impl<DefaultVal, Func> FoldR_<DefaultVal, Func> for tlist![] {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+impl<DefaultVal, Func> TryFoldL_<DefaultVal, Func> for tlist![] {
+    type Output = TFVal<DefaultVal>;
+}
+
+impl<Curr,Rem, DefVal,Func,Out> TryFoldL_<DefVal, Func> for tlist![Curr,..Rem] 
+where TryFoldLHelper<Func>:TypeFn_<(TFVal<DefVal>,Self),Output=Out>
+{
+    type Output=Out;
+}
+
+
+type_fn!{
+    captures(F)
+    fn 
+        TryFoldLHelper[Accum,Curr,Rem](TFBreak<Accum>,tlist![Curr,..Rem]){ 
+            TFBreak<Accum> 
+        }
+        
+        TryFoldLHelper[Accum,Curr,Rem](TFVal<Accum>,tlist![Curr,..Rem])
+        where[
+            tlist![F,IntoTryFold]:TypeFn_<(Accum,Curr),Output=NewAccum>,
+            Self:TypeFn_<(NewAccum,Rem),Output=Out>
+        ]{
+            let NewAccum;let Out;
+            Out
+        }
+        
+        TryFoldLHelper[Accum](Accum,TNil){ Accum }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+impl<DefaultVal, Func> TryFoldR_<DefaultVal, Func> for tlist![] {
+    type Output = TFVal<DefaultVal>;
+}
+
+impl<Curr,Rem, DefaultVal,Reversed,Func> 
+    TryFoldR_<DefaultVal, Func> 
+for tlist![Curr,..Rem] 
+where 
+    Self:Reverse_<Output=Reversed>,
+    Reversed:TryFoldL_<DefaultVal,Func>,
+{
+    type Output=Reversed::Output;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 impl Len_ for TNil {
     type Output = U0;
 }
@@ -341,14 +397,9 @@ impl<Mapper> Map_<Mapper> for TNil {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-type_fn!{
-    captures(predicate)
-    fn PredicateRhs[_0,T](_0,T)where[predicate:TypeFn_<T>]{ predicate::Output }
-}
-
 impl<T, Rem, Predicate, out> Filter_<Predicate> for TList<T, Rem>
 where
-    Self: FoldR_<TNil, If<PredicateRhs<Predicate>, PushOp>, Output = out>,
+    Self: FoldR_<TNil, If<(GetRhs,Predicate), PushOp,GetLhs>, Output = out>,
 {
     type Output = out;
 }
@@ -472,32 +523,12 @@ type_fn!{
 
 ////////////////////////////////////////////////////////////////////////////////
 
-impl<V, L, Out> Repeat_<V, L> for TListType
+impl<V, L,is_lt16, Out> Repeat_<V, L> for TListType
 where
-    L: ConstEq_<U0>,
-    RepeatHelper<V>: TypeFn_<(L::Output, L), Output = Out>,
+    ConstLtOp:TypeFn_<(L,U16),Output=is_lt16>,
+    RepeatHelper<V>: TypeFn_<(is_lt16, L), Output = Out>,
 {
     type Output = Out;
-}
-
-type_fn!{
-    #[doc(hidden)]
-
-    captures(Value)
-    pub fn RepeatHelper(True,U0){TNil}
-
-    RepeatHelper[Repeating](False,Repeating)
-    where [
-        Repeating:Sub<U1,Output=Subbed>,
-        Subbed:ConstEq_<U0,Output=is0>,
-        is0:Boolean,
-        Self:TypeFn_<(is0,Subbed),Output=OutRec>
-    ]{
-        let OutRec;
-        let is0;
-        let Subbed;
-        TList<Value,OutRec>
-    }
 }
 
 
@@ -592,9 +623,145 @@ macro_rules! fixed_size_impls {
                 }
             }
 
-
         )*
     };
+    (repeated; $( ($len:ty)=[ $($tparams:ident),* ])* )=>{
+        type_fn!{
+            captures(V)
+            fn 
+            $(
+                RepeatHelper(True,$len)
+                { tlist![ $($tparams),* ] }
+            )*
+
+            RepeatHelper[Rep](False,Rep)
+            where[
+                (   
+                    BitAndMt<U31>,
+                    ApplyLhs<RepeatHelper<V>,True>
+                ):TypeFn_<Rep,Output=Rem0>,
+                Rep:Shr<U5,Output=Shr5Rep>,
+                Shr5Rep:ConstOrd_<U16,Output=Less_>,
+                RepeatHelper3<U1,V,Rem0>:TypeFn_<Shr5Rep,Output=Rem32>,
+                RepeatHelper3<U2,V,Rem32>:TypeFn_<Shr5Rep,Output=Rem64>,
+                RepeatHelper3<U4,V,Rem64>:TypeFn_<Shr5Rep,Output=Rem128>,
+                RepeatHelper3<U8,V,Rem128>:TypeFn_<Shr5Rep,Output=Rem256>,
+            ]{
+                let Rem0;
+                let Shr5Rep;
+                let Rem32;
+                let Rem64;
+                let Rem128;
+                let Rem256;
+                Rem256
+            }
+        }
+
+        #[doc(hidden)]
+        #[allow(dead_code)]
+        type RepeatHelper3<ExpectedBit,V,Rem>=
+            tlist![
+                BitAndMt<ExpectedBit>,
+                ApplyLhs<RepeatHelper2<V,Rem>,ExpectedBit>
+            ];
+
+        type_fn!{
+            captures(V,Rem)
+            fn 
+            RepeatHelper2[N](N,U0){
+                Rem
+            }
+            RepeatHelper2(U1,U1){
+                tlist![
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    ..Rem
+                ]
+            }
+            RepeatHelper2(U2,U2){
+                tlist![
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    ..Rem
+                ]
+            }
+            RepeatHelper2(U4,U4){
+                tlist![
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    ..Rem
+                ]
+            }
+            RepeatHelper2(U8,U8){
+                tlist![
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,
+                    ..Rem
+                ]
+            }
+
+
+
+        }
+    };
+}
+
+
+fixed_size_impls!{repeated;
+    (U0)=[]
+    (U1)=[V]
+    (U2)=[V,V]
+    (U3)=[V,V,V]
+    (U4)=[V,V,V,V]
+    (U5)=[V,V,V,V,V]
+    (U6)=[V,V,V,V,V,V]
+    (U7)=[V,V,V,V,V,V,V]
+    (U8)=[V,V,V,V,V,V,V,V]
+    (U9)=[V,V,V,V,V,V,V,V,V]
+    (U10)=[V,V,V,V,V,V,V,V,V,V]
+    (U11)=[V,V,V,V,V,V,V,V,V,V,V]
+    (U12)=[V,V,V,V,V,V,V,V,V,V,V,V]
+    (U13)=[V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U14)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U15)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U16)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U17)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U18)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U19)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U20)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U21)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U22)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U23)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U24)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U25)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U26)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U27)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U28)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U29)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U30)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
+    (U31)=[V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V,V]
 }
 
 fixed_size_impls!{with-idents;
@@ -668,5 +835,8 @@ fixed_size_impls!{with-idents;
     ]
 }
 
-#[cfg(feature = "large_tuples")]
+#[cfg(feature = "large_tlist")]
 mod large_impls;
+
+
+

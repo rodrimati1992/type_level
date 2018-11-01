@@ -20,7 +20,7 @@ pub(crate) struct RelativeVis<'a>{
 }
 
 #[derive(Copy,Clone,Debug,Eq,PartialEq)]
-pub(crate) enum VisibilityKind<'a>{
+pub enum VisibilityKind<'a>{
     Private,
     /// 'super' is 1,'super::super is 2,etc.
     Super{
@@ -34,13 +34,13 @@ pub(crate) enum VisibilityKind<'a>{
 #[derive(Copy,Clone,Debug,Eq,PartialEq,PartialOrd)]
 pub struct MyVisibility<'a>{
     common_tokens:&'a CommonTokens,
-    pub(crate)kind:VisibilityKind<'a>,
+    pub kind:VisibilityKind<'a>,
 }
 
 
 
 impl<'a> MyVisibility<'a>{
-    pub(crate) fn new(vis:&'a Visibility,common_tokens:&'a CommonTokens)->Self{
+    pub  fn new(vis:&'a Visibility,common_tokens:&'a CommonTokens)->Self{
         let kind=match vis {
             &Visibility::Public{..}=>{
                 VisibilityKind::Public
@@ -110,6 +110,11 @@ impl<'a> MyVisibility<'a>{
     }
 }
 
+impl<'a> ToTokens for MyVisibility<'a>{
+    fn to_tokens(&self,tokens:&mut TokenStream){
+        self.submodule_level(0).to_tokens(tokens)
+    }
+}
 impl<'a> ToTokens for RelativeVis<'a>{
     fn to_tokens(&self,tokens:&mut TokenStream){
         let c_tokens=self.common_tokens;

@@ -5,16 +5,15 @@ macro_rules! annotations_and_bounds {
         {
             let decls: &StructDeclarations = &$decls;
             let outer = &decls.attribute_settings.derived[$impl_ind];
-            let inner = &decls.attribute_settings.derived[$impl_ind];
             $annotations = decls
                 .declarations
                 .iter()
-                .map(move |_| outer.chain_impl_annotations(inner));
+                .map(move |_| outer.impl_annotations());
 
             $bounds = decls
                 .declarations
                 .iter()
-                .map(move |_| outer.chain_bound_tokens(inner));
+                .map(move |_| outer.bound_tokens());
         }
     };
     (outer; $decls:expr, $impl_ind:expr,let($annotations:ident, $bounds:ident) $(,)*) => {

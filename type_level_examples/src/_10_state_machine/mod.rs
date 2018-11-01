@@ -9,10 +9,27 @@
 #[macro_use]
 pub mod generic_variant;
 pub mod channel_end;
-pub mod ranged_usize;
 pub mod user_input;
 
-// use type_level_values::ops::{IfEager, TypeFn, TypeFn_};
+
+mod ranged_usize{
+    use type_level_values::util_types::ranged_int::{
+        RangedInt,
+    }; 
+    pub use type_level_values::util_types::ranged_int::{
+        RangedTrait,
+        IntOutsideRange,
+    }; 
+
+    pub type RangedUsize<Start,End>=
+        RangedInt<usize,Start,End>;
+
+
+
+}
+
+
+// use type_level_values::ops::{ TypeFn, TypeFn_};
 use type_level_values::prelude::*;
 
 use type_level_values::core_extensions::TryInto;

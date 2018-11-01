@@ -4,25 +4,21 @@ use prelude::*;
 
 /// Converts a type to a tlist.
 pub trait AsTList_ {
-    type Output: TypeLevelListTrait;
+    type Output;
 }
 
-type_fn!{
-    pub fn AsTListOp[This](This)where[ This:AsTList_ ]{ This::Output }
+type_fn!{use_trait 
+    trait=AsTList_ []
+    type=AsTList
+    fn_type=AsTListOp
 }
 
-pub type AsTList<This> = <This as AsTList_>::Output;
+
 
 /// Converts an enum variant to a tlist with the discriminant as the first element.
 pub trait VariantAsTList_ {
     type Output: TypeLevelListTrait;
 }
-
-type_fn!{
-    pub fn VariantAsTListOp[This](This)where[ This:VariantAsTList_ ]{ This::Output }
-}
-
-pub type VariantAsTList<This> = <This as VariantAsTList_>::Output;
 
 impl<This, out> VariantAsTList_ for This
 where
@@ -34,8 +30,13 @@ where
     type Output = out;
 }
 
+type_fn!{use_trait 
+    trait=VariantAsTList_ []
+    type=VariantAsTList
+    fn_type=VariantAsTListOp
+}
 
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod test{
     use super::*;
 

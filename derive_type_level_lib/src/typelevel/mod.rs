@@ -132,8 +132,10 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         #[allow(non_snake_case)]
         #[allow(non_camel_case_types)]
         #[allow(dead_code)]
+        #[allow(unused_imports)]
         #vis mod #created_module { 
             use super::*;
+            use type_level_values;
             use type_level_values::reexports::*;
 
             #struct_decls

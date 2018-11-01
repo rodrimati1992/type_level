@@ -1,8 +1,13 @@
 use prelude::*;
 
+use crate_::fn_adaptors::{Const,GetRhs};
+use crate_::ops::*;
+use crate_::std_ops::*;
+
 use typenum::bit::{B0, B1};
 use typenum::marker_traits::{Bit, Integer, NonZero, Unsigned};
 use typenum::{Equal, Greater, Less, NInt, PInt, U0, UInt, UTerm, Z0};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -28,10 +33,15 @@ impl ConstTypeOf_ for UTerm {
     type Type = UnsignedInteger;
 }
 
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+trait Dummy00<T>{
+    const VALUE_00:T;
+}
+
 macro_rules! from_const {
-    (signed $([ $(#[$attr:meta])* $type:ty,$constant:ident ])* ) => {
+    (signed $([ $(#[$attr:meta])* $type:ty,$constant:ident,$unsigned_const:ident ])* ) => {
         $(
             $(#[$attr])*
             impl<U: Unsigned +Default + NonZero+Copy> IntoRuntime<$type> for PInt<U>{
@@ -39,10 +49,19 @@ macro_rules! from_const {
                     <PInt<U> as Integer>::$constant
                 }
             }
+
+
+            $(#[$attr])*
+            impl<U: Unsigned +Default + NonZero+Copy> Dummy00<$type> for NInt<U>{
+                // Emulating 2's complement negation to avoid typenum bug 
+                // with the minimum signed integers
+                const VALUE_00:$type=(!<U as Unsigned>::$unsigned_const + 1)as $type;
+            }
+
             $(#[$attr])*
             impl<U: Unsigned +Default + NonZero+Copy> IntoRuntime<$type> for NInt<U>{
                 fn to_runtime()->$type{
-                    <NInt<U> as Integer>::$constant
+                    <Self as Dummy00<$type>>::VALUE_00
                 }
             }
             $(#[$attr])*
@@ -61,7 +80,7 @@ macro_rules! from_const {
             $(#[$attr])*
             #[cfg(rust_1_22)]
             impl<U: Unsigned +Default + NonZero+Copy> IntoConstant<$type> for NInt<U>{
-                const VALUE:$type=<NInt<U> as Integer>::$constant;
+                const VALUE:$type=<Self as Dummy00<$type>>::VALUE_00;
             }
 
             $(#[$attr])*
@@ -107,11 +126,11 @@ macro_rules! from_const {
 }
 
 from_const!{signed
-    [i8   ,I8]
-    [i16  ,I16]
-    [i32  ,I32]
-    [isize,ISIZE]
-    [i64  ,I64]
+    [i8   ,I8   ,U8]
+    [i16  ,I16  ,U16]
+    [i32  ,I32  ,U32]
+    [isize,ISIZE,USIZE]
+    [i64  ,I64  ,U64]
     // Re-enable one typenum does not require nightly to compile with the i128 feature.
     //[#[cfg(feature="i128")] i128 ,I128]
 }
@@ -189,8 +208,205 @@ impl ConstType for BitType {}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+impl ConstFrom_<UTerm> for SignedInteger {
+    type Output=Z0;
+}
+
+impl ConstFrom_<Z0> for UnsignedInteger {
+    type Output=UTerm;
+}
+
+impl<U,B> ConstFrom_<UInt<U, B>> for SignedInteger
+where
+    U: Unsigned + Default + Copy, 
+    B: Bit + Default + Copy,
+{
+    type Output = PInt<UInt<U, B>> ;
+}
+impl<U> ConstFrom_<PInt<U>> for UnsignedInteger
+where
+    U: Unsigned + Default + NonZero + Copy,
+{
+    type Output = U;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+impl IntegerConsts for SignedInteger{
+    type Zero=Z0;
+    type One=P1;
+
+    type Min=None_;
+    type Max=None_;
+}
+
+impl IntegerConsts for UnsignedInteger{
+    type Zero=U0;
+    type One=U1;
+
+    type Min=Some_<U0>;
+    type Max=None_;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+macro_rules! with_function {
+    (unsigned; $bin_op:ident[ $($params:ident),* $(,)* ] , $function:ty ) => (
+        impl<$($params,)* U,B,Out> $bin_op<$($params,)*> for UInt<U, B> 
+        where
+            U: Unsigned + Default + Copy, 
+            B: Bit + Default + Copy,
+            $function:TypeFn_<(Self$(,$params)*),Output=Out>,
+        {
+            type Output = Out;
+        }
+        impl<$($params,)* Out> $bin_op<$($params,)*> for UTerm 
+        where 
+            $function:TypeFn_<(Self$(,$params)*),Output=Out>,
+        {
+            type Output = Out;
+        }
+    );
+    (signed; $bin_op:ident [ $($params:ident),* $(,)* ] , $function:ty ) => (
+        impl<$($params,)* U,Out> $bin_op<$($params,)*> for NInt<U> 
+        where
+            U: Unsigned + Default + NonZero + Copy,
+            $function:TypeFn_<(Self $(,$params)*),Output=Out>,
+        {
+            type Output = Out;
+        }
+        impl<$($params,)* U,Out> $bin_op<$($params,)*> for PInt<U> 
+        where
+            U: Unsigned + Default + NonZero + Copy,
+            $function:TypeFn_<(Self $(,$params)*),Output=Out>,
+        {
+            type Output = Out;
+        }
+        impl<$($params,)* Out> $bin_op<$($params,)*> for Z0 
+        where 
+            $function:TypeFn_<(Self $(,$params)*),Output=Out>,
+        {
+            type Output = Out;
+        }
+
+    )
+}
+
+
+impl<R,U,B,Out> SatSub_<R> for UInt<U, B> 
+where
+    U: Unsigned + Default + Copy, 
+    B: Bit + Default + Copy,
+    If<ConstGEOp, SubOp,Const<U0> >:TypeFn_<(Self,R),Output=Out>
+{
+    type Output = Out;
+}
+impl<R> SatSub_<R> for UTerm {
+    type Output = UTerm;
+}
+
+with_function!{ signed; SatSub_[R] , SubOp }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+impl<U,B,Out> SatSub1_ for UInt<U, B> 
+where
+    U: Unsigned + Default + Copy, 
+    B: Bit + Default + Copy,
+    Sub1Op:TypeFn_<Self,Output=Out>
+{
+    type Output = Out;
+}
+impl SatSub1_ for UTerm {
+    type Output = UTerm;
+}
+
+with_function!{ signed; SatSub1_[] , Sub1Op }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+with_function!{ signed; SafeSub_[R] , (SubOp,NewSome) }
+with_function!{ unsigned; SafeSub_[R] , SafeSubHelper }
+
+type SafeSubHelper=
+    If<ConstGEOp,(SubOp,NewSome),NewNone>;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+with_function!{ unsigned; SafeDiv_[R] , SafeDivHelper }
+with_function!{ signed; SafeDiv_[R] , SafeDivHelper }
+
+type SafeDivHelper=
+    If<(GetRhs,IsZeroOp),NewNone,(DivOp,NewSome)>;
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl< U,B> IsZero_ for UInt<U, B> 
+where
+    U: Unsigned + Default + Copy, 
+    B: Bit + Default + Copy,
+{
+    type Output = False;
+}
+impl<> IsZero_ for UTerm {
+    type Output = True;
+}
+impl< U> IsZero_ for NInt<U> 
+where
+    U: Unsigned + Default + NonZero + Copy,
+{
+    type Output = False;
+}
+impl< U> IsZero_ for PInt<U> 
+where
+    U: Unsigned + Default + NonZero + Copy,
+{
+    type Output = False;
+}
+impl<> IsZero_ for Z0 {
+    type Output = True;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+impl< U,B> AbsVal_ for UInt<U, B> 
+where
+    U: Unsigned + Default + Copy, 
+    B: Bit + Default + Copy,
+{
+    type Output = Self;
+}
+impl<> AbsVal_ for UTerm {
+    type Output = Self;
+}
+impl< U> AbsVal_ for NInt<U> 
+where
+    U: Unsigned + Default + NonZero + Copy,
+{
+    type Output = PInt<U>;
+}
+impl< U> AbsVal_ for PInt<U> 
+where
+    U: Unsigned + Default + NonZero + Copy,
+{
+    type Output = Self;
+}
+impl<> AbsVal_ for Z0 {
+    type Output = Self;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

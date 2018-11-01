@@ -1,11 +1,12 @@
 use prelude::*;
 
 /// An example type which uses a Const-parameter and allows extension methods.
-#[derive(ConstConstructor)]
-#[cconstructor(
+#[derive(MutConstValue)]
+#[mcv(
+    derive(Debug,Copy,Clone,Default),
     Type = "ConstUserExtMeth",
-    ConstParam = "C",
-    extension_methods = "true",
+    Param = "C",
+    ExtensionMethods = "true",
 )]
 pub struct ConstUserExtMethInner<C> {
     #[allow(dead_code)]
@@ -23,10 +24,10 @@ impl<C> ConstUserExtMeth<C> {
 ////////////////////////////////////////////////////////
 
 
-#[derive(ConstConstructor)]
-#[cconstructor(
-    Type = "TestingUnsized",
-    ConstParam = "C",
+#[derive(MutConstValue)]
+#[mcv(
+    derive(Debug,Copy,Clone,Default),    
+    Type = "TestingUnsized",Param = "C",
 )]
 pub struct TestingUnsizedInner<T:?Sized,C> {
     pub const_: ConstWrapper<C>,
@@ -34,11 +35,10 @@ pub struct TestingUnsizedInner<T:?Sized,C> {
 }
 
 
-#[derive(ConstConstructor)]
-#[cconstructor(
-    // print_derive,
-    Type = "TestingUnsizedOuter",
-    ConstParam = "C",
+#[derive(MutConstValue)]
+#[mcv(
+    derive(Debug,Copy,Clone,Default),
+    Type = "TestingUnsizedOuter",Param = "C",
 )]
 pub struct TestingUnsizedOuter_<T:?Sized,C> {
     pub const_: TestingUnsized<T,C>,
@@ -51,8 +51,11 @@ pub struct TestingUnsizedOuter_<T:?Sized,C> {
 pub struct NoConstLayoutIndependent<T>(pub T);
 
 
-#[derive(Debug,Copy,Clone,Default,ConstConstructor)]
-#[cconstructor(Type= "StoredInside", ConstParam = "I")]
+#[derive(MutConstValue)]
+#[mcv(
+    derive(Debug,Copy,Clone,Default),
+    Type= "StoredInside", Param = "I"
+)]
 pub struct StoredInsideInner<T,I> {
     pub value:T,
     marker: NoConstLayoutIndependent<I>,

@@ -1,13 +1,18 @@
-//! This example shows off a ranged unsigned integer type which is optimized for
-//! smaller storage.
-//!
-//! The value of Start and End determines the integer types used,
-//! there is no need to specify any integer types.
-//!
-//! ie: a RangedUInt<U100,U356> would be stored as a u8 and
-//! returned as a u16 (between 100 and 356 exclussive) from the `value` method .
-//!
-//!
+/*! 
+This example shows off a ranged unsigned integer type which is optimized for
+smaller storage.
+
+The value of Start and End determines the integer types used,
+there is no need to specify any integer types.
+
+ie: a RangedInt<U100,U356> would be stored as a u8 and
+returned as a u16 (between 100 and 356 exclussive) from the `value` method .
+
+For a better maintained version of ranged integers,
+though without the space optimization due to usability issues,
+please look for RangedIntR in type_level_values.
+
+*/
 
 
 use type_level_values::prelude::*;
@@ -22,10 +27,10 @@ use std::ops::{Add, Range, Shr, Sub};
 pub fn main_ () {
     type U65535 = <U65536 as Sub<U1>>::Output;
 
-    assert_eq!(size_of::<u8>(), size_of::<RangedUInt<U0, U0>>());
-    assert_eq!(size_of::<u8>(), size_of::<RangedUInt<U0, U256>>());
-    assert_eq!(size_of::<u8>(), size_of::<RangedUInt<U100, U356>>());
-    assert_eq!(size_of::<u16>(), size_of::<RangedUInt<U0, U65535>>());
+    assert_eq!(size_of::<u8>(), size_of::<RangedInt<U0, U0>>());
+    assert_eq!(size_of::<u8>(), size_of::<RangedInt<U0, U256>>());
+    assert_eq!(size_of::<u8>(), size_of::<RangedInt<U100, U356>>());
+    assert_eq!(size_of::<u16>(), size_of::<RangedInt<U0, U65535>>());
 
     {
         type UsedRange = ConstRange<U0, U10>;
@@ -33,12 +38,12 @@ pub fn main_ () {
             start: U0::CW,
             end: U10::CW,
         };
-        let ranged_int = |n| RangedUIntR::with_range(n, range).unwrap().value();
+        let ranged_int = |n| RangedIntR::with_range(n, range).unwrap().value();
 
         assert_eq!(ranged_int(0), 0);
         assert_eq!(ranged_int(5), 5);
         assert_eq!(ranged_int(9), 9);
-        assert_eq!(RangedUIntR::new(10), None::<RangedUIntR<UsedRange>>);
+        assert_eq!(RangedIntR::new(10), None::<RangedIntR<UsedRange>>);
     }
 
     {
@@ -47,40 +52,45 @@ pub fn main_ () {
             start: U0::CW,
             end: U100::CW,
         };
-        let ranged_int = |n| RangedUIntR::with_range(n, range).unwrap().value();
+        let ranged_int = |n| RangedIntR::with_range(n, range).unwrap().value();
 
         assert_eq!(ranged_int(0), 0);
         assert_eq!(ranged_int(5), 5);
         assert_eq!(ranged_int(9), 9);
         assert_eq!(ranged_int(50), 50);
         assert_eq!(ranged_int(99), 99);
-        assert_eq!(RangedUIntR::new(100), None::<RangedUIntR<UsedRange>>);
+        assert_eq!(RangedIntR::new(100), None::<RangedIntR<UsedRange>>);
     }
 
     {
         type UsedRange = ConstRange<U10, U100>;
         let range = UsedRange::MTVAL;
-        let ranged_int = |n| RangedUIntR::with_range(n, range).unwrap().value();
+        let ranged_int = |n| RangedIntR::with_range(n, range).unwrap().value();
 
-        assert_eq!(RangedUIntR::new(0), None::<RangedUIntR<UsedRange>>);
-        assert_eq!(RangedUIntR::new(5), None::<RangedUIntR<UsedRange>>);
-        assert_eq!(RangedUIntR::new(9), None::<RangedUIntR<UsedRange>>);
+        assert_eq!(RangedIntR::new(0), None::<RangedIntR<UsedRange>>);
+        assert_eq!(RangedIntR::new(5), None::<RangedIntR<UsedRange>>);
+        assert_eq!(RangedIntR::new(9), None::<RangedIntR<UsedRange>>);
         assert_eq!(ranged_int(10), 10);
         assert_eq!(ranged_int(50), 50);
         assert_eq!(ranged_int(99), 99);
-        assert_eq!(RangedUIntR::new(100), None::<RangedUIntR<UsedRange>>);
+        assert_eq!(RangedIntR::new(100), None::<RangedIntR<UsedRange>>);
     }
 }
 
-pub type RangedUInt<Start, End> = RangedUIntR<ConstRange<Start, End>>;
+pub type RangedInt<Start, End> = RangedIntR<ConstRange<Start, End>>;
 
-/// Ranged unsigned integer type,
-/// using a ConstRange to determine the range it is limited to.
-///
-/// The ConstRange also determines the integer type stored.
-#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord, ConstConstructor)]
-#[cconstructor(Type = "RangedUIntR", ConstParam = "R")]
-pub struct RangedUIntInner<R>
+#[derive(MutConstValue)]
+#[mcv(
+    doc="
+        Ranged unsigned integer type,
+        using a ConstRange to determine the range it is limited to.
+
+        The ConstRange also determines the integer type stored.
+    ",
+    derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord),
+    Type = "RangedIntR", Param = "R"
+)]
+pub struct RangedIntInner<R>
 where
     R: WrapperTrait,
     UnwrapConst<R>: RangeTypes,
@@ -89,7 +99,7 @@ where
     n: <UnwrapConst<R> as RangeTypes>::Stored,
 }
 
-impl<R> RangedUIntR<R>
+impl<R> RangedIntR<R>
 where
     R: RangeTypes,
 {
@@ -121,12 +131,12 @@ where
 
 /// Trait for ConstRange<Start,End>.
 ///
-/// Used to determine the integer type stored in the RangedUIntR.
+/// Used to determine the integer type stored in the RangedIntR.
 pub trait RangeTypes {
-    /// The integer type stored in the RangedUIntR.
+    /// The integer type stored in the RangedIntR.
     type Stored: Copy + 'static + Into<Self::Returned> + Debug + PartialEq + PartialOrd + Eq + Ord;
 
-    /// The integer taken by RangedUIntR::new and returned by RangedUIntR::value.
+    /// The integer taken by RangedIntR::new and returned by RangedIntR::value.
     type Returned: Sub<Self::Returned, Output = Self::Returned>
         + Add<Self::Returned, Output = Self::Returned>
         + Copy

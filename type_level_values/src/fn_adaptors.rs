@@ -10,6 +10,15 @@ use prelude::*;
 use crate_::field_traits::{MapFieldOp};
 use crate_::collection_ops::{Insert_};
 
+pub use crate_::type_fn::{
+    TypeFn_,
+    TypeFn,
+    TypeFnMt,
+    Piped_,
+    Piped,
+    PipedOp,
+};
+
 type_fn!{
     captures(Op,Rhs)
     /// Type-level version of "|x|Op(x,Rhs)"
@@ -24,6 +33,16 @@ type_fn!{
     pub fn ApplyLhs[Rhs](Rhs)
     where [ Op: TypeFn_<(Lhs, Rhs)> ]
     { Op::Output }
+}
+
+type_fn!{
+    /// Type-level version of |l,r| func(r,l)
+    captures(Func)
+    pub fn Flip[L,R](L,R)
+    where[ Func:TypeFn_<(R,L)> ]
+    {
+        Func::Output
+    }
 }
 
 type_fn!{
@@ -119,6 +138,13 @@ fn main(){
 */
 pub type ApplyNonSelf<Op, Params> = ApplyNonNth<Op, U0, Params>;
 
+/**
+Applies the Self parameter for a function,which is by convention the first.
+
+This only works with functions that take at least 2 parameters other than Self.
+*/
+pub type ApplySelf<Op, This> = ApplyNth<Op, U0, This>;
+
 type_fn!{
     captures(Op, Mapper)
     /// Type-level version of "|l,r|Op(Mapper(l),r)"
@@ -176,11 +202,11 @@ type_fn!{
 
 type_fn!{
     /// Type-level version of "|l,_|l"
-    pub fn ReturnLhs[L,R](L,R){ L }
+    pub fn GetLhs[L,R](L,R){ L }
 }
 type_fn!{
     /// Type-level version of "|_,r|r"
-    pub fn ReturnRhs[L,R](L,R){ R }
+    pub fn GetRhs[L,R](L,R){ R }
 }
 
 type_fn!{

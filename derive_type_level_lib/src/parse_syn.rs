@@ -1,12 +1,23 @@
 use syn;
 use syn::parse;
+use syn::parse::Error as parseError;
+use syn::TypeParamBound;
+use syn::token::Add;
+use syn::punctuated::Punctuated;
 
-pub fn parse_error_msg<T,E>(invalid_msg:&str,str_:&str,e:E)->T
-where
-    E: ::std::fmt::Debug
-{
-    panic!("\n\n{}:\n    '{}'\n\nerror:{:#?}\n\n",invalid_msg,str_,e )
+
+use attribute_detection::shared::bounds_from_str;
+
+pub fn parse_error_msg<T>(invalid_msg:&str,str_:&str,e:parseError)->T{
+    panic!("\n\n{}:\n    '{}'\n\nerror:\n{}\n\n",invalid_msg,str_,e )
 }
+
+// pub fn parse_error_msg<T,E>(invalid_msg:&str,str_:&str,e:E)->T
+// where
+//     E: ::std::fmt::Debug
+// {
+//     panic!("\n\n{}:\n    '{}'\n\nerror:{:#?}\n\n",invalid_msg,str_,e )
+// }
 
 pub fn parse_where_pred(str_:&str)->syn::WherePredicate{
     syn::parse_str(str_).unwrap_or_else(|e|parse_error_msg("Invalid where predicate",str_,e))
@@ -37,6 +48,13 @@ pub fn parse_syn_attributes(str_:&str)->Vec<syn::Attribute>{
     syn::parse_str::<ParseOuter>(str_)
         .unwrap_or_else(|e|parse_error_msg("Invalid syn::Attribute",str_,e))
         .attributes
+}
+
+
+pub fn parse_bounds(str_:&str)->Punctuated<TypeParamBound,Add>{
+    let mut list=Punctuated::<TypeParamBound,Add>::new();
+    bounds_from_str(str_,&mut list);
+    list
 }
 
 

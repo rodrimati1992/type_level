@@ -10,8 +10,8 @@ pub(crate) mod my_meta;
 /// Attribute-related stuff for the `TypeLevel` derive macro
 pub(crate) mod typelevel;
 
-/// Attribute-related stuff for the `ConstConstructor` derive macro
-pub(crate) mod const_constructor;
+/// Attribute-related stuff for the `MutConstValue` derive macro
+pub(crate) mod mutconstvalue;
 
 pub(crate) use self::my_meta::{MyMeta, MyNested};
 

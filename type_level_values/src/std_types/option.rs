@@ -1,17 +1,32 @@
 use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
-use crate_::fn_adaptors::ApplyRhs;
-use crate_::fn_types::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
-use crate_::ops::{Unwrap_,Unwrap,UnwrapOr_,UnwrapOr};
-use crate_::collection_ops::{FoldL, FoldL_, FoldR, FoldR_, Len_, Map, Map_};
+use crate_::fn_adaptors::{ApplyRhs,Const};
+use crate_::std_ops::{BitAndOp, BitOrOp, DivOp,MulMt, NotOp};
+use crate_::ops::{
+    Lazy,
+    Unwrap_,Unwrap,UnwrapOr,UnwrapOrElse_,
+    AndThen_,OrElse_,AndThenMt,OrElseMt,
+    IntoInner_,
+    If,
+    AssertEq,AssertFnRet,AssertConstTypeMt,
+    ConstEqMt,
+    ConstIntoMt,
+    SafeDivOp,Add1Op,
+};
+use crate_::collection_ops::{
+    FoldL, FoldL_, FoldR, FoldR_, 
+    TryFoldL, TryFoldL_, TryFoldR, TryFoldR_, 
+    Len_, 
+    Map, Map_,
+    Filter_,Filter,
+    TryFoldType,TFVal,TFBreak,
+};
 use prelude::*;
 
 use std_::fmt::Debug;
 use std_::ops::{BitAnd, BitOr};
 use std_::option::Option as StdOption;
-
-use typenum::consts::{U0, U1, U2, U3, U4, U5, U6, U7, U8};
 
 #[derive(TypeLevel)]
 #[typelevel(
@@ -30,14 +45,21 @@ pub enum Option<T> {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-impl<DefaultValue, Op, T> FoldR_<DefaultValue, Op> for Some_<T>
-where
-    Op: TypeFn_<(DefaultValue, T)>,
-{
-    type Output = Op::Output;
+type_fn!{
+    pub fn NewSome[v](v){ Some_<v> }
 }
-impl<DefaultValue, Op> FoldR_<DefaultValue, Op> for None_ {
-    type Output = DefaultValue;
+pub type NewNone=Const<None_>;
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<Func,Params> TypeFn_<Params> for Some_<Func>
+where
+    Func: TypeFn_<Params>,
+{
+    type Output = Func::Output;
+}
+impl<Params> TypeFn_<Params> for None_ {
+    type Output = Params;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -53,6 +75,56 @@ impl<Op> Map_<Op> for None_ {
 }
 ///////////////////////////////////////////////////////////////////////////////////////
 
+impl<Pred,Out, T> Filter_<Pred> for Some_<T>
+where
+    If<Pred,NewSome,NewNone>: TypeFn_<T,Output=Out>,
+{
+    type Output = Out;
+}
+impl<Pred> Filter_<Pred> for None_ {
+    type Output = None_;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<T,Func,Out> AndThen_<Func> for Some_<T>
+where
+    (Func,AssertConstTypeMt<OptionType>):TypeFn_<T,Output=Out>
+{
+    type Output=Out;
+}
+
+impl<Func> AndThen_<Func> for None_{
+    type Output=Self;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<T,Func> OrElse_<Func> for Some_<T>{
+    type Output=Self;
+}
+
+
+impl<Func,Out> OrElse_<Func> for None_
+where
+    (Func,AssertConstTypeMt<OptionType>):TypeFn_<(),Output=Out>
+{
+    type Output=Out;
+}
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<DefaultValue, Op, T> FoldR_<DefaultValue, Op> for Some_<T>
+where
+    Op: TypeFn_<(DefaultValue, T)>,
+{
+    type Output = Op::Output;
+}
+impl<DefaultValue, Op> FoldR_<DefaultValue, Op> for None_ {
+    type Output = DefaultValue;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
 impl<DefaultValue, Op, T> FoldL_<DefaultValue, Op> for Some_<T>
 where
     Op: TypeFn_<(DefaultValue, T)>,
@@ -61,6 +133,30 @@ where
 }
 impl<DefaultValue, Op> FoldL_<DefaultValue, Op> for None_ {
     type Output = DefaultValue;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<DefaultValue, Op, T,Out> TryFoldR_<DefaultValue, Op> for Some_<T>
+where
+    (Op,ConstIntoMt<TryFoldType>): TypeFn_<(DefaultValue, T),Output=Out>,
+{
+    type Output = Out;
+}
+impl<DefaultValue, Op> TryFoldR_<DefaultValue, Op> for None_ {
+    type Output = TFVal<DefaultValue>;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<DefaultValue, Op, T,Out> TryFoldL_<DefaultValue, Op> for Some_<T>
+where
+    (Op,ConstIntoMt<TryFoldType>): TypeFn_<(DefaultValue, T),Output=Out>,
+{
+    type Output = Out;
+}
+impl<DefaultValue, Op> TryFoldL_<DefaultValue, Op> for None_ {
+    type Output = TFVal<DefaultValue>;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -117,7 +213,10 @@ type_fn!{
            IsSome[T](Some_<T>){True}
 }
 
-pub type IsNone = (IsSome, NotOp);
+type_fn!{
+    pub fn IsNone(None_){True}
+           IsNone[T](Some_<T>){False}
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -127,17 +226,32 @@ impl<T> Unwrap_ for Some_<T> {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-impl<Def> UnwrapOr_<Def> for None_ {
-    type Output = Def;
+impl<DefFunc> UnwrapOrElse_<DefFunc> for None_ 
+where 
+    DefFunc:TypeFn_<()>
+{
+    type Output = DefFunc::Output;
 }
 
-impl<T,Def> UnwrapOr_<Def> for Some_<T> {
+impl<T,DefFunc> UnwrapOrElse_<DefFunc> for Some_<T> {
+    type Output = T;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+
+impl<> IntoInner_ for None_ {
+    type Output = ();
+}
+
+impl<T> IntoInner_ for Some_<T> {
     type Output = T;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
+// #[cfg(all(test,feature="passed_tests"))]
 mod tests {
     use super::*;
 
@@ -148,18 +262,36 @@ mod tests {
 
         assert_eq!(Some_(U0::CW).into_runtime(), Some(0));
         assert_eq!(None_.into_runtime(), None::<Void>);
+        assert_eq!(None_.into_runtime(), None::<()>);
+        assert_eq!(None_.into_runtime(), None::<u32>);
     }
 
     #[test]
     fn option_iteration() {
-        let _: U1 = <FoldR<None_, U1, DivOp>>::MTVAL;
-        let _: U2 = <FoldR<Some_<U2>, U4, DivOp>>::MTVAL;
+        type TestFold<This,DefaultValue,Func,Res>=(
+            AssertEq<FoldL<This, DefaultValue, Func>,Res>,
+            AssertEq<FoldR<This, DefaultValue, Func>,Res>,
+        );
+        let _: TestFold<None_, U1, DivOp,U1>;
+        let _: TestFold<Some_<U2>, U4, DivOp,U2>;
 
-        let _: U1 = <FoldL<None_, U1, DivOp>>::MTVAL;
-        let _: U2 = <FoldL<Some_<U2>, U4, DivOp>>::MTVAL;
 
-        let _: Some_<U6> = <Map<Some_<U3>, ApplyRhs<MulOp, U2>>>::MTVAL;
-        let _: None_ = <Map<None_, ApplyRhs<MulOp, U2>>>::MTVAL;
+        type TestTryFold<This,DefaultValue,Func,Res>=(
+            AssertEq<TryFoldL<This, DefaultValue, Func>,Res>,
+            AssertEq<TryFoldR<This, DefaultValue, Func>,Res>,
+        );
+        let _: TestTryFold<None_    , U8, SafeDivOp,TFVal<U8>>;
+        let _: TestTryFold<None_    , U0, SafeDivOp,TFVal<U0>>;
+        let _: TestTryFold<Some_<U2>, U8, SafeDivOp,TFVal<U4>>;
+        let _: TestTryFold<Some_<U0>, U8, SafeDivOp,TFBreak<None_>>;
+
+        let _: AssertEq<Some_<U6>,Map<Some_<U3>, MulMt<U2>>>;
+        let _: AssertEq<None_,Map<None_, MulMt<U2>>>;
+
+        let _: AssertEq< Some_<U3> , Filter<Some_<U3>, ConstEqMt<U3>>>;
+        let _: AssertEq< None_ , Filter<Some_<U3>, ConstEqMt<U0>>>;
+        let _: AssertEq< None_ , Filter<None_,Const<True>>>;
+        let _: AssertEq< None_ , Filter<None_,Const<False>>>;
     }
 
     #[test]
@@ -189,6 +321,44 @@ mod tests {
         let _:AssEqTy<UnwrapOr<Some_<U0>,U100>,U0>;
         let _:AssEqTy<UnwrapOr<Some_<U1>,U100>,U1>;
         let _:AssEqTy<UnwrapOr<None_    ,U200>,U200>;
+    }
+
+    #[test]
+    fn mapping(){
+        type Test0<Val,Func,Expected>=
+            AssertEq<Map<Val,Func>,Expected>;
+
+        let _:Test0<Some_<U0>,Add1Op,Some_<U1>>;
+        let _:Test0<Some_<U1>,Add1Op,Some_<U2>>;
+        let _:Test0<None_,Add1Op,None_>;
+        
+    }
+
+    #[test]
+    fn and_then_or_else(){
+        type TestAT<Val,Func,Expected>=
+            AssertFnRet<Val,AndThenMt<Func>,Expected>;
+
+        type TestOE<Val,Func,Expected>=
+            AssertFnRet<Val,OrElseMt<Func>,Expected>;
+
+        type AddSome=(Add1Op,NewSome);
+
+        let _:TestAT<Some_<U0>,NewNone,None_>;
+        let _:TestAT<Some_<U0>,AddSome,Some_<U1>>;
+        let _:TestAT<Some_<U1>,NewNone,None_>;
+        let _:TestAT<Some_<U1>,AddSome,Some_<U2>>;
+        
+        let _:TestOE<Some_<U0>,NewNone,Some_<U0>>;
+        let _:TestOE<Some_<U0>,AddSome,Some_<U0>>;
+        let _:TestOE<Some_<U1>,NewNone,Some_<U1>>;
+        let _:TestOE<Some_<U1>,AddSome,Some_<U1>>;
+        
+        let _:TestAT<None_,NewNone,None_>;
+        let _:TestAT<None_,Lazy<NewSome,U10>,None_>;
+        let _:TestOE<None_,NewNone,None_>;
+        let _:TestOE<None_,Lazy<NewSome,U10>,Some_<U10>>;
+
     }
 
 }

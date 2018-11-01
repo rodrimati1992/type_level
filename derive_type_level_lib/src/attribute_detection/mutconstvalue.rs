@@ -2,7 +2,7 @@ use super::item_metadata::ItemMetaData;
 use super::my_meta::{MyMeta, MyNested};
 use indexable_struct::GetEnumIndices;
 
-use attribute_errors::const_constructor as attribute_errors;
+use attribute_errors::mutconstvalue as attribute_errors;
 
 use super::shared::{
     NotUpdated,
@@ -28,6 +28,7 @@ use syn::{
     Meta,
 };
 
+use quote::ToTokens;
 // use std::str::FromStr;
 
 
@@ -35,12 +36,12 @@ use syn::{
 pub(crate)struct CCAttributes<'alloc>{
     pub(crate) impls:IndexableImplA<ItemMetaData<'alloc,()>>,
     pub(crate) attrs:ItemMetaData<'alloc,()>,
-    pub(crate) const_constructor:ItemMetaData<'alloc,TypeDecl<'alloc>>,
+    // pub(crate) const_constructor:ItemMetaData<'alloc,TypeDecl<'alloc>>,
     pub(crate) type_alias       :ItemMetaData<'alloc,TypeDecl<'alloc>>,
     pub(crate) const_param      :Option<(&'alloc Ident,Option<&'alloc syn::Type>)>,
     
     /// Whether extension Const-methods are allowed.
-    pub(crate) extension_methods:ItemMetaData<'alloc,ExtMethodIA>,
+    pub(crate) extension_methods:ExtMethodIA,
     pub(crate) print_derive: bool,
     pub(crate) skip_derive: bool,
 }
@@ -49,7 +50,7 @@ pub(crate)struct CCAttributes<'alloc>{
 #[derive(Debug,Copy,Clone,PartialEq,Eq)]
 pub enum TypeOrCConstr{
     Type,
-    ConstConstructor,
+    // ConstConstructor,
 }
 
 
@@ -63,7 +64,6 @@ declare_indexable_struct!{
     struct indexable=IndexableImplA
 
     variants=[
-        (const_constructor       ,ConstConstructor),
         (const_layout_independent,ConstLayoutIndependent),
         (apply_const_param       ,ApplyConstParam_),
         (get_const_constructor   ,GetConstConstructor_),
@@ -89,36 +89,22 @@ pub struct ExtMethodIA{
 
 impl ExtMethodIA{
     fn update_with_nested(&mut self,nested:&MyNested)->Result<(),NotUpdated>{
-        self.is_allowed=match *nested {
-             MyNested::Word
-            |MyNested::Value("true")
-            |MyNested::Value("True")
-            =>true,
-             MyNested::Value("false")
-            |MyNested::Value("False")
-            =>false,
+        match *nested {
+            MyNested::Word=>{}
+            MyNested::Value(value)=> {
+                if ["true","True","Allow","allow"].contains(&value) {
+                    self.is_allowed=true;
+                }else if ["false","False"].contains(&value) {
+                    self.is_allowed=false;
+                }else{
+                    return Err(NotUpdated)
+                }
+            }
             _=>return Err(NotUpdated),
-        };
+        }
         Ok(())
     }
 }
-
-
-impl<'alloc> UpdateWithMeta<'alloc> for ExtMethodIA{
-    fn update_with_meta(
-        &mut self,
-        meta: &MyMeta<'alloc>,
-        _arenas: ArenasRef<'alloc>,
-    ) -> Result<(), NotUpdated> {
-        if meta.word.str=="allow" {
-            self.update_with_nested(&meta.value)
-        }else{
-            Err(NotUpdated)
-        }
-    }
-}
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -190,6 +176,10 @@ impl<'alloc> CCAttributes<'alloc>{
     pub(crate)fn new(attributes:&'alloc [Attribute],arenas:ArenasRef<'alloc>)->Self{
         let mut this=Self::default();
 
+        // for attr in attributes{
+        //     println!("attribute:\n----------\n{}\n----------\n",attr.into_token_stream());
+        // }
+
         for attr in attributes{
             constructor_inner(attr,&mut this,arenas);
         }
@@ -209,47 +199,49 @@ fn constructor_inner<'alloc>(
 ){
     let meta_list = match attrs.interpret_meta() {
         Some(Meta::List(meta_list)) => arenas.metalists.alloc(meta_list),
-        _ => return,
+        Some(_)=>{ return }
+        None=>{
+            panic!("not a valid attribute:\n{}\n",attrs.into_token_stream() );
+        }
     };
 
-    if meta_list.ident == "cconstructor" {
-        for nested0 in &meta_list.nested {
-            let nested0: MyMeta = nested0.into_with(arenas);
+    // {
+    //     for nested0_syn in &meta_list.nested {
+    //         let nested0: MyMeta = nested0_syn.into_with(arenas);
+    //         println!("word:{}", &nested0.word.str);
+    //     }
+    // }
+
+    
+    if meta_list.ident == "mcv" {
+        for nested0_syn in &meta_list.nested {
+            let nested0: MyMeta = nested0_syn.into_with(arenas);
             let word = &*nested0.word.str;
+            
 
             if let Ok(_)=this.attrs.update_with_meta(&nested0,arenas) {
                 continue;
             }
 
+            let is_reserved=word.chars().next().map_or(false,|c| c.is_uppercase());
+
             match word {
-                "skip_derive" => {
+                "SkipDerive" => {
                     this.skip_derive = true;
                     return;
                 }
-                "print_derive" => {
+                "PrintDerive" => {
                     this.print_derive = true;
                 }
-                "extension_methods" => {
-                    if let Err(_)=this.extension_methods.inner.update_with_nested(&nested0.value){
-                        let mut value=nested0.value;
-
-                        let list=value.list_to_mylist(arenas).unwrap_or_else(|e|{
-                            panic!("Unsupported nested attribute:{:#?}", e)
-                        });
-                        for param in list {
-                            let _=this.extension_methods.update_with_meta(param,arenas);
-                        }
+                "ExtensionMethods" => {
+                    if let Err(_)=this.extension_methods.update_with_nested(&nested0.value) {
+                        panic!(
+                            "invalid value for ExtensionMethods={:?}\n{}",
+                            nested0.value,
+                            attribute_errors::extension_methods_attr()
+                        );
                     }
                 }
-                "ConstConstructor" =>{
-                    let item=&mut this.const_constructor;
-                    update_ident_and_metadata(
-                        &nested0.value,
-                        item,
-                        TypeOrCConstr::ConstConstructor,
-                        arenas
-                    );
-                } 
                 "Type" =>{
                     let item=&mut this.type_alias;
                     update_ident_and_metadata(
@@ -259,10 +251,10 @@ fn constructor_inner<'alloc>(
                         arenas
                     );
                 } 
-                "ConstParam" => {
+                "Param" => {
                     this.const_param = Some( typaram_from_nested(&nested0.value,arenas) );
                 }
-                "items"=>{
+                "Items"=>{
                     let value = nested0.value;
 
                     let list_1=match &value {
@@ -293,11 +285,17 @@ fn constructor_inner<'alloc>(
                     );
 
                 }
-                word=>{
-                    panic!("Unsupported attribute:'{}'{}", 
+                word if is_reserved =>{
+                    panic!("\n\n\n\
+                        Attributes starting with an uppercase character are reserved:'{}'\n\
+                        {}\
+                        ", 
                         word,
-                        attribute_errors::cconstructor_attrs()
-                    );
+                        attribute_errors::mutconstvalue_attrs()
+                    )
+                }
+                word =>{
+                    this.attrs.attrs.push(nested0_syn);
                 }
             }
         }
@@ -323,8 +321,8 @@ fn update_ident_and_metadata<'alloc>(
                     let error_msg=match type_or_cconstr {
                         TypeOrCConstr::Type=> 
                             attribute_errors::type_subattrs(),
-                        TypeOrCConstr::ConstConstructor=>
-                            attribute_errors::constconstructor_subattrs(),
+                        // TypeOrCConstr::ConstConstructor=>
+                        //     attribute_errors::constconstructor_subattrs(),
                     };
                     panic!("Invalid parameter:{:#?}{}", param,error_msg) 
                 });
@@ -336,7 +334,7 @@ fn update_ident_and_metadata<'alloc>(
         word=>{
             let error_msg=match type_or_cconstr {
                 TypeOrCConstr::Type=>attribute_errors::type_attr(),
-                TypeOrCConstr::ConstConstructor=>attribute_errors::constconstructor_attr(),
+                // TypeOrCConstr::ConstConstructor=>attribute_errors::constconstructor_attr(),
             };
             panic!("Unsupported nested attribute:{:#?}{}", word,error_msg);
         }

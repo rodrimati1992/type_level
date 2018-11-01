@@ -62,7 +62,7 @@ pub fn main (){
         Some(Example(ExampleKind::Regular,8))=>_08_ranged_int::main_(),
         Some(Example(ExampleKind::Regular,9))=>_09_type_hof::main_(),
         Some(Example(ExampleKind::Regular,10))=>_10_state_machine::main_(),
-        Some(Example(ExampleKind::Playground,1))=>playground_01::main_(),
+        Some(Example(ExampleKind::Playground,1))=>playground_01::main(),
         Some(Example(ExampleKind::Playground,2))=>playground_02::main_(),
         Some(Example(ExampleKind::Syntax,1))=>syntax_01_construct::main_(),
         _=>panic!("\n\n\

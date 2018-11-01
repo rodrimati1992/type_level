@@ -102,15 +102,15 @@ pub static TEST_CASES:&'static [ItemType]={
     use self::EnabledImpl as EI;
     use self::VariantKind as VK;
     &[
-        (SOE::Struct,VK::Braced,Privacy::Public      ,EI::EMPTY),
-        (SOE::Struct,VK::Braced,Privacy::Public      ,EI::CONST_EQ),
-        (SOE::Struct,VK::Braced,Privacy::Public      ,EI::CONST_ORD),
+        (SOE::Struct,VK::Braced,Privacy::Public      ,EI::EMPTY       ),
+        (SOE::Struct,VK::Braced,Privacy::Public      ,EI::CONST_EQ    ),
+        (SOE::Struct,VK::Braced,Privacy::Public      ,EI::CONST_ORD   ),
         (SOE::Struct,VK::Braced,Privacy::Public      ,EI::CONST_EQ_ORD),
-        (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::EMPTY),
-        (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::CONST_EQ),
-        (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::CONST_ORD),
+        (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::EMPTY       ),
+        (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::CONST_EQ    ),
+        (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::CONST_ORD   ),
         (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::CONST_EQ_ORD),
-        (SOE::Struct,VK::Braced,Privacy::PrivateField,EI::CONST_EQ),
+        (SOE::Struct,VK::Braced,Privacy::PrivateField,EI::CONST_EQ    ),
         (SOE::Struct,VK::Tupled,Privacy::PrivateField,EI::CONST_EQ_ORD),
         (SOE::Struct,VK::Tupled,Privacy::Public      ,EI::CONST_EQ_ORD),
         (SOE::Enum  ,VK::Tupled,Privacy::Public      ,EI::CONST_EQ_ORD),
@@ -300,10 +300,14 @@ type TestGetF<This,Field,Val>=(
         }
         match soe {
             StructOrEnum::Struct=>{
+                let tuple_acc_1=match privacy {
+                    Privacy::PrivateField=>"field_1",
+                    Privacy::Public=>"U1",
+                };
                 let (const_fields,runt_fields,assoc_fields)=match var_kind {
                      VariantKind::Unit
-                    |VariantKind::Tupled=>(("U0","U1"),("0","1"),("field_0","field_1")),
-                    VariantKind::Braced=>(("x","y"),("x","y"),("x","y")),
+                    |VariantKind::Tupled=>(("U0",tuple_acc_1),("0","1"),("field_0","field_1")),
+                    VariantKind::Braced=>("x","y").piped(|x| (x,x,x) ),
                 };
                 writeln!(w,"
 
@@ -416,18 +420,18 @@ type TestGetF<This,Field,Val>=(
                     let _:AssertEq<GetVariantOf<Open1>,variants::Open_Variant>;
                     let _:AssertEq<GetVariantOf<Closed>,variants::Closed_Variant>;
 
-                    {co}let _:TestSetField<Open0,fields::remaining,U7,Open<U7>>;
+                    {co}let _:TestSetField<Open0,fields::{accessor},U7,Open<U7>>;
                     {co}let _:AssertEq<SetField<Open0,fields::All,U7>,Open<U7>>;
                     {co}let _:TestSetField<
                     {co}    Open0,
-                    {co}    fields::remaining,
+                    {co}    fields::{accessor},
                     {co}    U3,
-                    {co}    construct!(Open_Uninit=>fields::remaining=U3)
+                    {co}    construct!(Open_Uninit=>fields::{accessor}=U3)
                     {co}>;
                     {co}
-                    {co}let _:TestGetF<Open2,fields::remaining,U100 >;
+                    {co}let _:TestGetF<Open2,fields::{accessor},U100 >;
                     {co}
-                    {co}let _:TestGetFR<Open0,fields::remaining,{deriving},u32>;
+                    {co}let _:TestGetFR<Open0,fields::{accessor},{deriving},u32>;
 
                     let _:AssertEq<<{deriving} as IntoConstType_>::ToConst , {consttype} >;
 
@@ -437,15 +441,15 @@ type TestGetF<This,Field,Val>=(
                     );
                     assert_eq_into!(
                         Open0,
-                        {deriving}::Open {co} {{remaining:0}}
+                        {deriving}::Open {co} {{ {remaining}:0}}
                     );
                     assert_eq_into!(
                         Open1,
-                        {deriving}::Open {co} {{remaining:10}}
+                        {deriving}::Open {co} {{ {remaining}:10}}
                     );
                     assert_eq_into!(
                         Open2,
-                        {deriving}::Open {co} {{remaining:100}}
+                        {deriving}::Open {co} {{ {remaining}:100}}
                     );
                     assert_eq_into!(
                         Closed,
@@ -459,9 +463,9 @@ type TestGetF<This,Field,Val>=(
                     let _:AssertEq<ConstTypeOf<Closed>,{consttype} >;
 
 
-                    {co}let _:AssertEq<<Open0 as OpenTrait>::remaining , U0>;
-                    {co}let _:AssertEq<<Open1 as OpenTrait>::remaining , U10>;
-                    {co}let _:AssertEq<<Open2 as OpenTrait>::remaining , U100>;
+                    {co}let _:AssertEq<<Open0 as OpenTrait>::{assoc_ty} , U0>;
+                    {co}let _:AssertEq<<Open1 as OpenTrait>::{assoc_ty} , U10>;
+                    {co}let _:AssertEq<<Open2 as OpenTrait>::{assoc_ty} , U100>;
 
                     fn assertions()
                     where  
@@ -474,9 +478,9 @@ type TestGetF<This,Field,Val>=(
 
                     assertions();
 
-                    {co}let _:AssertEq<<Open0 as OpenWithRuntime>::rt_remaining , U0>;
-                    {co}let _:AssertEq<<Open1 as OpenWithRuntime>::rt_remaining , U10>;
-                    {co}let _:AssertEq<<Open2 as OpenWithRuntime>::rt_remaining , U100>;
+                    {co}let _:AssertEq<<Open0 as OpenWithRuntime>::rt_{assoc_ty} , U0>;
+                    {co}let _:AssertEq<<Open1 as OpenWithRuntime>::rt_{assoc_ty} , U10>;
+                    {co}let _:AssertEq<<Open2 as OpenWithRuntime>::rt_{assoc_ty} , U100>;
 
                     let _:AssertEq<AsTList<HalfOpen>,tlist![]>;
                     let _:AssertEq<AsTList<Open0>,tlist![{col}U0  {cor}]>;
@@ -496,12 +500,12 @@ type TestGetF<This,Field,Val>=(
 
                     let _:AssertEq<
                         <Open_Uninit as InitializationValues>::Uninitialized,
-                        Open {col} <UninitField<fields::remaining>> {cor}
+                        Open {col} <UninitField<fields::{accessor}>> {cor}
                     >;
 
                     let _:AssertEq<
                         <Open_Uninit as InitializationValues>::Initialized,
-                        Open {col} <IsInitField<fields::remaining>> {cor}
+                        Open {col} <IsInitField<fields::{accessor}>> {cor}
                     >;
 
                     let _:AssertEq<
@@ -515,6 +519,21 @@ type TestGetF<This,Field,Val>=(
 
 
                     ",
+                    remaining=match var_kind {
+                        VariantKind::Braced=>"remaining",
+                        VariantKind::Tupled=>"0",
+                        VariantKind::Unit=>"",
+                    },
+                    accessor=match var_kind {
+                        VariantKind::Braced=>"remaining",
+                        VariantKind::Tupled=>"U0",
+                        VariantKind::Unit=>"",
+                    },
+                    assoc_ty=match var_kind {
+                        VariantKind::Braced=>"remaining",
+                        VariantKind::Tupled=>"field_0",
+                        VariantKind::Unit=>"",
+                    },
                     co=co ,col=col,cor=cor,
                     deriving=deriving_type,
                     consttype=consttype,
@@ -594,10 +613,15 @@ fn type_decls<W:ioWrite>(mut w:W)->io::Result<()> {
                 if privacy==Privacy::PrivateField {
                     let type_alias=
                         get_typename(soe,var_kind,Privacy::PrivateField,ConstOrRunt::Const,impls);
+
+                    let tuple_acc_1=match privacy {
+                        Privacy::PrivateField=>"field_1",
+                        Privacy::Public=>"U1",
+                    };
                     let (x,y)=match var_kind {
                         VariantKind::Braced=>("x","y"),
                          VariantKind::Unit
-                        |VariantKind::Tupled=>("U0","U1"),
+                        |VariantKind::Tupled=>("U0",tuple_acc_1),
                     };
                     write!(w,"\
                         pub type {alias}{col}<X,Y>{cor}=construct!(\n\
@@ -619,13 +643,32 @@ fn type_decls<W:ioWrite>(mut w:W)->io::Result<()> {
                     #[derive(Debug,PartialEq,Eq)]
                     pub enum {deriving} {{
                         HalfOpen,
-                        Open {col} {{remaining:u32}} {cor},
+                        {open},
                         Closed,
-                    }}\n
+                    }}
                     type Alias{deriving}={deriving};
+
+                    impl {deriving} {{
+                        fn test_variants_constructible() {{
+                            use self::type_level_{deriving}::*;
+                            let _:HalfOpen=HalfOpen;
+                            let _:Open{col}<U0>{cor}={const_open};
+                            let _:Closed=Closed;
+                        }}
+                    }}
                 ",
-                col=col,cor=cor,
-                deriving=deriving_type
+                    col=col,cor=cor,
+                    open=match var_kind {
+                        VariantKind::Braced=>"Open{remaining:u32}",
+                        VariantKind::Tupled=>"Open(u32)",
+                        VariantKind::Unit=>"Open",
+                    },
+                    deriving=deriving_type,
+                    const_open=match var_kind {
+                        VariantKind::Braced=>"Open{remaining:U0::CW}",
+                        VariantKind::Tupled=>"Open(U0::CW)",
+                        VariantKind::Unit=>"Open",
+                    }
                 )?;
             }
         };
@@ -635,22 +678,6 @@ fn type_decls<W:ioWrite>(mut w:W)->io::Result<()> {
 
 fn imports<W:ioWrite>(mut w:W)->io::Result<()> {
     write!(w,"
-
-#[macro_use]
-extern crate derive_type_level;
-#[macro_use]
-extern crate type_level_values;
-#[macro_use]
-extern crate derive_type_level_lib;
-extern crate syn;
-#[macro_use]
-extern crate core_extensions;
-#[macro_use]
-extern crate quote;
-#[macro_use]
-extern crate lazy_static;
-
-
 #[allow(dead_code)]
 mod tests{{
 
@@ -659,7 +686,7 @@ use std::ops::Index;
 use type_level_values::prelude::*;
 use type_level_values::ops::*;
 use type_level_values::collection_ops::{{Reverse}};
-use type_level_values::std_types::cmp_ordering::{{Less_,Equal_,Greater_}};
+use type_level_values::std_types::cmp_ordering::{{Less_,Equal_}};
 use type_level_values::discriminant::{{GetDiscrOf,GetVariantOf,Discriminant}};
 use type_level_values::field_traits::{{GetField,SetField,GetFieldRuntime}};
 use type_level_values::initialization::{{
@@ -668,6 +695,7 @@ use type_level_values::initialization::{{
     UninitField,
 }};
 
+// use derive_type_level_lib::parse_syn::parse_syn_use;
 
 macro_rules! assert_eq_into{{
     ( $tylevel:ty , $runt:expr ) => ({{

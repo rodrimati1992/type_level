@@ -50,11 +50,11 @@ pub trait FieldAccessor<Field> {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-#[derive(ConstConstructor)]
-#[cconstructor(
-    extension_methods = "False",
+#[derive(MutConstValue)]
+#[mcv(
+    ExtensionMethods = "False",
     Type(name = "SideEffectful", doc = "oh hi"),
-    ConstParam = "Caps"
+    Param = "Caps"
 )]
 pub struct SideEffectfulInner<FS, EC, Caps>
 where

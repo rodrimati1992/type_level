@@ -64,7 +64,7 @@ pub trait IntoRuntime<To> {
 
 #[cfg(rust_1_22)]
 /// Converts a compile-time value into a runtime value
-pub trait IntoConstant<To, From = Self> {
+pub trait IntoConstant<To> {
     const VALUE: To;
 }
 
@@ -95,3 +95,8 @@ impl<This> DerivedTraits for This where
 /////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////
+
+
+type_fn!{alias ConstTypeOfOp[This]::Type =ConstTypeOf_ }
+
+type_fn!{alias IntoConstTypeOp[This]::ToConst =IntoConstType_ }

@@ -1,7 +1,7 @@
 use super::*;
 
 use crate_::fn_adaptors::*;
-use crate_::fn_types::*;
+use crate_::std_ops::*;
 
 use crate_::field_traits::{GetField, SetField};
 use crate_::ops::*;
@@ -133,9 +133,85 @@ fn fold_r() {
     let _: U50 = FoldR::<Repeat<TupleType, U1, U16>, U66, SubOp>::MTVAL;
 }
 
+
+
+pub struct CannotSubstract<Lhs,Rhs>{
+    lhs:Lhs,
+    rhs:Rhs,
+}
+
+type_fn!{
+    fn safe_sub[Lhs,Rhs](Lhs,Rhs)
+    where [
+        If<ConstGEOp,
+            (SubOp,NewOk),
+            Const<Err_<CannotSubstract<Lhs,Rhs>>>
+        >:TypeFn_<(Lhs,Rhs),Output=Out>,
+    ]{
+        let Out;Out
+    }
+}
+
+
+
+#[test]
+fn try_fold_l() {
+    type TestTryFoldL<List,DefVal,Func,Expected>=(
+        AssertEq<TryFoldL<List,DefVal,Func>,Expected>,
+        AssertFnRet<List,TryFoldLMt<DefVal,Func>,Expected>
+    );
+
+
+    let _: TestTryFoldL<tuple_![]            , U10 , SafeDivOp , TFVal<U10>>;
+    let _: TestTryFoldL<tuple_![U2]          , U10 , SafeDivOp , TFVal<U5>>;
+    let _: TestTryFoldL<tuple_![U2,U2]       , U10 , SafeDivOp , TFVal<U2>>;
+    let _: TestTryFoldL<tuple_![U2,U2,U2]    , U10 , SafeDivOp , TFVal<U1>>;
+    let _: TestTryFoldL<tuple_![U2,U2,U2,U2] , U10 , SafeDivOp , TFVal<U0>>;
+    let _: TestTryFoldL<tuple_![U0,()]      , U10 , SafeDivOp , TFBreak<None_>>;
+
+    let _: TestTryFoldL<tuple_![]          , U4 , safe_sub , TFVal<U4>>;
+    let _: TestTryFoldL<tuple_![U2]       , U4 , safe_sub , TFVal<U2>>;
+    let _: TestTryFoldL<tuple_![U2,U2]    , U4 , safe_sub , TFVal<U0>>;
+    let _: TestTryFoldL< 
+        tuple_![U5,()], 
+        U4 , 
+        safe_sub, 
+        TFBreak<Err_<CannotSubstract<U4,U5>>>, 
+    >;
+}
+
+#[test]
+fn try_fold_r() {
+    type TestTryFoldR<List,DefVal,Func,Expected>=(
+        AssertEq<TryFoldR<List,DefVal,Func>,Expected>,
+        AssertFnRet<List,TryFoldRMt<DefVal,Func>,Expected>
+    );
+
+    let _: TestTryFoldR<tuple_![]            , U10 , SafeDivOp , TFVal<U10> >;
+    let _: TestTryFoldR<tuple_![U2]          , U10 , SafeDivOp , TFVal<U5> >;
+    let _: TestTryFoldR<tuple_![U2,U2]       , U10 , SafeDivOp , TFVal<U2> >;
+    let _: TestTryFoldR<tuple_![U2,U2,U2]    , U10 , SafeDivOp , TFVal<U1> >;
+    let _: TestTryFoldR<tuple_![U2,U2,U2,U2] , U10 , SafeDivOp , TFVal<U0> >;
+    let _: TestTryFoldR<tuple_![(),U0]       , U10 , SafeDivOp , TFBreak<None_> >;
+
+    let _: TestTryFoldR<tuple_![]          , U4 , safe_sub , TFVal<U4> >;
+    let _: TestTryFoldR<tuple_![U2]       , U4 , safe_sub , TFVal<U2> >;
+    let _: TestTryFoldR<tuple_![U2,U2]    , U4 , safe_sub , TFVal<U0> >;
+    let _: TestTryFoldR< 
+        tuple_![(),U5], 
+        U4 , 
+        safe_sub,
+        TFBreak<Err_<CannotSubstract<U4,U5>>>, 
+    >;
+
+}
+
+
+
+
 #[test]
 fn map() {
-    type AddOne = ApplyRhs<AddOp, U1>;
+    type AddOne = AddMt< U1>;
     let _: tuple_![] = Map::<tuple_![], AddOne>::MTVAL;
     let _: tuple_![U1,] = Map::<tuple_![U0], AddOne>::MTVAL;
     let _: tuple_![U1, U2] = Map::<tuple_![U0, U1], AddOne>::MTVAL;
@@ -199,16 +275,17 @@ fn set_field() {
 
 #[test]
 fn type_fn_() {
-    let _: U0 = TypeFn::<tuple_![], U0>::MTVAL;
-    let _: U1 = TypeFn::<tuple_![ApplyRhs<AddOp,U1>], U0>::MTVAL;
-    let _: U2 = TypeFn::<tuple_![ApplyRhs<AddOp,U1>,ApplyRhs<AddOp,U1 >], U0>::MTVAL;
-    let _: U21 = TypeFn::<tuple_![ApplyRhs<AddOp,U1>,ApplyRhs<AddOp,U10>], U10>::MTVAL;
-    let _: U41 = TypeFn::<
-        tuple_![
-            ApplyRhs<AddOp,U1>,
-            ApplyRhs<AddOp,U10>,
-            ApplyRhs<AddOp,U20>
-        ],
+    let _: AssertFnRet<U0,tuple_![],U0>;
+    let _: AssertFnRet<U0,tuple_![AddMt<U1>],U1>;
+    let _: AssertFnRet<U0,tuple_![AddMt<U1>,AddMt<U1 >],U2>;
+    let _: AssertFnRet<U10,tuple_![AddMt<U1>,AddMt<U10>],U21>;
+    let _: AssertFnRet<
         U10,
-    >::MTVAL;
+        tuple_![
+            AddMt<U1>,
+            AddMt<U10>,
+            AddMt<U20>
+        ],
+        U41
+    >;
 }

@@ -32,10 +32,6 @@ Eg:Rectangle\<I> in type_level_examples::_03_vis_wrapper.
 
 */
 
-#[macro_use]
-#[doc(hidden)]
-pub mod const_method_macro;
-
 pub mod allowed_conversions_type;
 pub mod builtin_constmethods;
 pub mod const_methods;

@@ -1,1 +1,4 @@
-pub fn main_(){}
+
+
+pub fn main(){
+}

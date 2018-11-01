@@ -96,6 +96,7 @@ declare_common_tokens!{
 
     token_streams[
         doc_hidden=r#"#[cfg_attr(not(feature="priv_docs"),doc(hidden))]"#,
+        allow_unused_imports="#[allow(unused_imports)]",
         priv_trait="__PrivTrait",
     ]
 

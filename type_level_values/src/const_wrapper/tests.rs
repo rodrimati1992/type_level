@@ -1,14 +1,11 @@
 use self::type_level_Dim2d::fields;
 use super::*;
 
-use crate_::field_traits::{GetFieldOp, MapFieldOp};
+use crate_::field_traits::{GetFieldMt, MapFieldMt};
 use crate_::fn_adaptors::*;
-use crate_::fn_types::*;
+use crate_::std_ops::*;
 
 use core_extensions::type_level_bool::False;
-use typenum::consts::{
-    U0, U1, U10, U11, U12, U13, U14, U15, U16, U2, U3, U4, U5, U6, U7, U8, U9, Z0,
-};
 
 #[derive(Debug, Clone, TypeLevel,PartialEq)]
 #[typelevel(
@@ -76,7 +73,7 @@ fn map_field() {
     let v0 = Wrapper0::NEW;
 
     let v0 = v0
-        .map_field(fields::width, <ApplyRhs<AddOp, U3>>::CW)
+        .map_field(fields::width, <AddMt<U3>>::CW)
         .map_field_fn(fields::height, |v| v * U2::MTVAL);
 
     assert_eq!(v0[fields::width].get_as(u32::T), 6);
@@ -91,7 +88,7 @@ fn map_all_to() {
     let v0 = Wrapper0::NEW;
 
     {
-        let v0 = v0.map_to(fields::width, <ApplyRhs<GetFieldOp,fields::height>>::CW);
+        let v0 = v0.map_to(fields::width, <GetFieldMt<fields::height>>::CW);
         assert_eq!(v0.width.get_as(u32::T), 5);
         assert_eq!(v0.height.get_as(u32::T), 5);
         let _: U5 = *v0.width;
@@ -111,7 +108,7 @@ fn map_all() {
     let v0 = Wrapper0::NEW;
 
     {
-        let v0 = v0.map(<ApplyNonSelf<MapFieldOp, (fields::height, ApplyRhs<AddOp, U3>)>>::CW);
+        let v0 = v0.map(MapFieldMt::<fields::height, AddMt<U3>>::CW);
         assert_eq!(v0.width.get_as(u32::T), 3);
         assert_eq!(v0.height.get_as(u32::T), 8);
         let _: U3 = *v0.width;

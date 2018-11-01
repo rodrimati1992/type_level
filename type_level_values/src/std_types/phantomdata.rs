@@ -72,3 +72,20 @@ impl const_traits::ConstConstructor for PhantomDataType {}
 impl<T> const_traits::ApplyConstParam_<T> for PhantomDataType {
     type Applied = PhantomData<T>;
 }
+
+
+
+//////////////////////////////////////////////////////////////////////////////////
+
+
+type_fn!{
+    pub fn NewPhantomData[v](v)
+    where[ v:?Sized ]
+    { PhantomData<v> }
+}
+
+type_fn!{
+    pub fn NewVariantPhantom[v](v)
+    where[ v:?Sized ]
+    { VariantPhantom<v> }
+}

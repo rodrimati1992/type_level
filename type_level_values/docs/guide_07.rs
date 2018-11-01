@@ -120,8 +120,11 @@ pub enum Access{
 
 //@codeblock-start:rw_locker_struct
 
-#[derive(Debug, ConstConstructor)]
-#[cconstructor(Type = "RwLocker",ConstParam = "C")]
+#[derive(MutConstValue)]
+#[mcv(
+    derive(Debug),
+    Type = "RwLocker",Param = "C",
+)]
 pub struct RwLockerInner<T,C>{
     lock:RwLock<T>,
     access:ConstWrapper<C>,

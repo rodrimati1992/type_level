@@ -8,6 +8,8 @@ type_fn!{define_trait
     type=ConstEq
     /// Compares Self with R for equality,returning True/False.
     fn_type=ConstEqOp
+    /// Compares Self with R for equality,returning True/False.
+    method_like=ConstEqMt
 }
 
 type_fn!{define_trait
@@ -17,6 +19,7 @@ type_fn!{define_trait
     type=ConstNE
     /// Compares Self with R for inequality,returning True/False.
     fn_type=ConstNEOp
+    method_like=ConstNEMt
 }
 
 impl<Lhs, Rhs,is_eq> ConstNE_<Rhs> for Lhs
@@ -67,7 +70,7 @@ mod ord_for_numtype {
 
 }
 
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests {
     use super::*;
 

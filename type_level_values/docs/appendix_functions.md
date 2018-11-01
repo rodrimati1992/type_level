@@ -1,5 +1,83 @@
 /*!
 
+This library provides type-level functions,which are implementors of the TypeFn_ trait,
+providing a way to express and compose computations on the type-level.
+
+For more information go:
+
+- To the documentation of [the TypeFn_ trait](../../type_fn/trait.TypeFn_.html)
+
+- To the documentation of [the type_fn macro](../../macro.type_fn.html)
+
+- To the [appendix on control flow](../appendix_control_flow/index.html)
+
+# Piped
+
+Piped_ is an alternative syntax for calling a function,
+where the parameters and the function are reversed,
+most useful when composing multiple functions such that they span multiple lines.
+
+An example of using it in a where clause:
+```ignore
+(L,R):Piped_<(
+    MinMaxOp, 
+    SubRevOp,
+    If<ConstLtMt<U10>,
+        /*Then*/(
+            MulMt<U2>,
+        ),/*Else*/(
+            DivMt<U2>,
+            SatSub1Op,
+        ),
+    >
+),Output=Out >,
+```
+    
+An example of using it in a type alias:
+`type MulAdd<L,R>=Piped<L,(MutMt<R>,AddMt<R>)>;`
+
+# Multiple branch function.
+
+Functions can have multiple branches,where calling the function takes the 
+branch that matches the parameters,this is most useful for emulating match expressions.
+
+Note that because this is implemented as multiple impls of TypeFn_ for a struct,
+the multiple branches can't specialize any other branch.
+
+### Example
+
+Say that we want to implement the `Option::map_or_else` method on the type level.
+
+```
+#[macro_use]
+extern crate type_level_values;
+ 
+use type_level_values::prelude::*;
+use type_level_values::std_types::cmp_ordering::*;
+use type_level_values::ops::AssertEq;
+use type_level_values::std_ops::*;
+use type_level_values::fn_adaptors::*;
+
+
+type_fn!{
+    pub fn 
+        MapOrElse[V,Mapper,Else](Some_<V>,Mapper,Else)
+        where[ Mapper:TypeFn_<V> ]
+        { Mapper::Output }
+
+        MapOrElse[Mapper,Else](None_,Mapper,Else)
+        where[ Else:TypeFn_<()> ]
+        { Else::Output }
+}
+
+fn main(){
+    let _:AssertEq< TypeFn<MapOrElse,(None_     , ApplyRhs<AddOp,U10> , Const<U7> )> , U7 >;
+    let _:AssertEq< TypeFn<MapOrElse,(Some_<U100>, ApplyRhs<AddOp,U10> , Const<U7> )> , U110 >;
+}
+
+```
+
+# Function composition
 
 What this library calls function composition is taking 
 multiple functions and producing a type which implements TypeFn_.
@@ -36,7 +114,7 @@ Creating a function which multiplies a number by 2.
 # use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
-use type_level_values::fn_types::*;
+use type_level_values::std_ops::*;
 
 fn main(){
     type Mul2=ApplyRhs<MulOp,U2>;
@@ -62,7 +140,7 @@ Creating a function which sets a field to U0.
 # use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
-use type_level_values::fn_types::*;
+use type_level_values::std_ops::*;
 use type_level_values::field_traits::{SetFieldOp};
 
 fn main(){
@@ -89,7 +167,7 @@ Creating a function which divides a field by 2.
 # use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
-use type_level_values::fn_types::*;
+use type_level_values::std_ops::*;
 use type_level_values::field_traits::{MapFieldOp};
 
 fn main(){
@@ -121,8 +199,8 @@ Copying one field into another.
 # use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
-use type_level_values::fn_types::*;
-use type_level_values::field_traits::{GetFieldOp,MapIntoFieldOp};
+use type_level_values::std_ops::*;
+use type_level_values::field_traits::{GetFieldMt,MapIntoFieldOp};
 
 
 fn main(){
@@ -130,7 +208,7 @@ fn main(){
     type CopyField<From,To>=
         ApplyNonSelf<
             MapIntoFieldOp,
-            (To,ApplyRhs<GetFieldOp,From>)
+            (To,GetFieldMt<From>)
         >;
 
     let _:AssertEq<
@@ -149,10 +227,10 @@ fn main(){
 ```
 
 
-# Tuples/type-level-lists of TypeFn_
+# Sequencing
 
-If all elements implement TypeFn_ the collection implements TypeFn_,
-all elements of which take the return value of the previous TypeFn_
+Sequences are tuples or type-level-lists where every element implements TypeFn_ and
+the result of evaluating every function if fed to the next function.
 
 
 ### Example 1
@@ -242,13 +320,13 @@ Implementing a multiply-add function.
 # use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
-use type_level_values::fn_types::*;
+use type_level_values::std_ops::*;
 
 fn main(){
 
     type_fn!{
         pub fn MulAdd[L,R](L,R)
-        where[ (MulOp,ApplyLhs<AddOp,R>):TypeFn_<(L,R),Output=Out>  ]
+        where[ (L,R):Piped_<(MulOp,AddMt<R>),Output=Out>  ]
         { let Out;Out }
     }
 
@@ -263,7 +341,6 @@ fn main(){
 }
 
 ```
-
 
 
 */

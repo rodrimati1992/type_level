@@ -16,6 +16,7 @@ use type_level_values::new_types::{TList, TNil};
 use type_level_values::ops::{VariantAsTList_};
 use type_level_values::collection_ops::{FoldL_,};
 use type_level_values::prelude::*;
+use type_level_values::fn_adaptors::{ApplyRhs};
 // use type_level_values::reexports::type_level_bool::False;
 
 use std::cmp::{self, PartialOrd};
@@ -211,20 +212,21 @@ pub struct IsMutRef;
 
 pub mod rectangle {
     use super::*;
-
-    /// A rectangle where certain fields are inaccessible based on a const parameter.
-    /// Many impls are also implemented on [Rectangle].
-    #[derive(Copy, Clone, Default, Debug, PartialEq, ConstConstructor)]
-    #[cconstructor(
+    #[derive(MutConstValue)]
+    #[mcv(
+        doc="
+            A rectangle where certain fields are inaccessible based on a const parameter.
+            Many impls are also implemented on [Rectangle].
+        ",
+        derive(Copy, Clone, Default, Debug, PartialEq),
+        repr(C),
         Type(
             name = "Rectangle",
             doc = "A rectangle where certain fields are inaccessible based on a const parameter.",
             doc = "Many impls are also implemented on [RectangleInner].",
         ),
-        ConstParam = "I",
-        ConstConstructor = "RectangleCC",
+        Param = "I",
     )]
-    #[repr(C)]
     pub struct RectangleInner<I, P> {
         x: u32,
         y: u32,
@@ -349,22 +351,18 @@ pub mod rectangle {
     }
 
     type_fn!{
-        #[doc(hidden)]
         captures(To)
-        pub fn SplitMutSetField[Rect,Field](Rect,Field)
-        where[
-            CheckUnequal:TypeFn_<(CurrVal,To)>,
-            Rect:GetField_<Field,Output=CurrVal> + SetField_<Field,To,Output=Out>
-        ]{
-            let CurrVal;let Out;
+        fn SplitMutSetField[Rect,Field](Rect,Field)
+        where[ Rect:Piped_<MapFieldMt<Field, ApplyRhs<CheckUnequal,To>>,Output=Out> ]
+        {
+            let Out;
             Out
         }
     }
 
     type_fn!{
-        #[doc(hidden)]
-        pub fn CheckUnequal(Accessible  ,Inaccessible){ () }
-               CheckUnequal(Inaccessible,Accessible){ () }
+        fn CheckUnequal(Accessible  ,Inaccessible){ Inaccessible }
+           CheckUnequal(Inaccessible,Accessible){ Accessible }
     }
 
     const_method!{

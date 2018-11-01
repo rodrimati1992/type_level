@@ -1,5 +1,6 @@
-use extern_types::typenum::{BitType, SignedInteger, UnsignedInteger};
-use prelude::*;
+use crate_::extern_types::typenum::{BitType, SignedInteger, UnsignedInteger};
+use crate_::prelude::*;
+use crate_::ops::AssertEq;
 
 use core_extensions::type_level_bool::{Boolean, BooleanType, False, True};
 
@@ -28,12 +29,18 @@ where
     type Output = S::Output;
 }
 
-type_fn!{alias ConstFromOp[A,B]=ConstFrom_}
-type_fn!{alias ConstIntoOp[A,B]=ConstInto_}
+type_fn!{use_trait 
+    trait=ConstFrom_ [From_]
+    type=ConstFrom
+    fn_type=ConstFromOp
+}
 
-pub type ConstFrom<This, Other> = <This as ConstFrom_<Other>>::Output;
-
-pub type ConstInto<This, Other> = <This as ConstInto_<Other>>::Output;
+type_fn!{use_trait 
+    trait=ConstInto_ [IntoConstType]
+    type=ConstInto
+    fn_type=ConstIntoOp
+    method_like=ConstIntoMt
+}
 
 mod boolean_impls {
     use super::*;
@@ -75,6 +82,7 @@ mod boolean_impls {
 }
 
 #[cfg(test)]
+// #[cfg(all(test,feature="passed_tests"))]
 mod tests {
     use super::*;
 
@@ -106,5 +114,31 @@ mod tests {
             ConstRangeInclusive<U1,U4>,
             ConstRangeInclusive<U6,U10000>,
         }
+    }
+
+
+    #[test]
+    fn typenum_integer_convs(){
+        type Test<L,Type,Expected>=
+            AssertEq<
+                ConstInto<L,Type>,
+                Expected
+            >;
+
+        let _:Test< U0,SignedInteger,Z0 >;
+        let _:Test< U1,SignedInteger,P1 >;
+        let _:Test< U2,SignedInteger,P2 >;
+        let _:Test< U3,SignedInteger,P3 >;
+        let _:Test< U4,SignedInteger,P4 >;
+        let _:Test< U5,SignedInteger,P5 >;
+
+        let _:Test< Z0,UnsignedInteger,U0 >;
+        let _:Test< P1,UnsignedInteger,U1 >;
+        let _:Test< P2,UnsignedInteger,U2 >;
+        let _:Test< P3,UnsignedInteger,U3 >;
+        let _:Test< P4,UnsignedInteger,U4 >;
+        let _:Test< P5,UnsignedInteger,U5 >;
+
+
     }
 }

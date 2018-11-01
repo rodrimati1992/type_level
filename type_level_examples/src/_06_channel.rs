@@ -14,7 +14,7 @@ use std::sync::mpsc::{self, Receiver as MPSCReceiver, RecvError, SendError, Send
 
 use type_level_values::field_traits::*;
 use type_level_values::fn_adaptors::*;
-// use type_level_values::fn_types::*;
+use type_level_values::std_ops::*;
 use type_level_values::ops::*;
 use type_level_values::prelude::*;
 
@@ -36,8 +36,10 @@ use self::type_level_State::{Closed, Open, OpenTrait};
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-#[derive(ConstConstructor)]
-#[cconstructor(Type = "ChannelEnd", ConstParam = "S")]
+#[derive(MutConstValue)]
+#[mcv(
+    Type = "ChannelEnd", Param = "S"
+)]
 pub struct ChannelEndInner<Chan, S: WrapperTrait> {
     channel: Chan,
     #[allow(dead_code)]
@@ -95,6 +97,11 @@ where
     }
 }
 
+type_fn!{
+    pub fn NewOpen[v](v){ Open<v> }
+}
+pub type NewClosed=Const<Closed>;
+
 const_method!{
     type ConstConstructor[T]=( ChannelEndCC<T> )
     type AllowedConversions=( allowed_conversions::ByVal )
@@ -102,15 +109,15 @@ const_method!{
     fn TransferValue[I](I,())
     where [
         I:OpenTrait,
-        I::remaining :Sub<U1,Output=var0>+ConstEq_<U1>,
-        IfEager<ConstEq<I::remaining,U1>,
-            Closed,
-            Open<var0>
-        >:TypeFn_<(),Output=var1>
-    ]
-    {
-        let var0;let var1;
-        var1
+        I::remaining : Piped_<
+            If<ConstLEMt<U1>,
+                NewClosed,
+                (Sub1Op,NewOpen)
+            >,Output=Out
+        >,
+    ]{
+        let Out;
+        Out
     }
 }
 

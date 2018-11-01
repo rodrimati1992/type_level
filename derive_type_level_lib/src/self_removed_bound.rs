@@ -1,7 +1,7 @@
 use syn::visit_mut::VisitMut;
-use syn::punctuated::Punctuated;
-use syn::token::Colon2;
-use syn::{Ident,TypeParamBound,TypePath,PathSegment};
+// use syn::punctuated::Punctuated;
+// use syn::token::Colon2;
+use syn::{Ident,TypeParamBound,TypePath};
 
 use quote::ToTokens;
 use proc_macro2::TokenStream;
@@ -17,7 +17,7 @@ pub(crate) struct SelfRemovedBound{
 
 impl SelfRemovedBound{
     pub(crate) fn new<F>(mut bound:TypeParamBound,is_field_name:F)->Self
-    where F:FnMut(&Ident)->bool,
+    where F:FnMut(&Ident)->Option<Ident>,
     {
         SelfRemover{is_field_name}.visit_type_param_bound_mut(&mut bound);
         Self{ bound }
@@ -33,7 +33,7 @@ struct SelfRemover<F>{
 
 
 impl<F> VisitMut for SelfRemover<F>
-where F:FnMut(&Ident)->bool,
+where F:FnMut(&Ident)->Option<Ident>,
 {
     fn visit_type_path_mut(&mut self, i: &mut TypePath){
         if let Some(qself)=i.qself.as_mut() { 
@@ -41,14 +41,11 @@ where F:FnMut(&Ident)->bool,
             return; 
         }
         let segments=&mut i.path.segments;
-        if 2 <= segments.len() && 
-           segments[0].ident=="Self" &&
-           (self.is_field_name)(&segments[1].ident)
-        {
-            *segments=mem::replace(segments,Default::default())
-                .into_iter()
-                .skip(1)
-                .collect::<Punctuated<PathSegment, Colon2>>();
+        if segments.len() < 2 || segments[0].ident!="Self" { return; }
+        if let Some(field_ident)= (self.is_field_name)(&segments[1].ident) {
+            let prev_segments=mem::replace(segments,Default::default());
+            segments.push(field_ident.into());
+            segments.extend(prev_segments.into_iter().skip(2)) ;
         }
     }
 }

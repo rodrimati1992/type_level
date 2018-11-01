@@ -138,8 +138,10 @@ use std::sync::mpsc::{self,Sender,Receiver};
 
 type AnyBox=Box<Any+Send+'static>;
 
-#[derive(ConstConstructor)]
-#[cconstructor(Type="Channel",ConstParam="S")]
+#[derive(MutConstValue)]
+#[mcv(
+    Type="Channel",Param ="S"
+)]
 pub struct ChannelInner<S>{
     sender  :Sender<AnyBox>,
     receiver:Receiver<AnyBox>,

@@ -26,9 +26,14 @@ build = "build/main.rs"
 travis-ci = { repository =  "rodrimati1992/type_level/" }
 
 [features]
-default = ["std","serde"]
-large_tuples=[]
+default = ["std","serde","identity_feature"]
+identity_feature=[]
+large_tlist=[]
 std=[]
+passed_tests=["priv_doctests"]
+
+# Hack used to test that certain things do not compile.
+priv_doctests=[]
 
 
 [dependencies]

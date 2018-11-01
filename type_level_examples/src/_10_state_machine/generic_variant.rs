@@ -2,7 +2,7 @@ use type_level_values::core_extensions::{CallInto, TryFrom,Void};
 use type_level_values::collection_ops::Len_;
 use type_level_values::prelude::*;
 
-use super::ranged_usize::{RangedUsize, RangedUsizeBounds};
+use super::ranged_usize::{RangedUsize, RangedTrait};
 use std::ops::Sub;
 
 /**
@@ -369,7 +369,7 @@ where
     Len: Sub<U4, Output = LenSub4>,
     LenSub4: IntoRuntime<usize>,
     Rem: From<RangedUsize<U0, LenSub4>>,
-    RangedUsize<U0, LenSub4>: RangedUsizeBounds,
+    RangedUsize<U0, LenSub4>: RangedTrait<Integer=usize>,
 {
     fn from(ranged: RangedUsize<U0, Len>) -> Self {
         match ranged.value() {
@@ -401,14 +401,14 @@ where
     Len: Sub<U4, Output = LenSub4>,
     LenSub4: IntoRuntime<usize>,
     Rem: From<RangedUsize<U0, LenSub4>>,
-    RangedUsize<U0, Len>: RangedUsizeBounds,
-    RangedUsize<U0, LenSub4>: RangedUsizeBounds,
+    RangedUsize<U0, Len>: RangedTrait<Integer=usize>,
+    RangedUsize<U0, LenSub4>: RangedTrait<Integer=usize>,
 {
     type Error = InvalidVariant;
     fn try_from(index: usize) -> Result<Self, InvalidVariant> {
         match RangedUsize::<U0, Len>::new(index) {
             Err(e) => Err(InvalidVariant {
-                len: e.range.len(),
+                len: e.len.unwrap_or(!0),
                 index,
             }),
             Ok(v) => Ok(v.into()),
@@ -474,7 +474,7 @@ macro_rules! decl_map_variant {
             type Error=InvalidVariant;
             fn try_from(index:usize)->Result<Self,InvalidVariant>{
                 match RangedUsize::<U0,$len>::new(index) {
-                    Err(e)=>Err(InvalidVariant{len:e.range.len(),index} ),
+                    Err(e)=>Err(InvalidVariant{len:e.len.unwrap_or(!0),index} ),
                     Ok(v)=>Ok(v.into()),
                 }
             }

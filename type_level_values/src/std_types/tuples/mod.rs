@@ -2,15 +2,20 @@ use core_extensions::SelfOps;
 
 use crate_::new_types::TListType;
 use crate_::fn_adaptors::ApplyRhs;
-use crate_::ops::{ConstInto, ConstInto_,AsTList_};
-use crate_::collection_ops::{Filter_, FoldL_, FoldR_, Insert_, Len_, Map_, Remove_, Repeat_,};
-
+use crate_::ops::{ConstInto,ConstIntoMt, ConstInto_,AsTList_};
+use crate_::collection_ops::{
+    Filter_, 
+    FoldL_, FoldR_, TryFoldL_, TryFoldR_, TryFoldLMt,
+    Insert_, Len_, Map_, Remove_, Repeat_,
+    ReverseOp,
+};
 use crate_::field_traits::{GetField_, SetField_};
-use crate_::discriminant::Discriminant;
+use crate_::discriminant::{Discriminant,UIntFromDiscriminant};
 
 use prelude::*;
 
 #[cfg(test)]
+// #[cfg(all(test,feature="passed_tests"))]
 mod tests;
 mod tuple_impls;
 
@@ -47,6 +52,7 @@ macro_rules! impl_tuple_trait {
 
             impl<$($tparams),*>  GetDiscriminant for ($($tparams,)*){
                 type Discriminant=Tuple_Discr;
+                type UIntDiscr=TypeFn<UIntFromDiscriminant,Tuple_Discr>;
                 type Variant=TupleType;
             }
 
@@ -179,6 +185,28 @@ macro_rules! impl_tuple_trait {
             {
                 type Output=lista::Output;
             }
+
+
+            impl<$($tparams,)* lista,Default,Op> TryFoldL_<Default,Op> for ($($tparams,)*)
+            where
+                Self :ConstInto_<TListType,Output=lista>,
+                lista:TryFoldL_<Default,Op>,
+            {
+                type Output=lista::Output;
+            }
+
+
+            impl<$($tparams,)* Default,Op,Out> TryFoldR_<Default,Op> for ($($tparams,)*)
+            where
+                (
+                    ReverseOp,
+                    ConstIntoMt<TListType>,
+                    TryFoldLMt<Default,Op>
+                ):TypeFn_<Self,Output=Out>
+            {
+                type Output=Out;
+            }
+
 
         )*
     };

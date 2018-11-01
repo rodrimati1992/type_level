@@ -18,8 +18,8 @@ pub use self::range_types::{range, range_from, range_full, range_to};
 #[cfg(rust_1_26)]
 pub use self::range_types::{range_inclusive, range_to_inclusive};
 
-pub use self::option::{None_, OptionTrait, OptionType, Some_};
+pub use self::option::{None_, OptionTrait, OptionType, Some_,NewSome,NewNone};
 
-pub use self::result::{Err_, Ok_, ResultTrait, ResultType};
+pub use self::result::{Err_, Ok_, ResultTrait, ResultType,NewOk,NewErr};
 
 pub use self::phantomdata::PhantomDataType;

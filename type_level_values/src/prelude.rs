@@ -29,9 +29,11 @@ pub use std_types::range_to::{ConstRangeTo, RangeToTrait};
 #[cfg(rust_1_26)]
 pub use std_types::range_to_inclusive::{ConstRangeToInclusive, RangeToInclusiveTrait};
 
-pub use std_types::option::{None_, OptionTrait, OptionType, Some_};
-pub use std_types::phantomdata::{PhantomDataTrait, PhantomDataType};
-pub use std_types::result::{Err_, Ok_, ResultTrait, ResultType};
+pub use std_types::option::{None_, OptionTrait, OptionType, Some_,NewSome,NewNone};
+pub use std_types::phantomdata::{
+    PhantomDataTrait, PhantomDataType,NewPhantomData,NewVariantPhantom
+};
+pub use std_types::result::{Err_, Ok_, ResultTrait, ResultType,NewOk,NewErr};
 
 pub use core_extensions::type_level_bool::{Boolean, BooleanType, False, True};
 
@@ -51,15 +53,19 @@ pub use user_traits::{
 pub use runtime_value::IntoConstant;
 
 pub use runtime_value::{
-    ConstTypeOf_,ConstTypeOf,ConstType,ConstValue, IntoConstType_,IntoRuntime,
+    ConstTypeOf_,ConstTypeOf,ConstTypeOfOp,
+    ConstType,ConstValue, IntoConstType_,IntoRuntime,
 };
 
 pub use discriminant::GetDiscriminant;
 
-pub use type_fn::{
+pub use crate_::type_fn::{
     TypeFn_,
     TypeFn,
+    Piped_,
+    Piped,
 };
+
 pub use ops::{
     ConstEq_, 
     ConstOrd_, 
@@ -67,6 +73,7 @@ pub use ops::{
 
 pub use const_wrapper::{
     AsConstWrapper, ConstWrapper, ConstWrapperFromTrait, UnwrapConst,WrapperTrait,
+    NewConstWrapper,
 };
 
 pub use core_extensions::{

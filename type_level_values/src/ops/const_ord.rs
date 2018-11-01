@@ -1,6 +1,6 @@
 use crate_::fn_adaptors::*;
-use crate_::fn_types::*;
-use crate_::ops::{ConstEq, VariantAsTList, VariantAsTList_};
+use crate_::std_ops::*;
+use crate_::ops::{ConstEq, VariantAsTList, VariantAsTList_,AssertEq};
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_, OrderingTrait, OrderingType};
 use prelude::*;
 
@@ -13,6 +13,8 @@ type_fn!{define_trait
     type=ConstOrd
     /// Compares Self with R,returning whether Self is Less_/Equal_/Greater_ than R
     fn_type=ConstOrdOp
+    /// Compares Self with R,returning whether Self is Less_/Equal_/Greater_ than R
+    method_like=ConstOrdMt
 }
 
 /// Returns whether L < R.
@@ -29,6 +31,9 @@ type_fn!{
     ]{ let Out;Out }
 }
 
+pub type ConstLtMt<R>=
+    ApplyRhs<ConstLtOp,R>;
+
 
 /// Returns whether L <= R.
 ///
@@ -43,6 +48,9 @@ type_fn!{
         _IsLessOrEqual:TypeFn_<L::Output,Output=Out>,
     ]{ let Out;Out }
 }
+
+pub type ConstLEMt<R>=
+    ApplyRhs<ConstLEOp,R>;
 
 
 /// Returns whether L > R.
@@ -59,6 +67,9 @@ type_fn!{
     ]{ let Out;Out }
 }
 
+pub type ConstGtMt<R>=
+    ApplyRhs<ConstGtOp,R>;
+
 
 /// Returns whether L >= R.
 ///
@@ -74,6 +85,10 @@ type_fn!{
     ]{ let Out;Out }
 }
 
+pub type ConstGEMt<R>=
+    ApplyRhs<ConstGEOp,R>;
+
+
 
 type_fn!{
     fn _IsLessOrEqual(Less_ ){True}
@@ -86,6 +101,58 @@ type_fn!{
        _IsGreaterOrEqual(Greater_){True}
 }
 
+
+type_fn!{define_trait
+    trait=Min_ [R]
+    type=Min
+    fn_type=MinOp
+    method_like=MinMt
+}
+
+impl<L,R,_0,Out> Min_<R> for L 
+where
+    L:MinMax_<R,Output=(Out,_0)>
+{
+    type Output=Out;
+}
+
+type_fn!{define_trait
+    trait=Max_ [R]
+    type=Max
+    fn_type=MaxOp
+    method_like=MaxMt
+}
+
+impl<L,R,_0,Out> Max_<R> for L 
+where
+    L:MinMax_<R,Output=(_0,Out)>
+{
+    type Output=Out;
+}
+
+
+type_fn!{define_trait
+    trait=MinMax_ [R]
+    type=MinMax
+    fn_type=MinMaxOp
+    method_like=MinMaxMt
+}
+
+impl<L,R,order,Out> MinMax_<R> for L
+where 
+    L:ConstOrd_<R,Output=order>,
+    MinMaxHelper<L,R>:TypeFn_<order,Output=Out>,
+{
+    type Output=Out;
+}
+
+type_fn!{
+    captures(L,R)
+    fn 
+    MinMaxHelper(Less_){ (L,R) }
+    MinMaxHelper(Equal_){ (L,R) }
+    MinMaxHelper(Greater_){ (R,L) }
+}
 
 mod numtype_impls {
     use super::*;
@@ -126,6 +193,7 @@ mod numtype_impls {
 
 }
 
+// #[cfg(all(test,feature="passed_tests"))]
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -144,12 +212,20 @@ mod tests {
 
     #[test]
     pub fn test_typenum() {
+        let _: False = ConstLt::<U0, U0>::MTVAL;
         let _: True = ConstLt::<U0, U1>::MTVAL;
         let _: False = ConstLt::<U1, U1>::MTVAL;
+        let _: False = ConstLt::<U2, U0>::MTVAL;
+        let _: False = ConstLt::<U2, U1>::MTVAL;
+        let _: False = ConstLt::<U2, U2>::MTVAL;
+        let _: True = ConstLt::<U2, U3>::MTVAL;
 
         let _: True = ConstLE::<U0, U1>::MTVAL;
         let _: True = ConstLE::<U1, U1>::MTVAL;
+        let _: False = ConstLE::<U2, U0>::MTVAL;
         let _: False = ConstLE::<U2, U1>::MTVAL;
+        let _: True = ConstLE::<U2, U2>::MTVAL;
+        let _: True = ConstLE::<U2, U3>::MTVAL;
 
         let _: False = ConstGt::<U0, U1>::MTVAL;
         let _: False = ConstGt::<U1, U1>::MTVAL;
@@ -157,7 +233,11 @@ mod tests {
 
         let _: False = ConstGE::<U0, U1>::MTVAL;
         let _: True = ConstGE::<U1, U1>::MTVAL;
+        let _: True = ConstGE::<U2, U0>::MTVAL;
         let _: True = ConstGE::<U2, U1>::MTVAL;
+        let _: True = ConstGE::<U2, U2>::MTVAL;
+        let _: False = ConstGE::<U2, U3>::MTVAL;
+        let _: False = ConstGE::<U2, U4>::MTVAL;
 
         let _: Less_ = ConstOrd::<U1, U2>::MTVAL;
         let _: Equal_ = ConstOrd::<U1, U1>::MTVAL;
@@ -242,6 +322,64 @@ mod tests {
         let _:Test<Greater_,ConstPoint<U0,U1>,ConstPoint<U0,U0>>;
         let _:Test<Greater_,ConstPoint<U0,U2>,ConstPoint<U0,U0>>;
         let _:Test<Greater_,ConstPoint<U0,U3>,ConstPoint<U0,U0>>;
+
+    }
+
+    #[test]
+    fn min_max(){
+        type Test<L,R>=(
+            AssertEq< Min<L,R> , L >,
+            AssertEq< Min<R,L> , L >,
+            AssertEq< Max<L,R> , R >,
+            AssertEq< Max<R,L> , R >,
+            AssertEq< MinMax<L,R> , (L,R) >,
+            AssertEq< MinMax<R,L> , (L,R) >,
+        );
+
+        let _:Test<N2,N2>;
+        let _:Test<N1,N1>;
+        let _:Test<Z0,Z0>;
+        let _:Test<P1,P1>;
+        let _:Test<P2,P2>;
+
+        let _:Test<N2,N1>;
+        let _:Test<N2,Z0>;
+        let _:Test<N2,P1>;
+
+        let _:Test<N1,Z0>;
+        let _:Test<N1,P1>;
+        let _:Test<N1,P2>;
+        
+        let _:Test<Z0,P1>;
+        let _:Test<Z0,P2>;
+        let _:Test<Z0,P3>;
+        
+        let _:Test<P1,P2>;
+        let _:Test<P1,P3>;
+        let _:Test<P1,P4>;
+        
+        let _:Test<P2,P3>;
+        let _:Test<P2,P4>;
+        let _:Test<P2,P5>;
+
+
+        let _:Test<U0,U0>;
+        let _:Test<U1,U1>;
+        let _:Test<U2,U2>;
+
+        let _:Test<U0,U1>;
+        let _:Test<U0,U2>;
+        let _:Test<U0,U3>;
+        
+        let _:Test<U1,U2>;
+        let _:Test<U1,U3>;
+        let _:Test<U1,U4>;
+        
+        let _:Test<U2,U3>;
+        let _:Test<U2,U4>;
+        let _:Test<U2,U5>;
+        
+
 
     }
 }

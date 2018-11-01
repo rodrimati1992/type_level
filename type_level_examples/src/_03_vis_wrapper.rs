@@ -12,18 +12,21 @@ use type_level_values::prelude::*;
 pub mod rectangle {
     use super::*;
 
-    /// A rectangle where certain fields are inaccessible based on a const parameter.
-    /// Many impls are also implemented on [Rectangle].
-    #[derive(Clone, Copy, Debug, Default, PartialEq, ConstConstructor)]
-    #[cconstructor(
-        // print_derive,
-        // skip_derive,
+    #[derive(MutConstValue)]
+    #[mcv(
+        // PrintDerive,
+        // SkipDerive,
+        derive(Clone, Copy, Debug, Default, PartialEq),
+        doc="
+            A rectangle where certain fields are inaccessible based on a const parameter.
+            Many impls are also implemented on [Rectangle].
+        ",
         Type(
             name = "Rectangle",
             doc = "A rectangle where certain fields are inaccessible based on a const parameter.",
             doc = "Many impls are also implemented on [RectangleInner].",
         ),
-        ConstParam = "I"
+        Param = "I"
     )]
     pub struct RectangleInner<I> {
         x: u32,

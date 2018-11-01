@@ -1,5 +1,7 @@
 use super::*;
 
+use parse_syn::parse_ident;
+
 
 pub(crate)struct VariantsMod<'a>{
     pub(crate)decls:&'a StructDeclarations<'a>,
@@ -40,12 +42,14 @@ impl<'a> ToTokens for VariantsMod<'a>{
         let discriminant_name_0=decls.declarations.iter().map(|x| &x.discriminant_ident );
         let discriminant_name_1=decls.declarations.iter().map(|x| &x.discriminant_ident );
         
-        let variant_indices=(0..decls.declarations.len())
-            .map(|index|Ident::new(&format!("U{}",index),decls.original_name.span()));
-            
 
         let impl_=&decls.attribute_settings.derived.get_discriminant;
         if impl_.inner.is_implemented() {
+            let variant_indices_a=&(0..decls.declarations.len())
+                .map(|index|parse_ident(&format!("U{}",index)))
+                .collect::<Vec<::syn::Ident>>();
+                
+            let variant_indices_b=variant_indices_a;
             
             annotations_and_bounds!(inner;
                 decls,ImplIndex::GetDiscriminant,let (annotations,bounds)
@@ -55,8 +59,7 @@ impl<'a> ToTokens for VariantsMod<'a>{
                 use self::variants::*;
                 pub mod variants{
                     use super::*;
-                    use super::typenum_reexports::*;
-                    
+
                     #(
                         #vis_submod2_rep_b struct #discriminant_idents_e;
 
@@ -64,7 +67,7 @@ impl<'a> ToTokens for VariantsMod<'a>{
                             Discriminant<
                                 #discriminant_idents_d,
                                 #const_type,
-                                #variant_indices
+                                type_level_values::prelude::#variant_indices_a
                             >;
 
 
@@ -75,6 +78,7 @@ impl<'a> ToTokens for VariantsMod<'a>{
                         where #bounds
                         {
                             type Discriminant=#discriminant_name_1;
+                            type UIntDiscr=type_level_values::prelude::#variant_indices_b;
                             type Variant=#discriminant_idents_f;
                         }
                     )*
