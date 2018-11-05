@@ -359,7 +359,8 @@ define_tryfold_conv!{ generics[]  None_   :OptionType => TFBreak<None_> }
 
 
 
-#[cfg(test)]
+// #[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod test{
     use super::*;
     type Val0=tlist![U10,U11,U12,U13,U14];

@@ -168,7 +168,7 @@ where
     };
 
     
-    test_typelevel_non_variants(
+    test_non_variants(
         ctokens,
         variants.modules.clone(),
         variants.item_checks,
@@ -380,9 +380,6 @@ where
     });
 
 }
-
-
-
 fn test_items_typelevel_variant<'a,I>(
     ctokens:&CommonTokens,
     variant:&TLVariant<'a>,

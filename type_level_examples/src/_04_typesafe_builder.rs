@@ -5,36 +5,36 @@
 //!
 
 
+pub fn main_ () {
+    let animal = AnimalBuilder::new()
+        .children(2)
+        .years_lived(10)
+        .family("marsupials".into())
+        .build();
+    println!("{:?}", animal);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
 // use std::fmt;
 // use std::fmt::Debug;
 use std::mem::{self, ManuallyDrop};
 use std::ptr;
 
+use type_level_values::initialization::*;
 use type_level_values::field_traits::*;
 use type_level_values::prelude::*;
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, TypeLevel)]
-pub enum Initialization {
-    Initialized,
-    // Uninitialized doesn't implement any regular traits other than Copy/Clone
-    // so as to prevent reading uninitialized memory.
-    //
-    // Only derive Const* impls.
-    Uninitialized,
-}
-
-use self::type_level_Initialization::{Initialized, Uninitialized};
-
-//////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(TypeLevel)]
 #[typelevel(derive(Debug))]
 pub struct AnimalInitialization {
-    years_lived: Initialization,
-    children: Initialization,
-    family: Initialization,
+    years_lived: FieldInit,
+    children: FieldInit,
+    family: FieldInit,
 }
 
 use self::type_level_AnimalInitialization::{
@@ -42,8 +42,13 @@ use self::type_level_AnimalInitialization::{
     AnimalInitialization_Uninit,
 };
 
-pub type AnimalUninitialized = SetField<AnimalInitialization_Uninit, ai_field::All, Uninitialized>;
-pub type AnimalInitialized = SetField<AnimalInitialization_Uninit, ai_field::All, Initialized>;
+
+pub type AnimalUninitialized = 
+    <AnimalInitialization_Uninit as InitializationValues>::Uninitialized;
+    
+pub type AnimalInitialized = 
+    <AnimalInitialization_Uninit as InitializationValues>::Initialized;
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -52,7 +57,7 @@ type AnimalBuilder<I> = AnimalBuilder_Ty<ConstWrapper<I>>;
 #[derive(MutConstValue)]
 #[mcv(
     Type(use_ = "AnimalBuilder"), 
-    Param = "I"
+    ConstValue = "I"
 )]
 pub struct AnimalBuilderInner<I>
 where
@@ -64,7 +69,11 @@ where
     _marker: ConstWrapper<I>,
 }
 
-impl AnimalBuilder<AnimalUninitialized> {
+impl<I> AnimalBuilder<I> 
+where 
+    AnimalUninitialized:TypeIdentity<Type=I>,
+    I: IntoRuntime<AnimalInitialization>,
+{
     pub fn new() -> Self {
         unsafe { mem::uninitialized() }
     }
@@ -80,7 +89,7 @@ where
         macro_rules! drop_field {
             ( $($field:ident),* ) => {
                 $(match initialization.$field{
-                    Initialization::Initialized=>ManuallyDrop::drop(&mut self.$field),
+                    FieldInit::IsInitField{..}=>ManuallyDrop::drop(&mut self.$field),
                     _=>{}
                 })*
             }
@@ -101,12 +110,12 @@ macro_rules! init_method {
             $field:$field_ty,
         )->__NT
         where
-            Self:MCPBounds<SetF,ai_field::$field,NextConst=__NC,NextSelf=__NT>,
+            Self:MCPBounds<InitializeField,ai_field::$field,NextConst=__NC,NextSelf=__NT>,
             __NC:IntoRuntime<AnimalInitialization>,
         {
             unsafe{
                 ptr::write(&mut self.$field,ManuallyDrop::new($field));
-                self.mutparam(SetF::new(),Default::default())
+                self.mutparam(InitializeField::NEW,Default::default())
             }
         }
     }
@@ -114,15 +123,16 @@ macro_rules! init_method {
 
 impl<I> AnimalBuilder<I>
 where
-    I: AnimalInitializationTrait + IntoRuntime<AnimalInitialization>,
+    I: IntoRuntime<AnimalInitialization>,
 {
     init_method!{years_lived:u32}
     init_method!{children:u32   }
     init_method!{family:String  }
 }
+
 impl<I> AnimalBuilder<I>
 where
-    I: AnimalInitializationTrait + IntoRuntime<AnimalInitialization>,
+    I: IntoRuntime<AnimalInitialization>,
 {
     pub fn build(self) -> Animal
     where
@@ -140,16 +150,23 @@ where
     }
 }
 
-const_method!{
-    type ConstConstructor[]=( AnimalBuilderCC )
-    type AllowedConversions=( allowed_conversions::ByVal )
 
-    pub fn SetF[I,Field](I,Field)
-    where [
-        I:SetField_<Field,Initialized> ,
-    ]
-    {I::Output}
+mutator_fn!{
+    type This[I]=(AnimalBuilder<I>)
+    where[ I: IntoRuntime<AnimalInitialization>, ]
+
+    type AllowedSelf=(allowed_self_constructors::ByVal)
+
+    /// Equivalent to `|| map_field(builder,field,initialize_field_helper)`
+    pub fn InitializeField[builder,field](builder,field)
+    where[ MapFieldOp:TypeFn_<(builder,field,InitializeFieldHelper),Output=Out> ]
+    {let Out;Out}
 }
+
+type_fn!{
+    pub fn InitializeFieldHelper[V](UninitField<V>){ IsInitField<V> }
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -162,11 +179,3 @@ pub struct Animal {
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-pub fn main_ () {
-    let animal = AnimalBuilder::new()
-        .children(2)
-        .years_lived(10)
-        .family("marsupials".into())
-        .build();
-    println!("{:?}", animal);
-}

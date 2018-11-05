@@ -67,7 +67,7 @@ optional=true
 
 [build-dependencies]
 rustc_version = "0.2"
-core_extensions = "0.1"
+core_extensions = {version="0.1"}
 bitflags="1.0"
 
 

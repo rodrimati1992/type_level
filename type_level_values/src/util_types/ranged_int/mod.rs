@@ -1,8 +1,8 @@
 
 pub mod constrange_stuff;
 
-#[cfg(test)]
-// #[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests;
 
 use core_extensions::{TryFrom, TryInto,BoolExt,OptionExt};
@@ -95,7 +95,7 @@ macro_rules! new_ranged{( $ty:ty, $num:expr )=>{
 #[derive(MutConstValue)]
 #[mcv(
     derive(Debug, Copy, Clone),
-    Type = "RangedIntR", Param = "R"
+    Type = "RangedIntR", ConstValue = "R"
 )]
 pub struct RangedIntInner<N,R>
 where

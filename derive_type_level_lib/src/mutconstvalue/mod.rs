@@ -104,18 +104,18 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         Help:\n\
         \n\
         Required parameters:\n\t\
-            #[mcv(Type=\"Foo\",Param =\"Const\")]\n\
+            #[mcv(Type=\"Foo\",ConstValue =\"Const\")]\n\
         \n\
     ";
 
     // let ref attrs_cc_impl =attrs.impls.const_constructor.impl_annotations();
     // let ref bounds_cc_impl =attrs.impls.const_constructor.bound_tokens();
 
-    let ref attrs_acp=attrs.impls.apply_const_param.impl_annotations();
-    let ref bounds_acp=attrs.impls.apply_const_param.bound_tokens();
+    // let ref attrs_acp=attrs.impls.apply_const_param.impl_annotations();
+    // let ref bounds_acp=attrs.impls.apply_const_param.bound_tokens();
     
-    let ref attrs_gcc=attrs.impls.get_const_constructor.impl_annotations();
-    let ref bounds_gcc=attrs.impls.get_const_constructor.bound_tokens();
+    // let ref attrs_gcc=attrs.impls.get_const_constructor.impl_annotations();
+    // let ref bounds_gcc=attrs.impls.get_const_constructor.bound_tokens();
     
     let ref attrs_gcp=attrs.impls.get_const_param.impl_annotations();
     let ref bounds_gcp=attrs.impls.get_const_param.bound_tokens();
@@ -134,14 +134,19 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     });
     let type_alias_ident=type_alias.ident();
 
-    let const_constructor_ident=new_ident(format!("{}CC",type_alias_ident));
-
+    let const_constructor_ident=new_ident(format!("{}_CC",type_alias_ident));
+    
     attrs.attrs.bounds.iter().cloned()
         .extending( &mut ast.generics.make_where_clause().predicates );
 
     let delegated_attrs=&attrs.attrs.attrs;
     let delegated_docs =&attrs.attrs.docs;
     let name=new_ident(format!("{}_Ty",type_alias_ident));
+
+    // let typeconstr_ident=new_ident(format!("{}_T",type_alias_ident));
+    // let typeconstr_doc=format!("\
+    //     The TypeMarker for {0},used to talk about {0} in generic contexts.\
+    // ",name);
 
     ast.ident=name.clone();
 
@@ -226,9 +231,6 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     let (_, ty_generics, where_clause) = generics.split_for_impl();
     let where_clause=&where_clause.unwrap().predicates;
 
-    let ext_methods_allowed=attrs.extension_methods.is_allowed;
-    let ext_methods_allowed_ty= new_ident(["False","True"][ext_methods_allowed as usize].into());
-    
     let mut tokens=TokenStream::new();
     
 
@@ -250,23 +252,15 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
             >=#name < #type_alias_gen_params >;
         });
     }
-    {
-        let const_constructor_doc=format!("The ConstConstructor for {}",name);
-        tokens.append_all(quote!{
-            // #attrs_cc_type
-            #[doc=#const_constructor_doc]
-            #vis struct #const_constructor_ident< #remaining_generics >
-            where 
-                // #bounds_cc_type
-            {
-                _marker: 
-                    ::type_level_values::reexports::VariantPhantom<(
-                        #( & #lifetimes () ,)*
-                        #(::type_level_values::reexports::VariantPhantom<#truncated_type_params>,)*
-                    )>
-            }
-        });
-    }
+    tokens.append_all(quote!{
+        #vis struct #const_constructor_ident< #remaining_generics > {
+            _marker: 
+                ::type_level_values::reexports::VariantPhantom<(
+                    #( & #lifetimes () ,)*
+                    #(::type_level_values::reexports::VariantPhantom<#truncated_type_params>,)*
+                )>
+        }
+    });
 
     let field_indices=&(0..field_tys_mentioning_const.len())
         .map(|i| new_ident(format!("U{}",i)) )
@@ -290,65 +284,50 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
 
 
     tokens.append_all(quote!(
+        // pub use self::#created_module::#typeconstr_ident;
+
         #[allow(non_snake_case)]
         #[allow(non_camel_case_types)]
         mod #created_module { 
             use super::*;
             use type_level_values::reexports::*;
-            use type_level_values::user_traits::const_traits::{
-                AllowedOps,
-                ApplyConstParam_,
-                ConstConstructor,
-                GetConstConstructor_,
-                GetConstParam_,
-                ConstLayoutIndependent,
-                SameFieldLayout,
-            };
-            use type_level_values::const_wrapper::{
-                WrapperTrait,
-                ConstWrapper,
-                UnwrapConst,
-            };
+            use type_level_values::user_traits::const_traits as _const_traits;
+            use type_level_values::const_wrapper::ConstWrapper;
 
             #[doc(hidden)]
             pub struct ConstDependentField<T>(T);
 
             #(#field_accessors)*
 
-            impl<#remaining_generics> AllowedOps 
-            for #const_constructor_ident< #remaining_g_params > 
-            {
-                type ExtensionMethods=type_level_bool::#ext_methods_allowed_ty;
-            }
-
             // #attrs_cc_impl
             impl< #remaining_generics > 
-                ConstConstructor
+                _const_traits::ConstConstructor
             for #const_constructor_ident< #remaining_g_params > 
             where 
                 // #bounds_cc_impl
                 // #bounds_cc_type
             {}
             
-            #attrs_gcc
-            impl < #(#generic_params,)* > GetConstConstructor_ for #name #ty_generics 
+            // #attrs_gcc
+            impl < #(#generic_params,)* > _const_traits::GetConstConstructor_ for #name #ty_generics 
             where 
                 #(#where_clause,)*
-                #bounds_gcc
+                // #bounds_gcc
                 // #bounds_cc_type
-                Self:GetConstParam_,
+                Self:_const_traits::GetConstParam_,
             {
                 type Constructor = #const_constructor_ident< #remaining_g_params >;
             }
             
             #attrs_cli
-            unsafe impl < #(#generic_params,)* __Other:?Sized> ConstLayoutIndependent<__Other>
+            unsafe impl < #(#generic_params,)* __Other:?Sized> 
+                _const_traits::ConstLayoutIndependent<__Other>
             for #name #ty_generics
             where 
                 #(#where_clause,)*
                 #bounds_cli
                 #(
-                    __Other:SameFieldLayout<
+                    __Other:_const_traits::SameFieldLayout<
                         ConstDependentField<integer_reexports::#field_indices>,
                         Self
                     >,
@@ -356,7 +335,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
             {}
 
             #attrs_gcp
-            impl < #(#generic_params,)* #const_param_for_alias> GetConstParam_  
+            impl < #(#generic_params,)* #const_param_for_alias> _const_traits::GetConstParam_  
             for #name #ty_generics
             where 
                 #(#where_clause,)*
@@ -366,18 +345,15 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
                 type Const = #const_param_for_alias;
             }
 
-            #attrs_acp
             impl < #(#generic_params,)* #const_param_for_alias, __Output,> 
-                ApplyConstParam_<#const_param_for_alias>
+                _const_traits::ApplyConstParam_<#const_param_for_alias>
             for #const_constructor_ident< #remaining_g_params > 
             where 
                 #(#where_clause,)*
-                #bounds_acp
-                // #bounds_cc_type
                 ConstWrapper<#const_param_for_alias>:TypeIdentity<Type=#const_param_ident>,
                 #name #ty_generics:TypeIdentity<Type=__Output>,
                 __Output:
-                    GetConstConstructor_<
+                    _const_traits::GetConstConstructor_<
                         Const=#const_param_for_alias,
                         Constructor=Self
                     >,
@@ -385,13 +361,38 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
                 type Applied = __Output ;
             }
 
+
+            // #[doc=#typeconstr_doc]
+            // #vis struct #typeconstr_ident;
+
+            // impl _const_traits::TypeMarker for #typeconstr_ident{}
+
+            // impl < #(#generic_params,)* > _const_traits::TypeMarkerOf_ for #name #ty_generics 
+            // where 
+            //     #(#where_clause,)*
+            // {
+            //     type Marker = #typeconstr_ident ;
+            // }
+
         }
     ));
-    tokens.observe(|v|{
-        if attrs.print_derive {
-            print_derive_tokens(v);
-        }
-    })
+    
+    if attrs.print_derive {
+        print_derive_tokens(&tokens);
+    }
+
+    if attrs.derive_str {
+        let derive_str=format!("{}",tokens);
+        let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
+        
+        tokens.append_all(quote! {
+            impl #impl_generics #name #ty_generics #where_clause {
+                pub const TYPELEVEL_DERIVE:&'static str=#derive_str;
+            }
+        });
+    }
+
+    tokens
 }
 
 pub fn derive_from_str(input:&str) -> TokenStream {

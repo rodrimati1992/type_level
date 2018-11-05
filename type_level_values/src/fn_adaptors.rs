@@ -8,7 +8,7 @@ Operator adaptors for TypeFn_ implementors.
 use prelude::*;
 
 use crate_::field_traits::{MapFieldOp};
-use crate_::collection_ops::{Insert_};
+use crate_::collection_ops::{Insert_,PushFrontMt};
 
 pub use crate_::type_fn::{
     TypeFn_,
@@ -46,11 +46,11 @@ type_fn!{
 }
 
 type_fn!{
-    /// Applies a parameter of a TypeFn_< SomeTuple > ,
-    /// reducing the arity of the resulting TypeFn_<> by 1.
+    /// Applies a parameter of a TypeFn_ (with 3 or more parameters) ,
+    /// reducing the arity of the resulting TypeFn_ by 1.
     /// 
-    /// This only works with functions that take at least 3 parameters.
-    /// 
+    /// For unary functions use ops::Lazy.
+    /// For binary functions use either ApplyRhs or ApplyLhs
     captures(Op,Nth,Value)
     pub fn ApplyNth[Input](Input)
     where[
@@ -60,11 +60,12 @@ type_fn!{
 }
 
 type_fn!{
-    /// Applies every parameter to Op except for the nth,creating a unary function
+    /// Applies every parameter to a TypeFn_ (with 3 or more parameters)
+    /// except for the nth,creating a unary function
     /// that takes that parameter and evaluates Op.
     /// 
-    /// This only works with functions that take at least 3 parameters.
-    /// 
+    /// For unary functions use ops::Lazy.
+    /// For binary functions use either ApplyRhs or ApplyLhs
     captures(Op,Nth,Value)
     pub fn ApplyNonNth[Input](Input)
     where[
@@ -73,77 +74,101 @@ type_fn!{
     ]{ Op::Output }
 }
 
-/**
-Applies every parameter except the self parameter,which is by convention the first.
 
-This only works with functions that take at least 2 parameters other than Self.
 
-# Example
+type_fn!{
+    /**
+    Applies every parameter except the self parameter,which is by convention the first.
 
-```
-# #[macro_use]
-# extern crate derive_type_level;
+    This only works with functions that take at least 2 parameters other than Self.
 
-# #[macro_use]
-# extern crate type_level_values;
+    For functions taking 1 parameter other than Self use ApplyRhs.
 
-# use type_level_values::prelude::*;
 
-use type_level_values::field_traits::{SetField,SetFieldOp};
-use type_level_values::fn_adaptors::ApplyNonSelf;
+    # Example
 
-#[derive(TypeLevel)]
-#[typelevel(reexport(Struct,Traits))]
-pub struct Rectangle{
-    pub x:u32,
-    pub y:u32,
-    pub w:u32,
-    pub h:u32,
+    ```
+    # #[macro_use]
+    # extern crate derive_type_level;
+
+    # #[macro_use]
+    # extern crate type_level_values;
+
+    # use type_level_values::prelude::*;
+
+    use type_level_values::field_traits::{SetField,SetFieldOp};
+    use type_level_values::fn_adaptors::ApplyNonSelf;
+
+    #[derive(TypeLevel)]
+    #[typelevel(reexport(Struct,Traits))]
+    pub struct Rectangle{
+        pub x:u32,
+        pub y:u32,
+        pub w:u32,
+        pub h:u32,
+    }
+    use self::type_level_Rectangle::fields;
+
+    type InitialRectangle=SetField<
+        Rectangle_Uninit,
+        fields::All,
+        U0
+    >;
+
+
+    type SetX<X>=ApplyNonSelf<SetFieldOp,(fields::x,X)>;
+
+    type SetY<Y>=ApplyNonSelf<SetFieldOp,(fields::y,Y)>;
+
+    type SetW<W>=ApplyNonSelf<SetFieldOp,(fields::w,W)>;
+
+    type SetH<H>=ApplyNonSelf<SetFieldOp,(fields::h,H)>;
+
+
+    fn main(){
+        let _:ConstRectangle<U0,U0,U0,U0>=InitialRectangle::MTVAL;
+
+        let _:ConstRectangle<U5,U10,U20,U0>=TypeFn::<
+            (SetX<U5>,SetY<U10>,SetW<U20>),
+            InitialRectangle
+        >::MTVAL;
+
+        let _:ConstRectangle<U0,U0,U1024,U128>=TypeFn::<
+            (SetW<U1024>,SetH<U128>),
+            InitialRectangle,
+        >::MTVAL;
+    }
+
+    ```
+
+
+    */
+    captures(Op, Params)
+    pub fn ApplyNonSelf[self_](self_)
+    where[ (PushFrontMt<self_>,Op):TypeFn_< Params,Output=Out > ]
+    {  
+        let Out;
+        Out
+    }
 }
-use self::type_level_Rectangle::fields;
 
-type InitialRectangle=SetField<
-    Rectangle_Uninit,
-    fields::All,
-    U0
->;
+type_fn!{
+    /**
+    Applies the Self parameter for a function,which is by convention the first.
 
+    This only works with functions that take at least 2 parameters other than Self.
 
-type SetX<X>=ApplyNonSelf<SetFieldOp,(fields::x,X)>;
-
-type SetY<Y>=ApplyNonSelf<SetFieldOp,(fields::y,Y)>;
-
-type SetW<W>=ApplyNonSelf<SetFieldOp,(fields::w,W)>;
-
-type SetH<H>=ApplyNonSelf<SetFieldOp,(fields::h,H)>;
-
-
-fn main(){
-    let _:ConstRectangle<U0,U0,U0,U0>=InitialRectangle::MTVAL;
-
-    let _:ConstRectangle<U5,U10,U20,U0>=TypeFn::<
-        (SetX<U5>,SetY<U10>,SetW<U20>),
-        InitialRectangle
-    >::MTVAL;
-
-    let _:ConstRectangle<U0,U0,U1024,U128>=TypeFn::<
-        (SetW<U1024>,SetH<U128>),
-        InitialRectangle,
-    >::MTVAL;
+    For functions taking 1 parameter other than Self use ApplyLhs.
+    */
+    captures(Op, self_)
+    pub fn ApplySelf[Params](Params)
+    where[ (PushFrontMt<self_>,Op):TypeFn_< Params,Output=Out > ]
+    {  
+        let Out;
+        Out
+    }
 }
 
-```
-
-
-*/
-pub type ApplyNonSelf<Op, Params> = ApplyNonNth<Op, U0, Params>;
-
-/**
-Applies the Self parameter for a function,which is by convention the first.
-
-This only works with functions that take at least 2 parameters other than Self.
-*/
-pub type ApplySelf<Op, This> = ApplyNth<Op, U0, This>;
 
 type_fn!{
     captures(Op, Mapper)

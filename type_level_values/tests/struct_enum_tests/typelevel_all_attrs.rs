@@ -60,50 +60,50 @@ fn full_test(constval:&str,runtime_type:&str,derive:&str){
     let tl_mods=type_level_modules(&ctokens,tlmod_ident);
 
     let variants=DataType::new(type_constructor,tl_mods,Variants::no_checking())
-        .add_impl(
-            UnparsedImplBlock::new("ConstEq_<__Other>",constval)
+        .add_check(
+            UnparsedItemCheck::trait_impl("ConstEq_<__Other>",constval)
                 .add_where_pred("Self:Trivial<U10>")
                 .add_attribute(r#"#[cfg(any(feature="identity_feature",feature="U20"))]"#)
                 .add_attribute(r#"#[doc="U30"]"#)
         )
-        .add_impl(
-            UnparsedImplBlock::new("ConstOrd_<__Other>",constval)
+        .add_check(
+            UnparsedItemCheck::trait_impl("ConstOrd_<__Other>",constval)
                 .add_where_pred("Self:Trivial<U11>")
                 .add_attribute(r#"#[cfg(any(feature="identity_feature",feature="U21"))]"#)
                 .add_attribute(r#"#[doc="U31"]"#)
         )
-        .add_impl(
-            UnparsedImplBlock::new("GetDiscriminant",constval)
+        .add_check(
+            UnparsedItemCheck::trait_impl("GetDiscriminant",constval)
                 .add_where_pred("Self:Trivial<U12>")
                 .add_attribute(r#"#[cfg(any(feature="identity_feature",feature="U22"))]"#)
                 .add_attribute(r#"#[doc="U32"]"#)
         )
-        .add_impl(
-            UnparsedImplBlock::new("IntoConstType_",runtime_type)
+        .add_check(
+            UnparsedItemCheck::trait_impl("IntoConstType_",runtime_type)
                 .add_where_pred("Self:Trivial<U13>")
                 .add_attribute(r#"#[cfg(any(feature="identity_feature",feature="U23"))]"#)
                 .add_attribute(r#"#[doc="U33"]"#)
         )
-        .add_impl(
-            UnparsedImplBlock::new(format!("IntoRuntime< {} >",runtime_type),constval)
+        .add_check(
+            UnparsedItemCheck::trait_impl(format!("IntoRuntime< {} >",runtime_type),constval)
                 .add_where_pred("Self:Trivial<U14>")
                 .add_attribute(r#"#[cfg(any(feature="identity_feature",feature="U24"))]"#)
                 .add_attribute(r#"#[doc="U34"]"#)
         )
-        .add_impl(
-            UnparsedImplBlock::new("AsTList_",constval)
+        .add_check(
+            UnparsedItemCheck::trait_impl("AsTList_",constval)
                 .add_where_pred("Self:Trivial<U15>")
                 .add_attribute(r#"#[cfg(any(feature="identity_feature",feature="U25"))]"#)
                 .add_attribute(r#"#[doc="U35"]"#)
         )
-        .add_impl(
-            UnparsedImplBlock::new("Debug",constval)
+        .add_check(
+            UnparsedItemCheck::trait_impl("Debug",constval)
                 .set_nonexistant()
         )
     ;
 
 
-    test_typelevel_items(
+    test_items(
         variants,
         &ctokens,
         derive,
@@ -194,7 +194,7 @@ mod should_panic_tests_Tupled{
 
     static CONSTVAL:&str="ConstTupled<field_0,field_1,__IsPriv,>";
 
-    fn with_single_impl(impl_block:UnparsedImplBlock){
+    fn with_single_impl(impl_block:UnparsedItemCheck){
 
         let ctokens=CommonTokens::new();
 
@@ -202,9 +202,9 @@ mod should_panic_tests_Tupled{
 
 
         let variants=DataType::new("Tupled",tl_mods,Variants::no_checking())
-            .add_impl(impl_block);
+            .add_check(impl_block);
 
-        test_typelevel_items(
+        test_items(
             variants,
             &ctokens,
             Tupled::TYPELEVEL_DERIVE,
@@ -215,7 +215,7 @@ mod should_panic_tests_Tupled{
     #[should_panic]
     fn tests_Tupled_where_preds(){
         with_single_impl(
-            UnparsedImplBlock::new("ConstEq_<__Other>",CONSTVAL)
+            UnparsedItemCheck::trait_impl("ConstEq_<__Other>",CONSTVAL)
                 .add_where_pred("Self:Trivial<NotAType>")
         )
     }
@@ -224,7 +224,7 @@ mod should_panic_tests_Tupled{
     #[should_panic]
     fn tests_Tupled_attr(){
         with_single_impl(
-            UnparsedImplBlock::new("ConstEq_<__Other>",CONSTVAL)
+            UnparsedItemCheck::trait_impl("ConstEq_<__Other>",CONSTVAL)
                 .add_attribute(r#"#[cfg(feature="not a feature")]"#)
         )
     }
@@ -234,10 +234,9 @@ mod should_panic_tests_Tupled{
     #[should_panic]
     fn tests_Tupled_doc(){
         with_single_impl(
-            UnparsedImplBlock::new("ConstEq_<__Other>",CONSTVAL)
+            UnparsedItemCheck::trait_impl("ConstEq_<__Other>",CONSTVAL)
                 .add_attribute(r#"#[doc="not a feature"]"#)
         )
     }
 
 }
-

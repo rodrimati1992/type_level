@@ -81,17 +81,23 @@ macro_rules! declare_setter {( $($field:ident),* $(,)* ) => (
         $( $field:usize, )*
     }
 
+    // This creates the type-level equivalent of FieldInitialization in the 
+    // type_level_FieldInitialization module,requiring us to reexport what we need.
     #[derive(TypeLevel)]
+    //This reexports the type-level equivalents of InitField/UninitField
     #[typelevel(reexport(Variants))]
     pub enum FieldInitialization{
         InitField,
         UninitField,
     }
 
+    // This creates the type-level equivalent of InitializedFields in the 
+    // type_level_InitializedFields module,requiring us to reexport what we need.
     #[derive(TypeLevel)]
     #[typelevel(
         derive(ConstEq,ConstOrd),
-        reexport(Struct,Traits),
+        //This reexports ConstInitializeFields
+        reexport(Struct), 
     )]
     pub struct InitializedFields{
         $( pub $field:FieldInitialization, )*
@@ -117,7 +123,7 @@ macro_rules! declare_setter {( $($field:ident),* $(,)* ) => (
         doc="These are the docs for TetrisBuilder_Ty.",
         derive(Clone, Debug),
         Type = "TetrisBuilder",
-        Param = "C",
+        ConstValue = "C",
     )]
     pub struct TetrisBuilderInner<C>{
         $( $field:Option<usize>, )*
@@ -130,6 +136,8 @@ macro_rules! declare_setter {( $($field:ident),* $(,)* ) => (
         }
     }
 
+    // implementing this on TetrisBuilder<AllUninitialized> caused an internal compiler error,
+    // so I just use TypeIdentity to assert type equality.
     impl<I> Default for TetrisBuilder< I >
     where AllUninitialized:TypeIdentity<Type=I>
     {
@@ -145,15 +153,14 @@ macro_rules! declare_setter {( $($field:ident),* $(,)* ) => (
         
         use super::*;
         
-        const_method!{
-            type ConstConstructor[]=( TetrisBuilderCC )
-            type AllowedConversions=( allowed_conversions::ByVal )
+        mutator_fn!{
+            type This[C]=(TetrisBuilder<C>)
+            type AllowedSelf=(allowed_self_constructors::ByVal)
 
             fn InitializeField[I,Field](I,Field)
             where [ I:SetField_<Field,InitField,Output=Out>, ]
             { let Out;Out }
         }
-
 
         impl<C> TetrisBuilder< C >{
             $(
@@ -162,7 +169,8 @@ macro_rules! declare_setter {( $($field:ident),* $(,)* ) => (
                     Self:MCPBounds<InitializeField,fields::$field,NextSelf=__OutSelf>
                 {
                     self.$field=Some(value);
-                    self.mutparam(InitializeField::new(),Default::default())
+                    // The `::T` is an associated constant defined in core_extensions::SelfOps.
+                    self.mutparam(InitializeField::NEW,fields::$field::T)
                 }
 
             )*
@@ -171,8 +179,10 @@ macro_rules! declare_setter {( $($field:ident),* $(,)* ) => (
 
 
     impl<C> TetrisBuilder< C >{
-
         fn build(self)->TetrisPieces
+        // I am doing this so that the compiler will print the type parameters that differ.
+        // If this impl block were on TetrisBuilder<AllInitialized>
+        // it would just say that the method does not exist
         where C:TypeIdentity<Type=AllInitialized>
         {
             TetrisPieces{

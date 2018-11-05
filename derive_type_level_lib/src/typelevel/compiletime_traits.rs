@@ -38,10 +38,11 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
         let span=self.decls.original_name.span();
 
         let token=&self.decls.tokens;
-        let original_generics=&self.decls.original_generics.params;
-        let original_generics_b=&self.decls.original_generics.params;
-        let original_generics_c=&self.decls.original_generics.params;
-        let original_gen_params=&self.decls.original_gen_params;
+        
+        let orig_gens_item_use=self.decls.orig_gens_item_use;
+        let orig_gens_item_decl=self.decls.orig_gens_item_decl;
+        let orig_gens_impl_header=self.decls.orig_gens_impl_header;
+        
         let original_type=&self.decls.type_;
         let original_path=&self.decls.original_path;
         let type_marker_struct=&self.decls.type_marker_struct;
@@ -61,7 +62,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
             EnumOrStruct::Enum  =>
                 quote!{ #enum_trait },
             EnumOrStruct::Struct=>
-                quote!{ DerivedTraits<Type=#type_marker_struct> },
+                quote!{ __DerivedTraits<Type=#type_marker_struct> },
         };
 
         {
@@ -71,7 +72,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                     ImplVariant::DefaultImpls=>
                         original_type.to_tokens(tstream),
                     ImplVariant::Internal{type_,..}=>
-                        to_stream!( tstream; type_,token.lt, original_gen_params ,token.gt ),
+                        to_stream!( tstream; type_,token.lt, orig_gens_item_use ,token.gt ),
                 }
             });
             let derived=derived.into_consttype.inner.to_specified();
@@ -91,7 +92,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                 let mod_ty  =self.decls.all_types.iter().map(|x| x.mod_ty );
                 tokens.append_all(quote!{
                     #from_runtime_attrs
-                    impl<#original_gen_params> IntoConstType_ for #self_ty
+                    impl<#orig_gens_impl_header> IntoConstType_ for #self_ty
                     where 
                         #where_preds
                         #( #mod_ty:IntoConstType_<#field_ty>,)*
@@ -117,12 +118,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
 
 
             let enum_path=self.decls.enum_path;
-            // let original_where=self.decls.original_generics.where_clause.as_ref()
-                // .map(|x| &x.predicates );
-
-
-            // let generics_a=generics_fn();
-            // let generics_b=generics_fn();
+            
             let generics_c=generics_fn();
             let generics_d=generics_fn();
             let generics_e=generics_fn();
@@ -212,15 +208,15 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
 
                 tokens.append_all(quote!{
                     #variant_attrs
-                    impl<#(#original_generics,)* #generics > 
-                        IntoRuntime<#ir_type_ident< #(#original_generics_b,)* >>
+                    impl<#orig_gens_impl_header #generics > 
+                        IntoRuntime<#ir_type_ident< #orig_gens_item_use >>
                     for #struct_name<#generics #priv_suffix>
                     where 
                         #where_preds
                         #( #generics_e_0:IntoRuntime<#original_types_a> ,)*
                         #variant_bounds
                     {
-                        fn to_runtime()->#ir_type_ident < #(#original_generics_c,)* > {
+                        fn to_runtime()->#ir_type_ident < #orig_gens_item_use > {
                             #constructor {
                                 #(
                                     #field_names_z:#generics_e::to_runtime(),
@@ -232,22 +228,21 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
 
                 #[cfg(rust_1_22)]
                 {
-                    let original_generics_d=&self.decls.original_generics.params;
                     let generics_h=generics_fn();
                     let field_names_y=struct_.fields.iter().map(|x|&x.original_name);
                     let original_types_d=struct_.fields.iter().map(|x|&x.original_ty);
                     
                     tokens.append_all(quote!{
                         #variant_attrs
-                        impl<#(#original_generics,)* #generics > 
-                            IntoConstant<#ir_type_ident< #(#original_generics_d,)* >>
+                        impl<#orig_gens_impl_header #generics > 
+                            IntoConstant<#ir_type_ident< #orig_gens_item_use >>
                         for #struct_name<#generics #priv_suffix>
                         where 
                             #where_preds
                             #( #generics_j0:IntoConstant<#original_types_d> ,)*
                             #variant_bounds
                         {
-                            const VALUE: #ir_type_ident < #(#original_generics_c,)* > =
+                            const VALUE: #ir_type_ident < #orig_gens_item_use > =
                                 #constructor {
                                     #(
                                         #field_names_y:#generics_j1::VALUE,
@@ -260,8 +255,10 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
             }
 
             
-            let discriminant_ident=&struct_.discriminant_ident;
-            let discriminant_ident_b=&struct_.discriminant_ident;
+            let discriminant_ident  =derived.get_discriminant.inner
+                .is_implemented() 
+                .if_true(|| &struct_.discriminant_ident );
+            let discriminant_ident_b=discriminant_ident;
 
             #[derive(Copy,Clone,PartialEq)]
             enum ConstOrRuntime{
@@ -303,8 +300,8 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
             };
 
             
-            let original_generics_ir_a=&self.decls.original_generics.params;
-            let original_generics_ir_b=&self.decls.original_generics.params;
+            let original_generics_ir_a=orig_gens_item_decl;
+            let original_generics_ir_b=orig_gens_item_use;
 
             let field_names_rt_a=struct_.fields.iter().map(|x|&x.rt_assoc_type);
             let field_names_rt_b=struct_.fields.iter().map(|x|&x.rt_assoc_type);
@@ -342,7 +339,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                 #vis trait #trait_ident:
                     Sealed+
                     #supertrait+
-                    GetDiscriminant<Discriminant=variants::#discriminant_ident>+
+                    #(GetDiscriminant<Discriminant=variants::#discriminant_ident>+)*
                     #(GetField_<#field_mod_c::#field_names_c> + )*
                 {
                     #(
@@ -357,7 +354,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                 where 
                     Self:
                         #supertrait+
-                        GetDiscriminant<Discriminant=variants::#discriminant_ident_b>+
+                        #(GetDiscriminant<Discriminant=variants::#discriminant_ident_b>+)*
                         #(GetField_<#field_mod_d::#field_names_c_b> + )*
                     ,
                     #const_bounds_wclause
@@ -380,18 +377,6 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
 
                 impl<#generics> Sealed for #struct_name<#generics #priv_suffix> {}
                 
-                
-                impl __initialization::InitializationValues for variants::#variant_marker_ident{
-                    type Uninitialized=
-                        <#uninitialized_value as 
-                            __initialization::InitializationValues
-                        >::Uninitialized;
-                    type Initialized=
-                        <#uninitialized_value as 
-                            __initialization::InitializationValues
-                        >::Initialized;
-                }
-
                 impl<#generics> __initialization::InitializationValues 
                 for #struct_name<#generics #priv_suffix> 
                 {
@@ -413,6 +398,23 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                 }
                 
             });
+
+            if discriminant_ident.is_some() {
+                tokens.append_all(quote!{
+                    impl __initialization::InitializationValues 
+                    for variants::#variant_marker_ident
+                    {
+                        type Uninitialized=
+                            <#uninitialized_value as 
+                                __initialization::InitializationValues
+                            >::Uninitialized;
+                        type Initialized=
+                            <#uninitialized_value as 
+                                __initialization::InitializationValues
+                            >::Initialized;
+                    }
+                })
+            }
 
 
             if self.decls.enum_or_struct==EnumOrStruct::Struct &&
@@ -439,7 +441,7 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
 
                 tokens.append_all(quote!{
                     #[doc=#with_runtime_docs]
-                    #vis trait #wr_trait_ident< #(#original_generics_ir_a,)* >:#trait_ident{
+                    #vis trait #wr_trait_ident< #orig_gens_item_decl >:#trait_ident{
                         #(
                             #field_name_vis_d
                             #(#[doc=#field_docs_b])*
@@ -450,8 +452,8 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                     }
 
 
-                    impl<#(#original_generics,)* #generics> 
-                        #wr_trait_ident< #(#original_generics_ir_b,)* >
+                    impl<#orig_gens_impl_header #generics> 
+                        #wr_trait_ident< #orig_gens_item_use >
                     for #struct_name<#generics #priv_suffix>
                     where
                         Self:#trait_ident,

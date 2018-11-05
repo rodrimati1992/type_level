@@ -16,7 +16,7 @@ use type_level_values::new_types::{TList, TNil};
 use type_level_values::ops::{VariantAsTList_};
 use type_level_values::collection_ops::{FoldL_,};
 use type_level_values::prelude::*;
-use type_level_values::fn_adaptors::{ApplyRhs};
+use type_level_values::fn_adaptors::{ApplyRhs,Const};
 // use type_level_values::reexports::type_level_bool::False;
 
 use std::cmp::{self, PartialOrd};
@@ -225,7 +225,7 @@ pub mod rectangle {
             doc = "A rectangle where certain fields are inaccessible based on a const parameter.",
             doc = "Many impls are also implemented on [RectangleInner].",
         ),
-        Param = "I",
+        ConstValue = "I",
     )]
     pub struct RectangleInner<I, P> {
         x: u32,
@@ -331,7 +331,7 @@ pub mod rectangle {
             self.y = 0;
             self.w = 0;
             self.h = 0;
-            self.mutparam(Reset::new(), Default::default())
+            self.mutparam(Reset::NEW, ().ty_())
         }
     }
     impl<I, P> Rectangle<I, P>
@@ -365,12 +365,13 @@ pub mod rectangle {
            CheckUnequal(Inaccessible,Accessible){ Accessible }
     }
 
-    const_method!{
-        type ConstConstructor[]=( RectangleCC<IsValue> )
-        type AllowedConversions=( allowed_conversions::ByVal )
-
-        fn Reset[I](I,()){ RectangleAcessibleDefault }
+    mutator_fn!{
+        type This[I, P]=(Rectangle<I, P>)
+        type AllowedSelf=(allowed_self_constructors::ByVal)
+        
+        fn Reset=Const<RectangleAcessibleDefault>;
     }
+
 }
 
 /// Defining methods for Rectangle\<I> and PinnedMut\<'a,Rectangle\<I>>

@@ -40,10 +40,9 @@ pub(crate)struct CCAttributes<'alloc>{
     pub(crate) type_alias       :ItemMetaData<'alloc,TypeDecl<'alloc>>,
     pub(crate) const_param      :Option<(&'alloc Ident,Option<&'alloc syn::Type>)>,
     
-    /// Whether extension Const-methods are allowed.
-    pub(crate) extension_methods:ExtMethodIA,
     pub(crate) print_derive: bool,
     pub(crate) skip_derive: bool,
+    pub(crate) derive_str: bool,
 }
 
 
@@ -65,8 +64,6 @@ declare_indexable_struct!{
 
     variants=[
         (const_layout_independent,ConstLayoutIndependent),
-        (apply_const_param       ,ApplyConstParam_),
-        (get_const_constructor   ,GetConstConstructor_),
         (get_const_param         ,GetConstParam_),
     ]
 
@@ -233,14 +230,8 @@ fn constructor_inner<'alloc>(
                 "PrintDerive" => {
                     this.print_derive = true;
                 }
-                "ExtensionMethods" => {
-                    if let Err(_)=this.extension_methods.update_with_nested(&nested0.value) {
-                        panic!(
-                            "invalid value for ExtensionMethods={:?}\n{}",
-                            nested0.value,
-                            attribute_errors::extension_methods_attr()
-                        );
-                    }
+                "DeriveStr" => {
+                    this.derive_str = true;
                 }
                 "Type" =>{
                     let item=&mut this.type_alias;
@@ -251,7 +242,7 @@ fn constructor_inner<'alloc>(
                         arenas
                     );
                 } 
-                "Param" => {
+                "ConstValue" => {
                     this.const_param = Some( typaram_from_nested(&nested0.value,arenas) );
                 }
                 "Items"=>{

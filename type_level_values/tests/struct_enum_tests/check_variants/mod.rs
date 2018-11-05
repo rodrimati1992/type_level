@@ -1,16 +1,17 @@
 pub(crate) mod typelevel_field;
 
-pub(crate) mod typelevel;
+pub(crate) mod datatype;
 
-pub(crate) mod impl_block;
+pub(crate) mod item_check;
 
 use syn;
 
-pub(crate) use self::impl_block::{
-    UnparsedImplBlock,
-    ImplBlock,
-    ImplHeader,
-    ToImplBlock,
+pub(crate) use self::item_check::{
+    UnparsedItemCheck,
+    ItemCheck,
+    ItemKey,
+    ToItemCheck,
+    ItemToCheck,
 };
 
 use type_level_values::prelude::*;

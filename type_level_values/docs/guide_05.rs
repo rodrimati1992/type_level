@@ -84,10 +84,10 @@ allowing any ConstValue to be instantiated.
 
 This is a rectangle in which only the setter methods for `w` and `h` are callable.
 
-The set_fields type-macro allows setting multiple fields on a type-level struct,
+The SetFields type alias allows setting multiple fields on a type-level struct.
 <br>
 The fields are located in the type_level<TypeName>::fields module,
-reexported here as fields_fm,
+reexported here as fields_fm.
 
 
 //@use_codeblock:main_2,ignore
@@ -197,7 +197,7 @@ mod rectangle{
     #[derive(MutConstValue)]
     #[mcv(
         derive(Default,Debug,Copy,Clone),
-        Type="Rectangle",Param="C",
+        Type="Rectangle",ConstValue="C",
     )]
     pub struct RectangleInner<C>{
         x:u32,
@@ -335,10 +335,10 @@ fn main(){
     {    
         //@codeblock-start:main_1
 
-        type XYMutable=set_fields!{AllMutable=>
-            fields_fm::x = Immutable,
-            fields_fm::y = Immutable,
-        };
+        type XYMutable=SetFields<AllMutable,(
+            (fields_fm::x , Immutable),
+            (fields_fm::y , Immutable),
+        )>;
 
         let mut rect=Rectangle::new(10,20,30,40,XYMutable::MTVAL);
 

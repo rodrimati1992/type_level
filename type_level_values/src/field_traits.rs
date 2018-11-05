@@ -70,7 +70,7 @@ pub trait SetField_<Field, Value: ?Sized>: Sized {
     type Output;
 }
 
-/// Changes the compile-time value of a field,returning a new struct.
+/// Changes the value of a field,returning a new struct.
 pub type SetField<This, FieldName, Value> = <This as SetField_<FieldName, Value>>::Output;
 
 type_fn!{
@@ -167,9 +167,58 @@ where
 
 
 
-/// Sets the values of fields in This initializing all the fields with FVPairs.
-///
-/// `FVPairs` example:tlist![ (field::x,U10), (field::y,U5) ] .
+
+/**
+For setting fields of a ConstValue struct.
+
+When constructing a ConstValue prefer using the `Construct` type alias (included in the prelude)
+instead to ensure that all fields are initialized.
+
+# Example 
+
+```
+# #[macro_use]
+# extern crate derive_type_level;
+
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+# use type_level_values::field_traits::SetField;
+
+#[derive(TypeLevel)]
+#[typelevel(reexport(Struct))]
+pub struct Rectangle{
+    pub x:u32,
+    pub y:u32,
+    pub w:u32,
+    pub h:u32,
+}
+use self::type_level_Rectangle::fields;
+
+type InitialRectangle=SetField<
+    Rectangle_Uninit,
+    fields::All,
+    U0
+>;
+
+type MovedRectangle=SetFields<InitialRectangle,(
+    (fields::w,U10),
+    (fields::h,U5),
+)>;
+
+fn main(){
+    let _:ConstRectangle<U0,U0,U0,U0>=InitialRectangle::MTVAL;
+
+    let _:ConstRectangle<U0,U0,U10,U5>=MovedRectangle::MTVAL;
+
+}
+
+
+
+```
+
+*/
 pub type SetFields<This, FVPairs> = <This as SetFields_<FVPairs>>::Output;
 
 
@@ -191,6 +240,8 @@ type_fn!{
 
 type_fn!{
     /// Sets the fields of Struc with the `FVPairs` list of (FieldAccessor,Value) pairs.
+    ///
+    /// `FVPairs` example:tlist![ (field::x,U10), (field::y,U5) ] .
     pub fn SetFieldsOp[Struc,FVPairs](Struc,FVPairs)
     where [ FVPairs:FoldL_<Struc,SetFieldValuePair,Output=Out> ]
     { let Out;Out }
@@ -273,8 +324,8 @@ type_fn!{
 
 
 
-// #[cfg(all(test,feature="passed_tests"))]
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
 mod tests{
     use super::*;
 
@@ -385,34 +436,34 @@ mod tests{
     #[test]
     fn test_set_fields(){
         let _:AssertEq<
-            set_fields!{ConstTuple2<(),()> =>
-                U0=U10,
-                U1=U20,
-            },
+            SetFields<ConstTuple2<(),()> ,(
+                (U0,U10),
+                (U1,U20),
+            )>,
             ConstTuple2<U10,U20>
         >;
         
         let _:AssertEq<
-            set_fields!{ConstTuple3<(),(),()> =>
-                U0=U10,
-                U1=U20,
-                U2=U30,
-            },
+            SetFields<ConstTuple3<(),(),()> ,(
+                (U0,U10),
+                (U1,U20),
+                (U2,U30),
+            )>,
             ConstTuple3<U10,U20,U30>
         >;
         
         let _:AssertEq<
-            set_fields!{ConstRange<(),()> =>
-                range_f::start=U10,
-                range_f::end  =U20,
-            },
+            SetFields<ConstRange<(),()> ,(
+                (range_f::start,U10),
+                (range_f::end  ,U20),
+            )>,
             ConstRange<U10 ,U20>
         >;
         let _:AssertEq<
-            set_fields!{ConstRange<(),()> =>
-                range_f::start=U10,
-                range_f::end  =U20,
-            },
+            SetFields<ConstRange<(),()> ,(
+                (range_f::start,U10),
+                (range_f::end  ,U20),
+            )>,
             ConstRange<U10,U20>
         >;
 
@@ -426,7 +477,7 @@ mod tests{
 
         let _:TestSetFields<
             ConstRectangle<(),(),(),()>,
-            tlist![  
+            tlist![
                 (rect_f::x,U0),
                 (rect_f::y,U10),
                 (rect_f::w,U20),

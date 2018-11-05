@@ -76,7 +76,10 @@ pub(crate) struct StructDeclarations<'a>{
     pub(crate) original_path:Path,
     pub(crate) original_generics: &'a Generics,
     pub(crate) original_where_preds:TokenStream,
-    pub(crate) original_gen_params:TokenStream,
+    pub(crate) orig_gens_item_use:&'a TokenStream,
+    pub(crate) orig_gens_item_decl:&'a TokenStream,
+    pub(crate) orig_gens_impl_header:&'a TokenStream,
+    
     
     pub(crate) enum_path:Option<&'a TokenStream>,
     pub(crate) enum_attrs:&'a [Attribute],
@@ -185,12 +188,23 @@ impl<'a> StructDeclarations<'a>{
             .expect("where clause must be initialized before calling StructDeclarations::new")
             .predicates;
 
-        let original_gen_params={
-            let params=&ds.generics.params;
-            quote!(#(#params,)*)
-        };
+        let original_generics_iter=||ds.generics.params.iter();
 
-
+        let orig_gens_item_use=
+            original_generics_iter().map(GenParamIn::item_use)
+                .piped(|gens| quote!{ #(#gens,)* } )
+                .piped(|x| arenas.tokenstream.alloc(x) );
+        
+        let orig_gens_item_decl=
+            original_generics_iter().map(GenParamIn::item_decl)
+                .piped(|gens| quote!{ #(#gens,)* } )
+                .piped(|x| arenas.tokenstream.alloc(x) );
+        
+        let orig_gens_impl_header=
+            original_generics_iter().map(GenParamIn::impl_header)
+                .piped(|gens| quote!{ #(#gens,)* } )
+                .piped(|x| arenas.tokenstream.alloc(x) );
+        
         let type_marker_struct=outer_attr_sett.renames.const_type.clone()
             .unwrap_or_else(|| ident_from(&format!("{}Type",name)) );
 
@@ -417,14 +431,16 @@ impl<'a> StructDeclarations<'a>{
             void_ident:ident_from("_core_Void"),
             vis_kind,
             priv_field_vis,
-            type_:quote!{ #name <#original_gen_params> },
+            type_:quote!{ #name <#orig_gens_item_use> },
             original_visibility:ds.vis,
             original_name:name,
             original_path:name.clone().into(),
             type_marker_struct,
             enum_or_struct:ds.enum_or_struct,
             original_generics:ds.generics,
-            original_gen_params,
+            orig_gens_item_use,
+            orig_gens_item_decl,
+            orig_gens_impl_header,
             original_where_preds:quote!{#(#original_where_preds,)*},
             all_types,
             field_accessors,
@@ -537,7 +553,11 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                 };
             )
         });
-
+        if  self.attribute_settings.derived.get_discriminant.inner.is_implemented()  {
+            tokens.append_all(quote!{use self::DerivedTraits     as __DerivedTraits;})
+        }else{
+            tokens.append_all(quote!{use self::NoGetDiscriminant as __DerivedTraits;})
+        }
             
 
         tokens.append_all(quote!{
@@ -564,7 +584,7 @@ impl<'a> ToTokens for StructDeclarations<'a>{
 
             #(
                 #[doc= #enum_trait_doc]
-                #vis_rep_a trait #enum_trait:DerivedTraits<Type=#type_marker_struct_rep_a>{
+                #vis_rep_a trait #enum_trait:__DerivedTraits<Type=#type_marker_struct_rep_a>{
 
                 } 
             )*
@@ -629,6 +649,8 @@ impl<'a> ToTokens for StructDeclarations<'a>{
             if let Some(enum_trait)=enum_trait{
                 tokens.append_all(quote!{
                     impl<#generics> #enum_trait for #s_name<#generics>
+                    where
+                        Self:__DerivedTraits<Type=#type_marker_struct>
                     {}
                 });
             }

@@ -325,10 +325,10 @@ pub type InsertCoins<Ammount>=
 
 //@codeblock-start:initial-game-type
 
-pub type InitialGame=construct!(GameType=>
-    game_f::coins=U0,
-    game_f::state=Demo,
-);
+pub type InitialGame=Construct<GameType,(
+    (game_f::coins,U0),
+    (game_f::state,Demo),
+)>;
 
 //@codeblock-end  :initial-game-type
 
@@ -339,7 +339,7 @@ pub type InitialGame=construct!(GameType=>
 #[derive(MutConstValue)]
 #[mcv(
     derive(Copy,Clone,Debug),
-    Type="ArcadeMachine",Param ="G",
+    Type="ArcadeMachine",ConstValue ="G",
 )]
 pub struct ArcadeMachineInner<G>(pub ConstWrapper<G>);
 

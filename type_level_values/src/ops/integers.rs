@@ -263,8 +263,8 @@ type_fn!{
 
 
 
-//#[cfg(all(test,feature="passed_tests"))]
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
 mod tests{
     use super::*;
 

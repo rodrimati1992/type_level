@@ -32,6 +32,7 @@ pub mod typelevel;
 pub mod mutconstvalue;
 pub mod doc_code_snippets;
 pub mod parse_syn;
+pub(crate) mod gen_param_in;
 pub(crate) mod void_like;
 
 
@@ -88,6 +89,7 @@ declare_arenas!{
     types: syn::Type,
     metalists: syn::MetaList,
     visibilities: syn::Visibility,
+    tokenstream: TokenStream,
     strings: String,
 }
 

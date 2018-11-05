@@ -118,11 +118,11 @@ mod non_zero_3d_point{
             y:ConstNE_<Z0,Output=True>,
             z:ConstNE_<Z0,Output=True>,
         ]{
-            construct!(NonZero3DPoint_Uninit=>
-                fields::x=x,
-                fields::y=y,
-                fields::z=z,
-            )
+            Construct<NonZero3DPoint_Uninit,(
+                (fields::x,x),
+                (fields::y,y),
+                (fields::z,z),
+            )>
         }
     }
 

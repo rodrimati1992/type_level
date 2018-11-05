@@ -184,8 +184,8 @@ impl<T> IntoInner_ for Err_<T> {
 
 /////////////////////////////
 
-#[cfg(test)]
-// #[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests {
     use super::*;
 

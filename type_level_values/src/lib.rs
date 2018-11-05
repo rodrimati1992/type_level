@@ -89,11 +89,9 @@ extern crate num_traits;
 
 
 
-include!( "./macros/const_method_macro.rs");
-include!( "./macros/construct.rs");
-include!( "./macros/set_fields.rs");
 include!( "./macros/tlist.rs");
 include!( "./macros/type_fn.rs");
+include!( "./macros/mutator_fn.rs");
 
 
 

@@ -4,6 +4,37 @@
 //!
 //!
 
+
+pub fn main_ () {
+    let side_effects =
+        SideEffectful::new(FakeFileSystemOps, FakeExecuteCommand, AllCapabilities::CW);
+
+    let fs = side_effects.access_ref(cap_fields::filesystem);
+    fs.create_file("./insults.txt".as_ref()).unwrap();
+    fs.delete_file("C:/windows/system32".as_ref()).unwrap();
+
+    let exec_cmd = side_effects.access_ref(cap_fields::execute_command);
+    exec_cmd.execute_command("grep".as_ref(), &["-h"]).unwrap();
+
+    requires_fs_ops(&side_effects);
+    
+    // This won't compile because the "filesystem" capability is disabled for the reference.
+    // requires_fs_ops(
+    //     side_effects.mutparam_ref(DisableCapability::NEW,cap_fields::filesystem.wrap_msg()));
+
+    requires_execute_command(&side_effects);
+
+    // This won't compile because the "execute_command" capability is disabled for the reference.
+    // side_effects.mutparam_ref(
+    //     DisableCapability::NEW,
+    //     cap_fields::execute_command.wrap_msg()
+    // ).piped(requires_execute_command);
+
+    side_effects.mutparam_ref(DisableCapability::NEW,cap_fields::All::T);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
 use type_level_values::field_traits::*;
 use type_level_values::prelude::*;
 
@@ -52,9 +83,8 @@ pub trait FieldAccessor<Field> {
 
 #[derive(MutConstValue)]
 #[mcv(
-    ExtensionMethods = "False",
     Type(name = "SideEffectful", doc = "oh hi"),
-    Param = "Caps"
+    ConstValue = "Caps"
 )]
 pub struct SideEffectfulInner<FS, EC, Caps>
 where
@@ -112,23 +142,14 @@ capability_accessor!{
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-const_method!{
-    type ConstConstructor[FS,EC]=( SideEffectfulCC<FS,EC> )
-    type AllowedConversions=( allowed_conversions::All )
 
-    pub fn DisableCapability[Caps,Field](Caps,Field)
-    where [ Caps:SetField_<Field,DisabledCap> ]
-    {Caps::Output}
-}
+mutator_fn!{
+    type This[FS, EC, Caps]=(SideEffectful<FS, EC, Caps>)
+    type AllowedSelf=(allowed_self_constructors::All)
 
-const_method!{
-    type ConstConstructor[FS,EC]=( SideEffectfulCC<FS,EC> )
-    type AllowedConversions=( allowed_conversions::All )
-
-    // extension_method=True;
-
-    pub fn DisableAll[Caps](Caps,())
-    { DisableAll }
+    pub fn DisableCapability[caps,field](caps,field)
+    where[ SetFieldOp:TypeFn_<(caps,field,DisabledCap),Output=Out> ]
+    { let Out;Out }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -192,27 +213,3 @@ where
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-pub fn main_ () {
-    let side_effects =
-        SideEffectful::new(FakeFileSystemOps, FakeExecuteCommand, AllCapabilities::CW);
-
-    let fs = side_effects.access_ref(cap_fields::filesystem);
-    fs.create_file("./insults.txt".as_ref()).unwrap();
-    fs.delete_file("C:/windows/system32".as_ref()).unwrap();
-
-    let exec_cmd = side_effects.access_ref(cap_fields::execute_command);
-    exec_cmd.execute_command("grep".as_ref(), &["-h"]).unwrap();
-
-    requires_fs_ops(&side_effects);
-    // This won't compile because the "filesystem" capability is disabled for the reference.
-    // requires_fs_ops(
-    //     side_effects.mutparam_ref(DisableCapability,cap_fields::filesystem.wrap_msg()));
-
-    requires_execute_command(&side_effects);
-    // This won't compile because the "execute_command" capability is disabled for the reference.
-    // requires_execute_command(
-    //      side_effects.mutparam_ref(DisableCapability,cap_fields::execute_command.wrap_msg()));
-
-    side_effects.mutparam_ref(DisableAll, Default::default());
-}

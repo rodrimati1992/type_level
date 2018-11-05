@@ -1,7 +1,7 @@
 mod generated_impls;
 
-#[cfg(test)]
-// #[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests;
 
 use core_extensions::type_level_bool::{Boolean, False, True};

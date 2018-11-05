@@ -187,7 +187,7 @@ pub type Channel<CEnd, S> = Channel_Ty<ConstWrapper<CEnd>, ConstWrapper<S>>;
 #[derive(MutConstValue)]
 #[mcv(
     derive(Debug),
-    Type(use_ = "Channel"), Param = "S",
+    Type(use_ = "Channel"), ConstValue = "S",
 )]
 pub struct ChannelInner<CEnd, S> {
     tx: MPSCSender<Message>,

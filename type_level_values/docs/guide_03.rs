@@ -103,7 +103,7 @@ use std::ops::Range;
         using a ConstRange to determine the range it is limited to.
     ",
     derive(Debug,Copy,Clone,PartialEq,PartialOrd,Eq,Ord),
-    Type="RangedUsize",Param="R",
+    Type="RangedUsize",ConstValue="R",
 )]
 pub struct RangedUsizeInner<R>{
     range:ConstWrapper<R>,

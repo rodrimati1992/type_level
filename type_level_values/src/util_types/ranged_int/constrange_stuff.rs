@@ -80,11 +80,11 @@ type_fn!{
     ]{
         let IsEmpty;let OptEnd;let RLen;
 
-        construct!{RangedVars_Uninit=>
-            fields_rtv::is_empty=IsEmpty,
-            fields_rtv::opt_end=OptEnd,
-            fields_rtv::rlen=RLen,
-        }
+        Construct<RangedVars_Uninit,(
+            (fields_rtv::is_empty,IsEmpty),
+            (fields_rtv::opt_end,OptEnd),
+            (fields_rtv::rlen,RLen),
+        )>
     }
 }
 
@@ -298,8 +298,8 @@ type_fn!{
 
 
 
-// #[cfg(all(test,feature="passed_tests"))]
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
 mod test{
     use super::*;
 

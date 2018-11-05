@@ -7,6 +7,70 @@
 
 use type_level_values::field_traits::*;
 use type_level_values::prelude::*;
+use type_level_values::fn_adaptors::Const;
+
+
+pub fn main_ () {
+    let mut rect = Rectangle::new();
+    let rect_a = Rectangle::new().mutated(|r| {
+        r.set_x(0);
+        r.set_y(0);
+        r.set_w(0);
+        r.set_h(0);
+    });
+    assert_eq!(rect, rect_a);
+
+    rect.set_x(100);
+    rect.set_y(200);
+    rect.set_w(300);
+    rect.set_h(400);
+    assert_eq!(rect.x(), 100);
+    assert_eq!(rect.y(), 200);
+    assert_eq!(rect.w(), 300);
+    assert_eq!(rect.h(), 400);
+
+    let mut rect = rect.mutparam(MakeInaccessible::NEW, ra::position::T);
+
+    // now this wont compile
+    // rect.set_x(100);
+    // rect.set_y(200);
+
+    // this is still accessible
+    rect.set_w(111);
+    rect.set_h(222);
+    assert_eq!(rect.w(), 111);
+    assert_eq!(rect.h(), 222);
+
+    {
+        #[allow(unused_variables, dead_code)]
+        let rect: &mut Rectangle<_> = rect.mutparam_mut(MakeInaccessible::NEW, ra::dimension::T);
+
+        // now none of this will compile
+        // rect.set_x(100);
+        // rect.set_y(200);
+        // rect.set_w(111);
+        // rect.set_h(222);
+    }
+
+    // This is accessible because ra::dimension was made innacessible only
+    // for the mutable reference in the nested block.
+    rect.set_w(300);
+    rect.set_h(400);
+    assert_eq!(rect.w(), 300);
+    assert_eq!(rect.h(), 400);
+
+    // Uses the "ResetVis" Mutator Function internally,
+    // to reset all the fields and the Const-parameter
+    // to their default values.
+    let rect = rect.reset();
+    assert_eq!(rect, rect_a);
+
+    // this won't compile because ResetVis has a private constructor
+    // let rect=rect.mutparam(ResetVis::NEW,());
+    assert_eq!(rect, rect_a);
+}
+
+// ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 pub mod rectangle {
@@ -26,7 +90,7 @@ pub mod rectangle {
             doc = "A rectangle where certain fields are inaccessible based on a const parameter.",
             doc = "Many impls are also implemented on [RectangleInner].",
         ),
-        Param = "I"
+        ConstValue = "I"
     )]
     pub struct RectangleInner<I> {
         x: u32,
@@ -97,30 +161,31 @@ pub mod rectangle {
 
         pub fn reset(mut self) -> Rectangle<RectangleAcessibleDefault>
         where
-            Self: MCPBounds<Reset, (), NextSelf = Rectangle<RectangleAcessibleDefault>>,
+            Self: MCPBounds<ResetVis, (), NextSelf = Rectangle<RectangleAcessibleDefault>>,
         {
             self.x = 0;
             self.y = 0;
             self.w = 0;
             self.h = 0;
-            self.mutparam(Reset::new(), Default::default())
+            self.mutparam(ResetVis::NEW, Default::default())
         }
     }
 
-    const_method!{
-        type ConstConstructor[]=( RectangleCC )
-        type AllowedConversions=( allowed_conversions::All )
+
+    mutator_fn!{
+        type This[I]=(Rectangle<I>)
+        type AllowedSelf=(allowed_self_constructors::All)
 
         pub fn MakeInaccessible[I,Field](I,Field)
         where [ I:SetField_<Field,Inaccessible>, ]
         {I::Output}
     }
+    
+    mutator_fn!{
+        type This[I]=(Rectangle<I>)
+        type AllowedSelf=(allowed_self_constructors::ByVal)
 
-    const_method!{
-        type ConstConstructor[]=( RectangleCC )
-        type AllowedConversions=( allowed_conversions::ByVal )
-
-        fn Reset[I](I,()){ RectangleAcessibleDefault }
+        fn ResetVis=Const<RectangleAcessibleDefault>; 
     }
 
 }
@@ -150,64 +215,4 @@ pub enum Accessibility {
 
 use self::type_level_Accessibility::{Accessible, Inaccessible};
 
-pub fn main_ () {
-    let mut rect = Rectangle::new();
-    let rect_a = Rectangle::new().mutated(|r| {
-        r.set_x(0);
-        r.set_y(0);
-        r.set_w(0);
-        r.set_h(0);
-    });
-    assert_eq!(rect, rect_a);
-
-    rect.set_x(100);
-    rect.set_y(200);
-    rect.set_w(300);
-    rect.set_h(400);
-    assert_eq!(rect.x(), 100);
-    assert_eq!(rect.y(), 200);
-    assert_eq!(rect.w(), 300);
-    assert_eq!(rect.h(), 400);
-
-    let mut rect = rect.mutparam(MakeInaccessible, ra::position::T);
-
-    // now this wont compile
-    // rect.set_x(100);
-    // rect.set_y(200);
-
-    // this is still accessible
-    rect.set_w(111);
-    rect.set_h(222);
-    assert_eq!(rect.w(), 111);
-    assert_eq!(rect.h(), 222);
-
-    {
-        #[allow(unused_variables, dead_code)]
-        let rect: &mut Rectangle<_> = rect.mutparam_mut(MakeInaccessible, ra::dimension::T);
-
-        // now none of this will compile
-        // rect.set_x(100);
-        // rect.set_y(200);
-        // rect.set_w(111);
-        // rect.set_h(222);
-    }
-
-    // This is accessible because ra::dimension was made innacessible only
-    // for the mutable reference in the nested block.
-    rect.set_w(300);
-    rect.set_h(400);
-    assert_eq!(rect.w(), 300);
-    assert_eq!(rect.h(), 400);
-
-    // Uses the "Reset" ConstMethod internally,to reset all the fields and the Const-parameter
-    // to their default values.
-    let rect = rect.reset();
-    assert_eq!(rect, rect_a);
-
-    // this won't compile because Reset has a private constructor
-    // let rect=rect.mutparam(Reset::new(),());
-    assert_eq!(rect, rect_a);
-}
-
-// ////////////////////////////////////////////////////////////////////////////////////////////////
 

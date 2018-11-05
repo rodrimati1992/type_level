@@ -94,7 +94,7 @@ pub enum DebugImpl{
 #[derive(MutConstValue)]
 #[mcv(
     derive(Copy,Clone),
-    Type="DebugWrapper",Param="C" ,
+    Type="DebugWrapper",ConstValue="C" ,
 )]
 pub struct DebugWrapperInner<T,C>{
     pub value:T,

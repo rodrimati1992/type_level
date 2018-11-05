@@ -44,7 +44,8 @@ pub use core_extensions::type_level_bool::{Boolean, BooleanType, False, True};
 ////////////////////////////////////////////////////////////////////////////////////
 
 pub use user_traits::{
-    allowed_conversions,
+    allowed_self_constructors,
+    AllowMutatorFn,
     MCPBounds,
     MutConstParam,
 };
@@ -58,6 +59,8 @@ pub use runtime_value::{
 };
 
 pub use discriminant::GetDiscriminant;
+pub use field_traits::SetFields;
+pub use initialization::Construct;
 
 pub use crate_::type_fn::{
     TypeFn_,

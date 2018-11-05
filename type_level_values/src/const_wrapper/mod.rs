@@ -104,6 +104,8 @@ impl<T:?Sized> Clone for ConstWrapper<T> {
 
 pub trait AsConstWrapper {
     const CW: ConstWrapper<Self> = ConstWrapper::NEW;
+    const CW2: ConstWrapper<ConstWrapper<Self>> = ConstWrapper::NEW;
+    const CW3: ConstWrapper<ConstWrapper<ConstWrapper<Self>>> = ConstWrapper::NEW;
 
     #[inline(always)]
     fn to_cw(&self) -> ConstWrapper<Self> {
@@ -298,13 +300,13 @@ impl<T:?Sized> ConstWrapper<T> {
     }
 
     #[inline(always)]
-    /// Changes the compile-time value being wrapped.
+    /// Changes the ConstValue being wrapped.
     pub fn set<T2:?Sized>(self) -> ConstWrapper<T2> {
         ConstWrapper::NEW
     }
 
     #[inline(always)]
-    /// Changes the compile-time value being wrapped.
+    /// Changes the ConstValue being wrapped.
     pub fn set_val<T2>(self, _: T2) -> ConstWrapper<T2> {
         ConstWrapper::NEW
     }

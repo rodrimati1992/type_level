@@ -14,8 +14,8 @@ use crate_::discriminant::{Discriminant,UIntFromDiscriminant};
 
 use prelude::*;
 
-#[cfg(test)]
-// #[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests;
 mod tuple_impls;
 

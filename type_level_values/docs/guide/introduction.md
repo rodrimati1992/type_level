@@ -99,7 +99,7 @@ pub enum Mutability{
         to which attributes get delegated to. 
     ",
     derive(Debug,Copy,Clone),
-    Type="Wrapper",Param ="Mut",
+    Type="Wrapper",ConstValue ="Mut",
 )]
 pub struct WrapperInner<T,Mut>{
     value:T,

@@ -30,6 +30,8 @@ use data_structure::{
     EnumOrStruct,
 };
 
+use gen_param_in::GenParamIn;
+
 use syn::{
     self,
     DeriveInput,

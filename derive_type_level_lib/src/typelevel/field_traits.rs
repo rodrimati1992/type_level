@@ -25,7 +25,8 @@ impl<'a> FieldTraits<'a>{
 impl<'a> ToTokens for FieldTraits<'a>{
     fn to_tokens(&self,tokens:&mut TokenStream){
         let value_ident=&self.value_ident;
-        let original_generics=&self.decls.original_generics.params;
+        let orig_gens_impl_header=&self.decls.orig_gens_impl_header;
+        let orig_gens_item_use=&self.decls.orig_gens_item_use;
         // let original_name=&self.decls.original_name;
         let where_preds=&self.decls.original_where_preds;
 
@@ -71,10 +72,10 @@ impl<'a> ToTokens for FieldTraits<'a>{
                     }
 
                     #doc_hidden_attr
-                    impl<#(#original_generics,)* #generics > 
+                    impl<#orig_gens_impl_header #generics > 
                         GetFieldRuntime_<
                             self::fields::#field_name_struct,
-                            #into_<#(#original_generics,)*>
+                            #into_<#orig_gens_item_use>
                         >
                     for #struct_name<#generics #priv_suffix>
                     where #where_preds

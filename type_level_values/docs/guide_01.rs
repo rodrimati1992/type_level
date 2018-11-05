@@ -113,19 +113,20 @@ use self::type_level_Rectangle::fields as rect_f;
 fn main_struct(){
     //@codeblock-start:struct-main
 
-    let rectangle1:ConstRectangle<U0,U1,U2,U3>=ConstRectangle{
-        x:U0::CW, 
-        y:U1::CW,
-        w:U2::CW,
-        h:U3::CW,
-    };
+    let rectangle1:ConstRectangle<U0,U1,U2,U3>=
+        ConstRectangle{
+            x:U0::CW, 
+            y:U1::CW,
+            w:U2::CW,
+            h:U3::CW,
+        };
 
-    let rectangle2:construct!{Rectangle_Uninit=>
-        rect_f::x = U0,
-        rect_f::y = U1,
-        rect_f::w = U2,
-        rect_f::h = U3,
-    }=ConstRectangle::MTVAL;
+    let rectangle2:Construct<Rectangle_Uninit,(
+        (rect_f::x , U0),
+        (rect_f::y , U1),
+        (rect_f::w , U2),
+        (rect_f::h , U3),
+    )>=ConstRectangle::MTVAL;
     
     //@codeblock-end:struct-main
 

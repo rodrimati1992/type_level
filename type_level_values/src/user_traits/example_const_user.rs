@@ -1,12 +1,17 @@
 use prelude::*;
 
+use super::{
+    ReplaceWithParamFn,
+};
+
+use fn_adaptors::GetRhs;
+
 /// An example type which uses a Const-parameter and allows extension methods.
 #[derive(MutConstValue)]
 #[mcv(
     derive(Debug,Copy,Clone,Default),
     Type = "ConstUserExtMeth",
-    Param = "C",
-    ExtensionMethods = "true",
+    ConstValue = "C",
 )]
 pub struct ConstUserExtMethInner<C> {
     #[allow(dead_code)]
@@ -21,13 +26,15 @@ impl<C> ConstUserExtMeth<C> {
     }
 }
 
+impl<Func,I> AllowMutatorFn<Func> for ConstUserExtMeth<I>{}
+
 ////////////////////////////////////////////////////////
 
 
 #[derive(MutConstValue)]
 #[mcv(
     derive(Debug,Copy,Clone,Default),    
-    Type = "TestingUnsized",Param = "C",
+    Type = "TestingUnsized",ConstValue = "C",
 )]
 pub struct TestingUnsizedInner<T:?Sized,C> {
     pub const_: ConstWrapper<C>,
@@ -38,7 +45,7 @@ pub struct TestingUnsizedInner<T:?Sized,C> {
 #[derive(MutConstValue)]
 #[mcv(
     derive(Debug,Copy,Clone,Default),
-    Type = "TestingUnsizedOuter",Param = "C",
+    Type = "TestingUnsizedOuter",ConstValue = "C",
 )]
 pub struct TestingUnsizedOuter_<T:?Sized,C> {
     pub const_: TestingUnsized<T,C>,
@@ -47,33 +54,33 @@ pub struct TestingUnsizedOuter_<T:?Sized,C> {
 ////////////////////////////////////////////////////////
 
 
+
+/// A Type which does not implement ConstLayoutIndependent
 #[derive(Debug,Copy,Clone,Default)]
 pub struct NoConstLayoutIndependent<T>(pub T);
 
 
 #[derive(MutConstValue)]
 #[mcv(
-    derive(Debug,Copy,Clone,Default),
-    Type= "StoredInside", Param = "I"
+    Type= "StoredInside", ConstValue = "I"
 )]
-pub struct StoredInsideInner<T,I> {
+pub struct StoredInsideInner<T,I> 
+where 
+    I:WrapperTrait,
+    UnwrapConst<I>:Sized,
+{
     pub value:T,
-    marker: NoConstLayoutIndependent<I>,
+    marker: NoConstLayoutIndependent<UnwrapConst<I>>,
 }
 
 impl<T,I> StoredInside<T,I>{
-    pub fn new(value:T,_marker:I)->Self{
+    pub fn new(value:T,marker:I)->Self{
         Self{
             value,
-            marker:NoConstLayoutIndependent(ConstWrapper::NEW)
+            marker:NoConstLayoutIndependent(marker)
         }
     }
 }
 
-const_method!{
-    type ConstConstructor[T]=( StoredInsideCC<T> )
-    type AllowedConversions=( allowed_conversions::All )
-    pub fn ChangeParam[I,I2](I,I2){ I2 }
-}
-
+impl<T,I> AllowMutatorFn<ReplaceWithParamFn> for StoredInside<T,I>{}
 

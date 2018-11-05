@@ -22,10 +22,16 @@ mod check_variants;
 // #[cfg(feature="passed_tests")]
 mod test_reexports;
 
-// #[cfg(feature="passed_tests")]
+#[cfg(feature="passed_tests")]
 mod test_field_attrs;
 
+#[cfg(feature="passed_tests")]
 mod typelevel_all_attrs;
+
+#[cfg(feature="passed_tests")]
+mod typelevel_disabled_impls;
+
+mod test_mutconstvalue;
 
 #[path="../shared/mod.rs"]
 mod shared;
@@ -72,19 +78,21 @@ mod type_level_shared{
         Field,
     };
     pub(crate)use derive_type_level_lib::parse_syn::parse_ident;
-    pub(crate)use check_variants::typelevel::{
+    pub(crate)use check_variants::datatype::{
         DataType,
         Variants,
         TLVariant,
         SHARED_FIELD_ATTR,
-        test_typelevel_items,
+        test_items,
     };
     pub(crate)use check_variants::Exhaustiveness::{self,Exhaustive,Inexhaustive};
     pub(crate)use check_variants::{
         VariantKind,
         Privacy,
         PUB_DSUPER,
-        UnparsedImplBlock,
+        UnparsedItemCheck,
+        ToItemCheck,
+        ItemToCheck,
     };
 
 }

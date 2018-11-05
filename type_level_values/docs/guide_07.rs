@@ -3,7 +3,7 @@ doc_code_snippets! {
     type_ident=Guide07,
     template=r##"
 
-This chapter demonstrates a Const-method used to mutate the 
+This chapter demonstrates a Mutator Function used to mutate the 
 ConstValue-parameter of a type wrapped in an Arc.
 
 
@@ -25,7 +25,7 @@ This declares a wrapper around an RwLock which also takes an `Access` ConstValue
 
 This declares the constructor,which always returns the RwLocker with `RwAccess`
 because the caller can restrict access to `ReadAccess` with 
-`.mutparam(RestrictAccess,Default::default())`.
+`.mutparam(RestrictAccess,().ty_()())`.
 
 
 //@use_codeblock:read_method,ignore
@@ -41,7 +41,7 @@ This wraps the RwLock::write method,accessible only if the ConstValue-parameter 
 
 //@use_codeblock:restrict_access,ignore
 
-This defines a Const-method which restricts the RwLocker to have read access 
+This defines a Mutator Function which restricts the RwLocker to have read access 
 (instead of mutable).
 
 //@use_codeblock:replace_with,ignore
@@ -95,6 +95,7 @@ extern crate type_level_values;
 
 use type_level_values::prelude::*;
 use type_level_values::field_traits::{SetField,SetField_};
+use type_level_values::fn_adaptors::{Const};
 
 
 use std::sync::Arc;
@@ -123,7 +124,7 @@ pub enum Access{
 #[derive(MutConstValue)]
 #[mcv(
     derive(Debug),
-    Type = "RwLocker",Param = "C",
+    Type = "RwLocker",ConstValue = "C",
 )]
 pub struct RwLockerInner<T,C>{
     lock:RwLock<T>,
@@ -175,11 +176,12 @@ impl<T> RwLocker<T,RwAccess>{
 
 //@codeblock-start:restrict_access
 
-const_method!{
-    type ConstConstructor[T]=( RwLockerCC<T> )
-    type AllowedConversions=( allowed_conversions::All )
 
-    pub fn RestrictAccess[I]( I ,()){ ReadAccess }
+mutator_fn!{
+    type This[T,A]=(RwLocker<T,A>)
+    type AllowedSelf=(allowed_self_constructors::All)
+
+    pub fn RestrictAccess=Const<ReadAccess>;
 }
 
 //@codeblock-end:restrict_access
@@ -235,8 +237,8 @@ fn main(){
         //  restricted_locker : Arc< RwLocker< String, ReadAccess > > 
         let restricted_locker=RwLocker::mutparam_arc(
             locker.clone(),
-            RestrictAccess,
-            Default::default(),
+            RestrictAccess::NEW,
+            ().ty_(),
         );
         
         read_value( &restricted_locker );

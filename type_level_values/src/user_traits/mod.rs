@@ -12,19 +12,16 @@ trait for the bounds of every `MutConstParam` method.
 
 # Glosary
 
-ConstConstructor:is a marker type which,when provided a Const-parameter,
-outputs a type with that Const-parameter.
-Eg:RectangleCC in type_level_examples::_03_vis_wrapper.
-
-
-ConstMethod:refers to a marker type which is used to implement an operation
-on a type with a Const-parameter.
+Mutator Function:
+    refers to a TypeFn_ that was allowed to mutate the ConstValue of 
+    a type with `impl AllowMutatorFn<Func> for TypeMarkerOf<SomeType>`.
 Eg:MakeInaccessible/Reset for Rectangle\<I> in type_level_examples::_03_vis_wrapper.
 
-Op:is another name for a ConstMethod.
+Op:is another name for a Mutator Function.
 
-This:is the common way to refer to the type that a ConstMethod is implemented for.
-It always has a Const-parameter.
+This:
+    is the common way to refer to the type that a Mutator function can mutate.
+    It always has a Const-parameter.
 Eg:Rectangle\<I> in type_level_examples::_03_vis_wrapper.
 
 
@@ -32,18 +29,26 @@ Eg:Rectangle\<I> in type_level_examples::_03_vis_wrapper.
 
 */
 
-pub mod allowed_conversions_type;
-pub mod builtin_constmethods;
-pub mod const_methods;
+pub mod self_constructors_type;
+pub mod functions;
 pub mod const_traits;
 pub mod example_const_user;
 pub mod mut_const_param;
 
 pub use self::mut_const_param::{MCPBounds, MutConstParam};
 
-pub use self::const_traits::ConstConstructor;
+pub use self::self_constructors_type::allowed_self_constructors;
 
-pub use self::allowed_conversions_type::allowed_conversions;
+pub use self::const_traits::{
+    AllowMutatorFn,
+    MutatorFnAttrs,
+};
+
+pub use self::functions::{
+    ReplaceWithParamFn,
+    AdaptUnary,
+    AdaptFn,
+};
 
 use crate_::fn_adaptors::*;
 use crate_::ops::*;

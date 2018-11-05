@@ -181,11 +181,13 @@ use self::type_level_Module::fields as module_type;
 pub fn new_module<T, C, GD>(
     _type: VariantPhantom<T>,
     _collection: VariantPhantom<C>,
-) -> construct!(Module_Uninit=>
-    module_type::type_=T,
-    module_type::collection=C,
-    module_type::get_default=GD,
-) {
+) -> 
+    Construct<Module_Uninit,(
+        (module_type::type_      ,T ),
+        (module_type::collection ,C ),
+        (module_type::get_default,GD),
+    )> 
+{
     ConstModule::MTVAL
 }
 

@@ -117,7 +117,7 @@ pub enum Mutability {
         are mutable or not with the `Mut` type parameter.
     ",
     derive(Debug,Clone,PartialEq,PartialOrd,Eq,Ord),
-    Type="Wrapper",Param="Mut",
+    Type="Wrapper",ConstValue="Mut",
 )]
 pub struct _WrapperInner<T,Mut>{
     mutability:ConstWrapper<Mut>,

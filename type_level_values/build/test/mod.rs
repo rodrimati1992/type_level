@@ -1,3 +1,6 @@
+// This is disabled because Rust keeps rebuilding the entire crate every time I modify 
+// a module in the tests folder.
+
 pub mod disabled_enabled_iter;
 
 // use self::disabled_enabled_iter::DisabledEnabled;
@@ -426,7 +429,7 @@ type TestGetF<This,Field,Val>=(
                     {co}    Open0,
                     {co}    fields::{accessor},
                     {co}    U3,
-                    {co}    construct!(Open_Uninit=>fields::{accessor}=U3)
+                    {co}    Construct<Open_Uninit,tlist!((fields::{accessor},U3))>
                     {co}>;
                     {co}
                     {co}let _:TestGetF<Open2,fields::{accessor},U100 >;
@@ -624,11 +627,14 @@ fn type_decls<W:ioWrite>(mut w:W)->io::Result<()> {
                         |VariantKind::Tupled=>("U0",tuple_acc_1),
                     };
                     write!(w,"\
-                        pub type {alias}{col}<X,Y>{cor}=construct!(\n\
-                            self::type_level_{deriving}::{deriving}_Uninit {col} =>
-                            self::type_level_{deriving}::fields::{x} =X ,\n\
-                            self::type_level_{deriving}::fields::{y} =Y ,\n {cor}
-                        );\n
+                        pub type {alias}{col}<X,Y>{cor}=Construct<\n\
+                            self::type_level_{deriving}::{deriving}_Uninit ,
+                            ({col}
+                                (self::type_level_{deriving}::fields::{x},X),\n\
+                                (self::type_level_{deriving}::fields::{y},Y),\n 
+                            {cor}
+                            )
+                        >;\n
                         ",
                         col=col,cor=cor,
                         alias=type_alias,

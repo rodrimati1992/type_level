@@ -193,8 +193,8 @@ mod numtype_impls {
 
 }
 
-// #[cfg(all(test,feature="passed_tests"))]
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
 mod tests {
     use super::*;
     use typenum::consts::{U0, U1, U2};

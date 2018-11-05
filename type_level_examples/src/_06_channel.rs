@@ -1,13 +1,12 @@
 //! This example demonstrates a channel that can only send a limited ammount of values,
 //! checked at compile-time.
 //!
-//! This example is currently very limited because the type_level_values crate
-//! does not provide a way to sequence Const-methods.
 //!
 
 
 
-use std::ops::*;
+// #[allow(unused_imports)]
+// use std::ops::*;
 use std::sync::mpsc::{self, Receiver as MPSCReceiver, RecvError, SendError, Sender as MPSCSender};
 
 // use core_extensions::ResultLike;
@@ -15,6 +14,7 @@ use std::sync::mpsc::{self, Receiver as MPSCReceiver, RecvError, SendError, Send
 use type_level_values::field_traits::*;
 use type_level_values::fn_adaptors::*;
 use type_level_values::std_ops::*;
+#[allow(unused_imports)]
 use type_level_values::ops::*;
 use type_level_values::prelude::*;
 
@@ -38,7 +38,7 @@ use self::type_level_State::{Closed, Open, OpenTrait};
 
 #[derive(MutConstValue)]
 #[mcv(
-    Type = "ChannelEnd", Param = "S"
+    Type = "ChannelEnd", ConstValue = "S"
 )]
 pub struct ChannelEndInner<Chan, S: WrapperTrait> {
     channel: Chan,
@@ -48,9 +48,6 @@ pub struct ChannelEndInner<Chan, S: WrapperTrait> {
 
 pub type Sender<T, S> = ChannelEnd<MPSCSender<T>, S>;
 pub type Receiver<T, S> = ChannelEnd<MPSCReceiver<T>, S>;
-
-pub type SenderCC<T> = ChannelEndCC<MPSCSender<T>>;
-pub type ReceiverCC<T> = ChannelEndCC<MPSCReceiver<T>>;
 
 pub fn channel<T, L>() -> (Sender<T, Open<L>>, Receiver<T, Open<L>>)
 where
@@ -79,7 +76,7 @@ where
         Self: MCPBounds<TransferValue, (), NextSelf = __NextSelf>,
     {
         self.channel.send(value)?;
-        Ok(self.mutparam(TransferValue::new(), Default::default()))
+        Ok(self.mutparam(TransferValue::NEW, Default::default()))
     }
 }
 
@@ -93,7 +90,7 @@ where
         Self: MCPBounds<TransferValue, (), NextSelf = __NextSelf>,
     {
         let ret = self.channel.recv()?;
-        Ok((self.mutparam(TransferValue::new(), Default::default()), ret))
+        Ok((self.mutparam(TransferValue::NEW, Default::default()), ret))
     }
 }
 
@@ -102,9 +99,9 @@ type_fn!{
 }
 pub type NewClosed=Const<Closed>;
 
-const_method!{
-    type ConstConstructor[T]=( ChannelEndCC<T> )
-    type AllowedConversions=( allowed_conversions::ByVal )
+mutator_fn!{
+    type This[Chan,I]=(ChannelEnd<Chan,I>)
+    type AllowedSelf=(allowed_self_constructors::ByVal)
 
     fn TransferValue[I](I,())
     where [

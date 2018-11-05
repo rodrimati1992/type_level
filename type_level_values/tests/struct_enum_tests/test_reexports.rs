@@ -102,9 +102,9 @@ mod reexp_e4{
     #[allow(dead_code)]
     #[derive(TypeLevel)]
     #[typelevel(derive_str,reexport(Fields))]
-    pub struct Reexport{
-        x:u32,
-        y:u32,
+    pub enum Reexport{
+        X,
+        Y,
     }
 }
 

@@ -32,14 +32,14 @@ pub struct TupleStruct(
     reexport(Traits,Variants)
 )]
 #[allow(dead_code)]
-pub struct BracedStruct{
+pub struct BracedStruct<T=u64>{
     #[typelevel(pub_trait_getter)]
     pub a:u32,
     pub b:u32,
     #[typelevel(bound="Trivial<Self::a>+Trivial<Self::priv_d>")]
     pub(super) c:u32,
-    #[typelevel(bound_runt="Trivial<Self::priv_eeee>+Trivial<Self::f>")]
-    pub(crate) d:u32,
+    #[typelevel(bound_runt="Trivial<Self::priv_eeee>+Trivial<Self::f>+Into<T>")]
+    pub(crate) d:T,
     #[typelevel(rename="eeee")]
     e:u32,
     #[typelevel(pub_trait_getter)]
@@ -138,7 +138,8 @@ fn tests_TupleStruct(){
                     f.bound=Some("Trivial<Self::field_0>+Trivial<Self::priv_field_3>") ;
                 }),
                 Field::positional(SHARED_FIELD_ATTR,Private  ,"3","pub(crate)").mutated(|f| {
-                    f.bound_runt=Some("Trivial<Self::field_5>+Trivial<Self::priv_eeee>") ;
+                    f.bound_runt=
+                        Some("Trivial<Self::field_5>+Trivial<Self::priv_eeee>") ;
                 }),
                 Field::ren_acc   (SHARED_FIELD_ATTR,Private,"4","eeee","pub(in super)"),
                 Field::positional(SHARED_FIELD_ATTR,Private,"5","pub(in super)").mutated(|f|{
@@ -155,7 +156,7 @@ fn tests_TupleStruct(){
         ].iter().cloned());
 
 
-    test_typelevel_items(
+    test_items(
         struct_fields,
         &CommonTokens::new(),
         TupleStruct::TYPELEVEL_DERIVE,
@@ -167,6 +168,19 @@ fn tests_TupleStruct(){
 fn tests_BracedStruct(){
     use self::type_level_BracedStruct::*;
 
+    type Value=ConstBracedStruct<(),(),(),u8,(),(),__IsPriv>;
+    let _:AssertEq<
+        <Value as BracedStructWithRuntime>::rt_priv_d,
+        u8,
+    >;
+    let value:u32= 
+        <<Value as BracedStructWithRuntime>::rt_priv_d 
+                as Into<u32>
+        >::into(10u8);
+
+    assert_eq!(value,10u32);
+
+
     test_variant!{
         const_value=ConstBracedStruct,
         value=ValA,
@@ -177,7 +191,7 @@ fn tests_BracedStruct(){
             (U0 ,a        ,rt_a        ,a   ),
             (U2 ,b        ,rt_b        ,b   ),
             (U4 ,priv_c   ,rt_priv_c   ,c   ),
-            (U6 ,priv_d   ,rt_priv_d   ,d   ),
+            (u8 ,priv_d   ,rt_priv_d   ,d   ),
             (U8 ,priv_eeee,rt_priv_eeee,eeee),
             (U10,f        ,rt_f        ,f   ),
         ]
@@ -202,7 +216,7 @@ fn tests_BracedStruct(){
                     f.bound=Some("Trivial<Self::a>+Trivial<Self::priv_d>") ;
                 }),
                 Field::named(SHARED_FIELD_ATTR,Private  ,"d","pub(crate)").mutated(|f| {
-                    f.bound_runt=Some("Trivial<Self::priv_eeee>+Trivial<Self::f>") ;
+                    f.bound_runt=Some("Trivial<Self::priv_eeee>+Trivial<Self::f>+Into<T>") ;
                 }),
                 Field::named(SHARED_FIELD_ATTR,Private,"eeee","pub(in super)"),
                 Field::named(SHARED_FIELD_ATTR,Private  ,"f","pub(in super)").mutated(|f|{
@@ -219,10 +233,11 @@ fn tests_BracedStruct(){
         ].iter().cloned());
 
 
-    test_typelevel_items(
+    test_items(
         struct_fields,
         &ctokens,
-        BracedStruct::TYPELEVEL_DERIVE,
+        // Have to use the <TypeName>:: syntax to get TypeName with defaulted type parameters
+        <BracedStruct>::TYPELEVEL_DERIVE, 
     );
 }
 
@@ -313,7 +328,7 @@ fn tests_AnEnum(){
         ].iter().cloned());
 
 
-    test_typelevel_items(
+    test_items(
         enum_fields,
         &ctokens,
         AnEnum::TYPELEVEL_DERIVE,

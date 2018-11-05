@@ -49,35 +49,35 @@ pub type ExampleOperations = tlist!(
     TransferTo<Client,CurrentPosition>,
     TransferTo<Server,StartPlaying>,
 
-    construct!{Loop_Uninit=>
-        op_f::kind=Finite<U5>,
-        op_f::sequence=tlist![
-            construct!(Branch_Uninit=>
-                op_f::who_choses=Client,
-                op_f::branches=g_variants![
+    Construct<Loop_Uninit,tlist!(
+        (op_f::kind,Finite<U5>),
+        (op_f::sequence,tlist![
+            Construct<Branch_Uninit,(
+                (op_f::who_choses,Client),
+                (op_f::branches,g_variants![
                     tlist![ TransferTo<Server,SetText> ],
                     tlist![ TransferTo<Server,StartPlaying> ],
                     tlist![
                         TransferTo<Client,TextMessage>,
-                        construct!{Loop_Uninit=>
-                            op_f::kind=Infinite,
-                            op_f::sequence=tlist![
-                                construct!(Branch_Uninit=>
-                                    op_f::who_choses=Server,
-                                    op_f::branches=g_variants![
+                        Construct<Loop_Uninit,(
+                            (op_f::kind,Infinite),
+                            (op_f::sequence,tlist![
+                                Construct<Branch_Uninit,(
+                                    (op_f::who_choses,Server),
+                                    (op_f::branches,g_variants![
                                         tlist![ TransferTo<Client,CurrentPosition> ],
                                         tlist![ TransferTo<Server,Ping> ],
                                         tlist![ LoopBreak ],
-                                    ],
-                                ),
-                            ],
-                       }
+                                    ]),
+                                )>,
+                            ]),
+                       )>,
                     ],
                     tlist![ LoopBreak ],
-                ],
-            ),
-        ],
-    },
+                ]),
+            )>,
+        ]),
+    )>,
 
     TransferTo<Server,StopPlaying>,
 );

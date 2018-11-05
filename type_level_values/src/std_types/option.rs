@@ -250,8 +250,8 @@ impl<T> IntoInner_ for Some_<T> {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#[cfg(test)]
-// #[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests {
     use super::*;
 

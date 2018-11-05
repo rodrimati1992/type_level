@@ -16,22 +16,6 @@ use super::{
 
 
 
-pub fn extension_methods_attr()->AttrShape{
-    AttrShape{
-        variants:vec![
-            AttrVariant{ kind:AttrKind::NameValue{value:"false".into()} , clarification:None},
-            AttrVariant{ kind:AttrKind::NameValue{value:"true".into()} , clarification:None},
-        ],
-        word:"ExtensionMethods",
-        description:"\
-            Determines whether extension ConstMethods are allowed to mutate 
-            the Const-parameter of the derived type.\n\
-            Default value is `false`.\
-        ".into(),
-    }
-}
-
-
 pub fn type_attr()->AttrShape{
     AttrShape{
         variants:vec![
@@ -68,17 +52,19 @@ pub fn const_param_attr()->AttrShape{
         variants:vec![
             AttrVariant{
                 kind:AttrKind::NameValue{value:"ident".into()} , 
-                clarification:Some("the string must be one of the type parameters.".into())
+                clarification:Some("\
+                    ident must be the identifier of one of the type parameters.\
+                ".into())
             },
             AttrVariant{
-                kind:AttrKind::NameValue{value:"ident = DefaultType".into()} , 
+                kind:AttrKind::NameValue{value:"ident = DefaultVal".into()} , 
                 clarification:Some("\
                     `ident` must be the identifier of one of the type parameters,\n\
-                    and `DefaultType` must be its default value.\
+                    and `DefaultVal` must be its default value.\
                 ".into())
             },
         ],
-        word:"Param",
+        word:"ConstValue",
         description:"(required attribute) \
             The identifier of the Const-parameter of this type.\
         ".into(),
@@ -175,8 +161,6 @@ pub fn mutconstvalue_attrs()->ValidAttrs{
     vec![
         type_attr(),
         const_param_attr(),
-        // constconstructor_attr(),
-        extension_methods_attr(),
         items_attr(),
     ].piped(ValidAttrs::new)
 }

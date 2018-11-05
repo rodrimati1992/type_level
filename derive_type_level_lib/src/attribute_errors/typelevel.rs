@@ -56,11 +56,11 @@ pub fn rename_consttype()->AttrShape{
                 clarification:Some("the string must be a valid identifier.".into()),
             }
         ],
-        word:"rename_statictype",
+        word:"rename_consttype",
         description:"\
             Renames the ConstType generated for the Type.\n\
-            ConstType is marker type used as the type of a ConstValue,\n\
-            in which ConstValue is the compiletime equivalent of a value.\
+            ConstType is the compile-time equivalent of a type,\
+            and ConstValue is the compile-time equivalent of a value of that type.\
         ".into(),
     }
 }

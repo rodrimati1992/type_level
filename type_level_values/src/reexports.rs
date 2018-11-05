@@ -28,7 +28,7 @@ pub use const_wrapper::{AsConstWrapper, ConstWrapper};
 #[cfg(rust_1_22)]
 pub use runtime_value::IntoConstant;
 pub use runtime_value::{
-    ConstType, ConstTypeOf, ConstTypeOf_, ConstValue, DerivedTraits,
+    ConstType, ConstTypeOf, ConstTypeOf_, ConstValue, DerivedTraits,NoGetDiscriminant,
     FromRuntime, IntoConstType_, IntoRuntime,
 };
 
