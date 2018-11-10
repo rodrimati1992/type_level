@@ -4,7 +4,8 @@ Package for declaring and using type level values and functions.
 
 **Work in progress.This will be ready for consumption in "0.1.0" .**
 
-** Likely to release 0.1 between 2018/11/04 - 2018/11/09 **
+~~Likely to release 0.1 between 2018/11/04 - 2018/11/09~~
+Will announce the release when it is ready.
 
 **Please create issues for any problem.**
 
