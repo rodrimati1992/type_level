@@ -26,7 +26,7 @@ use self::type_level_Mutability::{Immutable, MutabilityTrait, Mutable};
 #[derive(MutConstValue)]
 #[mcv(
     doc="
-        A Wrapper type whose mutability is a const-parameter.
+        A Wrapper type whose mutability is a ConstValue-parameter.
         Many impls are implemented on [MutabilityWrapper].
     ",
     derive(Debug, Copy, Clone, PartialEq, Eq, Ord, PartialOrd),

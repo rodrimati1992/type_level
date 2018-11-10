@@ -6,7 +6,7 @@ use super::{
 
 use fn_adaptors::GetRhs;
 
-/// An example type which uses a Const-parameter and allows extension methods.
+/// An example type which uses a ConstValue-parameter and allows extension methods.
 #[derive(MutConstValue)]
 #[mcv(
     derive(Debug,Copy,Clone,Default),

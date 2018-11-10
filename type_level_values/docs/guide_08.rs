@@ -66,27 +66,37 @@ The `S:GameOverTrait`/`S:DemoTrait`/`S:PlayingTrait`  constraints were used inst
 the enum variants themselves (GameOver/Demo/Playing) because this produces better error messages
 when one attempts to do operations that require a specific state.
 
-
+The Piped_ trait is used here to pass Self as the parameter to the function it has as a parameter.
 
 Each of the functions called in the where clauses of the function branches 
-have type parameters to emulate closures.
+use type parameters as a way to capture variables.
 
 
 //@use_codeblock:take-coins-fn,ignore
 
 This helper function makes `Ammount` coins disappear from the arcade.
 
-The MapFieldMt and SubMt functions are method-like functions
-which captures all the parameters exceot fir the 'Self' parameter 
-(which is by convention the first parameter of the *Op equivalent function).
+In here we use the If function,which takes captures predicate/then/else functions,
+implementing TypeFn_ such that it takes some state that it passes to the predicate,
+if the predicate returns True it runt Then with the state,otherwise it runs Else with the state.
+
+The Panic function emulates panics by intentionally causing a compile-time error
+which contains the message we passed to it.
+
+The ConstLtMt,MapFieldMt,and SubMt functions are method-like functions
+which captures all the parameters exceot for the 'Self' parameter 
+(which is by convention the first parameter of the *Op functions named similarly).
 
 This is equivalent to :
 ```ignore
 fn take_coins(ammount:u32)->impl FnOnce(Game)->Game {
     move|game| {
+        if game.coins<amount{
+            panic!("not enough coins");
+        }
         game.map_field( 
             game_f::coins, 
-            |field| field-ammound 
+            |field| field-ammount
         )
     }
 }
@@ -130,12 +140,12 @@ This is a method which takes an action and returns the state of the arcade machi
 after taking the action.
 
 This method demonstrates a frequently used pattern of using generic parameters
-as type aliases within the where clause,with the `__NewGame` type parameter .
+as type aliases within the where clause,with the `_NewGame` type parameter .
 
 It is recommended that if one creates a function following 
 the "type parameter as type alias" pattern ,
 that it be possible to specify difficult to infer type parameters by adding 
-a `_:VariantPhantom<TypeParameterName>` parameter,
+a `_:VariantPhantom<TypeParameter>` parameter,
 one can then specify the type by passing a parameter like 
 eg:`Vec::T`/`Vec::<u32>::T`/`u32::T`/`Option::T`/`Option::<usize>::T` .
 
@@ -143,9 +153,8 @@ eg:`Vec::T`/`Vec::<u32>::T`/`u32::T`/`Option::T`/`Option::<usize>::T` .
 //@use_codeblock:main,ignore
 
 This demonstrates the state machine,
-try commenting out code from bellow which contains the entire example 
-(especially the ones with the Action variants)
-to start familiarizing with the kind of type errors this produces.
+try commenting out the code from bellow which contains the entire example ,
+to familiarize with the kind of type errors this produces.
 
 
 
@@ -181,7 +190,7 @@ extern crate derive_type_level;
 extern crate type_level_values;
 
 use type_level_values::prelude::*;
-use type_level_values::ops::{};
+use type_level_values::ops::{Panic,IsZeroOp,If,ConstLtMt};
 use type_level_values::std_ops::{AddMt,SubMt};
 use type_level_values::field_traits::{SetField_,SetFieldMt,MapFieldMt};
 
@@ -264,19 +273,19 @@ type_fn!{
     GameActionHelper[G,S](G,S,Continue)
     where[ 
         S:GameOverTrait,
-        (
+        G:Piped_<(
             TakeCoins<U1>,
             SetFieldMt<game_f::state,Playing>,
-        ):TypeFn_<G,Output=NewGame> 
+        ),Output=NewGame> 
     ]{ let NewGame;NewGame }
 
     GameActionHelper[G,S](G,S,StartGame)
     where[ 
         S:DemoTrait,
-        (
+        G:Piped_<(
             TakeCoins<U1>,
             SetFieldMt<game_f::state,Playing>,
-        ):TypeFn_<G,Output=NewGame> 
+        ),Output=NewGame> 
     ]{ let NewGame;NewGame }
 
 
@@ -299,11 +308,18 @@ type_fn!{
 //@codeblock-start:take-coins-fn
 
 
+#[doc(hidden)]
+pub struct NotEnoughCoins;
+
 pub type TakeCoins<Ammount>=
     MapFieldMt<
         game_f::coins,
-        SubMt<Ammount>,
+        If<ConstLtMt<Ammount>,
+            Panic<NotEnoughCoins>,
+            SubMt<Ammount>,
+        >
     >;
+ 
 
 //@codeblock-end:take-coins-fn
 
@@ -359,9 +375,11 @@ impl ArcadeMachine<InitialGame>{
 //@codeblock-start:arcade-action
 
 impl<Game> ArcadeMachine<Game>{
-    pub fn action<Action,__NewGame>(self,_action:Action)->ArcadeMachine<__NewGame>
+    pub fn action<Action,_NewGame>(
+        self,_action:Action
+    )->ArcadeMachine<_NewGame>
     where 
-        GameAction:TypeFn_<(Game,Action),Output=__NewGame>
+        GameAction:TypeFn_<(Game,Action),Output=_NewGame>
     {
         ArcadeMachine_Ty(ConstWrapper::NEW)
     }

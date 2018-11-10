@@ -7,8 +7,7 @@ looks at [this chapter of the guide](../guide_10/index.html)
 
 # Enums
 
-TypeLevel deals with privacy on enums the same way structs in which all the fields are 
-the same privacy as the struct itself do.
+Enum fields have the same privacy as the enum itself.
 
 Enums variants implicitly have the same privacy as the enum type itself.
 
@@ -17,7 +16,7 @@ Enums variants implicitly have the same privacy as the enum type itself.
 
 TypeLevel deals with pricacy on structs by :
     
-- Creating field accessors in `type_level<TypeName>::fields` with 2 levels of privacy:
+- Creating field accessors in `type_level<DerivingType>::fields` with 2 levels of privacy:
     
     - The privacy of the struct type itself.
 
@@ -26,17 +25,17 @@ TypeLevel deals with pricacy on structs by :
 
 
 - Hiding the associated types reoresenting fields more private than the struct ,
-    in the <TypeName>Trait and <TypeName>IntoRuntime traits.
+    in the <DerivingType>Trait and <DerivingType>IntoRuntime traits.
     <br>
     Fields are hidden with #[doc(hidden)],
-    and by prefixing `priv_` (in <TypeName>Trait) / `rt_priv_` (in <TypeName>Trait) 
+    and by prefixing `priv_` (in <DerivingType>Trait) / `rt_priv_` (in <DerivingType>Trait) 
     to the associated type representing the field.
 
 - When there is at least one field more private that the struct:
-    Adding the  `__IsPriv` type parameter to the Const<TypeName> struct.
+    Adding the  `__IsPriv` type parameter to the Const<DerivingType> struct.
     <br>
-    It is necessary that one provides a way to construct the struct,
-    using the `<Variant>_Uninit` alias.
+    It is necessary that one provides a way to construct the struct 
+    if one wants to access the struct from outside the module that declared it.
 
 
 # Field name/Privacy table
@@ -90,7 +89,7 @@ Tupled structs,ie:`struct What(u32,u32);`
         <th class="tg-baqh"></th>
         <th class="tg-baqh">&lt;DerivingType&gt;Trait</th>
         <th class="tg-baqh">&lt;DerivingType&gt;WithRuntime</th>
-        <th class="tg-baqh">mod fields</th>
+        <th class="tg-baqh">fields module</th>
         <th class="tg-baqh">Const&lt;DerivingType&gt;</th>
     </tr>
     <tr>
@@ -149,7 +148,7 @@ Braced structs ie:`struct A{ field_name:u32 }`.
         <th class="tg-baqh"></th>
         <th class="tg-baqh">&lt;DerivingType&gt;Trait</th>
         <th class="tg-baqh">&lt;DerivingType&gt;WithRuntime</th>
-        <th class="tg-baqh">mod fields</th>
+        <th class="tg-baqh">fields module</th>
         <th class="tg-baqh">Const&lt;DerivingType&gt;</th>
     </tr>
     <tr>

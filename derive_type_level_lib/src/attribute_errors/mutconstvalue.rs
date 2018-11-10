@@ -66,7 +66,7 @@ pub fn const_param_attr()->AttrShape{
         ],
         word:"ConstValue",
         description:"(required attribute) \
-            The identifier of the Const-parameter of this type.\
+            The identifier of the ConstValue-parameter of this type.\
         ".into(),
     }
 }

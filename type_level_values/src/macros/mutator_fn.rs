@@ -134,7 +134,7 @@ mutator_fn!{
 
 
 
-# Example of a Mutator Function.
+### Example of a Mutator Function.
 
 Here we implement a channel which can only be called a limited ammount of times 
 before it is closed,producing a compile-time error if one tries to call recv/send again.
@@ -253,7 +253,7 @@ pub mod bounded_channel{
 
 
 
-# Example of an extension Mutator Function
+### Example of an extension Mutator Function
 
 This Mutator Function simply returns back the input constant `I`.
 
@@ -273,7 +273,88 @@ mutator_fn!{
 
 ```
 
+# Adapting a pre-existing fucntion
 
+To adapt a pre-existing function to be a mutator function you must declare a mutator_fn 
+using type_fn's delegation syntax and use an adaptor function from user_traits as appropriate.
+
+The adaptor functions by function arity:
+
+- If the function takes 1 parameter:use user_traits::AdaptUnary.
+
+- If the function takes 2 parameter there is no need to adapt it.
+
+- If the function takes 3 or more parameters:use user_traits::AdaptFn.
+
+
+All of the examples here are for extension Mutator Functions,
+it would be the same if the This type was specified.
+
+### Example of delegating to a unary function
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+# use type_level_values::prelude::*;
+
+use type_level_values::std_ops::*;
+use type_level_values::user_traits::AdaptUnary;
+
+mutator_fn!{
+    type AllowedSelf=( allowed_self_constructors::All )
+
+    pub fn MyAdd1=AdaptUnary<Add1Op>;
+}
+
+# fn main(){}
+
+```
+
+### Example of delegating to a binary function
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+# use type_level_values::prelude::*;
+
+use type_level_values::std_ops::*;
+use type_level_values::user_traits::AdaptUnary;
+
+mutator_fn!{
+    type AllowedSelf=( allowed_self_constructors::All )
+
+    pub fn MySub=SubOp;
+}
+
+# fn main(){}
+
+```
+
+### Example of delegating to a ternary(and beyond) function.
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+# use type_level_values::prelude::*;
+
+use type_level_values::std_ops::*;
+use type_level_values::user_traits::AdaptUnary;
+
+type_fn!{
+    pub fn MulThenAdd[A,B,C](A,B,C)
+    where[ A:Piped<(AddMt<B>,MulMt<C>),Output=Out> ]
+    {let Out;Out}
+}
+
+mutator_fn!{
+    type AllowedSelf=( allowed_self_constructors::All )
+
+    pub fn My=AdaptFn<MulThenAdd>;
+}
+
+# fn main(){}
+
+```
 
 
 */

@@ -40,18 +40,18 @@ type IsEven=(
     ConstEqMt<U0>,
 );
 
-let _:AssertEq< TypeFn<IsEven,U0>,True >;
-let _:AssertEq< TypeFn<IsEven,U1>,False >;
-let _:AssertEq< TypeFn<IsEven,U2>,True >;
-let _:AssertEq< TypeFn<IsEven,U3>,False >;
-let _:AssertEq< TypeFn<IsEven,U4>,True >;
-let _:AssertEq< TypeFn<IsEven,U5>,False >;
+let _:AssertEq< Piped<U0,IsEven>,True >;
+let _:AssertEq< Piped<U1,IsEven>,False >;
+let _:AssertEq< Piped<U2,IsEven>,True >;
+let _:AssertEq< Piped<U3,IsEven>,False >;
+let _:AssertEq< Piped<U4,IsEven>,True >;
+let _:AssertEq< Piped<U5,IsEven>,False >;
 
 # }
 
 ```
 
-As you can see,this example makes use of the \*Mt variants of the operators,
+This example makes use of the \*Mt variants of the operators,
 which apply every parameter except for the Self parameter (which is by convention the first),
 emulating a method chain.
 
@@ -74,14 +74,14 @@ and an Else  function (with a default value of IdentityFn) as type parameters.
 If implements TypeFn_ taking some state ,first passing it to the predicate,
 and if the predicate returns True it runs the Then function with the state,
 if the predicate returns False it runs the Else function,
-returning the result of whichever function run.
+returning the result of whichever function ran.
 
 If only evaluates the branch that was taken,meaning that if the branch 
 was not taken the constraints of the function are not enforced.
 
 ### `If` Example 0
 
-Reimplementing a function that skips even numbers:
+Implementing a function that skips even numbers:
 
 ```
 #[macro_use]
@@ -91,7 +91,7 @@ use type_level_values::prelude::*;
 use type_level_values::ops::*;
 use type_level_values::std_ops::*;
 
-type SkipEven=If< ( BitAndMt<U1>, ConstEqMt<U0> ) , Add1Op >;
+type SkipEven=If< ( BitAndMt<U1>, IsZeroOp ) , Add1Op >;
 
 fn main(){
     let _:AssertEq< TypeFn<SkipEven,U0> , U1 >;
@@ -118,7 +118,7 @@ use type_level_values::fn_adaptors::*;
 use type_level_values::std_ops::*;
 
 type SafeDiv=
-    If<(GetRhs,ConstEqMt<U0>),
+    If<(GetRhs,IsZero),
         Const<U0>,
         DivOp,
     >;
@@ -132,7 +132,11 @@ fn main(){
 
 ```
 
-GetRhs here is a function adaptor which returns the second parameter of a binary function.
+Function adaptors:
+
+- Const always returns the value it captures.
+
+- GetRhs returns the second parameter ,it is a binary function.
 
 
 # match expressions
@@ -201,7 +205,7 @@ These are some iterative operations defined on collections:
     by mutating the initial value.
 
 - TryFoldL/TryFoldR: 
-    Like FoldR,with the ability to return early on a value that converts to TFBreak is found.
+    Like FoldR,with the ability to return early on a value that converts to TFBreak.
 
 - ReduceL/ReduceR: 
     Similar to FoldL and FoldR,

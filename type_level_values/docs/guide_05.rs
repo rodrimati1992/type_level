@@ -3,57 +3,54 @@ doc_code_snippets! {
     type_ident=Guide05,
     template=r##"
 
-Here is an example of using a type-level struct to enable/disable access to a field 
+Here is an example of using a ConstValue struct to enable/disable access to a field 
 (through an accessor method).
 
 This chapter demonstrates:
-    -how to set fields on a type-level struct.
-    -how to use a type-level struct in generic contexts.
-    -how to use enable/disable methods based on the value of a type-level struct field .
+    -how to set fields on a ConstValue struct.
+    -how to use a ConstValue struct in generic contexts.
+    -how to use enable/disable methods based on the value of a ConstValue struct's field .
 
 
 //@use_codeblock:enum_decl,ignore
 
-Here we declare and reexport a type-level-enum which describes whether 
-a something is mutable or immutable.
+Here we declare an enum describes whether a something is mutable or immutable.
 
 //@use_codeblock:const_struct_decl,ignore
 
-Here we have a type-level struct which describes the mutability of every field individually.
+Here we have a ConstValue struct which describes the mutability of every field individually.
 
 //@use_codeblock:typealias,ignore
 
 These 2 type aliases use the SetField type alias,
 which allows setting a field of a type level struct.
 <br>
-In this case we are using the `All` pseudo-field,which allows setting all fields of the struct
+In this case we are using the `All` accessor,which allows setting all fields of the struct
 with a value.
 
 
 //@use_codeblock:rect_decl,ignore
 
 
-Declares a rectangle with a Const-parameter,which is a ConstFieldsMutability.
+Declares a rectangle which uses a ConstValue parameter to determine the mutability of each field.
 
 //@use_codeblock:constructor,ignore
 
-The constructor for Rectangle,taking in a ConstFieldsMutability
-describing the mutability of each field.
+The constructor for Rectangle,taking in a ConstValue describing the mutability of each field.
 
 
 //@use_codeblock:set_mut,ignore
 
 
-The mutability method allows getting back the ConstFieldsMutability Const-parameter .
+The mutability method allows getting back the ConstFieldsMutability ConstValue-parameter .
 <br>
 FieldsMutabilityTrait ensures that `C` is a ConstFieldsMutability,
-and allows constructing it with the MTVAL associated constant.
+and allows constructing it with the MTVAL associated constant(from MarkerType).
 
 The set_mutability method allows changing the mutability of the fields by 
 passing in another ConstFieldsMutability.
 <br>
-//TODO:reference the chapter when it's ready.<br>
-In a later chapter we'll see a more concise way of changing the Const-parameter.
+In a later chapter we'll see a more concise way of changing the ConstValue-parameter.
 
 
 //@use_codeblock:getters,ignore
@@ -84,7 +81,7 @@ allowing any ConstValue to be instantiated.
 
 This is a rectangle in which only the setter methods for `w` and `h` are callable.
 
-The SetFields type alias allows setting multiple fields on a type-level struct.
+The SetFields type alias allows setting multiple fields on a ConstValue struct.
 <br>
 The fields are located in the type_level<TypeName>::fields module,
 reexported here as fields_fm.
@@ -94,21 +91,21 @@ reexported here as fields_fm.
 
 This is a rectangle in which only the setter methods for `x` and `y` are callable.
 
-The PW associated constant,
+The CW associated constant,
 defined in ::type_level_values::const_wrapper::AsConstWrapper,
-wraps the type in a PhatomWrapper.
+wraps the type in a ConstWrapper.
 <br>
-ConstWrapper has multiple inherent methods that allow manipulating type-level structs,
+ConstWrapper has multiple inherent methods that allow manipulating ConstValue structs,
 in this case using its `set_field_val` method.
 <br> 
 ConstWrapper can also dereference to its wrapped type if it is a MarkerType,
-which all type-level-values are.
+which all ConstValues are.
 
 
 //@use_codeblock:main_3,ignore
 
 This is an immutable rectangle.
-Note that like every other rectangle all getters are still callable.
+Note that like every other rectangles.all getters are still callable.
 
 
 

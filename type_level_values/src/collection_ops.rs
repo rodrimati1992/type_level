@@ -21,7 +21,7 @@ use crate_::ops::{
 };
 
 type_fn!{define_trait
-    /// An iterator function that processes the collection incrementally from the start,
+    /// Processes the collection incrementally from the start,
     /// starting with Defaultval and the first element.
     ///
     /// If the collection is empty it must return DefaultVal.
@@ -32,7 +32,7 @@ type_fn!{define_trait
 }
 
 type_fn!{define_trait
-    /// An iterator function that processes the collection incrementally from the end,
+    /// Processes the collection incrementally from the end,
     /// starting with Defaultval and the last element.
     ///
     /// If the collection is empty it must return DefaultVal.
@@ -44,7 +44,7 @@ type_fn!{define_trait
 
 
 type_fn!{define_trait
-    /// An iterator function that processes the collection incrementally from the start,
+    /// Processes the collection incrementally from the start,
     /// starting with the first element.
     trait=ReduceL_ [Func]
     type=ReduceL
@@ -53,7 +53,7 @@ type_fn!{define_trait
 }
 
 type_fn!{define_trait
-    /// An iterator function that processes the collection incrementally from the end,
+    /// Processes the collection incrementally from the end,
     /// starting with the last element.
     trait=ReduceR_ [Func]
     type=ReduceR
@@ -72,8 +72,6 @@ type_fn!{define_trait
 type_fn!{define_trait
     /// Returns the collection in which all the elements that 
     /// do not satisfy the `Predicate` are removed.
-    ///
-    /// Predicate is the equivalent to `Fn(&T)->bool`,where T is the element type.
     trait=Filter_ [Predicate]
     type=Filter
     fn_type=FilterOp
@@ -169,7 +167,7 @@ type_fn!{define_trait
 }
 
 type_fn!{define_trait
-    /// Creates a value of by repeating  `Value` `Repeated` times
+    /// Creates a value of the `Self` ConstType  by repeating  `Value` `Repeated` times
     ///
     trait=Repeat_ [ Value,Repeated ]
     type=Repeat
@@ -206,7 +204,15 @@ where
 
 
 type_fn!{
-    fn FindOp[This,Pred](This,Pred)
+    /**
+    Searches for an element in the collection that satisfies a predicate.
+    
+    FindOp takes a collection `This`,and the predicate `Pred`.
+    
+    If the predicate returns true for any element 
+    then this function return Some_<TheElement>,otherwise it returns Nnoe_
+    */
+    pub fn FindOp[This,Pred](This,Pred)
     where[
         (
             TryFoldLMt< None_, (GetRhs,If<Pred,(NewSome,NewTFBreak),(NewNone,NewTFVal)>) >,
@@ -217,7 +223,15 @@ type_fn!{
 
 type_fn!{
     captures(Func)
-    fn FindMt[This](This)
+    /**
+    Searches for an element in the collection that satisfies a predicate.
+    
+    FindMt captures the predicate `Pred` and takes a collection `This` as a function parameter.
+    
+    If the predicate returns true for any element 
+    then this function return Some_<TheElement>,otherwise it returns Nnoe_
+    */
+    pub fn FindMt[This](This)
     where[ FindOp:TypeFn_<(This,Func),Output=Out> ]
     { let Out;Out }
 }
@@ -225,7 +239,15 @@ type_fn!{
 
 
 type_fn!{
-    fn AllOp[This,Pred](This,Pred)
+    /**
+    Tests whether a predicate is true for all elements of a collection.
+    
+    AllOp takes a collection `This`,and the predicate `Pred`.
+    
+    If the predicate returns True for all element 
+    then this function return True,otherwise it returns False
+    */
+    pub fn AllOp[This,Pred](This,Pred)
     where[
         (
             TryFoldLMt<True,(GetRhs,Pred,If<IdentityFn,NewTFVal,NewTFBreak>)>,
@@ -235,8 +257,16 @@ type_fn!{
 }
 
 type_fn!{
+    /**
+    Tests whether a predicate is true for all elements of a collection.
+    
+    AllMt captures the predicate `Pred`,and takes the collection `This` as a function parameter.
+    
+    If the predicate returns True for all element 
+    then this function return True,otherwise it returns False
+    */
     captures(Func)
-    fn AllMt[This](This)
+    pub fn AllMt[This](This)
     where[ AllOp:TypeFn_<(This,Func),Output=Out> ]
     { let Out;Out }
 }
@@ -244,7 +274,15 @@ type_fn!{
 
 
 type_fn!{
-    fn AnyOp[This,Pred](This,Pred)
+    /**
+    Tests whether a predicate is true for any elements of a collection.
+    
+    AllOp takes a collection `This`,and the predicate `Pred`.
+    
+    If the predicate returns True for any element 
+    then this function return True,otherwise it returns False
+    */
+    pub fn AnyOp[This,Pred](This,Pred)
     where[
         (
             TryFoldLMt<False,(GetRhs,Pred,If<IdentityFn,NewTFBreak,NewTFVal>)>,
@@ -255,34 +293,25 @@ type_fn!{
 
 type_fn!{
     captures(Func)
-    fn AnyMt[This](This)
+    /**
+    Tests whether a predicate is true for any elements of a collection.
+    
+    AnyMt captures the predicate `Pred`,and takes the collection `This` as a function parameter.
+    
+    If the predicate returns True for any element 
+    then this function return True,otherwise it returns False
+    */
+    pub fn AnyMt[This](This)
     where[ AnyOp:TypeFn_<(This,Func),Output=Out> ]
     { let Out;Out }
 }
-
-type_fn!{
-    fn ContainsOp[This,Elem](This,Elem)
-    where[
-        AnyOp:TypeFn_< (This,ConstEqMt<Elem>), Output=Out >
-    ]{
-        let Out; Out 
-    }
-}
-
-type_fn!{
-    captures(Elem)
-    fn ContainsMt[This](This)
-    where[ ContainsOp:TypeFn_<(This,Elem),Output=Out> ]
-    { let Out;Out }
-}
-
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 
 type_fn!{define_trait
     /** 
-    An iterator function that processes the collection incrementally from the start,
+    Processes the collection incrementally from the start,
     starting with Defaultval and the first element,
     returning early when Func returns a value that converts to TFBreak like Err_<_>/None_,
     
@@ -296,7 +325,7 @@ type_fn!{define_trait
 
 type_fn!{define_trait
     /** 
-    An iterator function that processes the collection incrementally from the end,
+    Processes the collection incrementally from the end,
     starting with Defaultval and the last element,
     returning early when Func returns a value that converts to TFBreak like Err_<_>/None_,
     
@@ -313,14 +342,30 @@ type_fn!{define_trait
 #[typelevel(reexport(Variants))]
 #[typelevel(items(runtime_conv(NoImpls)))]
 pub enum TryFold<T,B>{
+    #[typelevel(doc="\
+Represents a value.
+
+This is mainly used in TryFold{L,R},and anything that uses TryFold.
+
+This can be converted to/from OptionType/ResultType
+    ")]
     TFVal(T),
+    #[typelevel(doc="\
+Represents the intent to break out of the iteration operation.
+
+This is mainly used in TryFold{L,R},and anything that uses TryFold.
+
+This can be converted to/from OptionType/ResultType
+    ")]
     TFBreak(B),
 }
 
 type_fn!{
+    /// Constructs a TFVal<V>
     pub fn NewTFVal[v](v){ TFVal<v> }
 }
 type_fn!{
+    /// Constructs a TFBreak<V>
     pub fn NewTFBreak[v](v){ TFBreak<v> }
 }
 
@@ -373,7 +418,7 @@ mod test{
     type IsLt<Val>=ConstLtMt<Val>;
     
     #[test]
-    fn find_contains(){
+    fn find(){
         type TestFind<Val,Func,Equal>=(
             AssertFnRet<(Val,Func),FindOp, Equal >,
             AssertFnRet<Val,FindMt<Func>, Equal >,
@@ -389,26 +434,6 @@ mod test{
         let _:TestFind<Val0,IsEq<U13>, Some_<U13> >;
         let _:TestFind<Val0,IsEq<U14>, Some_<U14> >;
 
-
-
-        type TestContains<Val,Elem,Equal>=(
-            AssertFnRet<(Val,Elem),ContainsOp,Equal >,
-            AssertFnRet<Val,ContainsMt<Elem>,Equal >,
-        );
-
-        let _:TestContains<ValEven,U10,True>;
-        let _:TestContains<ValEven,U12,True>;
-        let _:TestContains<ValEven,U14,True>;
-        let _:TestContains<ValOdd ,U11,True>;
-        let _:TestContains<ValOdd ,U13,True>;
-        let _:TestContains<ValOdd ,U15,True>;
-        
-        let _:TestContains<ValOdd ,U10,False>;
-        let _:TestContains<ValOdd ,U12,False>;
-        let _:TestContains<ValOdd ,U14,False>;
-        let _:TestContains<ValEven,U11,False>;
-        let _:TestContains<ValEven,U13,False>;
-        let _:TestContains<ValEven,U15,False>;
     }
 
     #[test]

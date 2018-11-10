@@ -225,7 +225,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     };
 
     if field_tys_mentioning_const.is_empty() {
-        panic!("Const-parameter '{}' is never used", const_param_ident);
+        panic!("ConstValue-parameter '{}' is never used", const_param_ident);
     }
 
     let (_, ty_generics, where_clause) = generics.split_for_impl();

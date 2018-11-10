@@ -55,11 +55,18 @@ Using a build script to enable features after Rust 1.20.
 
 To use this crate in no_std contexts disable the default-feature.
 
+Disabling the std feature disables these things:
+
+- the MutConstParam methods taking Box/Rc/Arc.
+
+
 # Cargo Features
 
-"std":Enables standard library support.Enabled by default.
+"std":Enables standard library support,otherwise uses the core library.Enabled by default.
 
 "serde":Enables serde support.Enabled by default.
+
+"large_tlist":to enable fixed-size impls for type-lists of over 32 instead of 16 elements,
 
 */
 

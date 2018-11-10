@@ -21,16 +21,16 @@ one must fill as many lines as possible before the pieces run out.
 
 //@use_codeblock:field_init_enum,ignore
 
-This is the type-level enum describing whether a field is initialized.
+This is the enum describing whether a field is initialized.
 
 //@use_codeblock:init_struct,ignore
 
-This is the type-level struct describing describing the initialization state of all fields.
+This is the struct describing describing the initialization state of all fields.
 
 //@use_codeblock:init_aliases,ignore
 
 These are aliases for ConstInitializedFields where all the fields are either 
-described as initialized (AllInitialized) or as uninitialized (AllUninitialized).
+initialized (AllInitialized) or uninitialized (AllUninitialized).
 
 //@use_codeblock:builder_struct_decl,ignore
 
@@ -46,6 +46,8 @@ I is the current value of the ConstValue parameter,and Field is the field we wan
 The `AllowedSelf` associated type allows us to control which methods of 
 MutConstParam we can call,by value/reference/mutable_reference/all.
 
+the `let` syntax here is used to declare a variable in the impl of TypeFn_ 
+for InitializeField.
 
 //@use_codeblock:declare_setter_macro,ignore
 
@@ -57,6 +59,13 @@ ConstValue-parameter of a value.
 
 MCPBounds is a trait alias for the constraints required by most MutConstParam methods.
 
+The `NextSelf=_Out` is an example of the 
+[`generic type as type alias`
+](../../appendix_patterns/index.html#patterngeneric-type-as-type-alias) 
+pattern,
+which allows us to return whatever the trait's associated type is without
+repeating the constraint in the return type.
+
 //@use_codeblock:setter_impls,ignore
 
 This decares the setter methods for each field in the builder.
@@ -64,7 +73,7 @@ This decares the setter methods for each field in the builder.
 //@use_codeblock:build_fn,ignore
 
 This constructs the TetrisPieces,the unwraps are fine since this 
-type already checks whether all the fields are initialized with the Const-parameter.
+type already checks whether all the fields are initialized with the ConstValue-parameter.
 
 The `C:TypeIdentity<Type= AllInitialized >` constraint in the method 
 is an equality constraint,requiring that the ConstValue-parameter be AllInitialized,
@@ -228,9 +237,9 @@ mutator_fn!{
 macro_rules! declare_setter {
     ( $field:ident ) => (
 
-        fn $field<__Out>(mut self,value:usize)->__Out
+        fn $field<_Out>(mut self,value:usize)->_Out
         where 
-            Self:MCPBounds<InitializeField,if_f::$field,NextSelf=__Out>,
+            Self:MCPBounds<InitializeField,if_f::$field,NextSelf=_Out>,
         {
             self.$field=Some(value);
             self.mutparam(InitializeField::NEW,if_f::$field::T)

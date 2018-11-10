@@ -14,18 +14,18 @@ restricting when it allows mutable access of its contents.
 
 //@use_codeblock:access_enum,ignore
 
-This declares a type-level enum describing whether one has read or mutable access 
+This declares an enum describing whether one has read or mutable access 
 to the contents of the RwLock.
 
 //@use_codeblock:rw_locker_struct,ignore
 
-This declares a wrapper around an RwLock which also takes an `Access` ConstValue-parameter.
+This declares a wrapper around an RwLock which also takes an Access ConstValue-parameter.
 
 //@use_codeblock:rw_locker_new,ignore
 
 This declares the constructor,which always returns the RwLocker with `RwAccess`
 because the caller can restrict access to `ReadAccess` with 
-`.mutparam(RestrictAccess,().ty_()())`.
+`.mutparam(RestrictAccess,().ty_())`.
 
 
 //@use_codeblock:read_method,ignore
@@ -44,6 +44,8 @@ This wraps the RwLock::write method,accessible only if the ConstValue-parameter 
 This defines a Mutator Function which restricts the RwLocker to have read access 
 (instead of mutable).
 
+The `pub fn Name=FunctionType` syntax is used to delegate to another TypeFn_.
+
 //@use_codeblock:replace_with,ignore
 
 This is a function which accesses the RwLock's contents mutably,
@@ -60,14 +62,14 @@ and simply prints the contents of the RwLock.
 
 This is the start of the main function.
 
-Here we initialize locker in an `Arc` and show how both functions are callable
+Here we initialize locker in an `Arc` and show that both functions are callable
 because RwLocker is created with `RwAccess`.
 
 //@use_codeblock:main_1,ignore
 
 Here we clone the Arc,creating another handle to the value,
-changing the ConstValue-parameter from `RwAccess` to `ReadAccess`,
-and making `replace_with_default` uncallable with that Arc handle.
+changing its ConstValue-parameter from `RwAccess` to `ReadAccess`,
+note that `locker` was not affected by `restricted_locker` changing its ConstValue-parameter.
 
 
 <br><br><br><br><br><br><br><br><br><br>
@@ -243,8 +245,11 @@ fn main(){
         
         read_value( &restricted_locker );
 
-        // can't call this function.
+        // can't call this function,because restricted_locker only has read access.
         // replace_with_default( &restricted_locker );
+
+        // can call it with locker because it still has RwAccess.
+        replace_with_default( &locker );
     }
 
     //@codeblock-end:main_1

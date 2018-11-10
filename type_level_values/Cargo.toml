@@ -27,9 +27,12 @@ travis-ci = { repository =  "rodrimati1992/type_level/" }
 
 [features]
 default = ["std","serde","identity_feature"]
+# Used in generated code as an example feature.
 identity_feature=[]
+# Enables fixe sized impls for large tlists
 large_tlist=[]
 std=[]
+# If disabled,only runs the tests we are writing at the moment
 passed_tests=["priv_doctests"]
 
 # Hack used to test that certain things do not compile.

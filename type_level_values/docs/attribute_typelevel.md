@@ -8,34 +8,51 @@ The `TypeLevel` derive attribute,used to create a compile-time equivalent of a t
 
 # Generated items:
 
-All of the generated items are inside a module called type_level_\<TypeName>,
-where `<TypeName>` is the name of the type deriving TypeLevel.
+All of the generated items are inside a module called type_level_\<DerivingType>,
+where `<DerivingType>` is the name of the type deriving TypeLevel.
 
 
-Items inside type_level_\<TypeName>:
+Items inside type_level_\<DerivingType>:
 
 - \<ConstValue> :
     A type that represents compile-time values of the deriving type.<br>
-    For enums it generates as many as there are variants,
+    For enums it generates as many as there are variants.
+    <br>
+    The default name for structs is Const\<DerivingType>.
+    The default name for enum variants is <VariantName> ,the same as in the enum declaration.
+
 
 - \<ConstType>:
     A marker type representing the ConstType equivalent of the deriving type.
+    <br>
+    The default name is \<DerivingType>Type
 
 - \<Struct/Variant>Trait:
     Trait used to operate on a ConstValue in generic contexts and 
     to get the fields of the struct/variant.
+    <br>
+    The default name for structs is \<DerivingType>Trait.
+    The default name for enum variants is <VariantName>Trait.
 
 - \<Struct/Variant>FromTrait:
     To get the \<ConstValue> type from a type parameter constrained by \<Struct/Variant>Trait .
+    <br>
+    The default name for structs is \<DerivingType>FromTrait.
+    The default name for enum variants is <VariantName>FromTrait.
 
 - fields :
     A module containing field accessors.
     Used in the GetField_ / SetField_ traits to get and set the value of the field.
 
 - variants :
-    A module containing the discriminants of the type.
-    If deriving on an enum ,contains the discriminants of the enum variants.<br>
-    If deriving on a struct,contains a single discriminant.
+    A module containing the discriminants and 
+    variant name(which is a unit struct) of the type.
+    <br>
+    The default name for the discriminant of structs is \<DerivingType>\_Discr.
+    The default name for the discriminant of enum variants is <VariantName>\_Discr.
+    <br>
+    The default name for the variant name of structs is \<DerivingType>\_Variant.
+    The default name for the variant name of enum variants is <VariantName>\_Variant.
 
 
 # Attributes
@@ -74,7 +91,7 @@ Most attributes lists support these attributes:
 
 - rename_consttype:
     Renames the ConstType generated for the Type.
-    ConstType is marker type used as the type of a ConstValue,
+    ConstType is marker type used as the "type" of a ConstValue,
     in which ConstValue is the compiletime equivalent of a value.<br>
     Of the form `rename_consttype = "new_name"`,the string must be a valid identifier.
 
@@ -165,7 +182,7 @@ Valid attributes inside items(impl_name( ... )):
 
 
 - pub_trait_accessor:
-    Allows accessing the value of a private field through the <DerivingType>Trait.
+    Allows accessing the value of a private field through the \<DerivingType>Trait.
     Does not allow using GetField to access the value of the field.
 
 

@@ -1,5 +1,5 @@
 /*!
-Traits and `TypeFn`s for manipulating fields.
+Traits ,type aliases, and TypeFn_s for manipulating fields.
 
 */
 
@@ -19,7 +19,8 @@ pub trait GetField_<Field> {
     type Output;
 }
 
-/// Gets the runtime value of a field of a ConstValue.
+/// Returns the runtime type/value of the `FieldName` field by 
+/// passing the `RuntimeTy` runtime type .
 pub trait GetFieldRuntime_<Field, RuntimeType>: GetField_<Field> {
     /// The type of the runtime equivalent of `Field`.
     type Runtime;
@@ -53,12 +54,15 @@ type_fn!{
 }
 
 type_fn!{
+    /// Returns the runtime type of the `FieldName` field by 
+    /// passing the ``RuntimeTy` runtime type .
     pub fn GetFieldRuntimeOp[This,Field,RuntimeTy](This,Field,RuntimeTy)
     where[ This:GetFieldRuntime_<Field,RuntimeTy> ]
     { This::Runtime }
 }
 
-/// Returns the runtime type of a field.
+/// Returns the runtime type of the `FieldName` field by 
+/// passing the ``RuntimeTy` runtime type .
 pub type GetFieldRuntime<This, FieldName, RuntimeTy> =
     <This as GetFieldRuntime_<FieldName, RuntimeTy>>::Runtime;
 
@@ -225,12 +229,38 @@ pub type SetFields<This, FVPairs> = <This as SetFields_<FVPairs>>::Output;
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /// Set all the fields mentioned in the `Fields` list to the `Value` value .
-pub type SetFieldsTo<Struct, Fields, Value> = TypeFn<SetFieldsToOp<Value>, (Struct, Fields)>;
+///
+/// For an example of using the TypeFn_ equivalent look [here](./struct.SetFieldsToOp.html)
+pub type SetFieldsTo<Struct, Fields, Value> = TypeFn<SetFieldsToOp, (Struct, Fields,Value)>;
 
 type_fn!{
-    captures(Value)
-    /// Set all the fields mentioned in the `Fields` list to the `Value` value .
-    pub fn SetFieldsToOp[Struct,Fields](Struct,Fields)
+    /**
+    Set all the fields mentioned in the `Fields` list to the `Value` value .
+
+    # Example 
+
+    ```
+    # #[macro_use]
+    # extern crate type_level_values;
+
+    # use type_level_values::prelude::*;
+    use type_level_values::field_traits::{SetFieldsToOp};
+
+    fn main(){
+        let _:AssertEq< 
+            TypeFn<SetFieldsToOp,( 
+                (True,True,True,True,True),
+                (U0,U2),
+                False 
+            )>,
+            (False,True,False,True,True),
+        >;
+    }
+
+    ```
+
+    */
+    pub fn SetFieldsToOp[Struct,Fields,Value](Struct,Fields,Value)
     where[
         Fields:FoldL_< Struct ,ApplyNth<SetFieldOp,U2,Value>>
     ]{
@@ -241,6 +271,8 @@ type_fn!{
 type_fn!{
     /// Sets the fields of Struc with the `FVPairs` list of (FieldAccessor,Value) pairs.
     ///
+    /// For examples using the equivalent trait look [here](./trait.SetFields_.html)
+    ///
     /// `FVPairs` example:tlist![ (field::x,U10), (field::y,U5) ] .
     pub fn SetFieldsOp[Struc,FVPairs](Struc,FVPairs)
     where [ FVPairs:FoldL_<Struc,SetFieldValuePair,Output=Out> ]
@@ -250,6 +282,8 @@ type_fn!{
 type_fn!{
     captures(FVPairs)
     /// Sets the values of fields in FVPairs.
+    /// 
+    /// For examples using the equivalent trait look [here](./trait.SetFields_.html)
     ///
     /// `FVPairs` example:tlist![ (field::x,U10), (field::y,U5) ] .
     pub fn SetFieldsMt[This](This)
@@ -538,7 +572,7 @@ mod tests{
     #[test]
     fn test_set_fields_to(){
         type Test<This,Fields,To,Equals>=(
-            AssertEq<TypeFn<SetFieldsToOp<To>,(This,Fields)>,Equals>,
+            AssertEq<TypeFn<SetFieldsToOp,(This,Fields,To)>,Equals>,
             AssertEq<SetFieldsTo<This,Fields,To>,Equals>,
         );
         let _:Test<

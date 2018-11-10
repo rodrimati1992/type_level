@@ -72,7 +72,7 @@ error[E0277]: the trait bound `type_level_Point::ConstPoint<type_level_values::t
 
 ```
 
-After running the error message through the [Really long types](#really_long_types) regex,it reduces down to this:
+After running the error message through the [Really long types](#really-long-types) regex,it reduces down to this:
 
 ```text
 

@@ -363,7 +363,9 @@ macro_rules! type_fn {
     ) => {
         $(#[$attr_op])*
         /**
-        A type-level function.Implements TypeFn<> for the trait of a similar name.
+        A type-level function.
+
+        Implements TypeFn<> for the trait of a similar name.
         */
         #[allow(non_camel_case_types)]
         pub struct $op_name;
@@ -393,7 +395,13 @@ macro_rules! type_fn {
         This is defined to encourage function composition,emulating method chains.
         */
         #[allow(non_camel_case_types)]
-        pub struct $op_name<$($param $(= $def_ty )* ),*>($($param),*);
+        pub struct $op_name<$($param:?Sized $(= $def_ty )* ),*>(
+            pub $crate::prelude::VariantPhantom<(
+                $(
+                    $crate::prelude::VariantPhantom<$param>,
+                )*
+            )>
+        );
 
         #[allow(non_camel_case_types)]
         impl<$lhs$(,$param)*> $crate::type_fn::TypeFn_<$lhs> for $op_name<$($param),*>
@@ -605,7 +613,7 @@ macro_rules! type_fn {
         privacy[$($privacy:tt)*] $(#[$attr:meta])* struct $op_name:ident;
     )=>{
         $(#[$attr])*
-        pub struct $op_name<$($bound_vars $(=$bound_def)* ,)*>(
+        pub struct $op_name<$($bound_vars:?Sized $(=$bound_def)* ,)*>(
             pub $crate::prelude::VariantPhantom<(
                 $(
                     $crate::prelude::VariantPhantom<$bound_vars>,

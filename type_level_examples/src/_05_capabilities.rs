@@ -1,4 +1,4 @@
-//! This example demonstrates a zero overhead builder using a Const-parameter
+//! This example demonstrates a zero overhead builder using a ConstValue-parameter
 //! to track initialization of the fields.
 //!
 //!

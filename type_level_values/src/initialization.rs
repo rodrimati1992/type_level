@@ -21,6 +21,7 @@ pub trait InitializationValues {
 ///
 /// `FVPairs` example:tlist![ (field::x,U10), (field::y,U5) ] .
 ///
+/// For examples using the type alias equivalent look [here](./type.Construct.html)
 pub trait Construct_<FVPairs>: InitializationValues {
     type Output;
 }
@@ -206,15 +207,16 @@ fn main(){
 pub type Construct<Type, FVPairs> = <Type as Construct_<FVPairs>>::Output;
 
 
+/// The state of initialization of a field.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, TypeLevel)]
 #[typelevel(
     reexport(Variants),
     items(runtime_conv(NoImpls)),
 )]
 pub enum FieldInit {
-    #[typelevel(doc="Represents an initialized field.Used by the TypeLevel macro.")]
+    #[typelevel(doc="Represents an initialized field.Used by the TypeLevel derive macro.")]
     IsInitField(()),
-    #[typelevel(doc="Represents an uninitialized field.Used by the TypeLevel macro.")]
+    #[typelevel(doc="Represents an uninitialized field.Used by the TypeLevel derive macro.")]
     UninitField(()),
 }
 
@@ -243,8 +245,12 @@ where
 }
 
 type_fn!{
-    /// Constructs a fully initialized value from `Type::Uninitialized`,
-    /// initializing all the fields with `FVPairs`.
+    /**
+    Constructs a fully initialized value from `Type::Uninitialized`,
+    initializing all the fields with `FVPairs`.
+
+    For examples using the type alias equivalent look [here](./type.Construct.html)
+    */
     pub fn ConstructFn[Type,FVPairs](Type,FVPairs)
     where [
         Type:InitializationValues,

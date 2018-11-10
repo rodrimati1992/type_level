@@ -13,7 +13,7 @@ For more details on the user_traits module look [here](../../user_traits/index.h
 
 # Generated Items
 
-This macro generates 3 items by default (this can be overriden):
+This macro generates 3 (visible) items:
 
 - \<NewType\> (named \<TypeAlias\>\_Ty) :
     The same as the deriving type,to which all the attributes in 
@@ -22,9 +22,6 @@ This macro generates 3 items by default (this can be overriden):
     This is a separate type from the deriving type to stay forward compatible with 
     an attribute to specify phantom generic parameters,
     as in generic parameters that are not stored as values.
-
-- \<TypeMarker\>:
-    A marker type used as a stand-in for \<NewType\>
 
 - \<TypeAlias\> (the name of which is specified by the `#[mcv(Type="...")]` attribute):
     A type alias which passes the ConstValue parameter wrapped in a ConstWrapper\<\_\>,
@@ -48,8 +45,8 @@ This macro generates 3 items by default (this can be overriden):
 [- The metadata attributes:](../attribute_shared.index#metadata-attributes)
     `bound`/`attr`/`doc`.
 
-[- Attributes on a Type:](../attribute_shared.index#attributes-on-a-typevariant)
-    `skip_derive`/`print_derive`/`items`.
+[- Attributes on the deriving type:](../attribute_shared.index#attributes-on-a-typevariant)
+    `SkipDerive`/`PrintDerive`/`Items`.
 
 # Attributes
 

@@ -26,7 +26,7 @@ pub use self::assertions::{
     AssertEq_,AssertEqOp, AssertEqMt, 
     AssertEqConstType_,AssertEqConstType,AssertEqConstTypeOp,AssertEqConstTypeMt,
     AssertFunc_,AssertFuncOp,AssertFuncMt,
-    AssertThat_,AssertThatOp,
+    AssertThat_,AssertThatOp,AssertThatMt,
     AssertFnRet_,AssertFnRetOp,AssertFnRetMt,
     AssertConstType_,AssertConstTypeOp,AssertConstTypeMt,
 };

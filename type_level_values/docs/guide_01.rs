@@ -17,9 +17,6 @@ Here we define an enum with 2 variants,and a type-level equivalent with TypeLeve
 //@use_codeblock:enum-main,ignore
 
 This shows how to construct a ConstValue enum.
-Each type-level enum variant is a different type ,
-this is necessary to have type-level values.
-
 
 //@use_codeblock:struct-decl,ignore
 
@@ -32,7 +29,7 @@ Here we declare and derive the type-level version of Rectangle.
 Here we construct a type-level struct using both the struct literal syntax and 
 using the MTVAL associated constant of ConstRectangle.
 
-The PW associated constant comes from the AsConstWrapper trait,
+The CW associated constant comes from the AsConstWrapper trait,
 part of this library's prelude,
 wrapping Self in a ConstWrapper.
 <br>

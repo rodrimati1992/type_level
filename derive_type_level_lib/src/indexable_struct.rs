@@ -50,6 +50,7 @@ pub trait GetEnumIndices: Debug + Copy + PartialEq + Eq + 'static {
 #[doc(hidden)]
 pub type IndicesMap<IndexEnum> = ::std::collections::BTreeMap<&'static str, &'static [IndexEnum]>;
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! declare_indexable_struct {
     (

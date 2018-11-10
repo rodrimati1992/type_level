@@ -67,13 +67,14 @@ impl<T:?Sized> GetDiscriminant for ConstWrapper<T>{
 
 impl<T:?Sized> Sealed for ConstWrapper<T> {}
 
-/// Gets the `ConstValue` associated type from a WrapperTrait implementor.
+/// Gets the `ConstValue` associated type from a WrapperTrait.
 pub type UnwrapConst<ConstWrapper> = <ConstWrapper as WrapperTrait>::ConstValue;
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-/// ConstWrapper type for compiletime-values,which as like a PhantomData, 
-/// and delegates many trait impls to the wrapped Constant.
+/// Wrapper type for ConstValues,
+/// always implements standard library traits,
+/// delegating many trait (from type_level_values) impls to the wrapped ConstValue.
 ///
 pub struct ConstWrapper<Compiletime:?Sized>(
     VariantPhantom<Compiletime>
@@ -102,18 +103,19 @@ impl<T:?Sized> Clone for ConstWrapper<T> {
 
 //////////////////////////////////////////////////////////////////////////////////////
 
+
+/// Used to wrap a type in a ConstWrapper.
 pub trait AsConstWrapper {
+    /// Use this if you want to initialize a field of a ConstValue.
     const CW: ConstWrapper<Self> = ConstWrapper::NEW;
+    /// Use this if you want to construct a 
+    /// ConstWrapper<ConstValueParam> field on a struct deriving MutConstValue.
     const CW2: ConstWrapper<ConstWrapper<Self>> = ConstWrapper::NEW;
     const CW3: ConstWrapper<ConstWrapper<ConstWrapper<Self>>> = ConstWrapper::NEW;
 
     #[inline(always)]
+    /// Creates a ConstWrapper<Self>.
     fn to_cw(&self) -> ConstWrapper<Self> {
-        ConstWrapper::NEW
-    }
-
-    #[inline(always)]
-    fn pw_(&self) -> ConstWrapper<Self> {
         ConstWrapper::NEW
     }
 }
@@ -122,6 +124,7 @@ impl<This:?Sized> AsConstWrapper for This {}
 
 
 type_fn!{
+    /// Constructs a ConstWrapper<v> (on the type-level).
     pub fn NewConstWrapper[v:?Sized](v){ ConstWrapper<v> }
 }
 

@@ -12,7 +12,7 @@ In the case of functions the convention is to prefix type aliases with an unders
 
 #### Impl Example 1
 
-Let's implement a TypeFn_ that adds 3 numbers.
+Let's manually implement TypeFn_ for a struct,which adds 3 numbers.
 
 ```
 
@@ -48,7 +48,7 @@ The `tmp0` and `Out` generic types here are an example of this pattern.
 
 #### Impl Example 2
 
-Let's implement a TypeFn_ that compares two 8-ary tuples.
+Let's manually implement TypeFn_ for a struct,comparing two 8-ary tuples.
 
 ```
 
@@ -89,10 +89,11 @@ note that because TypeIdentity::Type has no constraints
 it forgets all traits implemented by `OriginalType`.
 
 ConstOrd_ is an example where the `generic type as type alias` pattern has downsides,
-since one has to repeat the OrderingTrait constraint .
+since one has to repeat the OrderingTrait constraint  when aliasing its Output associated type.
 
 
 #### Function example 1
+
 
 ```
 

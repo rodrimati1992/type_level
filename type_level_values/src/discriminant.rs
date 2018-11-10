@@ -116,22 +116,26 @@ pub type GetVariantOf<This>=
 
 
 type_fn!{
+    /// Extracts the integer value of a Discriminant<..>.
     pub fn UIntFromDiscriminant[N, T, I](Discriminant<N, T, I>){ I }
 }
 
 type_fn!{
+    /// Gets the Discriminant of This.
     pub fn GetDiscrOp[This](This)
     where[ This:GetDiscriminant ]
     { This::Discriminant }
 }
 
 type_fn!{
+    /// Gets the integer value of the discriminant of This.
     pub fn GetUIntDiscrOp[This](This)
     where[ This:GetDiscriminant ]
     { This::UIntDiscr }
 }
 
 type_fn!{
+    /// Gets the unit struct representing the variant of This.
     pub fn GetVariantOp[This](This)
     where[ This:GetDiscriminant ]
     { This::Variant }
