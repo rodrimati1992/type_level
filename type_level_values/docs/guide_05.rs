@@ -33,7 +33,7 @@ with a value.
 //@use_codeblock:rect_decl,ignore
 
 
-Declares a rectangle with a Const-parameter,which is a ConstFieldsMutability.
+Declares a rectangle with a ConstValue-parameter,which is a ConstFieldsMutability.
 
 //@use_codeblock:constructor,ignore
 
@@ -44,7 +44,7 @@ describing the mutability of each field.
 //@use_codeblock:set_mut,ignore
 
 
-The mutability method allows getting back the ConstFieldsMutability Const-parameter .
+The mutability method allows getting back the ConstFieldsMutability ConstValue-parameter .
 <br>
 FieldsMutabilityTrait ensures that `C` is a ConstFieldsMutability,
 and allows constructing it with the MTVAL associated constant.
@@ -53,7 +53,7 @@ The set_mutability method allows changing the mutability of the fields by
 passing in another ConstFieldsMutability.
 <br>
 //TODO:reference the chapter when it's ready.<br>
-In a later chapter we'll see a more concise way of changing the Const-parameter.
+In a later chapter we'll see a more concise way of changing the ConstValue-parameter.
 
 
 //@use_codeblock:getters,ignore
@@ -199,7 +199,7 @@ mod rectangle{
         derive(Default,Debug,Copy,Clone),
         Type="Rectangle",ConstValue="C",
     )]
-    pub struct RectangleInner<C>{
+    pub struct __Rectangle<C>{
         x:u32,
         y:u32,
         w:u32,

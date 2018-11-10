@@ -10,7 +10,7 @@ use std_::ops::Add;
 
 /// Allows lazily evaluating a function,
 ///
-/// Equivalent to creating an `impl Fn()->T`.
+/// Equivalent to `|_| function(params) `,where params can be any ammount of parameters.
 pub struct Lazy<Function, Params>(Function, Params);
 
 impl<Function, Params,_0> TypeFn_<_0> for Lazy<Function, Params>
@@ -45,6 +45,34 @@ type_fn!{
         }
     }
     ```
+
+    # Example 
+
+    Implementing a safe division function.
+
+    ```
+    # #[macro_use]
+    # extern crate type_level_values;
+
+    # use type_level_values::prelude::*;
+    use type_level_values::ops::*;
+    use type_level_values::std_ops::*;
+    use type_level_values::fn_adaptors::*;
+    
+    type SafeDiv=If<(GetRhs,IsZero),GetLhs,DivOp>;
+
+    fn main(){
+        let :AssertEq<TypeFn<SafeDiv,(U10,U0)>,U10>;
+        let :AssertEq<TypeFn<SafeDiv,(U10,U1)>,U10>;
+        let :AssertEq<TypeFn<SafeDiv,(U10,U2)>,U5>;
+        let :AssertEq<TypeFn<SafeDiv,(U10,U3)>,U3>;
+        let :AssertEq<TypeFn<SafeDiv,(U10,U4)>,U2>;
+        let :AssertEq<TypeFn<SafeDiv,(U10,U5)>,U2>;
+        let :AssertEq<TypeFn<SafeDiv,(U10,U6)>,U1>;
+    }
+    TypeFn<>
+
+    ```
     */
     pub fn If[state](state)
     where [
@@ -60,6 +88,55 @@ type_fn!{
     captures(Msg)
     /**
     Immediately causes a compile-time error with the `Msg` message.
+
+    # Example 
+
+    Implementing a division function,which panics if the denominator is 0.
+
+    ```
+    # #[macro_use]
+    # extern crate type_level_values;
+
+    # use type_level_values::prelude::*;
+    use type_level_values::ops::*;
+    use type_level_values::std_ops::*;
+    use type_level_values::fn_adaptors::*;
+
+    struct attempted_to_divide_by_zero;
+    
+    type PanicDiv=If<(GetRhs,IsZero),(GetLhs,Panic<attempted_to_divide_by_zero>),DivOp>;
+
+    fn main(){
+        // This causes a compile_time error 
+        //let :AssertEq<TypeFn<SafeDiv,(U10,U0)>,U10>;
+        let :AssertEq<TypeFn<SafeDiv,(U10,U1)>,U10>;
+        let :AssertEq<TypeFn<SafeDiv,(U10,U2)>,U5>;
+        let :AssertEq<TypeFn<SafeDiv,(U10,U3)>,U3>;
+        let :AssertEq<TypeFn<SafeDiv,(U10,U4)>,U2>;
+        let :AssertEq<TypeFn<SafeDiv,(U10,U5)>,U2>;
+        let :AssertEq<TypeFn<SafeDiv,(U10,U6)>,U1>;
+    }
+    TypeFn<>
+
+    ```
+
+    # Example of unconditioal panic
+
+    ```compile_fail
+    # #[macro_use]
+    # extern crate type_level_values;
+
+    # use type_level_values::prelude::*;
+    use type_level_values::ops::*;
+    
+    # fn main(){
+    
+    struct explicit_panic;
+    
+    let _:TypeFn<Panic<explicit_panic>,()>;
+    
+    # }
+
     */
     pub fn Panic[_0](_0)
     where[ Panicking<Msg>:TypeIdentity<Type= IsPanicking > ]

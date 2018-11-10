@@ -1,5 +1,5 @@
 /*!
-Traits for converting between type-level-values and constants/runtime values.
+Traits for converting between ConstValues and constants/runtime values.
 
 
 # Rust versions
@@ -13,7 +13,7 @@ use core_extensions::MarkerType;
 use prelude::*;
 use std_::ops::BitAnd;
 
-/// Represents the compile-time equivalent of a type,
+/// Represents the "type" of a ConstValue,
 /// eg:SignedInteger/BooleanType/OptionType/ResultType.
 pub trait ConstType {}
 
@@ -22,7 +22,7 @@ pub trait ConstValue: MarkerType + ConstTypeOf_ {}
 
 impl<This> ConstValue for This where This: MarkerType + ConstTypeOf_ {}
 
-/// The ConstType of this Const-value.
+/// The ConstType of this ConstValue.
 pub trait ConstTypeOf_ {
     ///
     type Type: ConstType;
@@ -64,7 +64,8 @@ pub trait IntoRuntime<To> {
 }
 
 #[cfg(rust_1_22)]
-/// Converts a ConstValue into a runtime value
+/// Converts a ConstValue into a constant
+/// 
 pub trait IntoConstant<To> {
     const VALUE: To;
 }
@@ -72,6 +73,7 @@ pub trait IntoConstant<To> {
 /////////////////////////////////////////////////////////////////////////////
 
 
+/// Trait alias,for ConstValues created by the TypeLevel derive macro.
 pub trait NoGetDiscriminant:
     Copy + Clone + 
     Send + Sync + 
@@ -90,7 +92,7 @@ impl<This> NoGetDiscriminant for This where
 {}
 
 
-/// Trait alias for the variants/the Const\<DerivingType> created by the TypeLevel macro.
+/// Trait alias,for ConstValues created by the TypeLevel derive macro,where no impls are disabled.
 ///
 pub trait DerivedTraits: NoGetDiscriminant + GetDiscriminant
 {}
@@ -106,6 +108,12 @@ impl<This> DerivedTraits for This where
 /////////////////////////////////////////////////////////////////////////////
 
 
-type_fn!{alias ConstTypeOfOp[This]::Type =ConstTypeOf_ }
+type_fn!{
+    /// The ConstType of this ConstValue.
+    alias ConstTypeOfOp[This]::Type =ConstTypeOf_ 
+}
 
-type_fn!{alias IntoConstTypeOp[This]::ToConst =IntoConstType_ }
+type_fn!{
+    /// The ConstType equivalent of Self.
+    alias IntoConstTypeOp[This]::ToConst =IntoConstType_ 
+}

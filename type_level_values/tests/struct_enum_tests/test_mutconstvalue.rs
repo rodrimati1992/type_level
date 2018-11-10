@@ -27,7 +27,7 @@ use type_level_values::user_traits::const_traits::*;
     ),
 
 )]
-pub struct MutWrapperInner<T:Clone=(), M:Clone=ConstWrapper<False>> 
+pub struct __MutWrapper<T:Clone=(), M:Clone=ConstWrapper<False>> 
 where   
     T:Trivial<U0>,
     T:Trivial<U1>,

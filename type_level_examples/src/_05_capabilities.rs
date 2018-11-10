@@ -1,4 +1,4 @@
-//! This example demonstrates a zero overhead builder using a Const-parameter
+//! This example demonstrates a zero overhead builder using a ConstValue-parameter
 //! to track initialization of the fields.
 //!
 //!
@@ -86,7 +86,7 @@ pub trait FieldAccessor<Field> {
     Type(name = "SideEffectful", doc = "oh hi"),
     ConstValue = "Caps"
 )]
-pub struct SideEffectfulInner<FS, EC, Caps>
+pub struct __SideEffectful<FS, EC, Caps>
 where
     Caps: WrapperTrait,
 {

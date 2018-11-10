@@ -32,6 +32,8 @@ use std_::ops::{
 #[cfg(rust_1_26)]
 use std_::ops::{RangeInclusive as StdRangeInclusive, RangeToInclusive as StdRangeToInclusive};
 
+
+/// Contains the type-level equivalent of std::ops::Range.
 pub mod range {
     use super::*;
     #[derive(TypeLevel)]
@@ -56,6 +58,7 @@ pub mod range {
 
 //////////////////////////////////////////////////////////////////////////////////
 
+/// Contains the type-level equivalent of std::ops::RangeFrom.
 pub mod range_from {
     use super::*;
 
@@ -97,6 +100,7 @@ pub mod range_from {
 
 /////////////////////////////////////////////////////////////////////////////////////
 
+/// Contains the type-level equivalent of std::ops::RangeFull.
 pub mod range_full {
     use super::*;
 
@@ -124,6 +128,7 @@ pub mod range_full {
 
 }
 
+/// Contains the type-level equivalent of std::ops::RangeTo.
 pub mod range_to {
     use super::*;
 
@@ -159,6 +164,7 @@ pub mod range_to {
 
 }
 
+/// Contains the type-level equivalent of std::ops::RangeInclusive.
 #[cfg(rust_1_26)]
 pub mod range_inclusive {
     use super::*;
@@ -199,6 +205,8 @@ pub mod range_inclusive {
 
 }
 
+
+/// Contains the type-level equivalent of std::ops::RangeToInclusive.
 #[cfg(rust_1_26)]
 pub mod range_to_inclusive {
     use super::*;

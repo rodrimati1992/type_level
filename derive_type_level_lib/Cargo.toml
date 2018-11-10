@@ -26,7 +26,7 @@ travis-ci = { repository =  "rodrimati1992/type_level/" }
 arrayvec = "0.4"
 quote = "0.6"
 proc-macro2 = "0.4"
-lazy_static = "1.0"
+lazy_static = "^1.0"
 typed-arena = "1.4"
 regex="1.0"
 

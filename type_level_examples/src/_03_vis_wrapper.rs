@@ -1,7 +1,7 @@
 //! This example demonstrates a struct that uses a const-struct to
 //! configure which fields are accessible.
 //!
-//! Rectangle\<I> is a rectangle with a Const-parameter that determines what fields are accessible.
+//! Rectangle\<I> is a rectangle with a ConstValue-parameter that determines what fields are accessible.
 //!
 
 
@@ -60,7 +60,7 @@ pub fn main_ () {
     assert_eq!(rect.h(), 400);
 
     // Uses the "ResetVis" Mutator Function internally,
-    // to reset all the fields and the Const-parameter
+    // to reset all the fields and the ConstValue-parameter
     // to their default values.
     let rect = rect.reset();
     assert_eq!(rect, rect_a);
@@ -92,7 +92,7 @@ pub mod rectangle {
         ),
         ConstValue = "I"
     )]
-    pub struct RectangleInner<I> {
+    pub struct __Rectangle<I> {
         x: u32,
         y: u32,
         w: u32,

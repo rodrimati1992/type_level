@@ -1,3 +1,7 @@
+/*!
+Where the MutConstParam trait resides.
+*/
+
 use super::*;
 
 use field_traits::GetFieldMt;
@@ -26,9 +30,9 @@ The parameters of the methods in this trait follow this pattern:
 
 - self/this: the receiver of the method,the type whose ConstValue-parameter will change.
 
-- _mutator_func : the function which mutates the ConstValue parameter of self.
+- _mutator_func : the Mutator Function which mutates the ConstValue parameter of self.
 
-- Msg : the type of the second parameter to _mutator_func .
+- Msg : the second parameter to _mutator_func .
 
 
 # Example
@@ -79,7 +83,7 @@ mod user{
     #[mcv(
         Type = "User",ConstValue = "P"
     )]
-    pub struct UserInner<P> {
+    pub struct __User<P> {
         _privilege: ConstWrapper<P>,
     }
 

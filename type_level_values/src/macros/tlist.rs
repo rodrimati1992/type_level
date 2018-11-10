@@ -1,6 +1,6 @@
 /**
 
-Type macro for a type-level-list.
+Type macro for a type-list.
 
 This macro uses takes these 2 forms:
 
@@ -109,7 +109,7 @@ macro_rules! tlist {
 
 /** 
 
-Instantiates a type-level-list,
+Instantiates a type-list,
 which is a zero-sized-type which does not contain instances of the types it lists.
 
 This macro uses takes these 2 forms:

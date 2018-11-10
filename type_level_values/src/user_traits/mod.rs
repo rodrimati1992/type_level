@@ -1,10 +1,10 @@
 /*! 
-Traits for regular types which have a Const-parameter.
+Traits for regular types which have a ConstValue-parameter.
 
 The most important items here are:
 
 - [MutConstParam](./mut_const_param/trait.MutConstParam.html):
-provides methods to mutate the Const-parameter of Self.
+provides methods to mutate the ConstValue-parameter of Self.
 
 - [MCPBounds](./mut_const_param/trait.MCPBounds.html):
 trait for the bounds of every `MutConstParam` method.
@@ -13,15 +13,14 @@ trait for the bounds of every `MutConstParam` method.
 # Glosary
 
 Mutator Function:
-    refers to a TypeFn_ that was allowed to mutate the ConstValue of 
-    a type with `impl AllowMutatorFn<Func> for TypeMarkerOf<SomeType>`.
+    refers to a TypeFn_  allowed to mutate the ConstValue of a type with 
+    `impl AllowMutatorFn<Func> for SomeType`.
 Eg:MakeInaccessible/Reset for Rectangle\<I> in type_level_examples::_03_vis_wrapper.
 
 Op:is another name for a Mutator Function.
 
 This:
-    is the common way to refer to the type that a Mutator function can mutate.
-    It always has a Const-parameter.
+    is the common way to refer to a type with a ConstValue-parameter in this module.
 Eg:Rectangle\<I> in type_level_examples::_03_vis_wrapper.
 
 

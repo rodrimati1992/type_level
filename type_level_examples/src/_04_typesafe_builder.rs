@@ -1,4 +1,4 @@
-//! This example demonstrates a zero overhead builder using a Const-parameter
+//! This example demonstrates a zero overhead builder using a ConstValue-parameter
 //! to track initialization of the fields.
 //!
 //!
@@ -59,7 +59,7 @@ type AnimalBuilder<I> = AnimalBuilder_Ty<ConstWrapper<I>>;
     Type(use_ = "AnimalBuilder"), 
     ConstValue = "I"
 )]
-pub struct AnimalBuilderInner<I>
+pub struct __AnimalBuilder<I>
 where
     I: IntoRuntime<AnimalInitialization>,
 {
@@ -79,7 +79,7 @@ where
     }
 }
 
-impl<I> Drop for AnimalBuilderInner<I>
+impl<I> Drop for AnimalBuilder_Ty<I>
 where
     I: IntoRuntime<AnimalInitialization>,
 {

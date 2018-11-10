@@ -6,7 +6,7 @@ use field_traits::*;
 use prelude::*;
 use crate_::collection_ops::{Map_};
 
-/// Trait used by the `constructor` macro to construct a fully initialized version of a value.
+/// Trait used by the `Construct` type alias to construct a fully initialized version of a value.
 ///
 /// This is automatically implemented by the `TypeLevel` derive macro.
 pub trait InitializationValues {
@@ -59,8 +59,8 @@ type_level_values::initialization::InitializationValues.
 
 Valid constructors are:
     
-- structs:\<DerivingType\>Type / \<DerivingType\>_Variant / \<DerivingTyoe\>_Uninit.
-- variants:\<VariantName\>_Variant / \<VariantName\>_Uninit.
+- structs:\<DerivingType\>Type / \<DerivingTyoe\>_Uninit.
+- variants:\<VariantName\>_Uninit.
 
 \<field_accessor> is the field accessor in the `type_level_<deriving_type>::fields` submodule.
 
@@ -106,8 +106,8 @@ fn main(){
 # Example 2:Constructing a struct with private fields.
 
 Constructing a struct with private fields requires that one uses the 
-<DerivingType>_Uninit constructor,
-<DerivingType>Type is not a constructor if any field is more private than the struct.
+\<DerivingType>_Uninit constructor,
+\<DerivingType\>Type is not a constructor if any field is more private than the struct.
 
 ```
 # #[macro_use]
@@ -178,13 +178,13 @@ use self::type_level_Operation::fields;
 
 fn main(){
 
-    let transfer:Construct<Transfer_Variant,(
+    let transfer:Construct<Transfer_Uninit,(
         (fields::type_ , u32),
     )>=Transfer::MTVAL;
 
     let _:Transfer<u32>=transfer;
 
-    let _:Construct<Loop_Variant,(
+    let _:Construct<Loop_Uninit,(
         (fields::repetitions , U10),
         (fields::sequence , tlist![
             Transfer< () >,
@@ -192,7 +192,7 @@ fn main(){
         ]),
     )>;
 
-    let _:Construct< Close_Variant ,()>;
+    let _:Construct< Close_Uninit ,()>;
 
 }
 

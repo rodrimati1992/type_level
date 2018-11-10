@@ -90,7 +90,7 @@ pub type RangedInt<Start, End> = RangedIntR<ConstRange<Start, End>>;
     derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord),
     Type = "RangedIntR", ConstValue = "R"
 )]
-pub struct RangedIntInner<R>
+pub struct __RangedInt<R>
 where
     R: WrapperTrait,
     UnwrapConst<R>: RangeTypes,

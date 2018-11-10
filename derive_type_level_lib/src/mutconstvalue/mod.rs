@@ -225,7 +225,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     };
 
     if field_tys_mentioning_const.is_empty() {
-        panic!("Const-parameter '{}' is never used", const_param_ident);
+        panic!("ConstValue-parameter '{}' is never used", const_param_ident);
     }
 
     let (_, ty_generics, where_clause) = generics.split_for_impl();
@@ -233,18 +233,37 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
 
     let mut tokens=TokenStream::new();
     
+    let ty_doc   =format!(
+        "\n# Remaining Impls\nThe remaining impls for this are on [{0}](./type.{0}.html)",
+        type_alias_ident,
+    );
 
     tokens.append_all(quote!{
         #(#[#delegated_attrs])*
         #(#[doc=#delegated_docs])*
+        #[doc=#ty_doc]
         #ast
     });
+
+    let ty_html_prefix=match ast.data {
+        syn::Data::Struct{..}=>"struct",
+        syn::Data::Enum{..}=>"enum",
+        syn::Data::Union{..}=>"union",
+    };
+
+    let alias_doc=format!(
+        "The type alias for [{0}](./{pre}.{0}.html).
+        Use this instead for everything,except for implementing Drop.",
+        name,
+        pre=ty_html_prefix,
+    );
 
     if let TypeDeclVariant::Name(_)=*type_alias {
         tokens.append_all(quote!{
             #[allow(dead_code)]
             #[allow(non_camel_case_types)]
             #attrs_type_alias
+            #[doc=#alias_doc]
             #vis type #type_alias_ident< 
                 #(#lifetimes,)*
                 #(#type_alias_ty_params,)*
@@ -252,16 +271,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
             >=#name < #type_alias_gen_params >;
         });
     }
-    tokens.append_all(quote!{
-        #vis struct #const_constructor_ident< #remaining_generics > {
-            _marker: 
-                ::type_level_values::reexports::VariantPhantom<(
-                    #( & #lifetimes () ,)*
-                    #(::type_level_values::reexports::VariantPhantom<#truncated_type_params>,)*
-                )>
-        }
-    });
-
+    
     let field_indices=&(0..field_tys_mentioning_const.len())
         .map(|i| new_ident(format!("U{}",i)) )
         .collect::<Vec<&Ident>>();
@@ -289,6 +299,14 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         #[allow(non_snake_case)]
         #[allow(non_camel_case_types)]
         mod #created_module { 
+            #[doc(hidden)]
+            pub struct #const_constructor_ident< #remaining_generics > {
+                _marker: 
+                    ::type_level_values::reexports::VariantPhantom<(
+                        #( & #lifetimes () ,)*
+                        #(::type_level_values::reexports::VariantPhantom<#truncated_type_params>,)*
+                    )>
+            }
             use super::*;
             use type_level_values::reexports::*;
             use type_level_values::user_traits::const_traits as _const_traits;

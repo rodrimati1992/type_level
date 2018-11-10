@@ -105,7 +105,7 @@ use std::ops::Range;
     derive(Debug,Copy,Clone,PartialEq,PartialOrd,Eq,Ord),
     Type="RangedUsize",ConstValue="R",
 )]
-pub struct RangedUsizeInner<R>{
+pub struct __RangedUsize<R>{
     range:ConstWrapper<R>,
     n:usize,
 }

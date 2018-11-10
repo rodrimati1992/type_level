@@ -1,18 +1,12 @@
 /*! 
 
 
-These are things that all the derive macros in the derive_type_level crate share.
-
-
-# Attributes
-
-
-All meta-lists (`word( ... )`) allow multiple (possible repeated) attributes.
+These are things that derive macros in the derive_type_level crate share.
 
 
 # Metadata attributes
 
-Most attributes lists support these attributes:
+Many attributes lists support these attributes:
 
 - bound:
     Bounds added to the generated item.<br>

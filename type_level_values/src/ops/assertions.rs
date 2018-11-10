@@ -6,7 +6,7 @@ use prelude::*;
 
 type_fn!{define_trait
     /**
-    Asserts that Self is the same type as R.
+    Asserts that Self is the same type as R.Returning Self unmodified.
     
     # Failing assertions.
 
@@ -21,11 +21,11 @@ type_fn!{define_trait
     
     */
     trait=AssertEq_ [R]
-    /// Asserts that Self is the same type as R.
+    /// Asserts that Self is the same type as R.Returning Self unmodified.
     type=AssertEq
-    /// Asserts that Self is the same type as R.
+    /// Asserts that Self is the same type as R.Returning Self unmodified.
     fn_type=AssertEqOp
-    /// Asserts that This is the same type as Rhs.
+    /// Asserts that This is the same type as Rhs.Returning This unmodified.
     method_like=AssertEqMt
 }
 
@@ -81,7 +81,7 @@ where
 
 type_fn!{define_trait
     /**
-    Asserts that Func implements `TypeFn_<Val>`,returning Val unmodified.
+    Asserts that Func implements `TypeFn_<Self>`,returning Self unmodified.
 
     # Failing assertions.
 
@@ -98,11 +98,11 @@ type_fn!{define_trait
 
     */
     trait=AssertFunc_ [Func]
-    /// Asserts that Func implements `TypeFn_<Val>`,returning Val unmodified.
+    /// Asserts that Func implements `TypeFn_<Self>`,returning Self unmodified.
     type=AssertFunc
-    /// Asserts that Func implements `TypeFn_<Val>`,returning Val unmodified.
+    /// Asserts that Func implements `TypeFn_<Self>`,returning Self unmodified.
     fn_type=AssertFuncOp
-    /// Asserts that Func implements `TypeFn_<Val>`,returning Val unmodified.
+    /// Asserts that Func implements `TypeFn_<Self>`,returning Self unmodified.
     method_like=AssertFuncMt
 }
 
@@ -156,7 +156,7 @@ where
 
 type_fn!{define_trait
     /** 
-    Asserts that `Self` is of `ConstTypeFor` ConstType
+    Asserts that `Self` is of `ConstTypeFor` ConstType,returning Self unmodified.
     
     # Failing assertions.
 
@@ -173,11 +173,11 @@ type_fn!{define_trait
 
     */
     trait=AssertConstType_ [ConstTypeFor]
-    /// Asserts that `Self` is of `ConstTypeFor` ConstType
+    /// Asserts that `Self` is of `ConstTypeFor` ConstType,returning Self unmodified.
     type=AssertConstType
-    /// Asserts that `Self` is of `ConstTypeFor` ConstType
+    /// Asserts that `Self` is of `ConstTypeFor` ConstType,returning Self unmodified.
     fn_type=AssertConstTypeOp
-    /// Asserts that `This` is of `ConstTypeFor` ConstType
+    /// Asserts that `This` is of `ConstTypeFor` ConstType,returning Self unmodified.
     method_like=AssertConstTypeMt
 }
 
@@ -196,7 +196,7 @@ where
 
 type_fn!{define_trait
     /** 
-    Asserts that `Self` satisfies the `Pred` predicate
+    Asserts that `Self` satisfies the `Pred` predicate,returning Self unmodified.
 
     # Failing assertions.
 
@@ -213,19 +213,19 @@ type_fn!{define_trait
 
     */
     trait=AssertThat_ [Pred,Msg=()]
-    /// Asserts that `Self` satisfies the `Pred` predicate
+    /// Asserts that `Self` satisfies the `Pred` predicate,returning Self unmodified.
     type=AssertThat
-    /// Asserts that `Self` satisfies the `Pred` predicate
+    /// Asserts that `Self` satisfies the `Pred` predicate,returning Self unmodified.
     fn_type=AssertThatOp
-    /// Asserts that `This` satisfies the `Pred` predicate
+    /// Asserts that `This` satisfies the `Pred` predicate,returning Self unmodified.
     method_like=AssertThatMt
 }
 
-impl<This,Pred,Out> TypeFn_<(This,Pred)> for AssertThatOp
+impl<This,Pred> TypeFn_<(This,Pred)> for AssertThatOp
 where 
-    This:AssertThat_<Pred,Output=Out>
+    This:AssertThat_<Pred>
 {
-    type Output=Out;
+    type Output=Self;
 }
 
 // type_fn!{
@@ -243,7 +243,7 @@ where
         AssertEqMt<True>,
     ):TypeFn_<This>,
 {
-    type Output=This;
+    type Output=Self;
 }
 
 
@@ -254,13 +254,13 @@ pub struct AssertionFailure<Cond,Msg>(VariantPhantom<(Cond,Msg)>);
 pub struct Message<Msg>(VariantPhantom<Msg>);
 
 /// The predicate and the value passed to it,
-/// to evaluate the condition of  an assertion for AssertThat*.
+/// to evaluate the condition of  an assertion in AssertThat*.
 pub struct PredicateAndValue<Pred,Val>(VariantPhantom<(Pred,Val)>);
 
 
 type_fn!{
     captures(Pred,This,Msg)
-    pub fn 
+    fn 
         AssertThatHelper(False)
         where [
             Msg:TypeFn_<()>,

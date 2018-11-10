@@ -1,3 +1,7 @@
+/*!
+Contains type-level stuff for tuples.
+*/
+
 use core_extensions::SelfOps;
 
 use crate_::new_types::TListType;
@@ -19,7 +23,7 @@ use prelude::*;
 mod tests;
 mod tuple_impls;
 
-/// Marker type representing tuples up to 32 elements.
+/// Marker type representing tuples up to 16 elements.
 #[derive(Debug, Default, Copy, Clone)]
 pub struct TupleType;
 
@@ -29,11 +33,12 @@ mod sealed {
 }
 use self::sealed::Sealed;
 
+/// Allows constraining a generic parameter to be a tuple.
 pub trait TupleTrait: Sealed {}
 
 impl ConstType for TupleType {}
 
-
+/// The discriminant for all tuples.
 pub type Tuple_Discr=Discriminant<TupleType, TupleType, U0>;
 
 macro_rules! impl_tuple_trait {

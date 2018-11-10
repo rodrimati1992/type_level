@@ -17,7 +17,9 @@ pub trait IntegerConsts{
     type Zero;
     type One;
 
+    // this is an OptionType,since there may not be a minimum value.
     type Min;
+    // this is an OptionType,since there may not be a maximum value.
     type Max;
 }
 
@@ -35,19 +37,19 @@ where
 
 
 type_fn!{define_trait
-    /// Subtracts Rhs from Lhs returning 0 if Lhs <= Rhs.
+    /// Subtracts Rhs from Lhs ,stopping at te minimum value..
     ///
     /// Equivalent to `|lhs,rhs| lhs.saturating_sub(rhs) `
     trait=SatSub_ [R]
-    /// Subtracts Rhs from Lhs returning 0 if Lhs <= Rhs.
+    /// Subtracts Rhs from Lhs ,stopping at te minimum value..
     ///
     /// Equivalent to `|lhs,rhs| lhs.saturating_sub(rhs) `
     type=SatSub
-    /// Subtracts Rhs from Lhs returning 0 if Lhs <= Rhs.
+    /// Subtracts Rhs from Lhs ,stopping at te minimum value..
     ///
     /// Equivalent to `|lhs,rhs| lhs.saturating_sub(rhs) `
     fn_type=SatSubOp
-    /// Subtracts Rhs from Lhs returning 0 if Lhs <= Rhs.
+    /// Subtracts Rhs from Lhs ,stopping at te minimum value..
     ///
     /// Equivalent to `|lhs,rhs| lhs.saturating_sub(rhs) `
     method_like=SatSubMt
@@ -136,7 +138,7 @@ pub type IsOne<N>=
     TypeFn<IsOneOp,N>;
 
 type_fn!{
-    /// Returns whether Val is 1.
+    /// Returns whether N is 1.
     pub fn IsOneOp[N](N)
     where[
         N:IntegerConsts<One=One>,
@@ -148,16 +150,16 @@ type_fn!{
 }
 
 
-/// Returns whether N is 0.
+/// Returns whether N is the minimum value of the type.
 pub type IsMin<N>=
     TypeFn<IsMinOp,N>;
 
-/// Returns whether N is 1.
+/// Returns whether N is the maximum value of the type.
 pub type IsMax<N>=
     TypeFn<IsMaxOp,N>;
 
 type_fn!{
-    /// Returns whether Val is the mimimum value of the type.
+    /// Returns whether N is the mimimum value of the type.
     pub fn IsMinOp[N](N)
     where[
         N:IntegerConsts<Min=Min>,
@@ -169,7 +171,7 @@ type_fn!{
 }
 
 type_fn!{
-    /// Returns whether Val is 1.
+    /// Returns whether N is the maximum value of the type.
     pub fn IsMaxOp[N](N)
     where[
         N:IntegerConsts<Max=Max>,
@@ -182,11 +184,11 @@ type_fn!{
 
 
 
-/// Gets the value for 0 as defined by the type of N.
+/// Gets the value for 0 as defined by N.
 pub type Get0<N>=TypeFn<Get0Op,N>;
 
 type_fn!{
-    /// Gets the value for 0 as defined by the type of N.
+    /// Gets the value for 0 as defined by N.
     pub fn Get0Op[N](N)
     where[ N:IntegerConsts<Zero=Out> ]
     { let Out;Out }
@@ -194,21 +196,21 @@ type_fn!{
 
 
 
-/// Gets the value for 1 as defined by the type of N.
+/// Gets the value for 1 as defined by N.
 pub type Get1<N>=TypeFn<Get1Op,N>;
 
 type_fn!{
-    /// Gets the value for 1 as defined by the type of N.
+    /// Gets the value for 1 as defined by N.
     pub fn Get1Op[N](N)
     where[ N:IntegerConsts<One=Out> ]
     { let Out;Out }
 }
 
-/// Gets the value for 0 as defined by the type of N.
+/// Gets the minimum value as defined by N.
 pub type GetMin<N>=TypeFn<GetMinOp,N>;
 
 type_fn!{
-    /// Gets the value for the minimum value as defined by the type of N.
+    /// Gets the minimum value as defined by N.
     pub fn GetMinOp[N](N)
     where[ N:IntegerConsts<Min=Out> ]
     { let Out;Out }
@@ -216,11 +218,11 @@ type_fn!{
 
 
 
-/// Gets the value for 1 as defined by the type of N.
+/// Gets the maximum value as defined by N.
 pub type GetMax<N>=TypeFn<GetMaxOp,N>;
 
 type_fn!{
-    /// Gets the value for the maximum value as defined by the type of N.
+    /// Gets the maximum value as defined by N.
     pub fn GetMaxOp[N](N)
     where[ N:IntegerConsts<Max=Out> ]
     { let Out;Out }

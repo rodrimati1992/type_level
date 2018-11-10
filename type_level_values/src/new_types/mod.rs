@@ -1,6 +1,6 @@
 /*!
 
-Type-level-values declared by this library.
+ConstValues declared in this library.
 
 */
 

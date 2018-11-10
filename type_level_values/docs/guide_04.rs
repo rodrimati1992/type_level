@@ -29,12 +29,12 @@ which requires passing both the wrapped value and thet constant.
 
 //@use_codeblock:impl_usedebug,ignore
 
-This is the Debug implementation used if the Const-parameter is UseDebug.
+This is the Debug implementation used if the ConstValue-parameter is UseDebug.
 Notice that it requires `T:fmt::Debug`.
 
 //@use_codeblock:impl_usedisplay,ignore
 
-This is the Debug implementation used if the Const-parameter is UseDisplay.
+This is the Debug implementation used if the ConstValue-parameter is UseDisplay.
 Notice that it requires `T:fmt::Display`.
 
 //@use_codeblock:main,ignore
@@ -96,7 +96,7 @@ pub enum DebugImpl{
     derive(Copy,Clone),
     Type="DebugWrapper",ConstValue="C" ,
 )]
-pub struct DebugWrapperInner<T,C>{
+pub struct __DebugWrapper<T,C>{
     pub value:T,
     impl_:ConstWrapper<C>,
 }

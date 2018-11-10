@@ -104,7 +104,7 @@ pub use self::type_level_CFParams::{CFParamsTrait, ConstCFParams};
     Type = "CondType", 
     ConstValue = "C"
 )]
-pub struct CondTypeInner<T, C> {
+pub struct __CondType<T, C> {
     _marker: ConstWrapper<C>,
     value: T,
 }

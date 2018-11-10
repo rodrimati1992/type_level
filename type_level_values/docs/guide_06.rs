@@ -64,7 +64,7 @@ This decares the setter methods for each field in the builder.
 //@use_codeblock:build_fn,ignore
 
 This constructs the TetrisPieces,the unwraps are fine since this 
-type already checks whether all the fields are initialized with the Const-parameter.
+type already checks whether all the fields are initialized with the ConstValue-parameter.
 
 The `C:TypeIdentity<Type= AllInitialized >` constraint in the method 
 is an equality constraint,requiring that the ConstValue-parameter be AllInitialized,
@@ -184,7 +184,7 @@ pub type AllInitialized=SetField<
     derive(Clone,Default, Debug),
     Type = "TetrisBuilder",ConstValue = "C",
 )]
-pub struct TetrisBuilderInner<C>{
+pub struct __TetrisBuilder<C>{
     l_pieces:Option<usize>,
     i_pieces:Option<usize>,
     z_pieces:Option<usize>,

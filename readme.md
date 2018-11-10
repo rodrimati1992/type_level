@@ -125,7 +125,7 @@ macro_rules! declare_setter {( $($field:ident),* $(,)* ) => (
         Type = "TetrisBuilder",
         ConstValue = "C",
     )]
-    pub struct TetrisBuilderInner<C>{
+    pub struct __TetrisBuilder<C>{
         $( $field:Option<usize>, )*
         initialization:ConstWrapper<C>,
     }

@@ -1,4 +1,4 @@
-//! Module containing the AllowedConstructors type and aliases for its possible values.
+//! Contains the AllowedConstructors type and aliases for its possible values.
 //!
 
 use prelude::*;
@@ -12,8 +12,7 @@ use prelude::*;
     items(runtime_conv(NoImpls)),
     doc = "\
         This is used when defining Mutator Functions to determine 
-        the methods that are enabled on 
-        [MutConstParam](./mut_const_param_ext/struct.MutConstParam.html).
+        the methods that are enabled on the MutConstParam trait.
     "
 )]
 pub struct AllowedConstructors {
@@ -28,7 +27,8 @@ pub struct AllowedConstructors {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Contains aliases for different values of
-/// [ConstAllowedConstructors](../struct.ConstAllowedConstructors.html).
+/// [ConstAllowedConstructors
+/// ](../type_level_AllowedConstructors/struct.ConstAllowedConstructors.html).
 pub mod allowed_self_constructors {
 
     use super::type_level_AllowedConstructors::{
