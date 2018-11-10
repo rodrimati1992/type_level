@@ -235,7 +235,7 @@ The automatic impls are:
     This derive macro generates a distinct variant for every struct type/enum variant.
 
 - AsTList:
-    Converts a ConstValue to a `TList` , a type-level list type .
+    Converts a ConstValue to a `TList` , a type-list type .
     Used for deriving some traits.
 
 

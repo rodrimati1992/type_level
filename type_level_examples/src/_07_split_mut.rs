@@ -227,7 +227,7 @@ pub mod rectangle {
         ),
         ConstValue = "I",
     )]
-    pub struct RectangleInner<I, P> {
+    pub struct __Rectangle<I, P> {
         x: u32,
         y: u32,
         w: u32,
@@ -280,7 +280,7 @@ pub mod rectangle {
                 /// to the fields.
                 ///
                 /// The first mutable reference has access to
-                /// the fields mentioned in the `Fields` type-level-list,
+                /// the fields mentioned in the `Fields` type-list,
                 /// while the second reference has access to the remaining fields
                 /// that were accessible.
                 ///

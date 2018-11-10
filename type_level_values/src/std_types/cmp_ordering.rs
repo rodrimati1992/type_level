@@ -1,3 +1,7 @@
+/*!
+Contains the type-level equivalent of a std::cmp::Ordering.
+*/
+
 use prelude::*;
 
 use ops::const_from::ConstFrom_;

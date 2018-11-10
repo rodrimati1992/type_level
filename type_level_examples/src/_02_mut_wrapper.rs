@@ -33,7 +33,7 @@ use self::type_level_Mutability::{Immutable, MutabilityTrait, Mutable};
     Type="MutabilityWrapper",
     ConstValue ="M",
 )]
-pub struct MutabilityWrapperInner<T, M> {
+pub struct __MutabilityWrapper<T, M> {
     value: T,
     mutability: M,
 }

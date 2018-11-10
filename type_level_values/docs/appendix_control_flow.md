@@ -15,7 +15,7 @@ For information on type-level-functions go:
 
 # Sequences
 
-Sequences are tuples or type-level-lists where every element implements TypeFn_ and
+Sequences are tuples or type-lists where every element implements TypeFn_ and
 the result of evaluating every function if fed to the next function.
 This,in combination with the Piped_ trait , \*Mt functions and unary \*Op functions,
 allows emulating method chains.

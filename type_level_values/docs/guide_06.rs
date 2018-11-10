@@ -193,7 +193,7 @@ pub type AllInitialized=SetField<
     derive(Clone,Default, Debug),
     Type = "TetrisBuilder",ConstValue = "C",
 )]
-pub struct TetrisBuilderInner<C>{
+pub struct __TetrisBuilder<C>{
     l_pieces:Option<usize>,
     i_pieces:Option<usize>,
     z_pieces:Option<usize>,

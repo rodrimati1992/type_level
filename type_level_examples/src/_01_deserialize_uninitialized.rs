@@ -39,7 +39,7 @@ pub type DeserializeSortedList<T> = SortedList<T, Uninitialized>;
     derive(Debug, PartialEq, Eq, PartialOrd, Ord),
     Type= "SortedList", ConstValue = "I=Initialized",
 )]
-pub struct SortedListInner<T, I> {
+pub struct __SortedList<T, I> {
     list: Vec<T>,
 
     const_value: I,

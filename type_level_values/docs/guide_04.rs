@@ -96,7 +96,7 @@ pub enum DebugImpl{
     derive(Copy,Clone),
     Type="DebugWrapper",ConstValue="C" ,
 )]
-pub struct DebugWrapperInner<T,C>{
+pub struct __DebugWrapper<T,C>{
     pub value:T,
     impl_:ConstWrapper<C>,
 }

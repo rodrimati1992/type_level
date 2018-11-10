@@ -13,8 +13,8 @@ trait for the bounds of every `MutConstParam` method.
 # Glosary
 
 Mutator Function:
-    refers to a TypeFn_  allowed to mutate the ConstValue by
-    a type with `impl AllowMutatorFn<Func> for TypeMarkerOf<SomeType>`.
+    refers to a TypeFn_  allowed to mutate the ConstValue of a type with 
+    `impl AllowMutatorFn<Func> for SomeType`.
 Eg:MakeInaccessible/Reset for Rectangle\<I> in type_level_examples::_03_vis_wrapper.
 
 Op:is another name for a Mutator Function.

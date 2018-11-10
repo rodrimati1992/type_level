@@ -1,5 +1,5 @@
 /*!
-Some example TypeFn_,alongside examples of how to use them with MutConstParam
+Helper Mutator Functions
 */
 
 /**
@@ -16,7 +16,7 @@ mutator_fn!{
     type AllowedSelf=(allowed_self_constructors::All)
 
     /**
-    A function which ignores the current ConstValue parameter,
+    A mutator function which ignores the current ConstValue parameter,
     returning the second parameter.
 
     Equivalent to `|current,new| new`.

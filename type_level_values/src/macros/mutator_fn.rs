@@ -99,7 +99,7 @@ pub enum Mutability{
 
 #[derive(MutConstValue)]
 #[mcv( Type="MutWrapper", ConstValue="Mut" )]
-pub struct MutWrapperInner<T,Mut>{
+pub struct __MutWrapper<T,Mut>{
     _mutability:ConstWrapper<Mut>,
     value:T,
 }
@@ -186,7 +186,7 @@ pub mod bounded_channel{
     #[mcv(
         Type = "ChannelEnd", ConstValue= "S"
     )]
-    pub struct ChannelEndInner<Chan, S: WrapperTrait> {
+    pub struct __ChannelEnd<Chan, S: WrapperTrait> {
         channel: Chan,
         #[allow(dead_code)]
         state: ConstWrapperFromTrait<S>,

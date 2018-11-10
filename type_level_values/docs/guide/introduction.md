@@ -100,7 +100,7 @@ pub enum Mutability{
     derive(Debug,Copy,Clone),
     Type="Wrapper",ConstValue ="Mut",
 )]
-pub struct WrapperInner<T,Mut>{
+pub struct __Wrapper<T,Mut>{
     value:T,
     mutability:ConstWrapper<Mut>,
 }

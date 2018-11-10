@@ -128,7 +128,7 @@ pub enum Access{
     derive(Debug),
     Type = "RwLocker",ConstValue = "C",
 )]
-pub struct RwLockerInner<T,C>{
+pub struct __RwLocker<T,C>{
     lock:RwLock<T>,
     access:ConstWrapper<C>,
 }

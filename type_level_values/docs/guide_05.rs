@@ -196,7 +196,7 @@ mod rectangle{
         derive(Default,Debug,Copy,Clone),
         Type="Rectangle",ConstValue="C",
     )]
-    pub struct RectangleInner<C>{
+    pub struct __Rectangle<C>{
         x:u32,
         y:u32,
         w:u32,

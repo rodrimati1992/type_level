@@ -105,7 +105,7 @@ multiple functions and producing a type which is itself a function.
 
 The ways to compose functions are:
 
-- Having a tuple/type-level-list entirely composed of TypeFn_,
+- Having a tuple/type-list entirely composed of TypeFn_,
     all elements of which take the return value of the previous TypeFn_.
 
 - Using a function adaptor from type_level_value::fn_adaptors.
@@ -248,7 +248,7 @@ fn main(){
 
 # Sequencing
 
-Sequences are tuples or type-level-lists where every element implements TypeFn_ and
+Sequences are tuples or type-lists where every element implements TypeFn_ and
 the return value of every function is fed to the next function.
 
 

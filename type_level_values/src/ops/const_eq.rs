@@ -2,23 +2,32 @@ use crate_::ops::{VariantAsTList, VariantAsTList_};
 use prelude::*;
 
 type_fn!{define_trait
-    /// Compares Self with R for equality,returning True/False.
+    /// Compares Self with R for equality,
+    /// returning True if both are equal,otherwise returning False.
     trait=ConstEq_ [R]
-    /// Compares Self with R for equality,returning True/False.
+    /// Compares Self with R for equality,
+    /// returning True if both are equal,otherwise returning False.
     type=ConstEq
-    /// Compares Self with R for equality,returning True/False.
+    /// Compares Self with R for equality,
+    /// returning True if both are equal,otherwise returning False.
     fn_type=ConstEqOp
-    /// Compares Self with R for equality,returning True/False.
+    /// Compares Self with R for equality,
+    /// returning True if both are equal,otherwise returning False.
     method_like=ConstEqMt
 }
 
 type_fn!{define_trait
-    /// Compares Self with R for inequality,returning True/False.
+    /// Compares Self with R for inequality,
+    /// returning False if both are equal,otherwise returning True.
     trait=ConstNE_ [R]
-    /// Compares Self with R for inequality,returning True/False.
+    /// Compares Self with R for inequality,
+    /// returning False if both are equal,otherwise returning True.
     type=ConstNE
-    /// Compares Self with R for inequality,returning True/False.
+    /// Compares Self with R for inequality,
+    /// returning False if both are equal,otherwise returning True.
     fn_type=ConstNEOp
+    /// Compares Self with R for inequality,
+    /// returning False if both are equal,otherwise returning True.
     method_like=ConstNEMt
 }
 

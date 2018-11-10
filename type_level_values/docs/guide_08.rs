@@ -357,7 +357,7 @@ pub type InitialGame=Construct<GameType,(
     derive(Copy,Clone,Debug),
     Type="ArcadeMachine",ConstValue ="G",
 )]
-pub struct ArcadeMachineInner<G>(pub ConstWrapper<G>);
+pub struct __ArcadeMachine<G>(pub ConstWrapper<G>);
 
 //@codeblock-end  :arcade-machine-struct
 

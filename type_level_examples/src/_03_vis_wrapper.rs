@@ -92,7 +92,7 @@ pub mod rectangle {
         ),
         ConstValue = "I"
     )]
-    pub struct RectangleInner<I> {
+    pub struct __Rectangle<I> {
         x: u32,
         y: u32,
         w: u32,

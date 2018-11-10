@@ -1,4 +1,4 @@
-//! Traits implemented by the MutConstValue derive macro.
+//! Traits implemented by the MutConstValue derive macro,and the mutator_fn macro.
 //!
 
 use super::*;
@@ -149,7 +149,7 @@ use type_level_values::user_traits::ReplaceWithParamFn;
     derive(Debug,Copy,Clone,Default),
     Type= "ValueWrapper", ConstValue = "I"
 )]
-pub struct ValueWrapperInner<T,I> {
+pub struct __ValueWrapper<T,I> {
     pub value:T,
     pub marker: I,
 }
@@ -235,6 +235,7 @@ where
 {}
 
 /// Asserts that the ConstConstructor of Self is the same as the one of Other.
+#[doc(hidden)]
 pub trait SameConstConstructor<Other: ?Sized> {}
 
 impl<This: ?Sized, Other: ?Sized> SameConstConstructor<Other> for This
@@ -249,7 +250,7 @@ where
 The attributes for a mutator function.
 
 It is necessary to implement this directly on the function because otherwise Rust 
-doesn't know the value of SelfConstructors in generic methods.
+doesn't know the value of AllowedSelf in generic methods.
 */
 pub trait MutatorFnAttrs{
     /**
@@ -291,6 +292,11 @@ pub trait AllowMutatorFn<Func>{}
 
 
 type_fn!{
+    /**
+    Gets the value of 
+    [\<Self as MutatorFnAttrs\>::AllowedSelf
+    ](./trait.MutatorFnAttrs.html#associatedtype.AllowedSelf).
+    */
     pub fn GetAllowedSelfOp[Func](Func)
     where[ Func:MutatorFnAttrs ]
     { Func::AllowedSelf }

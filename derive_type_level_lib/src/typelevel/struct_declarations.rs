@@ -101,10 +101,10 @@ pub(crate) struct StructDeclaration<'a>{
     pub(crate) name:&'a Ident,
     pub(crate) uninitialized_ident:&'a Ident,
 
+    pub(crate) variant_str:&'a str,
     pub(crate) type_trait_docs  :&'a str,
     pub(crate) with_runtime_docs:&'a str,
 
-    pub(crate) from_trait_ident:&'a Ident,
     pub(crate) trait_ident:&'a Ident,
     pub(crate) wr_trait_ident:&'a Ident,
     pub(crate) variant_marker_ident:&'a Ident,
@@ -172,6 +172,9 @@ impl<'a> StructDeclarations<'a>{
         let alloc_ident=|ident:Ident|->&'a Ident{
             arenas.idents.alloc(ident)
         };
+        let alloc_str=|s|->&'a str{
+            arenas.strings.alloc(s) 
+        };
         let ident_from=|ident:&str|->&'a Ident{
             alloc_ident(Ident::new(ident,name.span()))
         };
@@ -208,7 +211,7 @@ impl<'a> StructDeclarations<'a>{
         let type_marker_struct=outer_attr_sett.renames.const_type.clone()
             .unwrap_or_else(|| ident_from(&format!("{}Type",name)) );
 
-        let type_trait_docs:&'a str=format!("A type-level version of `{}`.",name)
+        let type_trait_docs:&'a str=format!("A trait equivalent of `{}`.",name)
             .piped(|s| arenas.strings.alloc(s) );
 
         let enum_trait:Option<&'a Ident>=ds.enum_.as_ref().map(|_|{
@@ -371,18 +374,25 @@ impl<'a> StructDeclarations<'a>{
                         .unwrap_or_else(|| ident_from(&format!("Const{}",variant.name))),
             };
             
-            let type_str=match ds.enum_or_struct {
+            let variant_str=match ds.enum_or_struct {
                 EnumOrStruct::Enum  =>format!("the `{}::{}` variant",ds.name,variant.name),
                 EnumOrStruct::Struct=>format!("the `{}` type",variant.name),
-            };
+            }.piped(alloc_str);
 
-            let type_trait_docs=format!("A type-level version of {}.",type_str)
-                .piped(|s| arenas.strings.alloc(s) );
+            let type_trait_docs=format!(
+                "For using [{name}](./struct.{name}.html) as a generic parameter
+                 (represents fields as associated types).",
+                name=name
+            ).piped(alloc_str);
 
             let with_runtime_docs=format!(
-                "A type-level version of {} with access to its generic parameters.",
-                type_str
-            ).piped(|s| arenas.strings.alloc(s) );
+                "For using [{name}](./struct.{name}.html) as a generic parameter
+                 (represents fields as associated types).
+
+                With the same generic parameters as {ds_name}.",
+                name=name,
+                ds_name=ds.name
+            ).piped(alloc_str);
 
             let uninitialized_ident=
                 ident_from(&format!("{}_Uninit",variant_name));
@@ -395,9 +405,9 @@ impl<'a> StructDeclarations<'a>{
                 ident_from(&format!("{}_Discr",variant_name));
             let variant_marker_ident=
                 ident_from(&format!("{}_Variant",variant_name));
-            let from_trait_ident=ident_from(&format!("{}FromTrait",variant_name));
             declarations.push(StructDeclaration{
                 name,
+                variant_str,
                 type_trait_docs,
                 with_runtime_docs,
                 uninitialized_ident,
@@ -406,7 +416,6 @@ impl<'a> StructDeclarations<'a>{
                 variant_marker_ident,
                 discriminant_ident,
                 variant,
-                from_trait_ident,
                 attribute_settings:inner_attr_sett,
                 generics  ,
                 generics_2,
@@ -511,6 +520,15 @@ impl<'a> ToTokens for StructDeclarations<'a>{
         let enum_trait_doc=self.enum_trait_doc;
 
         let type_docs=&self.attribute_settings.attrs.docs;
+        let auto_type_docs=String::new().mutated(|d|{
+            use std::fmt::Write;
+            d.push_str("The ConstType of ");
+            let len_sub1=self.declarations.len().saturating_sub(1);
+            for (i,decl) in self.declarations.iter().enumerate() {
+                write!(d,"[{name}](./struct.{name}.html)",name=decl.name).drop_();
+                if i!=len_sub1 { d.push('/'); }
+            }
+        });
 
         let priv_suffix=self.priv_param_suffix();
 
@@ -576,6 +594,7 @@ impl<'a> ToTokens for StructDeclarations<'a>{
             #priv_struct_reexport
 
             #(#[doc= #type_docs ])*
+            #[doc= #auto_type_docs ]
             #[derive(Copy,Clone)]
             #vis struct #type_marker_struct;
 
@@ -604,6 +623,10 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                 pub struct All;
             }
 
+            /**
+            Contains field accessors for all variants
+            (Structs are implicitly enums with 1 variant).
+            */
             pub mod fields{
                 #vis_kind_submod use super::__fields::{
                     #(#pub_fields,)*
@@ -657,14 +680,28 @@ impl<'a> ToTokens for StructDeclarations<'a>{
             let field_vis=declaration.fields.iter()
                 .map(|x|x.vis_kind.submodule_level(1));
 
+            let variant_docs=format!(
+                "The ConstValue equivalent of {}",
+                declaration.variant_str
+            );
+            
+            let uninit_docs=format!(
+                "An uninitialized [{name}](./struct.{name}.html).\n\
+                 To initialize it use the Construct type alias,included in the prelude.\
+                ",
+                name=s_name
+            );
+
             tokens.append_all(quote!{
                 
+                #[doc=#uninit_docs]
                 #priv_field_vis_submod type #uninitialized_ident=
                     #s_name < #(#generics_voided,)* #priv_suffix> ;
 
                 #item_attrs
                 #( #[doc=#item_docs] )*
                 #( #[derive(#(#additional_derives,)* )] )*
+                #[doc=#variant_docs]
                 #vis struct #s_name<
                     #(#generics_0,)* 
                     #priv_suffix

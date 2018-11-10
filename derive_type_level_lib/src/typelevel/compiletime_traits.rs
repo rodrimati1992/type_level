@@ -113,7 +113,6 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
             let trait_ident=&struct_.trait_ident;
             // let trait_ident=struct_.fields.is_empty().if_false(||&struct_.trait_ident);
             let trait_ident_rep=iter::repeat(&struct_.trait_ident);
-            let from_trait_ident=&struct_.from_trait_ident;
             let generics_fn=||struct_.fields.iter().map(|x|x.generic);
 
 
@@ -364,16 +363,6 @@ impl<'a> ToTokens for CompiletimeTraits<'a>{
                         type #field_names_e=#generics_c ;
                     )*
                 }
-
-                #vis type #from_trait_ident<This>=
-                    IgnoreFirst<This,
-                        #struct_name<
-                            #(
-                                <This as #trait_ident_rep>::#field_names_f ,
-                            )*
-                            #priv_suffix
-                        >
-                    >;
 
                 impl<#generics> Sealed for #struct_name<#generics #priv_suffix> {}
                 

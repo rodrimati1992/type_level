@@ -1,3 +1,6 @@
+/*!
+Contains the type-level equivalent of a std::option::Option.
+*/
 use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
@@ -46,8 +49,10 @@ pub enum Option<T> {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 type_fn!{
+    /// Constructs a Some_<v>
     pub fn NewSome[v](v){ Some_<v> }
 }
+/// Constructs a None_
 pub type NewNone=Const<None_>;
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -209,11 +214,13 @@ impl<O> BitAnd<O> for None_ {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 type_fn!{
+    /// Returns wether the OptionType parameter is a Some_.
     pub fn IsSome(None_){False}
            IsSome[T](Some_<T>){True}
 }
 
 type_fn!{
+    /// Returns wether the OptionType parameter is a None_.
     pub fn IsNone(None_){True}
            IsNone[T](Some_<T>){False}
 }

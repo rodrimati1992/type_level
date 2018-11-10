@@ -313,9 +313,51 @@ type_fn!{define_trait
     /** 
     Processes the collection incrementally from the start,
     starting with Defaultval and the first element,
-    returning early when Func returns a value that converts to TFBreak like Err_<_>/None_,
+    returning early when Func returns a value that converts to TFBreak like Err\_<\_>/None\_,
     
     If the collection is empty it must return TFVal<DefaultVal>.
+
+    # Example
+
+    ```
+
+    # #[macro_use]
+    # extern crate type_level_values;
+
+    # use type_level_values::prelude::*;
+    use type_level_values::ops::*;
+    use type_level_values::collection_ops::*;
+
+    fn main(){
+        struct NotAnInteger;
+        
+        let _:AssertEq<
+            TryFoldL<tlist![ U1 ],U6,SafeSubOp>,
+            TFVal<U5>
+        >;
+        let _:AssertEq<
+            TryFoldL<tlist![ U1,U2 ],U6,SafeSubOp>,
+            TFVal<U3>
+        >;
+        let _:AssertEq<
+            TryFoldL<tlist![ U1,U2,U3 ],U6,SafeSubOp>,
+            TFVal<U0>
+        >;
+        let _:AssertEq<
+            TryFoldL<tlist![ U1,U2,U3,U1, ],U6,SafeSubOp>,
+            TFBreak<None_>
+        >;
+        let _:AssertEq<
+            TryFoldL<tlist![ U1,U2,U3,U1,NotAnInteger ],U6,SafeSubOp>,
+            TFBreak<None_>
+        >;
+        
+
+    }
+
+    ```
+
+
     */
     trait=TryFoldL_ [DefaultVal,Func]
     type=TryFoldL
@@ -327,9 +369,52 @@ type_fn!{define_trait
     /** 
     Processes the collection incrementally from the end,
     starting with Defaultval and the last element,
-    returning early when Func returns a value that converts to TFBreak like Err_<_>/None_,
+    returning early when Func returns a value that converts to TFBreak like Err\_<\_>/None\_,
     
     If the collection is empty it must return TFVal<DefaultVal>.
+
+    # Example
+
+    ```
+
+    # #[macro_use]
+    # extern crate type_level_values;
+
+    # use type_level_values::prelude::*;
+    use type_level_values::ops::*;
+    use type_level_values::collection_ops::*;
+
+    fn main(){
+            
+        struct NotAnInteger;
+
+        let _:AssertEq<
+            TryFoldR<tlist![ U1 ],U6,SafeSubOp>,
+            TFVal<U5>
+        >;
+        let _:AssertEq<
+            TryFoldR<tlist![ U1,U2 ],U6,SafeSubOp>,
+            TFVal<U3>
+        >;
+        let _:AssertEq<
+            TryFoldR<tlist![ U1,U2,U3 ],U6,SafeSubOp>,
+            TFVal<U0>
+        >;
+        let _:AssertEq<
+            TryFoldR<tlist![ U1,U1,U2,U3 ],U6,SafeSubOp>,
+            TFBreak<None_>
+        >;
+        let _:AssertEq<
+            TryFoldR<tlist![ NotAnInteger,U1,U1,U2,U3 ],U6,SafeSubOp>,
+            TFBreak<None_>
+        >;
+
+        
+
+    }
+
+    ```
+
     */
     trait=TryFoldR_ [DefaultVal,Func]
     type=TryFoldR

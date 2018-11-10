@@ -2,7 +2,7 @@ use crate_::discriminant::GetDiscriminant;
 use new_types::type_list::{TList, TListType, TypeLevelListTrait};
 use prelude::*;
 
-/// Converts a type to a tlist.
+/// Converts a ConstValue to a tlist,mostly used for deriving traits.
 pub trait AsTList_ {
     type Output;
 }
@@ -15,7 +15,8 @@ type_fn!{use_trait
 
 
 
-/// Converts an enum variant to a tlist with the discriminant as the first element.
+/// Converts an ConstValue to a tlist with the discriminant as the first element,
+/// mostly used for deriving traits.
 pub trait VariantAsTList_ {
     type Output: TypeLevelListTrait;
 }

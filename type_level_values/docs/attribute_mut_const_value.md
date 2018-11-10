@@ -102,7 +102,7 @@ Any attribute which is not PascalCase is automatically delegated to \<NewType\>.
     repr(transparent),
     Type = "ChannelEnd", ConstValue = "S",
 )]
-pub struct ChannelEndInner<Chan, S: WrapperTrait> {
+pub struct __ChannelEnd<Chan, S: WrapperTrait> {
     channel: Chan,
     state: ConstWrapper<S>,
 }
@@ -134,7 +134,7 @@ pub struct ChannelEndInner<Chan, S: WrapperTrait> {
     ),
     ConstValue = "I",
 )]
-pub struct RectangleInner<I, P> {
+pub struct __Rectangle<I, P> {
     x: u32,
     y: u32,
     w: u32,
@@ -160,7 +160,7 @@ pub struct RectangleInner<I, P> {
     Type(name = "MutabilityWrapper"),
     ConstValue = "M",
 )]
-pub struct MutabilityWrapperInner<T, M> {
+pub struct __MutabilityWrapper<T, M> {
     value: T,
     mutability: PhantomData<M>,
 }

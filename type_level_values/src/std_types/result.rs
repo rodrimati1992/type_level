@@ -1,3 +1,7 @@
+/*!
+The type-level equivalent of std::result::Result.
+*/
+
 use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
@@ -38,9 +42,11 @@ pub use self::type_level_Result::*;
 /////////////////////////////
 
 type_fn!{
+    /// Constructs an Ok_<v>.
     pub fn NewOk[v](v){ Ok_<v> }
 }
 type_fn!{
+    /// Constructs an Err_<v>.
     pub fn NewErr[v](v){ Err_<v> }
 }
 
@@ -59,6 +65,7 @@ impl<T,Func> Map_<Func> for Err_<T>{
 ///////////////////////////////////////////////////////////////////////////////////////
 
 type_fn!{
+    /// Transforms the value of an Err_<v> with Func.
     pub fn 
         MapErrOp[T,Func](Ok_<T>,Func){ Ok_<T>  }
         
@@ -68,6 +75,7 @@ type_fn!{
 }
 
 type_fn!{
+    /// Transforms the value of an Err_<v> with the captured Func.
     captures(Func)
     pub fn 
         MapErrMt[T](Ok_<T>){ Ok_<T>  }
@@ -145,10 +153,12 @@ impl<E, O> BitAnd<O> for Err_<E> {
 /////////////////////////////
 
 type_fn!{
+    /// Returns whether the ResultType parameter is an Ok_<_>.
     pub fn IsOk[V](Ok_<V>){True}
            IsOk[V](Err_<V>){False}
 }
 
+/// Returns whether the ResultType parameter is an Err_<_>.
 pub type IsErr = (IsOk, NotOp);
 
 /////////////////////////////

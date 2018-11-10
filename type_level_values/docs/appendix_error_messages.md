@@ -170,7 +170,7 @@ type AnyBox=Box<Any+Send+'static>;
 #[mcv(
     Type="Channel",ConstValue ="S"
 )]
-pub struct ChannelInner<S>{
+pub struct __Channel<S>{
     sender  :Sender<AnyBox>,
     receiver:Receiver<AnyBox>,
     state:ConstWrapper<S>,
@@ -230,7 +230,7 @@ error[E0599]: no method named `recv` found for type `ChannelInner<type_level_val
 17 |     let (channel0,value)=channel0.recv().unwrap();
    |                                   ^^^^
 ...
-51 | pub struct ChannelInner<S>{
+51 | pub struct __Channel<S>{
    | -------------------------- method `recv` not found for this
    |
    = note: the method `recv` exists but the following trait bounds were not satisfied:
