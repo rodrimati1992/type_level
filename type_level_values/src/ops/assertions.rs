@@ -225,7 +225,7 @@ impl<This,Pred> TypeFn_<(This,Pred)> for AssertThatOp
 where 
     This:AssertThat_<Pred>
 {
-    type Output=Self;
+    type Output=This;
 }
 
 // type_fn!{
@@ -243,7 +243,7 @@ where
         AssertEqMt<True>,
     ):TypeFn_<This>,
 {
-    type Output=Self;
+    type Output=This;
 }
 
 

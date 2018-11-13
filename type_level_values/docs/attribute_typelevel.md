@@ -120,11 +120,13 @@ Most attributes lists support these attributes:
 
 ## Attributes on a Type/Variant:
 
-
-
 - rename :
-    Renames the ConstValue equivalent of the derived Type/Variant.<br>
+    Changes the base name used in identifiers from `<DerivingType>` to the passed identifier.
     Of the form `rename = "new_name"`,the string must be a valid identifier.
+
+- rename_constvalue :
+    Renames the ConstValue equivalent of the derived Type/Variant.<br>
+    Of the form `rename_constvalue = "new_name"`,the string must be a valid identifier.
 
 - rename_trait :
     Renames the trait used to access the fields of the ConstValue equivalent 

@@ -120,12 +120,27 @@ fn tests_TupleStruct(){
         ]
     }
 
+    let _:AssertEq<
+        tlist![ fields::U0,fields::U1],
+        TupleStruct_PubFields,
+    >;
 
+    let _:AssertEq<
+        tlist![ 
+            fields::U0,
+            fields::U1,
+            fields::field_2,
+            fields::field_3,
+            fields::eeee,
+            fields::field_5 
+        ],
+        TupleStruct_AllFields,
+    >;
 
     use self::Privacy::*;
 
     let tl_mods=type_level_modules(&CommonTokens::new(),parse_ident("type_level_TupleStruct"));
-    let struct_fields=DataType::new("TupleStruct",tl_mods,Variants::typelevel())
+    let struct_fields=DataType::new(tl_mods,Variants::typelevel())
         .add_tl_variant(TLVariant{
             const_value:"ConstTupleStruct",
             dt_trait:"TupleStructTrait",
@@ -197,13 +212,30 @@ fn tests_BracedStruct(){
         ]
     }
 
+    let _:AssertEq<
+        tlist![ fields::a,fields::b],
+        BracedStruct_PubFields,
+    >;
+
+    let _:AssertEq<
+        tlist![ 
+            fields::a,
+            fields::b,
+            fields::c,
+            fields::d,
+            fields::eeee,
+            fields::f 
+        ],
+        BracedStruct_AllFields,
+    >;
+
 
     use self::Privacy::*;
 
     let ctokens=CommonTokens::new();
 
     let tl_mods=type_level_modules(&ctokens,parse_ident("type_level_BracedStruct"));
-    let struct_fields=DataType::new("BracedStruct",tl_mods,Variants::typelevel())
+    let struct_fields=DataType::new(tl_mods,Variants::typelevel())
         .add_tl_variant(TLVariant{
             const_value:"ConstBracedStruct",
             dt_trait:"BracedStructTrait",
@@ -246,6 +278,11 @@ fn tests_BracedStruct(){
 fn tests_AnEnum(){
     use self::type_level_AnEnum::*;
 
+    type Assert3Eq<A,B,C>=(
+        AssertEq<A,B>,
+        AssertEq<B,C>,
+    );
+
     test_variant!{
         const_value=VarA,
         value=ValA,
@@ -255,6 +292,13 @@ fn tests_AnEnum(){
             (U0,field_0,rt_field_0,U0),
         ]
     }
+
+    let _:Assert3Eq<
+        VarA_PubFields,
+        VarA_AllFields,
+        tlist![fields::U0],
+    >;
+
     test_variant!{
         const_value=VarB,
         value=ValB,
@@ -265,6 +309,14 @@ fn tests_AnEnum(){
             (U20,b,rt_b,b),
         ]
     }
+
+    let _:Assert3Eq<
+        VarB_PubFields,
+        VarB_AllFields,
+        tlist![fields::a,fields::b],
+    >;
+
+
     test_variant!{
         const_value=VarC,
         value=ValC,
@@ -276,6 +328,13 @@ fn tests_AnEnum(){
         ]
     }
     
+    let _:Assert3Eq<
+        VarC_PubFields,
+        VarC_AllFields,
+        tlist![fields::U0,fields::uh],
+    >;
+
+
     use self::Privacy::*;
 
     let priv_="pub(in super)";
@@ -284,7 +343,7 @@ fn tests_AnEnum(){
 
     let tl_mods=type_level_modules(&ctokens,parse_ident("type_level_AnEnum"));
 
-    let enum_fields=DataType::new("AnEnum",tl_mods,Variants::typelevel())
+    let enum_fields=DataType::new(tl_mods,Variants::typelevel())
         .add_tl_variant(TLVariant{
             const_value:"VarA",
             dt_trait:"VarATrait",

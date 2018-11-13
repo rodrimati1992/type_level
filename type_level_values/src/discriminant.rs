@@ -155,12 +155,12 @@ mod tests{
     #[test]
     fn test_type_aliases(){
         use std_types::option::type_level_Option::variants::{
-            Some__Discr,Some__Variant,
-            None__Discr,None__Variant,
+            Some_Discr,Some_Variant,
+            None_Discr,None_Variant,
         };
         use std_types::result::type_level_Result::variants::{
-            Ok__Discr,Ok__Variant,
-            Err__Discr,Err__Variant,
+            Ok_Discr,Ok_Variant,
+            Err_Discr,Err_Variant,
         };
         use std_types::range   ::type_level_Range  ::RangeType;
         use std_types::range   ::type_level_Range  ::variants::{Range_Discr  ,Range_Variant};
@@ -180,25 +180,25 @@ mod tests{
             AssertFnRet<This,GetUIntDiscrOp,Expected>,
         );
 
-        let _:TestDiscr<Some_<False>, Some__Discr>;
-        let _:TestDiscr<Some_<False>, Discriminant<Some__Variant,OptionType,U0>>;
-        let _:TestVariant<Some_<False> , Some__Variant >;
+        let _:TestDiscr<Some_<False>, Some_Discr>;
+        let _:TestDiscr<Some_<False>, Discriminant<Some_Variant,OptionType,U0>>;
+        let _:TestVariant<Some_<False> , Some_Variant >;
         let _:TestUIntDiscr<Some_<False> , U0 >;
 
-        let _:TestDiscr<None_, Discriminant<None__Variant,OptionType,U1> >;
-        let _:TestDiscr<None_, None__Discr >;
-        let _:TestVariant<None_ , None__Variant >;
+        let _:TestDiscr<None_, Discriminant<None_Variant,OptionType,U1> >;
+        let _:TestDiscr<None_, None_Discr >;
+        let _:TestVariant<None_ , None_Variant >;
         let _:TestUIntDiscr<None_ , U1 >;
 
 
-        let _:TestDiscr<Ok_<False>, Discriminant<Ok__Variant,ResultType,U0> >;
-        let _:TestDiscr<Ok_<False>, Ok__Discr >;
-        let _:TestVariant<Ok_<False> , Ok__Variant >;
+        let _:TestDiscr<Ok_<False>, Discriminant<Ok_Variant,ResultType,U0> >;
+        let _:TestDiscr<Ok_<False>, Ok_Discr >;
+        let _:TestVariant<Ok_<False> , Ok_Variant >;
         let _:TestUIntDiscr<Ok_<False> , U0 >;
 
-        let _:TestDiscr<Err_<False>, Discriminant<Err__Variant,ResultType,U1> >;
-        let _:TestDiscr<Err_<False>, Err__Discr >;
-        let _:TestVariant<Err_<False> , Err__Variant >;
+        let _:TestDiscr<Err_<False>, Discriminant<Err_Variant,ResultType,U1> >;
+        let _:TestDiscr<Err_<False>, Err_Discr >;
+        let _:TestVariant<Err_<False> , Err_Variant >;
         let _:TestUIntDiscr<Err_<False> , U1 >;
 
 

@@ -244,6 +244,7 @@ type_fn!{
     # extern crate type_level_values;
 
     # use type_level_values::prelude::*;
+    use type_level_values::ops::AssertEq;
     use type_level_values::field_traits::{SetFieldsToOp};
 
     fn main(){
@@ -362,6 +363,8 @@ type_fn!{
 // #[cfg(test)]
 mod tests{
     use super::*;
+
+    use crate_::ops::AssertEq;
 
     use std_types::range::{fields as range_f,ConstRange};
 

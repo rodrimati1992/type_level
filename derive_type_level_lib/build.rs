@@ -7,4 +7,6 @@ fn main() {
     if Version::new(1, 22, 0) <= rver {
         println!("cargo:rustc-cfg=rust_1_22");
     }
+
+    println!("cargo:rerun-if-changed=build.rs");
 }

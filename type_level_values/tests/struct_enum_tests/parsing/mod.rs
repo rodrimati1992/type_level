@@ -40,6 +40,17 @@ declare_indexable_struct!{
     multi_indices=[]
 }
 
+declare_indexable_struct!{
+    enum index=MCVModIndex
+    #[derive(Default)]
+    struct indexable=MCVIndexableByMod
+    variants=[ 
+        (deriving_mod         ,DerivingMod),
+        (const_constructor_mod,ConstConstructorMod),
+    ]
+    multi_indices=[]
+}
+
 pub(crate) fn type_level_modules(tokens:&CommonTokens,type_level_mod:Ident)->Module<TLModIndex>{
     use self::TLModIndex as TLI;
 
@@ -51,6 +62,16 @@ pub(crate) fn type_level_modules(tokens:&CommonTokens,type_level_mod:Ident)->Mod
 
     Module::new(parse_ident("deriving"),TLI::DerivingMod)
         .add_submod(tl_mod)
+}
+
+
+pub(crate) fn mut_const_value_modules(
+    tokens:&CommonTokens,
+    const_constructor_mod:Ident
+)->Module<MCVModIndex>{
+    use self::MCVModIndex as MCVI;
+    Module::new(parse_ident("deriving"),MCVI::DerivingMod)
+        .add_submod(Module::new(const_constructor_mod,MCVI::ConstConstructorMod))
 }
 
 

@@ -83,6 +83,7 @@ extern crate derive_type_level;
 use std::ops::Add;
 
 use type_level_values::field_traits::*;
+use type_level_values::collection_ops::{AllMt};
 use type_level_values::ops::{ConstNE_,IsZeroOp,AssertThat_};
 use type_level_values::std_ops::{NotOp};
 use type_level_values::prelude::*;
@@ -122,7 +123,7 @@ mod non_zero_3d_point{
     //@codeblock-start:new_non0_point_struct
 
     #[doc(hidden)]
-    pub NonZero3DPoint_cannot_have_0_coordinates<x,y,z>(x,y,z);
+    pub struct NonZero3DPoint_cannot_have_0_coordinates<x,y,z>(x,y,z);
 
     type_fn!{
         pub fn NewNonZero3DPoint[x,y,z](x,y,z)

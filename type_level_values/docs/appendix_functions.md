@@ -24,7 +24,7 @@ An example of using it in a where clause:
  
 # use type_level_values::prelude::*;
 use type_level_values::std_ops::*;
-use type_level_values::ops::{MinMaxOp,SatSub1Op};
+use type_level_values::ops::{If,ConstLtMt,MinMaxOp,SatSub1Op};
 use type_level_values::type_fn::Piped_;
 
 

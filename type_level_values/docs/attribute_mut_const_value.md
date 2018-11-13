@@ -71,6 +71,30 @@ Any attribute which is not PascalCase is automatically delegated to \<NewType\>.
     where `ident` must be the identifier of one of the type type parameters,
     and `DefaultType` must be the default value for that type parameter (in the type alias).
 
+- UnsafeRepr (optional attribute):
+    An unsafe attribute which allows using any repr attribute,
+    even if it is not guaranteed to not change the layout of the type 
+    when the ConstValue changes 
+    (the only ones which guarantee this are repr(C) and repr(transparent)) .
+    <br>
+    It is possible that the chosen representation might change 
+    to be unsafe to use with MutConstValue,
+    which is why it this derive macro uses `#[repr(C)]` by default,
+    even though it is a terrible way to do it
+    (thank the people wanting repr(Rust) to not guarantee anything at all 
+    about layout for this library having to use repr(C)).\
+    <br>
+    Using repr(Rust) (the default representation for Rust types) could be undefined behavior if
+    Rust stops ignoring `phantom generic parameters` which is what the ConstValue-parameter is.
+    <br>
+    If Rust stops ignoring `phantom generic parameters` any library using them 
+    may start suffering from code bloat,
+    since Rust will be allowed to reorder fields just because a 
+    phantom generic parameter changed,
+    which will necessarily cause different assembly code to be generated 
+    (due to using different offsets within the same struct/enum).
+
+
 - Attrs (optional attribute):
     Allows specifying attributes for the generated \<DerivingType\>\_Ty.
     Use this in case that the attribute starts with an uppercase character,eg:'Capitalized'.
@@ -99,6 +123,7 @@ Any attribute which is not PascalCase is automatically delegated to \<NewType\>.
 #[mcv(
     doc="This doc comment gets applied to ChannelEnd_Ty",
     derive(Debug,Copy,Clone),
+    //PrintDerive,
     repr(transparent),
     Type = "ChannelEnd", ConstValue = "S",
 )]

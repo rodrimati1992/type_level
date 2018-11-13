@@ -26,11 +26,11 @@ use core_extensions::type_level_bool::{False, True};
 #[allow(dead_code)]
 #[doc(hidden)]
 pub enum Ordering {
-    #[typelevel(rename = "Less_", rename_trait = "LessTrait")]
+    #[typelevel(rename_constvalue = "Less_")]
     Less,
-    #[typelevel(rename = "Equal_", rename_trait = "EqualTrait")]
+    #[typelevel(rename_constvalue = "Equal_")]
     Equal,
-    #[typelevel(rename = "Greater_", rename_trait = "GreaterTrait")]
+    #[typelevel(rename_constvalue = "Greater_")]
     Greater,
 }
 

@@ -70,6 +70,31 @@ pub fn const_param_attr()->AttrShape{
         ".into(),
     }
 }
+pub fn unsafe_repr_attr()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::List{value:"Repr0,Repr1,Repr2".into()} , 
+                clarification:Some("\
+                    The passed representation must be valid.\n\
+                    Examples: C,transparent,Rust \
+                ".into())
+            },
+        ],
+        word:"UnsafeRepr",
+        description:"(optional attribute) \
+            An unsafe attribute which allows using any repr attribute,
+            even if it is not guaranteed to not change the layout of the type \
+            when the ConstValue changes.\n
+            It is plausible that the default \
+            representation might change to be unsafe to use with MutConstValue,\
+            which is why it this derive macro uses `#[repr(C)]` by default,\
+            even though it is a terrible way to do it\
+            (thank the people wanting repr(Rust) to not guarantee anything at all \
+            about layout for this library having to use repr(C)).\
+        ".into(),
+    }
+}
 
 // pub fn constconstructor_attr()->AttrShape{
 //     AttrShape{
@@ -162,6 +187,7 @@ pub fn mutconstvalue_attrs()->ValidAttrs{
         type_attr(),
         const_param_attr(),
         items_attr(),
+        unsafe_repr_attr(),
     ].piped(ValidAttrs::new)
 }
 

@@ -35,6 +35,8 @@ pub use runtime_value::{
 pub use field_traits::{GetFieldRuntime_, GetField_, SetField_};
 pub use initialization as __initialization;
 
+pub type __UninitializedField=::initialization::UninitField<()>;
+
 pub use new_types::{TList, TNil};
 
 pub mod integer_reexports {

@@ -52,7 +52,7 @@ fn full_test(constval:&str,runtime_type:&str,derive:&str){
     let tlmod_ident=parse_ident(&format!("type_level_{}",type_constructor));
     let tl_mods=type_level_modules(&ctokens,tlmod_ident);
 
-    let variants=DataType::new(type_constructor,tl_mods,Variants::no_checking())
+    let variants=DataType::new(tl_mods,Variants::no_checking())
         .add_check(
             UnparsedItemCheck::trait_impl("ConstEq_<__Other>",constval)
                 .set_nonexistant()

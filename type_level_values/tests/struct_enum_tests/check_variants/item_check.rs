@@ -22,7 +22,7 @@ pub struct UnparsedItemCheck<'a>{
     vis:Option<Cow<'a,str>>,
     
     /// Each Cow may be multiple attributes each
-    attributes:Vec<Cow<'a,str>>,
+    attributes:Vec<(Cow<'a,str>,Existence)>,
     attributes_exhaus:Exhaustiveness,
 
     where_preds:Vec<Cow<'a,str>>,
@@ -76,7 +76,7 @@ pub struct ItemCheck<K=ItemKey>{
 
     pub(crate) vis:Option<Visibility>,
 
-    pub(crate) attributes:HashSet<Attribute>,
+    pub(crate) attributes:HashMap<Attribute,Existence>,
     pub(crate) attributes_exhaus:Exhaustiveness,
     
     pub(crate) where_preds:HashSet<WherePredicate>,
@@ -195,23 +195,30 @@ impl<'a> UnparsedItemCheck<'a>{
     pub fn add_attribute<S>(mut self,attrs:S)->Self
     where S:Into<Cow<'a,str>>,
     {
-        self.attributes.push(attrs.into());
+        self.attributes.push((attrs.into(),Exists));
         self
     }
-    pub fn add_attributes<S>(mut self,attrs:S)->Self
+    /// Check that an attribute does not exist.
+    pub fn add_not_attribute<S>(mut self,attrs:S)->Self
     where S:Into<Cow<'a,str>>,
     {
-        self.attributes.push(attrs.into());
+        self.attributes.push((attrs.into(),NotExists));
         self
     }
-
     pub fn parse(self)->ItemCheck{
         ItemCheck{
             existence:self.existence,
 
             vis:self.vis.map(|x| parse_visibility(&x) ),
 
-            attributes:self.attributes.iter().flat_map(|x| parse_syn_attributes(x) ).collect(),
+            attributes:
+                self.attributes
+                .into_iter()
+                .flat_map(|(attrs,existence)|{
+                    parse_syn_attributes(&attrs).into_iter()
+                        .zip(iter::repeat(existence)) 
+                })
+                .collect(),
             attributes_exhaus:self.attributes_exhaus,
             
             where_preds:self.where_preds.iter().map(|x| parse_where_pred(x) ).collect(),
@@ -235,7 +242,7 @@ impl ItemCheck{
         ItemCheck{
             existence:Exists,
             vis:vis.cloned(),
-            attributes:attributes.iter().cloned().collect(),
+            attributes:attributes.iter().cloned().map(|attr| (attr,Exists) ).collect(),
             attributes_exhaus:DEFAULT_ATTRIBUTES_EXHAUS,
             where_preds:match gens.where_clause.as_ref() {
                 Some(where_)=>where_.predicates.iter().cloned().collect(),

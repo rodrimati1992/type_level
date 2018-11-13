@@ -40,14 +40,21 @@ use super::type_level_shared::*;
         doc="U35",
     ),
 ))]
-pub struct Tupled(
+#[typelevel(
+    rename="TupledRen",
+    rename_trait="TupledBBQ",
+    rename_wr_trait="TupledWTF",
+)]
+pub struct Tupled<T>(
     u32,
-    (),
+    T,
 );
 
 
 
-fn full_test(constval:&str,runtime_type:&str,derive:&str){
+fn full_test<F>(constval:&str,runtime_type:&str,derive:&str,additional_checks:F)
+where F:FnOnce(DataType<TLModIndex>)->DataType<TLModIndex>
+{
     use self::type_level_Tupled::*;
    
     use self::Privacy::*;
@@ -59,7 +66,7 @@ fn full_test(constval:&str,runtime_type:&str,derive:&str){
     let tlmod_ident=parse_ident(&format!("type_level_{}",type_constructor));
     let tl_mods=type_level_modules(&ctokens,tlmod_ident);
 
-    let variants=DataType::new(type_constructor,tl_mods,Variants::no_checking())
+    let variants=DataType::new(tl_mods,Variants::no_checking())
         .add_check(
             UnparsedItemCheck::trait_impl("ConstEq_<__Other>",constval)
                 .add_where_pred("Self:Trivial<U10>")
@@ -100,6 +107,7 @@ fn full_test(constval:&str,runtime_type:&str,derive:&str){
             UnparsedItemCheck::trait_impl("Debug",constval)
                 .set_nonexistant()
         )
+        .piped(additional_checks)
     ;
 
 
@@ -116,9 +124,18 @@ fn full_test(constval:&str,runtime_type:&str,derive:&str){
 #[allow(non_snake_case)]
 fn tests_Tupled(){
     full_test(
-        "ConstTupled<field_0,field_1,__IsPriv,>",
-        "Tupled<>",
-        Tupled::TYPELEVEL_DERIVE,
+        TUPLED_CONSTVAL,
+        "Tupled<T,>",
+        Tupled::<()>::TYPELEVEL_DERIVE,
+        |datatype|{
+            datatype
+            .add_check(
+                UnparsedItemCheck::trait_impl("TupledBBQ",TUPLED_CONSTVAL)
+            )
+            .add_check(
+                UnparsedItemCheck::trait_impl("TupledWTF<T,>",TUPLED_CONSTVAL)
+            )
+        }
     );
 }
 
@@ -163,7 +180,10 @@ fn tests_Tupled(){
         doc="U35",
     ),
 ))]
+#[typelevel(rename_consttype="AnEnumTypo")]
 pub enum AnEnum<TypeParam>{
+    #[typelevel(rename_consttype="ThisIsANoOp")]
+    #[typelevel(rename_constvalue="UnitVarWhat")]
     UnitVar,
     TupledVar((),()),
     Braced{
@@ -179,12 +199,18 @@ pub enum AnEnum<TypeParam>{
 fn tests_AnEnum(){
     let runtime_type="AnEnum<TypeParam,>";
     let enum_=AnEnum::<()>::TYPELEVEL_DERIVE;
-    full_test("UnitVar<>",runtime_type,enum_);
-    full_test("TupledVar<field_0,field_1,>",runtime_type,enum_);
-    full_test("Braced<x,y,>",runtime_type,enum_);
+    full_test("UnitVarWhat<>",runtime_type,enum_,|datatype|{
+        datatype
+        .add_check(
+            UnparsedItemCheck::trait_impl("ConstType","AnEnumTypo")
+        )
+    });
+    full_test("TupledVar<field_0,field_1,>",runtime_type,enum_,|datatype|datatype);
+    full_test("Braced<x,y,>",runtime_type,enum_,|datatype|datatype);
 }
 
 
+static TUPLED_CONSTVAL:&str="ConstTupled<field_0,field_1,__IsPriv,>";
 
 #[allow(non_snake_case)]
 mod should_panic_tests_Tupled{
@@ -192,7 +218,6 @@ mod should_panic_tests_Tupled{
     use self::type_level_Tupled::*;   
     use self::Privacy::*;
 
-    static CONSTVAL:&str="ConstTupled<field_0,field_1,__IsPriv,>";
 
     fn with_single_impl(impl_block:UnparsedItemCheck){
 
@@ -201,13 +226,13 @@ mod should_panic_tests_Tupled{
         let tl_mods=type_level_modules(&ctokens,parse_ident("type_level_Tupled"));
 
 
-        let variants=DataType::new("Tupled",tl_mods,Variants::no_checking())
+        let variants=DataType::new(tl_mods,Variants::no_checking())
             .add_check(impl_block);
 
         test_items(
             variants,
             &ctokens,
-            Tupled::TYPELEVEL_DERIVE,
+            Tupled::<()>::TYPELEVEL_DERIVE,
         );
     }
 
@@ -215,7 +240,7 @@ mod should_panic_tests_Tupled{
     #[should_panic]
     fn tests_Tupled_where_preds(){
         with_single_impl(
-            UnparsedItemCheck::trait_impl("ConstEq_<__Other>",CONSTVAL)
+            UnparsedItemCheck::trait_impl("ConstEq_<__Other>",TUPLED_CONSTVAL)
                 .add_where_pred("Self:Trivial<NotAType>")
         )
     }
@@ -224,7 +249,7 @@ mod should_panic_tests_Tupled{
     #[should_panic]
     fn tests_Tupled_attr(){
         with_single_impl(
-            UnparsedItemCheck::trait_impl("ConstEq_<__Other>",CONSTVAL)
+            UnparsedItemCheck::trait_impl("ConstEq_<__Other>",TUPLED_CONSTVAL)
                 .add_attribute(r#"#[cfg(feature="not a feature")]"#)
         )
     }
@@ -234,7 +259,7 @@ mod should_panic_tests_Tupled{
     #[should_panic]
     fn tests_Tupled_doc(){
         with_single_impl(
-            UnparsedItemCheck::trait_impl("ConstEq_<__Other>",CONSTVAL)
+            UnparsedItemCheck::trait_impl("ConstEq_<__Other>",TUPLED_CONSTVAL)
                 .add_attribute(r#"#[doc="not a feature"]"#)
         )
     }

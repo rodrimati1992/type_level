@@ -1,5 +1,6 @@
 use super::*;
 
+use parsing::CheckDeriveParams;
 
 pub(crate) use super::item_check::{
     ToItemCheck,
@@ -9,14 +10,17 @@ pub(crate) use super::item_check::{
 use super::typelevel_field::Field;
 
 
+pub type CallbackList<'a,I>=
+    Vec<Box<FnMut(&mut CheckDeriveParams<I>)+'a>>;
+
 ///
 /// The I parameter is the module index enum.
 pub(crate) struct DataType<'a,I>{
-    pub(crate) name:&'a str,
     pub(crate) variants:Variants<'a>,
     pub(crate) item_checks:HashMap<ItemKey,ItemCheck<()>>,
     pub(crate) reexported:HashMap<I,HashSet<ItemUse>>,
     pub(crate) modules:Rc<Module<I>>,
+    pub(crate) item_callbacks:CallbackList<'a,I>,
 }
 
 
@@ -25,18 +29,17 @@ where I:ModIndex
 {
     fn priv_default(modules:Rc<Module<I>>)->Self{
         Self{
-            name:"",
             variants:Variants::no_checking(),
             item_checks:Default::default(),
             reexported :Default::default(),
+            item_callbacks:Default::default(),
             modules,
         }
     }
-    pub fn new<M>(name:&'a str,modules:M,variants:Variants<'a>)->Self
+    pub fn new<M>(modules:M,variants:Variants<'a>)->Self
     where M:Into<Rc<Module<I>>>,
     {
         let mut this=Self::priv_default( modules.into() );
-        this.name=name;
         this.variants=variants;
         this
     }
@@ -78,6 +81,13 @@ where I:ModIndex
         for reexp in reexports {
             self=self.add_reexport(index.clone(),reexp);
         }
+        self
+    }
+    /// Adds a callback called whenever an item is visited.
+    pub fn add_item_callback<F>(mut self,f:F)->Self
+    where F:FnMut(&mut CheckDeriveParams<I>)+'a
+    {
+        self.item_callbacks.push(Box::new(f));
         self
     }
 }
@@ -175,11 +185,9 @@ where
         accessor_exhaus,
         accessor_structs,
         variants.reexported,
+        &mut variants.item_callbacks,
         derive_str,
     );
-
-
-    let type_level_mod=format!("type_level_{}",variants.name);
 
     match variants.variants {
         Variants::TypeLevel(ref tl)=>{
@@ -207,6 +215,7 @@ fn test_non_variants<'a,I>(
     accessor_exhaus:Exhaustiveness,
     mut accessor_structs:HashMap<Ident,Vec<syn::Attribute>>,
     mut reexported:HashMap<I,HashSet<ItemUse>>,
+    item_callbacks:&mut CallbackList<'a,I>,
     derive_str:&str,
 )
 where 
@@ -218,6 +227,10 @@ where
     let mut visiting=Visiting::new(modules);
 
     visiting.check_derive(derive_str,|params|{
+        for callback in &mut *item_callbacks {
+            callback(params);
+        }
+
         let x=reexported.get_mut(&params.mod_index);
 
         if let Some(check)=params.item.item_to_check() {
@@ -227,9 +240,12 @@ where
                 Some((Exists,mut e_item))=>{
 
                     let mut unexp_attrs=Vec::new();
-                    for attr in &item.attributes {
-                        if !e_item.attributes.remove(attr) {
-                            unexp_attrs.push(attr);
+                    for (attr,_) in &item.attributes {
+                        match e_item.attributes.remove(attr){
+                            Some(Exists)=>{}
+                            _=>{
+                                unexp_attrs.push(attr);
+                            }
                         }
                     }
 
@@ -264,12 +280,15 @@ where
                         );
                     }
 
+                    // Only need to check that the existing attributes have been 
+                    // removed from the `e_item.attributes`.
+                    e_item.attributes.retain(|_,v|*v==Exists);
                     if !e_item.attributes.is_empty() {
                         params.push_err(
                             VIEK::WrongDefinition,
                             format!(
                                 "Expected more attributes in definition:\n{}",
-                                totoken_iter_to_string(&e_item.attributes)
+                                totoken_iter_to_string(e_item.attributes.keys())
                             )
                         );
                     }
@@ -373,10 +392,10 @@ where
                         )
                     );
                 }
-
             }
             _=>{}
         };
+
     });
 
 }

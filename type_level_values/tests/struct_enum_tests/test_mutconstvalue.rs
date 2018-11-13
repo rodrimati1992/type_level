@@ -1,3 +1,8 @@
+use super::*;
+use super::type_level_shared::*;
+
+use parsing::mut_const_value_modules;
+
 use shared::traits::Trivial;
 
 use type_level_values::core_extensions::Void;
@@ -6,6 +11,8 @@ use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::user_traits::const_traits::*;
 
+use derive_type_level_lib::mutconstvalue::derive_from_str as derive_mcv_from_str ;
+
 
 #[derive(MutConstValue)]
 #[mcv(
@@ -13,6 +20,7 @@ use type_level_values::user_traits::const_traits::*;
     Type(name = "MutWrapper"),
     ConstValue = "M",
     DeriveStr,
+    // PrintDerive,
     Items(
         ConstLayoutIndependent(
             bound="Self:Trivial<U10>",
@@ -90,6 +98,8 @@ macro_rules! mut_param_ {
 
 #[test]
 fn check_associated_types_Struct0(){
+    use self::const_constructor___MutWrapper::MutWrapper_CC;
+
     type Val0=MutWrapper<Vec<()>,U0>;
     type Val0Full=MutWrapper_Ty<Vec<()>,ConstWrapper<U0>>;
     type Val1=MutWrapper<Vec<()>,U1>;
@@ -156,6 +166,7 @@ use type_level_values::user_traits::MutConstParam;
 
 #[test]
 fn check_associated_types_Enum0(){
+    use self::const_constructor_AnEnumInner::AnEnum_CC;
 
     type Val0=AnEnum<U0>;
     type Val0Full=AnEnum_Ty<ConstWrapper<U0>>;
@@ -212,3 +223,274 @@ fn check_associated_types_Enum0(){
     check_var3(vec![();73]);
 
 }
+
+
+#[test]
+fn test_generated_items_MutWrapper(){
+    let ref ctokens=CommonTokens::new();
+    let type_="MutWrapper_Ty<T,M,>";
+    let derive=MutWrapper_Ty::<(),()>::MUTCONSTVAL_DERIVE;
+    let mcv_mod_ident=parse_ident("const_constructor___MutWrapper");
+    let mods=mut_const_value_modules(&ctokens,mcv_mod_ident);
+
+    let variants=DataType::new(mods,Variants::no_checking())
+        .add_check(
+            UnparsedItemCheck::struct_("MutWrapper_Ty")
+                .add_attribute("#[derive(Debug, Copy, Clone, PartialEq, Eq, Ord, PartialOrd)]")
+                // This is necessary until we get some representation attribute 
+                // for phantom generic parameters
+                .add_attribute("#[repr(C)]")
+        )
+        .add_check(
+            UnparsedItemCheck::trait_impl("_const_traits::ConstLayoutIndependent<__Other>",type_)
+                .add_where_pred("T:Trivial<U0>") // constraints on the struct
+                .add_where_pred("T:Trivial<U1>") // constraints on the struct
+                .add_where_pred("Self:Trivial<U10>")
+                .add_attribute(r#"#[cfg(any(feature="identity_feature",feature="U20"))]"#)
+                .add_attribute(r#"#[doc="U30"]"#)
+        )
+        .add_check(
+            UnparsedItemCheck::trait_impl("_const_traits::GetConstParam_",type_)
+                .add_where_pred("T:Trivial<U0>") // constraints on the struct
+                .add_where_pred("T:Trivial<U1>") // constraints on the struct
+                .add_where_pred("Self:Trivial<U13>")
+                .add_attribute(r#"#[cfg(any(feature="identity_feature",feature="U23"))]"#)
+                .add_attribute(r#"#[doc="U33"]"#)
+        )
+    ;
+
+
+    test_items(
+        variants,
+        &ctokens,
+        derive,
+    );
+}
+
+
+#[derive(MutConstValue)]
+#[mcv(
+    ConstValue="C",
+    Type="UnsafeReprRust",
+    UnsafeRepr(Rust),
+    DeriveStr,
+)]
+struct __UnsafeReprRust<C>{
+    b:u8,
+    c:u8,
+    a:u32,
+    d:u8,
+    e:u8,
+    _marker:ConstWrapper<C>
+}
+
+#[derive(MutConstValue)]
+#[mcv(
+    ConstValue="C",
+    Type="UnsafeReprC",
+    UnsafeRepr(C),
+    DeriveStr,
+)]
+struct __UnsafeReprC<C>{
+    a:u32,
+    b:u32,
+    c:ConstWrapper<C>
+}
+
+
+#[derive(MutConstValue)]
+#[mcv(
+    ConstValue="C",
+    Type="UnsafeReprTransparent",
+    UnsafeRepr(transparent),
+    DeriveStr,
+)]
+struct __UnsafeReprTransparent<C>{
+    a:u32,
+    c:ConstWrapper<C>
+}
+
+#[derive(MutConstValue)]
+#[mcv(
+    ConstValue="C",
+    Type="ReprC",
+    repr(C),
+    DeriveStr,
+)]
+struct __ReprC<C>{
+    a:u32,
+    b:u32,
+    c:ConstWrapper<C>
+}
+
+
+#[derive(MutConstValue)]
+#[mcv(
+    ConstValue="C",
+    Type="ReprTransparent",
+    repr(transparent),
+    DeriveStr,
+)]
+struct __ReprTransparent<C>{
+    a:u32,
+    c:ConstWrapper<C>
+}
+
+fn repr_attrs_helper<F>(
+    typename_base:&str,
+    derive:&str,
+    extra_checks:F,
+)
+where
+    F:FnOnce(UnparsedItemCheck)->UnparsedItemCheck
+{
+    let ref ctokens=CommonTokens::new();
+    let typename=format!("{}_Ty",typename_base);
+    let type_=format!("{}<C,>",typename);
+    let mcv_mod_ident=parse_ident(&format!("const_constructor___{}",typename_base));
+    let mods=mut_const_value_modules(&ctokens,mcv_mod_ident);
+
+    let variants=DataType::new(mods,Variants::no_checking())
+        .add_check(
+            UnparsedItemCheck::struct_(&*typename)
+                .piped(extra_checks)
+        )
+    ;
+    test_items(
+        variants,
+        &ctokens,
+        derive,
+    );
+}
+
+
+#[test]
+fn repr_attrs(){
+    repr_attrs_helper(
+        "UnsafeReprRust",
+        UnsafeReprRust_Ty::<()>::MUTCONSTVAL_DERIVE,
+        |checks|{
+            checks
+            .add_not_attribute("#[repr(C)]")
+            .add_not_attribute("#[repr(transparent)]")
+        }
+    );
+
+    repr_attrs_helper(
+        "UnsafeReprC",
+        UnsafeReprC_Ty::<()>::MUTCONSTVAL_DERIVE,
+        |checks|{
+            checks.add_attribute("#[repr(C)]")
+        }
+    );
+
+    repr_attrs_helper(
+        "UnsafeReprTransparent",
+        UnsafeReprTransparent_Ty::<()>::MUTCONSTVAL_DERIVE,
+        |checks|{
+            checks.add_attribute("#[repr(transparent)]")
+        }
+    );
+
+    repr_attrs_helper(
+        "ReprC",
+        ReprC_Ty::<()>::MUTCONSTVAL_DERIVE,
+        |checks|{
+            checks.add_attribute("#[repr(C)]")
+        }
+    );
+
+    repr_attrs_helper(
+        "ReprTransparent",
+        ReprTransparent_Ty::<()>::MUTCONSTVAL_DERIVE,
+        |checks|{
+            checks.add_attribute("#[repr(transparent)]")
+        }
+    );
+
+
+
+}
+
+    
+mod negative_tests{
+    use super::*;
+
+
+    #[test]
+    #[should_panic]
+    fn repr_attr_invalid(){
+        derive_mcv_from_str(r#"
+            #[derive(MutConstValue)]
+            #[mcv(
+                ConstValue="C",
+                Type="ReprC",
+                repr(Foo),
+            )]
+            struct __ReprFoo<C>{
+                a:u32,
+                b:u32,
+                c:ConstWrapper<C>
+            }
+        "#);
+    }
+
+    /// The __ReprFoo in the repr_attr_invalid test must have the same definition,
+    /// except for the commented out `repr(Foo)`,
+    /// so that we know that the test failed because of the `repr(Foo)`.
+    #[derive(MutConstValue)]
+    #[mcv(
+        ConstValue="C",
+        Type="ReprC",
+        /*repr(Foo),*/
+    )]
+    struct __ReprFoo<C>{
+        a:u32,
+        b:u32,
+        c:ConstWrapper<C>
+    }
+
+}
+
+#[test]
+fn test_Attr_attribute(){
+
+    let without=derive_mcv_from_str(r#"
+        #[derive(MutConstValue)]
+        #[mcv(
+            cfg(any(feature="identity_feature",feature="U20")),
+            cfg(any(feature="identity_feature",feature="U21")),
+            ConstValue="C",
+            Type="StructAttrs0",
+        )]
+        struct __StructAttrs0<C>{
+            a:u32,
+            b:u32,
+            c:ConstWrapper<C>
+        }
+    "#);
+
+    let with=derive_mcv_from_str(r#"
+        #[derive(MutConstValue)]
+        #[mcv(
+            attr(
+                cfg(any(feature="identity_feature",feature="U20")),
+                cfg(any(feature="identity_feature",feature="U21")),
+            ),
+            ConstValue="C",
+            Type="StructAttrs0",
+        )]
+        struct __StructAttrs0<C>{
+            a:u32,
+            b:u32,
+            c:ConstWrapper<C>
+        }
+    "#);
+
+
+    assert_eq!(
+        tokens_to_string(without),
+        tokens_to_string(with)
+    );
+}
+

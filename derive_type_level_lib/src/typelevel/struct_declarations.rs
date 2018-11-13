@@ -24,7 +24,7 @@ use std::collections::{
     HashMap,
 };
 
-// use to_token_fn::ToTokenFnMut;
+use to_token_fn::ToTokenFnMut;
 
 use common_tokens::CommonTokens;
 
@@ -33,6 +33,8 @@ use submod_visibility::{
     IsPublic,
     DocHiddenAttr,
 };
+
+use tlist_tokens::TListFrom;
 
 use attribute_detection::typelevel::ImplIndex;
 
@@ -59,7 +61,7 @@ impl<'a> FieldAccessorInfo<'a>{
 #[derive(Debug)]
 pub(crate) struct StructDeclarations<'a>{
     pub(crate) tokens:&'a CommonTokens,
-    pub(crate) void_ident:&'a Ident,
+    pub(crate) uninit_field_ident:&'a Ident,
 
 
     pub(crate) vis_kind:MyVisibility<'a>,
@@ -109,6 +111,8 @@ pub(crate) struct StructDeclaration<'a>{
     pub(crate) wr_trait_ident:&'a Ident,
     pub(crate) variant_marker_ident:&'a Ident,
     pub(crate) discriminant_ident:&'a Ident,
+    pub(crate) pub_fields_ident:&'a Ident,
+    pub(crate) all_fields_ident:&'a Ident,
 
     pub(crate) generics:TokenStream,
     pub(crate) generics_2:TokenStream,
@@ -208,15 +212,17 @@ impl<'a> StructDeclarations<'a>{
                 .piped(|gens| quote!{ #(#gens,)* } )
                 .piped(|x| arenas.tokenstream.alloc(x) );
         
-        let type_marker_struct=outer_attr_sett.renames.const_type.clone()
-            .unwrap_or_else(|| ident_from(&format!("{}Type",name)) );
+        let basename_ty=outer_attr_sett.renames.basename.unwrap_or(name);
 
-        let type_trait_docs:&'a str=format!("A trait equivalent of `{}`.",name)
+        let type_marker_struct=outer_attr_sett.renames.const_type.clone()
+            .unwrap_or_else(|| ident_from(&format!("{}Type",basename_ty)) );
+
+        let type_trait_docs:&'a str=format!("A trait equivalent of `{}`.",basename_ty)
             .piped(|s| arenas.strings.alloc(s) );
 
         let enum_trait:Option<&'a Ident>=ds.enum_.as_ref().map(|_|{
             outer_attr_sett.renames.trait_
-                .unwrap_or_else(|| ident_from(&format!("{}Trait",name)) )
+                .unwrap_or_else(|| ident_from(&format!("{}Trait",basename_ty)) )
         });
 
         let enum_trait_doc:Option<&'a str>=ds.enum_.as_ref().map(|_| type_trait_docs );
@@ -364,15 +370,15 @@ impl<'a> StructDeclarations<'a>{
                 generics_2=quote!{ #(#generics_2_iter,)* };
             }
 
-            // the name of the variant after an explicit rename
-            let variant_name=inner_attr_sett.renames.variant_type.unwrap_or(&variant.name);
+            // the base of the name of the variant after an explicit rename
+            let basename_vari=inner_attr_sett.renames.basename.unwrap_or(&variant.name);
 
-            let name:&'a Ident=match ds.enum_or_struct {
-                EnumOrStruct::Enum  =>variant_name,
-                EnumOrStruct::Struct=>
-                    outer_attr_sett.renames.variant_type
-                        .unwrap_or_else(|| ident_from(&format!("Const{}",variant.name))),
-            };
+            let name:&'a Ident=inner_attr_sett.renames.variant_type.unwrap_or_else(||{
+                match ds.enum_or_struct {
+                    EnumOrStruct::Enum  =>basename_vari,
+                    EnumOrStruct::Struct=>ident_from(&format!("Const{}",variant.name)),
+                }
+            });
             
             let variant_str=match ds.enum_or_struct {
                 EnumOrStruct::Enum  =>format!("the `{}::{}` variant",ds.name,variant.name),
@@ -395,16 +401,16 @@ impl<'a> StructDeclarations<'a>{
             ).piped(alloc_str);
 
             let uninitialized_ident=
-                ident_from(&format!("{}_Uninit",variant_name));
+                ident_from(&format!("{}_Uninit",basename_vari));
 
             let trait_ident=inner_attr_sett.renames.trait_
-                .unwrap_or_else(|| ident_from(&format!("{}Trait",variant_name)) );
+                .unwrap_or_else(|| ident_from(&format!("{}Trait",basename_vari)) );
             let wr_trait_ident=inner_attr_sett.renames.wr_trait
-                .unwrap_or_else(|| ident_from(&format!("{}WithRuntime",variant_name)) );
+                .unwrap_or_else(|| ident_from(&format!("{}WithRuntime",basename_vari)) );
             let discriminant_ident=
-                ident_from(&format!("{}_Discr",variant_name));
+                ident_from(&format!("{}_Discr",basename_vari));
             let variant_marker_ident=
-                ident_from(&format!("{}_Variant",variant_name));
+                ident_from(&format!("{}_Variant",basename_vari));
             declarations.push(StructDeclaration{
                 name,
                 variant_str,
@@ -415,6 +421,8 @@ impl<'a> StructDeclarations<'a>{
                 wr_trait_ident,
                 variant_marker_ident,
                 discriminant_ident,
+                pub_fields_ident:ident_from(&format!("{}_PubFields",basename_vari)) ,
+                all_fields_ident:ident_from(&format!("{}_AllFields",basename_vari)) ,
                 variant,
                 attribute_settings:inner_attr_sett,
                 generics  ,
@@ -437,7 +445,7 @@ impl<'a> StructDeclarations<'a>{
 
         Self{
             tokens:c_tokens,
-            void_ident:ident_from("_core_Void"),
+            uninit_field_ident:ident_from("__UninitializedField"),
             vis_kind,
             priv_field_vis,
             type_:quote!{ #name <#orig_gens_item_use> },
@@ -641,6 +649,9 @@ impl<'a> ToTokens for StructDeclarations<'a>{
 
         let mut additional_derives=HashSet::new();
 
+        let mut vari_pub_fields=Vec::new();
+        let mut vari_all_fields=Vec::new();
+
         let additional_derives_outer=&self.attribute_settings.additional_derives;
         for declaration in &self.declarations {
             let trait_ident=&declaration.trait_ident;
@@ -653,8 +664,37 @@ impl<'a> ToTokens for StructDeclarations<'a>{
             let generics=&declaration.generics;
             let generics_0=generics_fn();
             let generics_1=generics_fn();
+
+
+            vari_pub_fields.clear();
+            vari_all_fields.clear();
+            for field in &declaration.fields {
+                if field.relative_priv==RelativePriv::Inherited {
+                    vari_pub_fields.push(field.accessor_ident)
+                }
+                vari_all_fields.push(field.accessor_ident)
+            }
+            macro_rules! vari_fields_fn{
+                ($list:expr)=>{{
+                    $list.iter().cloned()
+                        .map(|field_accessor|{
+                            ToTokenFnMut::new(move |tokens|{
+                                let ct=self.tokens;
+                                to_stream!(tokens; ct.fields_mod,ct.colon2,field_accessor )
+                            })
+                        })
+                        .piped(TListFrom::new)
+                }}
+            }
+            let vari_pub_fields=vari_fields_fn!(&vari_pub_fields);
+            let vari_all_fields=vari_fields_fn!(&vari_all_fields);
+            let pub_fields_ident=declaration.pub_fields_ident;
+            let all_fields_ident=declaration.all_fields_ident;
             
-            let generics_voided=iter::repeat(self.void_ident).take(declaration.fields.len());
+            let uninit_field_rep=self.uninit_field_ident
+                .piped(iter::repeat)
+                .take(declaration.fields.len());
+                
             let additional_derives_inner=&declaration.attribute_settings.additional_derives;
             
             let item_attrs=self.attribute_settings.attrs
@@ -694,9 +734,15 @@ impl<'a> ToTokens for StructDeclarations<'a>{
 
             tokens.append_all(quote!{
                 
+                /// the public field accessors for the variant.
+                #vis type #pub_fields_ident=#vari_pub_fields;
+
+                /// All the field accessors for the variant.
+                #priv_field_vis_submod type #all_fields_ident=#vari_all_fields;
+
                 #[doc=#uninit_docs]
                 #priv_field_vis_submod type #uninitialized_ident=
-                    #s_name < #(#generics_voided,)* #priv_suffix> ;
+                    #s_name < #(#uninit_field_rep,)* #priv_suffix> ;
 
                 #item_attrs
                 #( #[doc=#item_docs] )*

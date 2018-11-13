@@ -10,6 +10,9 @@ use rustc_version::{version, Version};
 pub mod test;
 
 fn main() {
+    println!("cargo:rerun-if-changed=./build/");
+
+
     let rver = version().unwrap();
 
     if Version::new(1, 22, 0) <= rver {
@@ -22,9 +25,8 @@ fn main() {
         println!("cargo:rustc-cfg=rust_1_27");
     }
 
-    println!("cargo:warning=RERUNNING BUILD SCRIPT");
+    println!("cargo:warning=RERUNNING type_level_values BUILD SCRIPT");
 
-    println!("cargo:rerun-if-changed=build");
 
     const RERUNNING_BUILD_SCRIPT:()=();
 

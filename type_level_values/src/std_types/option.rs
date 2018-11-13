@@ -40,9 +40,9 @@ use std_::option::Option as StdOption;
 #[allow(dead_code)]
 #[doc(hidden)]
 pub enum Option<T> {
-    #[typelevel(rename = "Some_")]
+    #[typelevel(rename_constvalue = "Some_")]
     Some(T),
-    #[typelevel(rename = "None_")]
+    #[typelevel(rename_constvalue = "None_")]
     None,
 }
 

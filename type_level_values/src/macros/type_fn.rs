@@ -363,9 +363,9 @@ macro_rules! type_fn {
     ) => {
         $(#[$attr_op])*
         /**
-        A type-level function.
+A type-level function.
 
-        Implements TypeFn<> for the trait of a similar name.
+Implements TypeFn<> for the trait of a similar name.
         */
         #[allow(non_camel_case_types)]
         pub struct $op_name;

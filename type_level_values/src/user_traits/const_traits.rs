@@ -182,11 +182,13 @@ let wrapper_2=MutConstParam::mutparam( wrapper_1 , ReplaceWithParamFn::NEW , u32
 pub unsafe trait ConstLayoutIndependent<Other: ?Sized> {}
 
 unsafe impl<This:?Sized, Other:?Sized> 
-    ConstLayoutIndependent<PhantomData<Other>> for PhantomData<This>
+    ConstLayoutIndependent<PhantomData<ConstWrapper<Other>>> 
+for PhantomData<ConstWrapper<This>>
 {}
 
 unsafe impl<This:?Sized, Other:?Sized> 
-    ConstLayoutIndependent<ConstWrapper<Other>> for ConstWrapper<This>
+    ConstLayoutIndependent<ConstWrapper<ConstWrapper<Other>>> 
+for ConstWrapper<ConstWrapper<This>>
 {}
 
 ///////////////////////////////////////////////////////////////////////////////////

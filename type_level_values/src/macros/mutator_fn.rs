@@ -3,6 +3,13 @@ A macro for defining a Mutator Function.
 
 Mutator Function is a TypeFn_ which can mutate a type's ConstValue-parameter.
 
+Mutator functions must have 2 parameters in which:
+<br>
+- The first is the current ConstValue parameter of the 
+<br>
+- The second is the parameters to the function,using a tuple if we need more than 1 parameter.
+
+
 # Kinds of Mutator Function
 
 There are 2 different kinds of Mutator Function:
@@ -189,7 +196,7 @@ pub mod bounded_channel{
     pub struct __ChannelEnd<Chan, S: WrapperTrait> {
         channel: Chan,
         #[allow(dead_code)]
-        state: ConstWrapperFromTrait<S>,
+        state: ConstWrapper<S>,
     }
 
     pub type Sender<T, S> = ChannelEnd<MPSCSender<T>, S>;
@@ -298,6 +305,7 @@ it would be the same if the This type was specified.
 # use type_level_values::prelude::*;
 
 use type_level_values::std_ops::*;
+use type_level_values::ops::*;
 use type_level_values::user_traits::AdaptUnary;
 
 mutator_fn!{
@@ -318,7 +326,6 @@ mutator_fn!{
 # use type_level_values::prelude::*;
 
 use type_level_values::std_ops::*;
-use type_level_values::user_traits::AdaptUnary;
 
 mutator_fn!{
     type AllowedSelf=( allowed_self_constructors::All )
@@ -338,11 +345,11 @@ mutator_fn!{
 # use type_level_values::prelude::*;
 
 use type_level_values::std_ops::*;
-use type_level_values::user_traits::AdaptUnary;
+use type_level_values::user_traits::AdaptFn;
 
 type_fn!{
     pub fn MulThenAdd[A,B,C](A,B,C)
-    where[ A:Piped<(AddMt<B>,MulMt<C>),Output=Out> ]
+    where[ A:Piped_<(AddMt<B>,MulMt<C>),Output=Out> ]
     {let Out;Out}
 }
 

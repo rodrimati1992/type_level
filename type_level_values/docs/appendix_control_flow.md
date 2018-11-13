@@ -118,7 +118,7 @@ use type_level_values::fn_adaptors::*;
 use type_level_values::std_ops::*;
 
 type SafeDiv=
-    If<(GetRhs,IsZero),
+    If<(GetRhs,IsZeroOp),
         Const<U0>,
         DivOp,
     >;

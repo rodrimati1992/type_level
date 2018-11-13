@@ -59,18 +59,17 @@ type_fn!{
     use type_level_values::std_ops::*;
     use type_level_values::fn_adaptors::*;
     
-    type SafeDiv=If<(GetRhs,IsZero),GetLhs,DivOp>;
+    type SafeDiv=If<(GetRhs,IsZeroOp),GetLhs,DivOp>;
 
     fn main(){
-        let :AssertEq<TypeFn<SafeDiv,(U10,U0)>,U10>;
-        let :AssertEq<TypeFn<SafeDiv,(U10,U1)>,U10>;
-        let :AssertEq<TypeFn<SafeDiv,(U10,U2)>,U5>;
-        let :AssertEq<TypeFn<SafeDiv,(U10,U3)>,U3>;
-        let :AssertEq<TypeFn<SafeDiv,(U10,U4)>,U2>;
-        let :AssertEq<TypeFn<SafeDiv,(U10,U5)>,U2>;
-        let :AssertEq<TypeFn<SafeDiv,(U10,U6)>,U1>;
+        let _:AssertEq<TypeFn<SafeDiv,(U10,U0)>,U10>;
+        let _:AssertEq<TypeFn<SafeDiv,(U10,U1)>,U10>;
+        let _:AssertEq<TypeFn<SafeDiv,(U10,U2)>,U5>;
+        let _:AssertEq<TypeFn<SafeDiv,(U10,U3)>,U3>;
+        let _:AssertEq<TypeFn<SafeDiv,(U10,U4)>,U2>;
+        let _:AssertEq<TypeFn<SafeDiv,(U10,U5)>,U2>;
+        let _:AssertEq<TypeFn<SafeDiv,(U10,U6)>,U1>;
     }
-    TypeFn<>
 
     ```
     */
@@ -104,19 +103,18 @@ type_fn!{
 
     struct attempted_to_divide_by_zero;
     
-    type PanicDiv=If<(GetRhs,IsZero),(GetLhs,Panic<attempted_to_divide_by_zero>),DivOp>;
+    type PanicDiv=If<(GetRhs,IsZeroOp),(GetLhs,Panic<attempted_to_divide_by_zero>),DivOp>;
 
     fn main(){
         // This causes a compile_time error 
-        //let :AssertEq<TypeFn<SafeDiv,(U10,U0)>,U10>;
-        let :AssertEq<TypeFn<SafeDiv,(U10,U1)>,U10>;
-        let :AssertEq<TypeFn<SafeDiv,(U10,U2)>,U5>;
-        let :AssertEq<TypeFn<SafeDiv,(U10,U3)>,U3>;
-        let :AssertEq<TypeFn<SafeDiv,(U10,U4)>,U2>;
-        let :AssertEq<TypeFn<SafeDiv,(U10,U5)>,U2>;
-        let :AssertEq<TypeFn<SafeDiv,(U10,U6)>,U1>;
+        //let _:AssertEq<TypeFn<PanicDiv,(U10,U0)>,U10>;
+        let _:AssertEq<TypeFn<PanicDiv,(U10,U1)>,U10>;
+        let _:AssertEq<TypeFn<PanicDiv,(U10,U2)>,U5>;
+        let _:AssertEq<TypeFn<PanicDiv,(U10,U3)>,U3>;
+        let _:AssertEq<TypeFn<PanicDiv,(U10,U4)>,U2>;
+        let _:AssertEq<TypeFn<PanicDiv,(U10,U5)>,U2>;
+        let _:AssertEq<TypeFn<PanicDiv,(U10,U6)>,U1>;
     }
-    TypeFn<>
 
     ```
 
@@ -156,6 +154,7 @@ pub struct IsPanicking;
 // #[cfg(test)]
 mod tests {
     use super::*;
+
 
 
     #[test]

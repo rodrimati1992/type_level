@@ -30,9 +30,9 @@ use std_::result::Result as StdResult;
 #[allow(dead_code)]
 #[doc(hidden)]
 pub enum Result<T, E> {
-    #[typelevel(rename = "Ok_")]
+    #[typelevel(rename_constvalue = "Ok_")]
     Ok(T),
-    #[typelevel(rename = "Err_")]
+    #[typelevel(rename_constvalue = "Err_")]
     Err(E),
 }
 

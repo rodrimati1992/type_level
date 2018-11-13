@@ -14,13 +14,26 @@ struct Rectangle{
 use self::type_level_Rectangle::fields;
 
 
+
+#[derive(MutConstValue)]
+#[mcv(Type="RectangleMCV",ConstValue="I")]
+struct __RectangleMCV<I>{
+    x:u32,
+    y:u32,
+    w:u32,
+    h:u32,
+    aa:u8,
+    bb:u8,
+    _marker:ConstWrapper<I>,
+}
+
+
+
+
 pub fn main(){
 
-    let _:Construct<Rectangle_Uninit,(
-        (fields::x,U0),
-        (fields::y,U1),
-        (fields::w,U2),
-        (fields::h,U3),
-    )>;
+    println!("{:?}",::std::mem::size_of::<RectangleMCV<()>>());
+    println!("{:?}",::std::mem::align_of::<u8>());
+    println!("{:?}",::std::mem::align_of::<u32>());
 
 }

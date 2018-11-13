@@ -18,6 +18,10 @@ use attribute_detection::mutconstvalue::{
 
 use data_structure::DataStructure;
 
+use common_tokens::CommonTokens;
+
+use submod_visibility::MyVisibility;
+
 use syn::{
     self,
     DeriveInput,
@@ -32,6 +36,8 @@ use quote::{
 };
 
 // use core_extensions::IterCloner;
+#[allow(unused_imports)]
+use core_extensions::BoolExt;
 use core_extensions::SelfOps;
 use core_extensions::iterators::IteratorExt;
 
@@ -70,10 +76,14 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
     if !ast.generics.params.trailing_punct() {
         ast.generics.params.push_punct(comma);
     }
+
+    let ref c_tokens=CommonTokens::new();
     
     let arenas=Arenas::default();
     let attrs=&CCAttributes::new(&attrs,&arenas);
     let vis =ast.vis.clone();
+    let vis_submod = MyVisibility::new(&vis,c_tokens);
+    let vis_submod = vis_submod.submodule_level(1);
     let original_name=ast.ident.clone();
 
 
@@ -238,9 +248,21 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         type_alias_ident,
     );
 
+    /* 
+    [redacted] the [redacted] who want repr(Rust) to make no gurantees 
+    at all about layout.
+    How the [redacted] can phantom generic parameters change the layout of repr(Rust) types,
+    is this a [redacted] joke?!
+    */
+    let main_repr=attrs.main_repr.is_none().if_true(|| quote!( #[repr(C)] ) );
+    let extra_reprs=attrs.additional_repr_attrs
+        .piped_ref(|ara| ara.is_empty().if_false(|| ara ) );
+
     tokens.append_all(quote!{
         #(#[#delegated_attrs])*
         #(#[doc=#delegated_docs])*
+        #main_repr
+        #( #[repr(#(#extra_reprs),*)] )*
         #[doc=#ty_doc]
         #ast
     });
@@ -276,7 +298,6 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         .map(|i| new_ident(format!("U{}",i)) )
         .collect::<Vec<&Ident>>();
 
-
     let field_accessors=field_indices.iter().cloned().zip(field_tys_mentioning_const)
         .map(|(field_i,field_tmc)|{
             quote!{
@@ -300,7 +321,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         #[allow(non_camel_case_types)]
         mod #created_module { 
             #[doc(hidden)]
-            pub struct #const_constructor_ident< #remaining_generics > {
+            #vis_submod struct #const_constructor_ident< #remaining_generics > {
                 _marker: 
                     ::type_level_values::reexports::VariantPhantom<(
                         #( & #lifetimes () ,)*
@@ -313,7 +334,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
             use type_level_values::const_wrapper::ConstWrapper;
 
             #[doc(hidden)]
-            pub struct ConstDependentField<T>(T);
+            #vis_submod struct ConstDependentField<T>(T);
 
             #(#field_accessors)*
 
@@ -405,7 +426,7 @@ pub fn derive_from_derive_input(mut ast:DeriveInput) -> TokenStream {
         
         tokens.append_all(quote! {
             impl #impl_generics #name #ty_generics #where_clause {
-                pub const TYPELEVEL_DERIVE:&'static str=#derive_str;
+                #vis_submod const MUTCONSTVAL_DERIVE:&'static str=#derive_str;
             }
         });
     }

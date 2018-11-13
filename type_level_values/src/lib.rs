@@ -66,7 +66,8 @@ Disabling the std feature disables these things:
 
 "serde":Enables serde support.Enabled by default.
 
-"large_tlist":to enable fixed-size impls for type-lists of over 32 instead of 16 elements,
+"large_tlist":to enable fixed-size impls for type-lists of 
+up to 32 elements instead of 16 elements,
 
 */
 
@@ -75,9 +76,13 @@ Disabling the std feature disables these things:
 #![allow(non_camel_case_types)]
 #![allow(unused_imports)]
 
+// this is pub because it is used by the derive macros to access the standard/core library.
+#[doc(hidden)]
 #[cfg(feature = "std")]
 pub extern crate std as std_;
 
+// this is pub because it is used by the derive macros to access the standard/core library.
+#[doc(hidden)]
 #[cfg(not(feature = "std"))]
 pub extern crate core as std_;
 
@@ -87,7 +92,7 @@ pub extern crate typenum;
 pub extern crate core_extensions;
 
 #[macro_use]
-pub extern crate derive_type_level;
+extern crate derive_type_level;
 
 #[cfg(feature = "serde")]
 extern crate serde;

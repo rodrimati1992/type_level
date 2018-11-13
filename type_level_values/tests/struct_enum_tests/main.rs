@@ -22,13 +22,13 @@ mod check_variants;
 // #[cfg(feature="passed_tests")]
 mod test_reexports;
 
-#[cfg(feature="passed_tests")]
+// #[cfg(feature="passed_tests")]
 mod test_field_attrs;
 
-#[cfg(feature="passed_tests")]
+// #[cfg(feature="passed_tests")]
 mod typelevel_all_attrs;
 
-#[cfg(feature="passed_tests")]
+// #[cfg(feature="passed_tests")]
 mod typelevel_disabled_impls;
 
 mod test_mutconstvalue;
@@ -57,6 +57,7 @@ use parsing::{
     ModIndex,
     EnumOrStruct,
     type_level_modules,
+    mut_const_value_modules,
     TLModIndex,
 };
 
