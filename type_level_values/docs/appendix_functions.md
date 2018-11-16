@@ -11,18 +11,19 @@ For more information go:
 
 - To the [appendix on control flow](../appendix_control_flow/index.html)
 
-# Piped
+Piped
 
 Piped_ is an alternative syntax for calling a function,
 where the parameters and the function are reversed,
 most useful when composing multiple functions such that they span multiple lines.
 
 An example of using it in a where clause:
+
 ```
-# #[macro_use]
-# extern crate type_level_values;
+#[macro_use]
+extern crate type_level_values;
  
-# use type_level_values::prelude::*;
+use type_level_values::prelude::*;
 use type_level_values::std_ops::*;
 use type_level_values::ops::{If,ConstLtMt,MinMaxOp,SatSub1Op};
 use type_level_values::type_fn::Piped_;
@@ -48,14 +49,13 @@ type_fn!{
     }
 }
 
-# fn main(){}
+fn main(){}
 
 ```
     
-An example of using it in a type alias:
-`type MulAdd<L,R>=Piped<L,(MutMt<R>,AddMt<R>)>;`
+An example of using it in a type alias:`type MulAdd<L,R>=Piped<L,(MutMt<R>,AddMt<R>)>`
 
-# Multiple branch function.
+Multiple branch function.
 
 Functions can have multiple branches,where calling the function takes the 
 branch that matches the parameters,this is most useful for emulating match expressions.
@@ -65,13 +65,13 @@ the multiple branches can't specialize any other branch.
 
 ### Example
 
-Say that we want to implement the `Option::map_or_else` method on the type level.
+Say that we want to implement the Option::map_or_else method on the type level.
 
 ```
-# #[macro_use]
-# extern crate type_level_values;
+#[macro_use]
+extern crate type_level_values;
  
-# use type_level_values::prelude::*;
+use type_level_values::prelude::*;
 use type_level_values::std_types::cmp_ordering::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::std_ops::*;
@@ -96,12 +96,12 @@ fn main(){
 
 ```
 
-# Function composition
+Function composition
 
 What this library calls function composition is taking 
 multiple functions and producing a type which is itself a function.
 
-# Ways to compose functions
+Ways to compose functions
 
 The ways to compose functions are:
 
@@ -110,7 +110,7 @@ The ways to compose functions are:
 
 - Using a function adaptor from type_level_value::fn_adaptors.
 
-# Function adaptors
+Function adaptors
 
 Function adaptors are generic types which implement TypeFn_,
 taking other TypeFn as parameters (either as captures or as a function parameter).
@@ -127,10 +127,10 @@ The examples will use these adaptors:
 Creating a function which multiplies a number by 2.
 
 ```
-# #[macro_use]
-# extern crate type_level_values;
+#[macro_use]
+extern crate type_level_values;
 
-# use type_level_values::prelude::*;
+use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
 use type_level_values::std_ops::*;
@@ -153,10 +153,10 @@ fn main(){
 Creating a function which sets a field to U0.
 
 ```
-# #[macro_use]
-# extern crate type_level_values;
+#[macro_use]
+extern crate type_level_values;
 
-# use type_level_values::prelude::*;
+use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
 use type_level_values::std_ops::*;
@@ -180,10 +180,10 @@ fn main(){
 Creating a function which divides a field by 2.
 
 ```
-# #[macro_use]
-# extern crate type_level_values;
+#[macro_use]
+extern crate type_level_values;
 
-# use type_level_values::prelude::*;
+use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
 use type_level_values::std_ops::*;
@@ -212,10 +212,10 @@ fn main(){
 Copying one field into another.
 
 ```
-# #[macro_use]
-# extern crate type_level_values;
+#[macro_use]
+extern crate type_level_values;
 
-# use type_level_values::prelude::*;
+use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
 use type_level_values::std_ops::*;
@@ -246,7 +246,7 @@ fn main(){
 ```
 
 
-# Sequencing
+Sequencing
 
 Sequences are tuples or type-lists where every element implements TypeFn_ and
 the return value of every function is fed to the next function.
@@ -257,10 +257,10 @@ the return value of every function is fed to the next function.
 Creating a type-level function which wraps the type T in a `Arc<Mutex<Vec<Option<T>>>>`.
 
 ```
-# #[macro_use]
-# extern crate type_level_values;
+#[macro_use]
+extern crate type_level_values;
 
-# use type_level_values::prelude::*;
+use type_level_values::prelude::*;
 
 use type_level_values::ops::*;
 
@@ -333,10 +333,10 @@ fn piped<F, U>(self, f: impl FnOnce(Self) -> U) -> U {
 Implementing a multiply-add function.
 
 ```
-# #[macro_use]
-# extern crate type_level_values;
+#[macro_use]
+extern crate type_level_values;
 
-# use type_level_values::prelude::*;
+use type_level_values::prelude::*;
 use type_level_values::ops::AssertEq;
 use type_level_values::fn_adaptors::*;
 use type_level_values::std_ops::*;

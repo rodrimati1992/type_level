@@ -258,8 +258,8 @@ fn text_reexport_inner(
 
     visiting.check_derive(derive_str,move|params|{
         if params.mod_index!=TLModIndex::DerivingMod { return } 
-        match params.item {
-            VisitItem::Use(use_)=>{
+        match params.item.clone() {
+            VisitItem::Use(ref use_)=>{
                 if !set.remove(use_) {
                     let s=format!(
                         "{}\n\nRemaining Items:{}",

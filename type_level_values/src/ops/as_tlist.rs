@@ -55,6 +55,8 @@ mod test{
         let _:AssEqTy<AsTList<Err_<U32>>, tlist![U32]>;
         
         let _:AssEqTy<AsTList<ConstRange<U10,U20>>, tlist![U10,U20]>;
+
+        #[cfg(rust_1_26)]
         let _:AssEqTy<AsTList<ConstRangeInclusive<U10,U20>>, tlist![U10,U20]>;
         
         let _:AssEqTy<AsTList<()>, tlist![]>;
@@ -73,6 +75,7 @@ mod test{
         use std_types::option::{None_Discr,Some_Discr};
         use std_types::result::{Ok_Discr,Err_Discr};
         use std_types::range::Range_Discr;
+        #[cfg(rust_1_26)]
         use std_types::range_inclusive::RangeInclusive_Discr;
         use std_types::tuples::Tuple_Discr;
         use new_types::type_list::{TList_Discr,TNil_Discr};
@@ -92,6 +95,8 @@ mod test{
         let _:Test<Err_<U32>, tlist![ Err_Discr, U32]>;
         
         let _:Test<ConstRange<U10,U20>, tlist![ Range_Discr, U10,U20]>;
+
+        #[cfg(rust_1_26)]
         let _:Test<ConstRangeInclusive<U10,U20>, tlist![ RangeInclusive_Discr,U10,U20]>;
 
         let _:Test<(), tlist![Tuple_Discr]>;

@@ -43,10 +43,14 @@ This macro generates 3 (visible) items:
 [ The things shared by the other derive macros: ](../attribute_shared/index.html)
 
 [- The metadata attributes:](../attribute_shared.index#metadata-attributes)
-    `bound`/`attr`/`doc`.
+`bound`/`attr`/`doc`.
 
-[- Attributes on the deriving type:](../attribute_shared.index#attributes-on-a-typevariant)
-    `SkipDerive`/`PrintDerive`/`Items`.
+[- Attributes on the deriving type](../attribute_shared.index#attributes-on-a-typevariant),
+renamed to use PascalCase here since this attribute reserves attributes starting with uppercase,
+delegating the remaining attributes to \<NewType\>:
+- `SkipDerive`
+- `PrintDerive`
+- `Items`.
 
 # Attributes
 
@@ -119,6 +123,7 @@ Any attribute which is not PascalCase is automatically delegated to \<NewType\>.
 # use type_level_values::prelude::*;
 # use type_level_values::core_extensions::*;
 
+#[cfg(rust_1_27)]
 #[derive(MutConstValue)]
 #[mcv(
     doc="This doc comment gets applied to ChannelEnd_Ty",

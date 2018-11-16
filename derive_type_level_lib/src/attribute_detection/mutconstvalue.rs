@@ -348,10 +348,10 @@ fn constructor_inner<'alloc>(
         }
 
         for pushed_attrs in &this.attrs.attrs[prev_attr_len..] {
-            match *pushed_attrs {
+            match **pushed_attrs {
                 NestedMeta::Meta(Meta::List(ref added_attrs))if added_attrs.ident=="repr" =>{
                     for added_attr in &added_attrs.nested {
-                        if let NestedMeta::Meta(ref meta)=added_attr {
+                        if let NestedMeta::Meta(ref meta)=*added_attr {
                             let (ident,repr)=check_repr_attr(meta);
                             this.main_repr=Some(repr);
                         }
@@ -370,7 +370,7 @@ fn constructor_inner<'alloc>(
 
 
 fn check_repr_attr<'alloc>(meta:&'alloc Meta)-> (&'alloc Ident,MainRepr) {
-    if let Meta::Word(ref ident)=meta {
+    if let Meta::Word(ref ident)=*meta {
         if ident=="C"{
             (ident,MainRepr::C)
         }else if ident=="transparent" {

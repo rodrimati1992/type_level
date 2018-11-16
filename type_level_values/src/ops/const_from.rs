@@ -119,9 +119,15 @@ mod tests {
             ConstRange<U0,U0>,
             ConstRange<U1,U4>,
             ConstRange<U6,U10000>,
-            ConstRangeInclusive<U0,U0>,
-            ConstRangeInclusive<U1,U4>,
-            ConstRangeInclusive<U6,U10000>,
+        }
+        
+        #[cfg(rust_1_26)]
+        {
+            check_identity_conv!{
+                ConstRangeInclusive<U0,U0>,
+                ConstRangeInclusive<U1,U4>,
+                ConstRangeInclusive<U6,U10000>,
+            }
         }
     }
 

@@ -173,13 +173,13 @@ impl<'a> StructDeclarations<'a>{
         let name=ds.name;
 
 
-        let alloc_ident=|ident:Ident|->&'a Ident{
+        let ref alloc_ident=|ident:Ident|->&'a Ident{
             arenas.idents.alloc(ident)
         };
-        let alloc_str=|s|->&'a str{
+        let ref alloc_str=|s|->&'a str{
             arenas.strings.alloc(s) 
         };
-        let ident_from=|ident:&str|->&'a Ident{
+        let ref ident_from=|ident:&str|->&'a Ident{
             alloc_ident(Ident::new(ident,name.span()))
         };
 
@@ -732,6 +732,8 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                 name=s_name
             );
 
+            let field_docs_a=declaration.fields.iter().map(|x|&x.docs);
+
             tokens.append_all(quote!{
                 
                 /// the public field accessors for the variant.
@@ -761,7 +763,10 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                 StructKind::Tuple=>{
                     quote!{ 
                         ( 
-                            #(#field_vis ConstWrapper<#generics_1>,)* 
+                            #(
+                                #(#[doc=#field_docs_a])*
+                                #field_vis ConstWrapper<#generics_1>,
+                            )* 
                             #(#opt_priv_field_vis ConstWrapper<__IsPriv>,)*
                         )
                         #(where 
@@ -776,7 +781,10 @@ impl<'a> ToTokens for StructDeclarations<'a>{
                             #has_priv_fields:__PrivTrait,
                         )*
                         { 
-                            #(#field_vis #names:ConstWrapper<#generics_1>,)* 
+                            #(
+                                #(#[doc=#field_docs_a])*
+                                #field_vis #names:ConstWrapper<#generics_1>,
+                            )* 
                             #(#opt_priv_field_vis priv_:ConstWrapper<__IsPriv>,)*
                         } 
                     }

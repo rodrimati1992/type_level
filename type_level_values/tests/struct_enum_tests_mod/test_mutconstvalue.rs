@@ -297,7 +297,7 @@ struct __UnsafeReprC<C>{
     c:ConstWrapper<C>
 }
 
-
+#[cfg(rust_1_27)]
 #[derive(MutConstValue)]
 #[mcv(
     ConstValue="C",
@@ -324,6 +324,7 @@ struct __ReprC<C>{
 }
 
 
+#[cfg(rust_1_27)]
 #[derive(MutConstValue)]
 #[mcv(
     ConstValue="C",
@@ -384,6 +385,7 @@ fn repr_attrs(){
         }
     );
 
+    #[cfg(rust_1_27)]
     repr_attrs_helper(
         "UnsafeReprTransparent",
         UnsafeReprTransparent_Ty::<()>::MUTCONSTVAL_DERIVE,
@@ -400,6 +402,7 @@ fn repr_attrs(){
         }
     );
 
+    #[cfg(rust_1_27)]
     repr_attrs_helper(
         "ReprTransparent",
         ReprTransparent_Ty::<()>::MUTCONSTVAL_DERIVE,

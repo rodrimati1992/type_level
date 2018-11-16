@@ -311,15 +311,15 @@ pub trait ItemToCheck{
 }
 
 
-impl<'a> ItemToCheck for VisitItem<'a> {
+impl ItemToCheck for VisitItem {
     fn item_to_check(&self)->Option<ItemCheck>{
         match *self {
-            VisitItem::Trait (item)=>item.item_to_check(),
-            VisitItem::Struct(item)=>item.item_to_check(),
-            VisitItem::Enum  (item)=>item.item_to_check(),
-            VisitItem::Type  (item)=>item.item_to_check(),
-            VisitItem::Impl  (item)=>item.item_to_check(),
-            VisitItem::Use   (item)=>None,
+            VisitItem::Trait (ref item)=>item.item_to_check(),
+            VisitItem::Struct(ref item)=>item.item_to_check(),
+            VisitItem::Enum  (ref item)=>item.item_to_check(),
+            VisitItem::Type  (ref item)=>item.item_to_check(),
+            VisitItem::Impl  (ref item)=>item.item_to_check(),
+            VisitItem::Use   (ref item)=>None,
             VisitItem::EndOfMod=>None,
             VisitItem::EndOfVisitor=>None,
         }

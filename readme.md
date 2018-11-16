@@ -10,14 +10,17 @@ Package for declaring and using type level values and functions.
 For the api documentation go [here](https://docs.rs/type_level_values/).
 Or use `cargo doc --open` if you included this in your crate.
 
-For documentation outside of the API of type_level_values itself,
-including the `TypeLevel` and `MutConstValue` derive macros,
+For documentation outside of the docs for individual items and modules,
+including documentation for the `TypeLevel` and `MutConstValue` derive macros,
 go to the `docs` submodule (in the documentation for type_level_values).
 
 ### Examples crate
 
-For examples of using the type_level libraries look at 
-[`type_level_examples`](https://crates.io/crates/type_level_examples)
+For examples of using the type_level libraries,
+//TODO:link to the guide in docs.rs
+read [`the guide`]() (also available with cargo doc --open), 
+or look at the [`type_level_examples`](https://crates.io/crates/type_level_examples)
+crate.
 
 ### Minimum supported Rust version
 
@@ -26,13 +29,20 @@ Using build scripts to enable features after Rust 1.20.
 
 ### no-std support
 
-To use `type_level_values` crate in no_std contexts disable the default-feature.
+To use type_level_values in no_std contexts disable the default-feature.
 
-### Cargo Features for `type_level_values`
+This crate has few features that require the standard library (instead of core),
+it is required by default so that users that are not aware of the core library don't have 
+to pass a feature to enable std-requiring items.
 
-"std":Enables standard library support.Enabled by default.
+# Cargo Features
+
+"std":Enables standard library support,otherwise uses the core library.Enabled by default.
 
 "serde":Enables serde support.Enabled by default.
+
+"large_tlist":to enable fixed-size impls for type-lists of 
+up to 32 elements instead of 16 elements,
 
 
 # Example 

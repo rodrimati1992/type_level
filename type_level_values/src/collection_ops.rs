@@ -488,6 +488,75 @@ define_tryfold_conv!{ generics[]  None_   :OptionType => TFBreak<None_> }
 /////////////////////////////////////////////////////////////////////////////////////////
 
 
+#[doc(hidden)]
+#[derive(TypeLevel)]
+#[typelevel(
+    reexport(Struct)
+    items(runtime_conv(NoImpls)) //This is only a type-level struct
+)]
+pub struct CollectionFns{
+    pub last:(),
+    pub append:(),
+    pub zip:(),
+    pub filter_map:(),
+    pub skip_while:(),
+    pub take_while:(),
+    pub skip:(),
+    pub take:(),
+    pub scan_l:(),
+    pub scan_r:(),
+    pub try_scan_l:(),
+    pub try_scan_r:(),
+    pub flatten:(),
+    pub partition:(),
+    pub find_map:(),
+    pub position:(),
+    pub r_position:() ,
+}
+
+pub use self::type_level_CollectionFns::{
+    CollectionFnsTrait,
+    field as collfns_f,
+}
+
+
+fn what(){
+    use prelude::*;
+    use self::type_level_CollectionFns::*;
+
+
+    let _:Construct<
+        CollectionFns_Uninit,
+        tlist![
+            (fields::last       , U0 ),
+            (fields::append     , U1 ),
+            (fields::zip        , U2 ),
+            (fields::filter_map , U3 ),
+            (fields::skip_while , U4 ),
+            (fields::take_while , U5 ),
+            (fields::skip       , U6 ),
+            (fields::take       , U7 ),
+            (fields::scan_l     , U8 ),
+            (fields::scan_r     , U9 ),
+            (fields::try_scan_l , U10 ),
+            (fields::try_scan_r , U11 ),
+            (fields::flatten    , U12 ),
+            (fields::partition  , U13 ),
+            (fields::find_map   , U14 ),
+            (fields::position   , U15 ),
+            (fields::r_position , U16 ),
+        ]
+    >=ConstCollectionFns::MTVAL;
+
+
+}
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 // #[cfg(test)]
 #[cfg(all(test,feature="passed_tests"))]

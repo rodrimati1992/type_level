@@ -143,8 +143,8 @@ pub(crate) static FIELD_ALL_ATTR:&str=r###"
 
 
 
-pub(crate) fn test_items<'a,I>(
-    mut variants:DataType<'a,I>,
+pub(crate) fn test_items<I>(
+    mut variants:DataType<I>,
     ctokens:&CommonTokens,
     derive_str:&str,
 )
@@ -222,8 +222,7 @@ where
     I:ModIndex
 {
     let pub_vis=parse_visibility("pub");
-    let pub_vis=MyVisibility::new(&pub_vis,ctokens);
-
+    
     let mut visiting=Visiting::new(modules);
 
     visiting.check_derive(derive_str,|params|{
@@ -317,23 +316,25 @@ where
             }
         }
 
-        match (x,params.item) {
-            (Some(reexports),VisitItem::Use(use_))=>{
+        match (x,params.item.clone()) {
+            (Some(ref mut reexports),VisitItem::Use(ref use_))=>{
                 if !reexports.remove(use_) {
                     return params.push_err(
                         VIEK::UnexpectedItem,
                         format!(
                             "{}\n\nRemaining Items:{}",
                             tokens_to_string(use_),
-                            totoken_iter_to_string(&*reexports)
+                            totoken_iter_to_string(&**reexports)
                         )
                     );
                 }
             }
-            (Some(_),VisitItem::Struct(struct_))=>{
+            (Some(_),VisitItem::Struct(ref struct_))=>{
                 match accessor_structs.remove( &struct_.ident ) {
                     Some(attrs)=>{
-                        if pub_vis!=MyVisibility::new(&struct_.vis,ctokens){
+                        let my_pub_vis=MyVisibility::new(&pub_vis,ctokens);
+                        let was_not_public=my_pub_vis!=MyVisibility::new(&struct_.vis,ctokens);
+                        if was_not_public {
                             params.push_err(VIEK::WrongDefinition,format!(
                                 "visibility is '{}' instead of 'pub'",
                                 tokens_to_string(&struct_.vis),
@@ -437,7 +438,7 @@ where
     let mut visiting=Visiting::new(modules);
 
     visiting.check_derive(derive_str,|params|{
-        match params.item {
+        match params.item.clone() {
             VisitItem::Struct(struct_)=> {
                 if struct_.ident!=variant.const_value {
                     return;

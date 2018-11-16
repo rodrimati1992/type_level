@@ -34,6 +34,13 @@ Items inside type_level_\<DerivingType>:
     The default name for structs is \<DerivingType>Trait.
     The default name for enum variants is <VariantName>Trait.
 
+- \<Struct/Variant>WithRuntime:
+    Trait used to access the fields of the ConstValue with extra bounds 
+    specified using the `#[typelevel(bound_runt="...")` attribute on a field.
+    <br>
+    The default name for structs is \<DerivingType>Trait.
+    The default name for enum variants is <VariantName>Trait.
+
 - \<Struct/Variant>FromTrait:
     To get the \<ConstValue> type from a type parameter constrained by \<Struct/Variant>Trait .
     <br>
@@ -132,6 +139,10 @@ Most attributes lists support these attributes:
     Renames the trait used to access the fields of the ConstValue equivalent 
     for the derived Type/Variant.<br>
     Of the form `rename_trait = "new_name"`,the string must be a valid identifier.
+
+- rename_wr_trait :
+    Renames the \<DerivingType>WithRuntime trait <br>
+    Of the form `rename_wr_trait = "new_name"`,the string must be a valid identifier.
 
 - derive : 
     Derives all Built-in traits,

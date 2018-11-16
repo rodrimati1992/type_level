@@ -18,10 +18,12 @@ use super::{
 pub fn type_attrs()->ValidAttrs{
     vec![
         rename(),
+        rename_consttype(),
+        rename_constvalue(),
         rename_trait(),
+        rename_withruntime(),
         derive(),
         items(),
-        rename_consttype(),
         reexport(),
     ].into_iter().chain( shared_metadata() )
         .collect::<Vec<_>>()
@@ -112,6 +114,23 @@ pub fn rename()->AttrShape{
             }
         ],
         word:"rename",
+        description:"\
+            Changes the base name used in identifiers from `<DerivingType>` \
+            to the passed identifier\
+        ".into(),
+    }
+}
+
+
+pub fn rename_constvalue()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"new_name".into()} ,
+                clarification:Some("the string has to be a valid identifier.".into()),
+            }
+        ],
+        word:"rename_constvalue",
         description:"Renames the ConstValue equivalent of the derived Type/Variant.".into(),
     }
 }
@@ -129,6 +148,21 @@ pub fn rename_trait()->AttrShape{
         description:"\
             Renames the trait used to access the fields of the ConstValue equivalent \n\
             for the derived Type/Variant.\
+        ".into(),
+    }
+}
+
+pub fn rename_withruntime()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::NameValue{value:"new_name".into()} ,
+                clarification:Some("the string has to be a valid identifier.".into()),
+            }
+        ],
+        word:"rename_withruntime",
+        description:"\
+            Renames the <DerivingType>WithRuntime trait.\
         ".into(),
     }
 }

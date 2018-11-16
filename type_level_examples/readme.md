@@ -9,7 +9,6 @@ do not use this crate as a dependency.
 
 To run the examples do `cargo run -- ` and then add one of the arguments from the help message.
 
-**Work in progress.**
 **Please create issues for any problem.**
 
 This crate uses [`derive_type_level`](https://crates.io/crates/derive_type_level) to access the 

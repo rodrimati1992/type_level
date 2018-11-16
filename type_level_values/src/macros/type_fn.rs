@@ -388,11 +388,11 @@ Implements TypeFn<> for the trait of a similar name.
     ) => {
         $(#[$attr_op])*
         /**
-        A type-level function.
-        
-        Implements TypeFn<> for the trait of a similar name.
-        
-        This is defined to encourage function composition,emulating method chains.
+A type-level function.
+
+Implements TypeFn<> for the trait of a similar name.
+
+This is defined to encourage function composition,emulating method chains.
         */
         #[allow(non_camel_case_types)]
         pub struct $op_name<$($param:?Sized $(= $def_ty )* ),*>(

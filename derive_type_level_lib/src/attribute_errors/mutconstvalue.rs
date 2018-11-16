@@ -96,35 +96,6 @@ pub fn unsafe_repr_attr()->AttrShape{
     }
 }
 
-// pub fn constconstructor_attr()->AttrShape{
-//     AttrShape{
-//         variants:vec![
-//             AttrVariant{ 
-//                 kind:AttrKind::NameValue{value:"ident".into()} ,
-//                 clarification:Some("the string must be a valid identifier".into())
-//             },
-//             AttrVariant{ 
-//                 kind:AttrKind::List{
-//                     value:" name=\"ident\" $(, <metadata_attribute> )* ".into()
-//                 }, 
-//                 clarification:Some("the string must be a valid identifier".into())
-//             },
-//             AttrVariant{ 
-//                 kind:AttrKind::List{
-//                     value:" use_=\"ident\"  $(, <metadata_attribute> )* ".into()
-//                 },
-//                 clarification:Some(use_clarification("<ConstConstructor>"))
-//             },
-//         ],
-//         word:"ConstConstructor",
-//         description:"(optional attribute)\
-//              Determines the name and other optional properties of the ConstConstructor.\
-//         ".into(),
-//     }
-// }
-
-
-
 fn use_clarification(item_name:&str)->CowStr{
     format!("the string must be the identifier of a pre-existing {}.",item_name).into()
 }
@@ -177,10 +148,6 @@ pub fn type_subattr(type_:&'static str)->ValidAttrs{
 pub fn type_subattrs()->ValidAttrs{
     type_subattr("<TypeAlias>")
 }
-
-// pub fn constconstructor_subattrs()->ValidAttrs{
-//     type_subattr("<ConstConstructor>")
-// }
 
 pub fn mutconstvalue_attrs()->ValidAttrs{
     vec![

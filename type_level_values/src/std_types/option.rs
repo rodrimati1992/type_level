@@ -41,7 +41,10 @@ use std_::option::Option as StdOption;
 #[doc(hidden)]
 pub enum Option<T> {
     #[typelevel(rename_constvalue = "Some_")]
-    Some(T),
+    Some(
+        #[typelevel(doc="The value `Some` wraps.")]
+        T
+    ),
     #[typelevel(rename_constvalue = "None_")]
     None,
 }

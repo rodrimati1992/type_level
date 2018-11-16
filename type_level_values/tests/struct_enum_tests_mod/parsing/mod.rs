@@ -130,14 +130,14 @@ pub enum EnumOrStruct{
 /////////////////////////////////////////////////////////////////////////////////////
 
 
-#[derive(Debug,Copy,Clone)]
-pub enum VisitItem<'a>{
-    Trait (&'a syn::ItemTrait),
-    Struct(&'a syn::ItemStruct),
-    Enum  (&'a syn::ItemEnum),
-    Type  (&'a syn::ItemType),
-    Impl  (&'a syn::ItemImpl),
-    Use   (&'a syn::ItemUse),
+#[derive(Debug,Clone)]
+pub enum VisitItem{
+    Trait (syn::ItemTrait),
+    Struct(syn::ItemStruct),
+    Enum  (syn::ItemEnum),
+    Type  (syn::ItemType),
+    Impl  (syn::ItemImpl),
+    Use   (syn::ItemUse),
     /// Signals that all the items in the module were visited.
     EndOfMod,
     /// Signals that all items have been visited,
@@ -245,13 +245,13 @@ where I:ModIndex
 /////////////////////////////////////////////////////////////////////////////////////
 
 
-pub struct CheckDeriveParams<'a,I>{
+pub struct CheckDeriveParams<I>{
     pub mod_index:I,
-    pub item:VisitItem<'a>,
+    pub item:VisitItem,
     nested_errors:Vec<VisitItemsError>,
 }
 
-impl<'a,I> CheckDeriveParams<'a,I>
+impl<I> CheckDeriveParams<I>
 where I:ModIndex
 {
     pub fn push_err<S>(&mut self,kind:VisitItemsErrorKind,error:S)
@@ -375,7 +375,7 @@ where
 
         let mut params=CheckDeriveParams{
             mod_index:current,
-            item,
+            item:item.clone(),
             nested_errors:Vec::new(),
         };
         (self.visitor)(&mut params);
@@ -404,12 +404,12 @@ where
                 self.call_closure(VisitItem::EndOfMod);
                 self.inner.current=replaced;
             },
-            &Item::Impl  (ref v)=>self.call_closure(VisitItem::Impl(v)),
-            &Item::Use   (ref v)=>self.call_closure(VisitItem::Use(v)),
-            &Item::Trait (ref v)=>self.call_closure(VisitItem::Trait(v)),
-            &Item::Struct(ref v)=>self.call_closure(VisitItem::Struct(v)),
-            &Item::Enum  (ref v)=>self.call_closure(VisitItem::Enum(v)),
-            &Item::Type  (ref v)=>self.call_closure(VisitItem::Type(v)),
+            &Item::Impl  (ref v)=>self.call_closure(VisitItem::Impl(v.clone())),
+            &Item::Use   (ref v)=>self.call_closure(VisitItem::Use(v.clone())),
+            &Item::Trait (ref v)=>self.call_closure(VisitItem::Trait(v.clone())),
+            &Item::Struct(ref v)=>self.call_closure(VisitItem::Struct(v.clone())),
+            &Item::Enum  (ref v)=>self.call_closure(VisitItem::Enum(v.clone())),
+            &Item::Type  (ref v)=>self.call_closure(VisitItem::Type(v.clone())),
             v=>panic!("unsupported item type:{:#?}",v)
         }
     }

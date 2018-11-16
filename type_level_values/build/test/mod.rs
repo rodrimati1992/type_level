@@ -710,6 +710,7 @@ macro_rules! assert_eq_into{{
             <$tylevel as IntoRuntime<_>>::to_runtime() , 
             runtime_val
         );
+        #[cfg(rust_1_22)]
         assert_eq!( 
             <$tylevel as IntoConstant<_>>::VALUE , 
             runtime_val

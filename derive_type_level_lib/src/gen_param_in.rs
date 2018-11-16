@@ -51,7 +51,7 @@ impl<'a> ToTokens for GenParamIn<'a>{
         let with_bounds=self.in_!=InWhat::ItemUse;
         let with_default=self.in_==InWhat::ItemDecl;
 
-        match self.param {
+        match *self.param {
             GenericParam::Type(ref gen)=>{
                 gen.ident.to_tokens(tokens);
                 if with_bounds {

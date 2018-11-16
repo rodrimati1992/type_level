@@ -47,6 +47,7 @@ pub mod range {
     #[allow(dead_code)]
     #[doc(hidden)]
     pub struct Range<T> {
+        #[typelevel(doc="the start of the range")]
         pub start: T,
         pub end: T,
     }
@@ -318,6 +319,8 @@ where
 {
     type Output=Out;
 }
+
+#[cfg(rust_1_26)]
 impl<DefVal,Func,Leng,list,S,E,_0,Out> FoldR_<DefVal,Func> for ConstRangeInclusive<S,E>
 where 
     Self:Len_<Output=Leng>,
@@ -370,6 +373,8 @@ where
 {
     type Output=Out;
 }
+
+#[cfg(rust_1_26)]
 impl<DefVal,Func,Leng,list,S,E,Out> TryFoldR_<DefVal,Func> for ConstRangeInclusive<S,E>
 where 
     Self:Len_<Output=Leng>,
@@ -499,12 +504,16 @@ mod test_eq {
         let _:Test<ConstRange<U0,U2>,U2>;
         let _:Test<ConstRange<U0,U3>,U3>;
 
-        let _:Test<ConstRangeInclusive<U2,U0>,U0>;
-        let _:Test<ConstRangeInclusive<U1,U0>,U0>;
-        let _:Test<ConstRangeInclusive<U0,U0>,U1>;
-        let _:Test<ConstRangeInclusive<U0,U1>,U2>;
-        let _:Test<ConstRangeInclusive<U0,U2>,U3>;
-        let _:Test<ConstRangeInclusive<U0,U3>,U4>;
+
+        #[cfg(rust_1_26)]
+        {
+            let _:Test<ConstRangeInclusive<U2,U0>,U0>;
+            let _:Test<ConstRangeInclusive<U1,U0>,U0>;
+            let _:Test<ConstRangeInclusive<U0,U0>,U1>;
+            let _:Test<ConstRangeInclusive<U0,U1>,U2>;
+            let _:Test<ConstRangeInclusive<U0,U2>,U3>;
+            let _:Test<ConstRangeInclusive<U0,U3>,U4>;
+        }
 
     }
     #[test]
@@ -518,12 +527,16 @@ mod test_eq {
         let _:Test<ConstRange<U0,U1>,tlist![U0]>;
         let _:Test<ConstRange<U0,U2>,tlist![U0,U1]>;
         let _:Test<ConstRange<U0,U3>,tlist![U0,U1,U2]>;
-        let _:Test<ConstRangeInclusive<U2,U0>,TNil>;
-        let _:Test<ConstRangeInclusive<U1,U0>,TNil>;
-        let _:Test<ConstRangeInclusive<U0,U0>,tlist![U0]>;
-        let _:Test<ConstRangeInclusive<U0,U1>,tlist![U0,U1]>;
-        let _:Test<ConstRangeInclusive<U0,U2>,tlist![U0,U1,U2]>;
-        let _:Test<ConstRangeInclusive<U0,U3>,tlist![U0,U1,U2,U3]>;
+
+        #[cfg(rust_1_26)]
+        {
+            let _:Test<ConstRangeInclusive<U2,U0>,TNil>;
+            let _:Test<ConstRangeInclusive<U1,U0>,TNil>;
+            let _:Test<ConstRangeInclusive<U0,U0>,tlist![U0]>;
+            let _:Test<ConstRangeInclusive<U0,U1>,tlist![U0,U1]>;
+            let _:Test<ConstRangeInclusive<U0,U2>,tlist![U0,U1,U2]>;
+            let _:Test<ConstRangeInclusive<U0,U3>,tlist![U0,U1,U2,U3]>;
+        }
     }
 
     #[test]
