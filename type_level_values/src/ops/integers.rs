@@ -283,11 +283,11 @@ mod tests{
     fn get_constants(){
         type TestZero<N,Val>=(
             AssertEq<Get0<N>,Val>,
-            AssertFnRet<N,Get0Op,Val>,
+            AssertPipedRet<N,Get0Op,Val>,
         );
         type TestOne<N,Val>=(
             AssertEq<Get1<N>,Val>,
-            AssertFnRet<N,Get1Op,Val>,
+            AssertPipedRet<N,Get1Op,Val>,
         );
 
         let _:TestZero<U0,U0>;
@@ -381,7 +381,7 @@ mod tests{
     #[test]
     fn safe_sub(){
         type AssertSub<L,R,Val>=(
-            AssertFnRet<(L,R),SafeSubOp,Val>,
+            AssertPipedRet<(L,R),SafeSubOp,Val>,
             AssertEq<SafeSub<L,R>,Val>,
         );
 
@@ -441,11 +441,11 @@ mod tests{
     fn add_sub_1(){
         type TestAdd1<N,Val>=(
             AssertEq<Add1<N>,Val>,
-            AssertFnRet<N,Add1Op,Val>,
+            AssertPipedRet<N,Add1Op,Val>,
         );
         type TestSub1<N,Val>=(
             AssertEq<Sub1<N>,Val>,
-            AssertFnRet<N,Sub1Op,Val>,
+            AssertPipedRet<N,Sub1Op,Val>,
         );
 
         let _:TestAdd1<U0,U1>;
@@ -473,7 +473,7 @@ mod tests{
     #[test]
     fn saturating_sub(){
         type Test0<N,Val>=(
-            AssertFnRet<N,SatSub1Op,Val>,
+            AssertPipedRet<N,SatSub1Op,Val>,
             AssertEq<SatSub1<N>,Val>,
         );
 
@@ -493,13 +493,13 @@ mod tests{
         let _:Test0<P4,P3>;
 
         type TestUns<L,R,Val>=(
-            AssertFnRet<(L,R),SatSubOp,Val>,
-            AssertFnRet<(R,L),SatSubOp,Get0<L>>,
+            AssertPipedRet<(L,R),SatSubOp,Val>,
+            AssertPipedRet<(R,L),SatSubOp,Get0<L>>,
             AssertEq<SatSub<L,R>,Val>,
             AssertEq<SatSub<R,L>,Get0<L>>,
         );
         type TestSig<L,R,Val>=(
-            AssertFnRet<(L,R),SatSubOp,Val>,
+            AssertPipedRet<(L,R),SatSubOp,Val>,
             AssertEq<SatSub<L,R>,Val>,
         );
 

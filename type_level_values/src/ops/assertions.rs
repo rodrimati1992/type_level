@@ -130,21 +130,21 @@ type_fn!{define_trait
     use type_level_values::prelude::*;
     use type_level_values::ops::*;
 
-    let _:AssertFnRet< U0,IsZeroOp,False >;
+    let _:AssertPipedRet< U0,IsZeroOp,False >;
     ```
 
     */
-    trait=AssertFnRet_ [Func,Ret]
+    trait=AssertPipedRet_ [Func,Ret]
     /// Asserts that `Func:TypeFn_<This>` evaluates to Ret,returning This unmodified.
-    type=AssertFnRet
+    type=AssertPipedRet
     /// Asserts that `Func:TypeFn_<This>` evaluates to Ret,returning This unmodified.
-    fn_type=AssertFnRetOp
+    fn_type=AssertPipedRetOp
     /// Asserts that `Func:TypeFn_<This>` evaluates to Ret,returning This unmodified.
-    method_like=AssertFnRetMt
+    method_like=AssertPipedRetMt
 }
 
 
-impl<This,Func,Ret> AssertFnRet_<Func,Ret> for This
+impl<This,Func,Ret> AssertPipedRet_<Func,Ret> for This
 where
     Func:TypeFn_<This,Output=Ret>
 {
@@ -343,10 +343,10 @@ mod tests{
     fn assert_fn_ret(){
         fn check< L,Func,Ret >()
         where
-            AssertFnRet<L,Func,Ret>:TypeIdentity<Type=L>,
-            L:AssertFnRet_<Func,Ret,Output=L>,
-            AssertFnRetOp:TypeFn_<(L,Func,Ret),Output=L>,
-            AssertFnRetMt<Func,Ret>:TypeFn_<L,Output=L>,
+            AssertPipedRet<L,Func,Ret>:TypeIdentity<Type=L>,
+            L:AssertPipedRet_<Func,Ret,Output=L>,
+            AssertPipedRetOp:TypeFn_<(L,Func,Ret),Output=L>,
+            AssertPipedRetMt<Func,Ret>:TypeFn_<L,Output=L>,
         {}
 
         check::<U0,Add1Op,U1>();

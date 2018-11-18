@@ -375,6 +375,15 @@ type_fn!{
 
 ////////////////////////////////////////////////////////////////////////////////
 
+impl Collection for TListType{
+    type CollectEmpty=TNil;
+    type Items=SetFields<DefaultCollectionItems<Self>,tlist!(
+        (collfns_f::repeat,Repeat_Override),
+    )>;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 impl<DefaultVal, Func> FoldL_<DefaultVal, Func> for tlist![] {
     type Output = DefaultVal;
 }
@@ -428,7 +437,7 @@ impl<Curr,Rem, DefaultVal,Reversed,Func>
     TryFoldR_<DefaultVal, Func> 
 for tlist![Curr,..Rem] 
 where 
-    Self:Reverse_<Output=Reversed>,
+    ReverseOp:TypeFn_<Self,Output=Reversed>,
     Reversed:TryFoldL_<DefaultVal,Func>,
 {
     type Output=Reversed::Output;
@@ -465,24 +474,6 @@ where
 
 impl<Predicate> Filter_<Predicate> for TNil {
     type Output = TNil;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-impl<Value> Push_<Value> for TNil {
-    type Output = TList<Value, Self>;
-}
-impl<T, Rem, Value> Push_<Value> for TList<T, Rem> {
-    type Output = TList<Value, Self>;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-impl<T, Rem> Pop_ for TList<T, Rem> {
-    type Output = Some_<(T, Rem)>;
-}
-impl Pop_ for TNil {
-    type Output = None_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -556,38 +547,17 @@ impl AsTList_ for TNil {
     type Output = TNil;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
-
-impl Reverse_ for TNil {
-    type Output = TNil;
-}
-
-impl<T, Rem, out> Reverse_ for TList<T, Rem>
-where
-    ReverseHelper: TypeFn_<(TNil, Self), Output = out>,
-{
-    type Output = out;
-}
 
 type_fn!{
-    fn
-    ReverseHelper[Suffix,T,Rem](Suffix,TList<T,Rem>)
-    where [ ReverseHelper:TypeFn_< (TList<T,Suffix>,Rem),Output=out > ]
-    { let out;out }
-
-    ReverseHelper[Suffix](Suffix,TNil){Suffix}
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-impl<V, L,is_lt16, Out> Repeat_<V, L> for TListType
-where
-    ConstLtOp:TypeFn_<(L,U16),Output=is_lt16>,
-    RepeatHelper<V>: TypeFn_<(is_lt16, L), Output = Out>,
-{
-    type Output = Out;
+    pub fn Repeat_Override[V,L](V,L)
+    where[
+        ConstLtOp:TypeFn_<(L,U16),Output=is_lt16>,
+        RepeatHelper<V>: TypeFn_<(is_lt16, L), Output = Out>,
+    ]{
+        let is_lt16;let Out;
+        Out
+    }
 }
 
 

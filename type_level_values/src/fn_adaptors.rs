@@ -265,7 +265,7 @@ type_fn!{
 #[cfg(test)]
 mod tests{
     use super::*;
-    use crate_::ops::{AssertFnRet,AssertEq};
+    use crate_::ops::{AssertPipedRet,AssertEq};
     use crate_::field_traits::{SetFieldOp};
     use crate_::std_ops::{AddOp,DivOp,SubOp};
 
@@ -282,8 +282,8 @@ mod tests{
 
     #[test]
     fn flip(){
-        let _:AssertFnRet<(U3,U10),Flip<SubOp>,U7>;
-        let _:AssertFnRet<(U2,U10),Flip<DivOp>,U5>;
+        let _:AssertPipedRet<(U3,U10),Flip<SubOp>,U7>;
+        let _:AssertPipedRet<(U2,U10),Flip<DivOp>,U5>;
     }
 
     #[test]
@@ -331,11 +331,11 @@ mod tests{
     #[test]
     fn map_param(){
         type Test<Func,Mapper,Params,ExpectedMapLhs,ExpectedMapRhs>=(
-            AssertFnRet<Params,MapLhs<Func,Mapper> , ExpectedMapLhs >,
-            AssertFnRet<Params,MapRhs<Func,Mapper> , ExpectedMapRhs >,
+            AssertPipedRet<Params,MapLhs<Func,Mapper> , ExpectedMapLhs >,
+            AssertPipedRet<Params,MapRhs<Func,Mapper> , ExpectedMapRhs >,
             
-            AssertFnRet<Params,MapNth<Func,U0,Mapper> , ExpectedMapLhs >,
-            AssertFnRet<Params,MapNth<Func,U1,Mapper> , ExpectedMapRhs >,
+            AssertPipedRet<Params,MapNth<Func,U0,Mapper> , ExpectedMapLhs >,
+            AssertPipedRet<Params,MapNth<Func,U1,Mapper> , ExpectedMapRhs >,
         );
 
         let _:Test<DivOp,Const<U1  >,(U10,U10),U0,U10>;

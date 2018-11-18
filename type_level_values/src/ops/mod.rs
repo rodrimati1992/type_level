@@ -27,7 +27,7 @@ pub use self::assertions::{
     AssertEqConstType_,AssertEqConstType,AssertEqConstTypeOp,AssertEqConstTypeMt,
     AssertFunc_,AssertFuncOp,AssertFuncMt,
     AssertThat_,AssertThatOp,AssertThatMt,
-    AssertFnRet_,AssertFnRetOp,AssertFnRetMt,
+    AssertPipedRet_,AssertPipedRetOp,AssertPipedRetMt,
     AssertConstType_,AssertConstTypeOp,AssertConstTypeMt,
 };
 pub use self::as_tlist::{
@@ -82,7 +82,7 @@ pub use self::integers::{
 
 pub(crate) mod type_aliases{
     pub use crate_::ops::assertions::{
-        AssertEq,AssertFunc,AssertThat,AssertFnRet,AssertConstType,
+        AssertEq,AssertFunc,AssertThat,AssertPipedRet,AssertConstType,
     };
     pub use crate_::ops::as_tlist::{
         AsTList,VariantAsTList,

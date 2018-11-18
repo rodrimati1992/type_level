@@ -15,7 +15,7 @@ use crate_::collection_ops::{
     FoldL_   ,FoldL   , FoldR_   ,FoldR   ,
     TryFoldL_,TryFoldLMt,TryFoldL, TryFoldR_,TryFoldR,
     Map_,Map,MapMt,Len_,Len,
-    PushOp,Repeat_,TFVal,TFBreak,
+    PushOp,RepeatOp,TFVal,TFBreak,
 };
 
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_, OrderingTrait};
@@ -291,7 +291,7 @@ type_fn!{
 impl<DefVal,Func,Leng,list,S,E,_0,Out> FoldL_<DefVal,Func> for ConstRange<S,E>
 where 
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     list:FoldL_<(S,DefVal) , FoldNext<Add1Op,Func>,Output=(_0,Out)>
 {
     type Output=Out;
@@ -301,7 +301,7 @@ impl<DefVal,Func,Leng,list,S,E,_0,EndSub1,Out> FoldR_<DefVal,Func> for ConstRang
 where 
     SatSub1Op:TypeFn_<E,Output=EndSub1>,
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     list:FoldL_<(EndSub1,DefVal) , FoldNext<SatSub1Op,Func>,Output=(_0,Out)>
 {
     type Output=Out;
@@ -314,7 +314,7 @@ where
 impl<DefVal,Func,Leng,list,S,E,_0,Out> FoldL_<DefVal,Func> for ConstRangeInclusive<S,E>
 where 
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     list:FoldL_<(S,DefVal) , FoldNext<Add1Op,Func>,Output=(_0,Out)>
 {
     type Output=Out;
@@ -324,7 +324,7 @@ where
 impl<DefVal,Func,Leng,list,S,E,_0,Out> FoldR_<DefVal,Func> for ConstRangeInclusive<S,E>
 where 
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     list:FoldL_<(E,DefVal) , FoldNext<SatSub1Op,Func>,Output=(_0,Out)>
 {
     type Output=Out;
@@ -336,7 +336,7 @@ where
 impl<DefVal,Func,Leng,list,S,E,Out> TryFoldL_<DefVal,Func> for ConstRange<S,E>
 where 
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     (   
         TryFoldLMt<(S,DefVal),TryFoldNext<Add1Op,Func>>,
         ExtractState
@@ -349,7 +349,7 @@ impl<DefVal,Func,Leng,list,S,E,EndSub1,Out> TryFoldR_<DefVal,Func> for ConstRang
 where 
     SatSub1Op:TypeFn_<E,Output=EndSub1>,
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     (
         TryFoldLMt<(EndSub1,DefVal),TryFoldNext<SatSub1Op,Func>>,
         ExtractState
@@ -365,7 +365,7 @@ where
 impl<DefVal,Func,Leng,list,S,E,Out> TryFoldL_<DefVal,Func> for ConstRangeInclusive<S,E>
 where 
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     (
         TryFoldLMt<(S,DefVal),TryFoldNext<Add1Op,Func>>,
         ExtractState
@@ -378,7 +378,7 @@ where
 impl<DefVal,Func,Leng,list,S,E,Out> TryFoldR_<DefVal,Func> for ConstRangeInclusive<S,E>
 where 
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     (
         TryFoldLMt<(E,DefVal),TryFoldNext<SatSub1Op,Func>>,
         ExtractState

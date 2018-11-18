@@ -10,7 +10,7 @@ use rustc_version::{version, Version};
 pub mod test;
 
 fn main() {
-    println!("cargo:rerun-if-changed=./build/");
+    println!("cargo:rerun-if-changed=build");
 
 
     let rver = version().unwrap();
@@ -31,4 +31,19 @@ fn main() {
     const RERUNNING_BUILD_SCRIPT:()=();
 
     self::test::build_tests().unwrap();
+    println!("cargo:rerun-if-changed=build");
+    println!("cargo:rerun-if-changed=build");
+    println!("cargo:rerun-if-changed=build");
+    println!("cargo:rerun-if-changed=build");
+    println!("cargo:rerun-if-changed=build");
+    println!("cargo:rerun-if-changed=build");
+    println!("cargo:rerun-if-changed=build");
+    println!("cargo:rerun-if-changed=build");
+    println!("cargo:rerun-if-changed=build");
+    println!("cargo:rerun-if-changed=build");
+    println!("cargo:rerun-if-changed=build");
+    println!("cargo:rerun-if-changed=build");
+    println!("cargo:rerun-if-changed=build");
+    println!("cargo:rerun-if-changed=build");
+    println!("cargo:rerun-if-changed=build");
 }

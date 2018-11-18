@@ -169,15 +169,15 @@ mod tests{
 
         type TestDiscr<This,Expected>=(
             AssertEq<GetDiscrOf<This>,Expected>,
-            AssertFnRet<This,GetDiscrOp,Expected>,
+            AssertPipedRet<This,GetDiscrOp,Expected>,
         );
         type TestVariant<This,Expected>=(
             AssertEq<GetVariantOf<This>,Expected>,
-            AssertFnRet<This,GetVariantOp,Expected>,
+            AssertPipedRet<This,GetVariantOp,Expected>,
         );
         type TestUIntDiscr<This,Expected>=(
             AssertEq<GetUIntDiscrOf<This>,Expected>,
-            AssertFnRet<This,GetUIntDiscrOp,Expected>,
+            AssertPipedRet<This,GetUIntDiscrOp,Expected>,
         );
 
         let _:TestDiscr<Some_<False>, Some_Discr>;

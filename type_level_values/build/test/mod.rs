@@ -137,7 +137,7 @@ type TestEq<L,R,Val>=(
 
 type TestOrd<L,R,Val>=( 
     AssertEq<ConstOrd<L,R>,Val> ,
-    AssertEq<ConstOrd<R,L>,Reverse<Val>> ,
+    AssertEq<ConstOrd<R,L>,TypeFn<ReverseOrd,Val>> ,
 );
 
 type TestSetField<This,Field,Val,NewThis>=
@@ -692,7 +692,7 @@ use std::ops::Index;
 use type_level_values::prelude::*;
 use type_level_values::ops::*;
 use type_level_values::collection_ops::{{Reverse}};
-use type_level_values::std_types::cmp_ordering::{{Less_,Equal_}};
+use type_level_values::std_types::cmp_ordering::{{Less_,Equal_,ReverseOrd}};
 use type_level_values::discriminant::{{GetDiscrOf,GetVariantOf,Discriminant}};
 use type_level_values::field_traits::{{GetField,SetField,GetFieldRuntime}};
 use type_level_values::initialization::{{

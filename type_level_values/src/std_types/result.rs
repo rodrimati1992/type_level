@@ -7,7 +7,7 @@ use core_extensions::Void;
 
 use crate_::std_ops::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
 use crate_::ops::{
-    AssertConstTypeMt,AssertEq,AssertFnRet,
+    AssertConstTypeMt,AssertEq,AssertPipedRet,
     Unwrap_,Unwrap,UnwrapOrElse_,UnwrapOr,
     IntoInner_,
     Add1Op,
@@ -250,8 +250,8 @@ mod tests {
         let _:Test0<Err_<U1>,Add1Op,Err_<U1>>;
         
         type Test1<Val,Func,Expected>=(
-            AssertFnRet<(Val,Func),MapErrOp,Expected>,
-            AssertFnRet<Val,MapErrMt<Func>,Expected>,
+            AssertPipedRet<(Val,Func),MapErrOp,Expected>,
+            AssertPipedRet<Val,MapErrMt<Func>,Expected>,
         );
 
         let _:Test1<Err_<U0>,Add1Op,Err_<U1>>;
@@ -264,10 +264,10 @@ mod tests {
     #[test]
     fn and_then_or_else(){
         type TestAT<Val,Func,Expected>=
-            AssertFnRet<Val,AndThenMt<Func>,Expected>;
+            AssertPipedRet<Val,AndThenMt<Func>,Expected>;
 
         type TestOE<Val,Func,Expected>=
-            AssertFnRet<Val,OrElseMt<Func>,Expected>;
+            AssertPipedRet<Val,OrElseMt<Func>,Expected>;
 
         type AddOk=(Add1Op,NewOk);
         type AddErr=(Add1Op,NewErr);

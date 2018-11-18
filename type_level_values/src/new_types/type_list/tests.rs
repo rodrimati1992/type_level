@@ -4,11 +4,12 @@ use crate_::std_ops::{SubOp,AddMt};
 
 use crate_::field_traits::{GetField, SetField};
 use crate_::ops::{
-    AssertEq,AssertFnRet,ConstGEOp,
+    AssertEq,AssertPipedRet,ConstGEOp,
     Add1Op,Add1Op as AddOne,SafeDivOp,
     ConstInto,ConstIntoMt,
     ConstFrom,
     ConstEqMt,
+    ConstLtMt,
 };
 use crate_::collection_ops::*;
 
@@ -23,7 +24,7 @@ fn the_macro() {
 fn insert() {
     type TestInsert<List,Pos,Val,Ret>=(
         AssertEq<Insert<List,Pos,Val>,Ret>,
-        AssertFnRet<List,InsertMt<Pos,Val>,Ret>,
+        AssertPipedRet<List,InsertMt<Pos,Val>,Ret>,
     );
 
 
@@ -113,7 +114,7 @@ fn insert() {
 fn remove() {
     type TestRemove<List,Pos,Ret>=(
         AssertEq<Remove<List,Pos>,Ret>,
-        AssertFnRet<List,RemoveMt<Pos>,Ret>,
+        AssertPipedRet<List,RemoveMt<Pos>,Ret>,
     );
 
     let _:TestRemove< tlist![U0], U0,tlist![]>;
@@ -209,12 +210,12 @@ macro_rules! test_push_pop_front {
 
 type TestPushFront<List,Val,Expected>=(
     AssertEq<PushFront<List,Val>,Expected>,
-    AssertFnRet<List,PushFrontMt<Val>,Expected>
+    AssertPipedRet<List,PushFrontMt<Val>,Expected>
 );
 
 type TestPush<List,Val,Expected>=(
     AssertEq<Push<List,Val>,Expected>,
-    AssertFnRet<List,PushMt<Val>,Expected>
+    AssertPipedRet<List,PushMt<Val>,Expected>
 );
 
 test_push_pop_front!{
@@ -278,7 +279,7 @@ fn const_eq() {
 fn fold_l() {
     type TestFoldL<List,DefVal,Func,Expected>=(
         AssertEq<FoldL<List,DefVal,Func>,Expected>,
-        AssertFnRet<List,FoldLMt<DefVal,Func>,Expected>
+        AssertPipedRet<List,FoldLMt<DefVal,Func>,Expected>
     );
 
 
@@ -297,7 +298,7 @@ fn fold_l() {
 fn fold_r() {
     type TestFoldR<List,DefVal,Func,Expected>=(
         AssertEq<FoldR<List,DefVal,Func>,Expected>,
-        AssertFnRet<List,FoldRMt<DefVal,Func>,Expected>
+        AssertPipedRet<List,FoldRMt<DefVal,Func>,Expected>
     );
 
     let _:TestFoldR<tlist![], (), PushOp ,()>;
@@ -334,7 +335,7 @@ type_fn!{
 fn try_fold_l() {
     type TestTryFoldL<List,DefVal,Func,Expected>=(
         AssertEq<TryFoldL<List,DefVal,Func>,Expected>,
-        AssertFnRet<List,TryFoldLMt<DefVal,Func>,Expected>
+        AssertPipedRet<List,TryFoldLMt<DefVal,Func>,Expected>
     );
 
 
@@ -360,7 +361,7 @@ fn try_fold_l() {
 fn try_fold_r() {
     type TestTryFoldR<List,DefVal,Func,Expected>=(
         AssertEq<TryFoldR<List,DefVal,Func>,Expected>,
-        AssertFnRet<List,TryFoldRMt<DefVal,Func>,Expected>
+        AssertPipedRet<List,TryFoldRMt<DefVal,Func>,Expected>
     );
 
     let _: TestTryFoldR<tlist![]            , U10 , SafeDivOp , TFVal<U10> >;
@@ -386,7 +387,7 @@ fn try_fold_r() {
 fn map() {
     type TestMap<List,Func,Expected>=(
         AssertEq<Map<List,Func>,Expected>,
-        AssertFnRet<List,MapMt<Func>,Expected>
+        AssertPipedRet<List,MapMt<Func>,Expected>
     );
 
     let _:TestMap<tlist![], AddOne,tlist![]>;
@@ -405,12 +406,10 @@ fn map() {
 fn filter() {
     type TestFilter<List,Pred,Expected>=(
         AssertEq<Filter<List,Pred>,Expected>,
-        AssertFnRet<List,FilterMt<Pred>,Expected>
+        AssertPipedRet<List,FilterMt<Pred>,Expected>
     );
 
     type Val0=tlist![U10,U11,U12,U13,U14];
-    type IsOdd =(BitAndMt<U1>,ConstEqMt<U1>);
-    type IsEven=(BitAndMt<U1>,ConstEqMt<U0>);
     
     let _:TestFilter<Val0,IsEven,tlist![U10,U12,U14]>;
     let _:TestFilter<Val0,IsOdd ,tlist![U11,U13]>;
@@ -423,7 +422,7 @@ fn filter() {
 fn into_() {
     type TestInto<From_,Type,Expected>=(
         AssertEq<ConstInto<From_,Type>,Expected>,
-        AssertFnRet<From_,ConstIntoMt<Type>,Expected>,
+        AssertPipedRet<From_,ConstIntoMt<Type>,Expected>,
         AssertEq<ConstFrom<Type,From_>,Expected>,
     );
 
@@ -458,7 +457,7 @@ fn repeat() {
 fn push_back() {
     type TestPushBack<List,Val,Expected>=(
         AssertEq<PushBack<List,Val>,Expected>,
-        AssertFnRet<List,PushBackMt<Val>,Expected>
+        AssertPipedRet<List,PushBackMt<Val>,Expected>
     );
 
 
@@ -476,6 +475,7 @@ fn pop_back() {
     let _:AssertEq< Some_<(U3, tlist![U0, U1, U2])> , PopBack<tlist![U0, U1, U2, U3]>>;
 }
 
+
 #[test]
 fn repeat_expr() {
     let _: AssertEq< tlist![U0;U0] , tlist![]>;
@@ -485,6 +485,14 @@ fn repeat_expr() {
     let _: AssertEq< tlist![U0;U4] , tlist![U0, U0, U0, U0]>;
 
     let _: AssertEq< FoldL<tlist![U1;U511] , U0 , AddOp > ,U511 >;
+}
+
+#[test]
+fn reverse() {
+    let _: AssertEq< Reverse<tlist![]> , tlist![] >;
+    let _: AssertEq< Reverse<tlist![U0]> , tlist![U0] >;
+    let _: AssertEq< Reverse<tlist![U0,U1]> , tlist![U1,U0] >;
+    let _: AssertEq< Reverse<tlist![U0,U1,U2]> , tlist![U2,U1,U0] >;
 }
 
 #[test]
@@ -570,6 +578,66 @@ fn set_field() {
         SetField<tlist![U0, U2, U4, U6, U8, U10, U12, U14, U16, U18], U9, False>
     >;
 }
+
+
+type IterVal0=tlist![U10,U11,U12,U13,U14];
+type ValEven=tlist![U10,U12,U14];
+type ValOdd =tlist![U11,U13,U15];
+
+type IsOdd =(BitAndMt<U1>,ConstEqMt<U1>);
+type IsEven=(BitAndMt<U1>,ConstEqMt<U0>);
+
+#[test]
+fn find(){
+    type TestFind<Val,Func,Equal>=(
+        AssertPipedRet<(Val,Func),FindOp, Equal >,
+        AssertPipedRet<Val,FindMt<Func>, Equal >,
+    );
+    let _:TestFind<IterVal0,IsOdd , Some_<U11> >;
+    let _:TestFind<IterVal0,IsEven, Some_<U10> >;
+    let _:TestFind<ValEven,IsOdd , None_ >;
+    let _:TestFind<ValOdd ,IsEven, None_ >;
+
+    let _:TestFind<IterVal0,ConstEqMt<U10>, Some_<U10> >;
+    let _:TestFind<IterVal0,ConstEqMt<U11>, Some_<U11> >;
+    let _:TestFind<IterVal0,ConstEqMt<U12>, Some_<U12> >;
+    let _:TestFind<IterVal0,ConstEqMt<U13>, Some_<U13> >;
+    let _:TestFind<IterVal0,ConstEqMt<U14>, Some_<U14> >;
+
+}
+
+#[test]
+fn all_any(){
+    type TestAll<Val,Func,Equal>=(
+        AssertPipedRet<(Val,Func),AllOp,Equal >,
+        AssertPipedRet<Val,AllMt<Func>, Equal >,
+    );
+
+    let _:TestAll<IterVal0,ConstLtMt<U12>,False>;
+    let _:TestAll<IterVal0,ConstLtMt<U13>,False>;
+    let _:TestAll<IterVal0,ConstLtMt<U14>,False>;
+    let _:TestAll<IterVal0,ConstLtMt<U15>,True>;
+    let _:TestAll<IterVal0,ConstLtMt<U16>,True>;
+    let _:TestAll<IterVal0,ConstLtMt<U17>,True>;
+
+
+
+    type TestAny<Val,Func,Equal>=(
+        AssertPipedRet<(Val,Func),AnyOp, Equal >,
+        AssertPipedRet<Val,AnyMt<Func>, Equal >,
+    );
+
+    let _:TestAny<IterVal0,ConstLtMt<U8 >,False>;
+    let _:TestAny<IterVal0,ConstLtMt<U9 >,False>;
+    let _:TestAny<IterVal0,ConstLtMt<U10>,False>;
+    let _:TestAny<IterVal0,ConstLtMt<U11>,True>;
+    let _:TestAny<IterVal0,ConstLtMt<U12>,True>;
+    let _:TestAny<IterVal0,ConstLtMt<U13>,True>;
+    let _:TestAny<IterVal0,ConstLtMt<U14>,True>;
+    let _:TestAny<IterVal0,ConstLtMt<U15>,True>;
+    let _:TestAny<IterVal0,ConstLtMt<U16>,True>;
+}
+
 
 #[test]
 fn type_fn_() {

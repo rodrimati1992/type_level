@@ -19,7 +19,7 @@ use crate_::ops::{
     ConstLEOp,ConstLtOp,ConstGEMt,ConstEqMt,ConstLtMt,ConstLEMt,
     Sub1Op,SatSubMt,Sub1,
     Add1,Add1Op,
-    AssertThatOp,AssertFnRet,
+    AssertThatOp,AssertPipedRet,
     If,
     ConstIntoMt,ConstInto_,
     MinMaxOp,
@@ -307,7 +307,7 @@ mod test{
     #[test]
     fn int_type(){
         type Test<IntegerType,End,After=IdentityFn>=
-            AssertFnRet<
+            AssertPipedRet<
                 End,
                 (After,IntTypeOf),
                 IntegerType

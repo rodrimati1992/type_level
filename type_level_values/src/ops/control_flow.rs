@@ -160,14 +160,14 @@ mod tests {
     #[test]
     fn if_(){
         type Cond0=If<ConstGEOp,SubOp,(GetLhs,Add1Op)>;
-        let _:AssertFnRet<(U5,U20),Cond0,U6>;
-        let _:AssertFnRet<(U20,U5),Cond0,U15>;
+        let _:AssertPipedRet<(U5,U20),Cond0,U6>;
+        let _:AssertPipedRet<(U20,U5),Cond0,U15>;
 
         struct Yep;
         struct Nope;
         type Cond1=If<ConstEqOp,Const<Yep>,Const<Nope>>;
-        let _:AssertFnRet<(U5,U5),Cond1,Yep>;
-        let _:AssertFnRet<(U20,U5),Cond1,Nope>;
+        let _:AssertPipedRet<(U5,U5),Cond1,Yep>;
+        let _:AssertPipedRet<(U20,U5),Cond1,Nope>;
     }
 
 

@@ -158,7 +158,7 @@ type_fn!{
 fn try_fold_l() {
     type TestTryFoldL<List,DefVal,Func,Expected>=(
         AssertEq<TryFoldL<List,DefVal,Func>,Expected>,
-        AssertFnRet<List,TryFoldLMt<DefVal,Func>,Expected>
+        AssertPipedRet<List,TryFoldLMt<DefVal,Func>,Expected>
     );
 
 
@@ -184,7 +184,7 @@ fn try_fold_l() {
 fn try_fold_r() {
     type TestTryFoldR<List,DefVal,Func,Expected>=(
         AssertEq<TryFoldR<List,DefVal,Func>,Expected>,
-        AssertFnRet<List,TryFoldRMt<DefVal,Func>,Expected>
+        AssertPipedRet<List,TryFoldRMt<DefVal,Func>,Expected>
     );
 
     let _: TestTryFoldR<tuple_![]            , U10 , SafeDivOp , TFVal<U10> >;
@@ -275,11 +275,11 @@ fn set_field() {
 
 #[test]
 fn type_fn_() {
-    let _: AssertFnRet<U0,tuple_![],U0>;
-    let _: AssertFnRet<U0,tuple_![AddMt<U1>],U1>;
-    let _: AssertFnRet<U0,tuple_![AddMt<U1>,AddMt<U1 >],U2>;
-    let _: AssertFnRet<U10,tuple_![AddMt<U1>,AddMt<U10>],U21>;
-    let _: AssertFnRet<
+    let _: AssertPipedRet<U0,tuple_![],U0>;
+    let _: AssertPipedRet<U0,tuple_![AddMt<U1>],U1>;
+    let _: AssertPipedRet<U0,tuple_![AddMt<U1>,AddMt<U1 >],U2>;
+    let _: AssertPipedRet<U10,tuple_![AddMt<U1>,AddMt<U10>],U21>;
+    let _: AssertPipedRet<
         U10,
         tuple_![
             AddMt<U1>,

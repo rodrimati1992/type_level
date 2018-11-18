@@ -10,8 +10,10 @@ use crate_::ops::{ConstInto,ConstIntoMt, ConstInto_,AsTList_};
 use crate_::collection_ops::{
     Filter_, 
     FoldL_, FoldR_, TryFoldL_, TryFoldR_, TryFoldLMt,
-    Insert_, Len_, Map_, Remove_, Repeat_,
+    Insert_, Len_, Map_, Remove_,
     ReverseOp,
+    Collection,DefaultCollectionItems,collfns_f,
+    Use_PopBackOp,Use_PushBackOp,
 };
 use crate_::field_traits::{GetField_, SetField_};
 use crate_::discriminant::{Discriminant,UIntFromDiscriminant};
@@ -22,6 +24,9 @@ use prelude::*;
 #[cfg(all(test,feature="passed_tests"))]
 mod tests;
 mod tuple_impls;
+
+use self::tuple_impls::reverse::Reverse_Override;
+
 
 /// Marker type representing tuples up to 16 elements.
 #[derive(Debug, Default, Copy, Clone)]
@@ -40,6 +45,16 @@ impl ConstType for TupleType {}
 
 /// The discriminant for all tuples.
 pub type Tuple_Discr=Discriminant<TupleType, TupleType, U0>;
+
+impl Collection for TupleType{
+    type CollectEmpty=();
+    type Items=SetFields<DefaultCollectionItems<Self>,tlist!(
+        (collfns_f::pop ,Use_PopBackOp),
+        (collfns_f::push,Use_PushBackOp),
+        (collfns_f::reverse,Reverse_Override),
+        (collfns_f::repeat,Repeat_Override),
+    )>;
+}
 
 macro_rules! impl_tuple_trait {
     (with-idents;$( ($len:ty)=[ $($tparams:ident,)* => $($runtparams:ident,)* ])*) => {
@@ -216,11 +231,14 @@ macro_rules! impl_tuple_trait {
         )*
     };
     (repeated; $( ($len:ty)=[ $($tparams:ident),* ])* )=>{
-        $(
-            impl<V> Repeat_<V,$len> for TupleType{
-                type Output=($($tparams,)*);
-            }
-        )*
+        type_fn!{
+            pub fn 
+            $(
+                Repeat_Override[V](V,$len){
+                    ($($tparams,)*)
+                }
+            )*
+        }
     };
 }
 

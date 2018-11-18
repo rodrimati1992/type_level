@@ -6,7 +6,7 @@ Traits ,type aliases, and TypeFn_s for manipulating fields.
 
 use prelude::*;
 
-use crate_::ops::{AssertEq,AssertFnRet,Sub1Op};
+use crate_::ops::{AssertEq,AssertPipedRet,Sub1Op};
 use crate_::collection_ops::{FoldL_, Map_};
 use crate_::std_ops::{SubOp};
 use crate_::fn_adaptors::{ApplyNth,ApplyRhs};
@@ -400,7 +400,7 @@ mod tests{
     fn test_get_field(){
         type Test<This,Index,Value>=(
             AssertEq<GetField<This,Index>,Value>,
-            AssertFnRet<This,GetFieldMt<Index>,Value>,
+            AssertPipedRet<This,GetFieldMt<Index>,Value>,
         );
 
         let _:Test<Some_<True>,U0,True>;
@@ -437,7 +437,7 @@ mod tests{
     fn test_set_field(){
         type Test<This,Index,Value,NewValue>=(
             AssertEq<SetField<This,Index,Value>,NewValue>,
-            AssertFnRet<This,SetFieldMt<Index,Value>,NewValue>,
+            AssertPipedRet<This,SetFieldMt<Index,Value>,NewValue>,
         );
 
         let _:Test<Some_<True> ,U0,False,Some_<False> >;
@@ -506,8 +506,8 @@ mod tests{
 
 
         type TestSetFields<This,FVPairs,Expected>=(
-            AssertFnRet<(This,FVPairs),SetFieldsOp,Expected>,
-            AssertFnRet<This,SetFieldsMt<FVPairs>,Expected>,
+            AssertPipedRet<(This,FVPairs),SetFieldsOp,Expected>,
+            AssertPipedRet<This,SetFieldsMt<FVPairs>,Expected>,
             AssertEq<<This as SetFields_<FVPairs>>::Output,Expected>,
         );
 
@@ -618,8 +618,8 @@ mod tests{
     #[test]
     fn map_field(){
         type Test<This,Field,Mapper,Equals>=(
-            AssertFnRet<(This,Field,Mapper),MapFieldOp,Equals>,
-            AssertFnRet<This,MapFieldMt<Field,Mapper>,Equals>,
+            AssertPipedRet<(This,Field,Mapper),MapFieldOp,Equals>,
+            AssertPipedRet<This,MapFieldMt<Field,Mapper>,Equals>,
             AssertEq<MapField<This,Field,Mapper>,Equals>,
         );
         
@@ -692,8 +692,8 @@ mod tests{
     #[test]
     fn map_into_field(){
         type Test<This,Field,Mapper,Equals>=(
-            AssertFnRet<(This,Field,Mapper),MapIntoFieldOp,Equals>,
-            AssertFnRet<This,MapIntoFieldMt<Field,Mapper>,Equals>,
+            AssertPipedRet<(This,Field,Mapper),MapIntoFieldOp,Equals>,
+            AssertPipedRet<This,MapIntoFieldMt<Field,Mapper>,Equals>,
             AssertEq<MapIntoField<This,Field,Mapper>,Equals>,
         );
         type SubField<Field>=tlist![ GetFieldMt<Field>,Sub1Op ];

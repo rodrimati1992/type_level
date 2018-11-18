@@ -12,7 +12,7 @@ use crate_::ops::{
     AndThen_,OrElse_,AndThenMt,OrElseMt,
     IntoInner_,
     If,
-    AssertEq,AssertFnRet,AssertConstTypeMt,
+    AssertEq,AssertPipedRet,AssertConstTypeMt,
     ConstEqMt,
     ConstIntoMt,
     SafeDivOp,Add1Op,
@@ -24,6 +24,10 @@ use crate_::collection_ops::{
     Map, Map_,
     Filter_,Filter,
     TryFoldType,TFVal,TFBreak,
+    Collection,DefaultCollectionItems,collfns_f,
+    Use_PopBackOp,Use_PushBackOp,
+    PushBack_,PushFront_,PopBack_,PopFront_,
+    Any,All,
 };
 use prelude::*;
 
@@ -60,14 +64,40 @@ pub type NewNone=Const<None_>;
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-impl<Func,Params> TypeFn_<Params> for Some_<Func>
+impl<T,Func,Out> AndThen_<Func> for Some_<T>
 where
-    Func: TypeFn_<Params>,
+    (Func,AssertConstTypeMt<OptionType>):TypeFn_<T,Output=Out>
 {
-    type Output = Func::Output;
+    type Output=Out;
 }
-impl<Params> TypeFn_<Params> for None_ {
-    type Output = Params;
+
+impl<Func> AndThen_<Func> for None_{
+    type Output=Self;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<T,Func> OrElse_<Func> for Some_<T>{
+    type Output=Self;
+}
+
+
+impl<Func,Out> OrElse_<Func> for None_
+where
+    (Func,AssertConstTypeMt<OptionType>):TypeFn_<(),Output=Out>
+{
+    type Output=Out;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+
+impl Collection for OptionType{
+    type CollectEmpty=None_;
+    type Items=SetFields<DefaultCollectionItems<Self>,tlist!(
+        (collfns_f::pop ,Use_PopBackOp),
+        (collfns_f::push,Use_PushBackOp),
+    )>;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -93,32 +123,7 @@ impl<Pred> Filter_<Pred> for None_ {
     type Output = None_;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
 
-impl<T,Func,Out> AndThen_<Func> for Some_<T>
-where
-    (Func,AssertConstTypeMt<OptionType>):TypeFn_<T,Output=Out>
-{
-    type Output=Out;
-}
-
-impl<Func> AndThen_<Func> for None_{
-    type Output=Self;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////
-
-impl<T,Func> OrElse_<Func> for Some_<T>{
-    type Output=Self;
-}
-
-
-impl<Func,Out> OrElse_<Func> for None_
-where
-    (Func,AssertConstTypeMt<OptionType>):TypeFn_<(),Output=Out>
-{
-    type Output=Out;
-}
 ///////////////////////////////////////////////////////////////////////////////////////
 
 impl<DefaultValue, Op, T> FoldR_<DefaultValue, Op> for Some_<T>
@@ -166,6 +171,42 @@ where
 impl<DefaultValue, Op> TryFoldL_<DefaultValue, Op> for None_ {
     type Output = TFVal<DefaultValue>;
 }
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+
+impl<T,Val> PushBack_<Val> for Some_<T>{
+    type Output=Some_<Val>;
+}
+impl<T,Val> PushFront_<Val> for Some_<T>{
+    type Output=Some_<Val>;
+}
+impl<T> PopBack_ for Some_<T>{
+    type Output=(T,None_);
+}
+impl<T> PopFront_ for Some_<T>{
+    type Output=(T,None_);
+}
+
+impl<Val> PushBack_<Val> for None_{
+    type Output=Some_<Val>;
+}
+impl<Val> PushFront_<Val> for None_{
+    type Output=Some_<Val>;
+}
+impl PopBack_ for None_{
+    type Output=None_;
+}
+impl PopFront_ for None_{
+    type Output=None_;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -260,6 +301,7 @@ impl<T> IntoInner_ for Some_<T> {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
+
 // #[cfg(test)]
 #[cfg(all(test,feature="passed_tests"))]
 mod tests {
@@ -302,6 +344,14 @@ mod tests {
         let _: AssertEq< None_ , Filter<Some_<U3>, ConstEqMt<U0>>>;
         let _: AssertEq< None_ , Filter<None_,Const<True>>>;
         let _: AssertEq< None_ , Filter<None_,Const<False>>>;
+
+
+        let _: AssertEq< Any<None_     ,ConstEqMt<U10>>,False>;
+        let _: AssertEq< Any<Some_<U0> ,ConstEqMt<U10>>,False>;
+        let _: AssertEq< Any<Some_<U10>,ConstEqMt<U10>>,True>;
+        let _: AssertEq< All<None_     ,ConstEqMt<U10>>,True >;
+        let _: AssertEq< All<Some_<U0 >,ConstEqMt<U10>>,False>;
+        let _: AssertEq< All<Some_<U10>,ConstEqMt<U10>>,True >;
     }
 
     #[test]
@@ -347,10 +397,10 @@ mod tests {
     #[test]
     fn and_then_or_else(){
         type TestAT<Val,Func,Expected>=
-            AssertFnRet<Val,AndThenMt<Func>,Expected>;
+            AssertPipedRet<Val,AndThenMt<Func>,Expected>;
 
         type TestOE<Val,Func,Expected>=
-            AssertFnRet<Val,OrElseMt<Func>,Expected>;
+            AssertPipedRet<Val,OrElseMt<Func>,Expected>;
 
         type AddSome=(Add1Op,NewSome);
 
