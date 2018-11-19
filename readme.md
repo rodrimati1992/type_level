@@ -3,7 +3,9 @@
 Package for declaring and using type level values and functions.
 
 **Work in progress.**
+
 **This will be ready for consumption when the "0.1.0" is published on crates.io .**
+
 **Please create issues for any problem.**
 
 # Library Features
@@ -48,8 +50,8 @@ go to the `docs` submodule (in the documentation for type_level_values).
 ### Examples crate
 
 For examples of using the type_level libraries,
-//TODO:link to the guide in docs.rs
-read [`the guide`]() (also available with cargo doc --open), 
+read [`the guide`](https://docs.rs/type_level_values/0.1/type_level_values/docs/guide/introduction/index.html)
+(also available with cargo doc --open), 
 or look at the [`type_level_examples`](https://crates.io/crates/type_level_examples)
 crate.
 
