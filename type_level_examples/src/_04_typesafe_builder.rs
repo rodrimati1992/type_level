@@ -31,6 +31,7 @@ use type_level_values::prelude::*;
 
 #[derive(TypeLevel)]
 #[typelevel(derive(Debug))]
+#[typelevel(reexport(Struct,Traits))]
 pub struct AnimalInitialization {
     years_lived: FieldInit,
     children: FieldInit,
@@ -38,8 +39,7 @@ pub struct AnimalInitialization {
 }
 
 use self::type_level_AnimalInitialization::{
-    fields as ai_field, AnimalInitializationTrait,
-    AnimalInitialization_Uninit,
+    fields as ai_field, 
 };
 
 

@@ -253,9 +253,10 @@ fn main(){
 
 ```
 
-# Defining/Using a trait ,declaring a type alias and TypeFn_ for that trait 
+# Defining/Using a trait ,declaring a type alias and a TypeFn_ for that trait 
 
-define_trait:declares a trait,
+define_trait:declares a trait.
+
 use_trait   :does not declare a trait,
 
 Both of them:
@@ -354,7 +355,7 @@ fn main(){
 
 
 */
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! type_fn {
     (   $(#[$attr_op:meta])*
         alias $op_name:ident[$lhs:ident$(,$param:ident)* $(,)*] 

@@ -35,7 +35,7 @@ use self::type_level_Mutability::{Immutable, MutabilityTrait, Mutable};
 )]
 pub struct __MutabilityWrapper<T, M> {
     value: T,
-    mutability: M,
+    mutability: ConstWrapper<M>,
 }
 
 impl<T, M> MutabilityWrapper<T, M>

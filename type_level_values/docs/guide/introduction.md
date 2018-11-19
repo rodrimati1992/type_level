@@ -19,7 +19,7 @@ Currently it is not possible to define a type using the TypeLevel derive macro i
 since the macro generates a module,and Rust does not allow defining modules inside functions.
 
 Go to 
-[attribute_typelevel](../attribute_typelevel/index.html) 
+[attribute_typelevel](../../attribute_typelevel/index.html) 
 for more details on using the TypeLevel derive macro.
 
 ### ConstValue example

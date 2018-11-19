@@ -129,7 +129,7 @@ notice that we use SetFields to override items in
 [DefaultCollectionItems](type.DefaultCollectionItems.html),
 and that repeat is overriden with a function of the same name with a `_Override` suffix:
 
-```
+```ignore
 impl Collection for TListType{
     type CollectEmpty=TNil;
     type Items=SetFields<DefaultCollectionItems<Self>,tlist!(

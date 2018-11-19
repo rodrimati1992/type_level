@@ -89,6 +89,7 @@ mod tests {
     #[derive(TypeLevel)]
     #[typelevel(
         reexport(Struct),
+        // print_derive,
         derive(ConstEq,ConstOrd),
     )]
     #[allow(dead_code)]

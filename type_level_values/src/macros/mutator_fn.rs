@@ -365,7 +365,7 @@ mutator_fn!{
 
 
 */
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! mutator_fn {
     (
         $(

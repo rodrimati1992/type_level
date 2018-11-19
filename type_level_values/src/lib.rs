@@ -99,11 +99,17 @@ extern crate serde;
 
 extern crate num_traits;
 
+#[macro_use]
+mod macros{
+    #[macro_use]
+    mod tlist;
+    #[macro_use]
+    mod type_fn;
+    #[macro_use]
+    mod mutator_fn;
+}
+use self::macros::*;
 
-
-include!( "./macros/tlist.rs");
-include!( "./macros/type_fn.rs");
-include!( "./macros/mutator_fn.rs");
 
 
 

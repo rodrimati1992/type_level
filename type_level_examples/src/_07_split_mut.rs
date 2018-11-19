@@ -232,7 +232,8 @@ pub mod rectangle {
         y: u32,
         w: u32,
         h: u32,
-        accessible_fields: VariantPhantom<(I, P)>,
+        accessible_fields: ConstWrapper<I>,
+        _pointer:PhantomData<P>
     }
 
     impl Rectangle<RectangleAcessibleDefault, IsValue> {

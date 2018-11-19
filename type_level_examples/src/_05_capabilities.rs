@@ -86,13 +86,10 @@ pub trait FieldAccessor<Field> {
     Type(name = "SideEffectful", doc = "oh hi"),
     ConstValue = "Caps"
 )]
-pub struct __SideEffectful<FS, EC, Caps>
-where
-    Caps: WrapperTrait,
-{
+pub struct __SideEffectful<FS, EC, Caps>{
     filesystem: FS,
     execute_command: EC,
-    _capabilities: ConstWrapperFromTrait<Caps>,
+    _capabilities: ConstWrapper<Caps>,
 }
 
 macro_rules! capability_accessor {
@@ -130,7 +127,7 @@ where
         Self {
             filesystem,
             execute_command,
-            _capabilities,
+            _capabilities:ConstWrapper::NEW,
         }
     }
 }

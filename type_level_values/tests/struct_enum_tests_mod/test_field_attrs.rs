@@ -163,11 +163,16 @@ fn tests_TupleStruct(){
             ])
         })
         .add_reexports(TLModIndex::DunderFieldMod,[
-            "pub use super :: integer_reexports :: { U0 , U1 , } ;",
+            "pub use super :: integer_reexports :: {U0,U1,};",
         ].iter().cloned())
         .add_reexports(TLModIndex::FieldsMod,[
-            "pub use super::__fields::{U0,U1,} ;",
-            "pub(crate)use super::__fields::{eeee,field_2,field_3,field_5,All,} ;",
+            "pub use super::__fields::U0;",
+            "pub use super::__fields::U1;",
+            "pub(crate)use super::__fields::eeee ;",
+            "pub(crate)use super::__fields::field_2;",
+            "pub(crate)use super::__fields::field_3;",
+            "pub(crate)use super::__fields::field_5;",
+            "pub(crate)use super::__fields::All;",
         ].iter().cloned());
 
 
@@ -260,8 +265,13 @@ fn tests_BracedStruct(){
             " pub use super :: integer_reexports ::{ } ; "
         ].iter().cloned())
         .add_reexports(TLModIndex::FieldsMod,[
-            "pub use super :: __fields :: { a , b , } ;",
-            "pub(crate) use super :: __fields::{ c , d , eeee , f , All ,} ;",
+            "pub use super :: __fields ::a;",
+            "pub use super :: __fields ::b;",
+            "pub(crate) use super :: __fields::c;",
+            "pub(crate) use super :: __fields::d;",
+            "pub(crate) use super :: __fields::eeee;",
+            "pub(crate) use super :: __fields::f;",
+            "pub(crate) use super :: __fields::All;",
         ].iter().cloned());
 
 
@@ -379,11 +389,14 @@ fn tests_AnEnum(){
             ])
         })
         .add_reexports(TLModIndex::DunderFieldMod,[
-            "pub use super :: integer_reexports :: { U0 , } ;"
+            "pub use super :: integer_reexports :: {U0,};"
         ].iter().cloned())
         .add_reexports(TLModIndex::FieldsMod,[
-            "pub ( in super :: super ) use super :: __fields :: { U0 , a , b , uh , } ;",
-            "pub ( in super :: super ) use super :: __fields :: { All , } ;",
+            "pub ( in super :: super ) use super :: __fields :: U0 ;",
+            "pub ( in super :: super ) use super :: __fields :: a ;",
+            "pub ( in super :: super ) use super :: __fields :: b ;",
+            "pub ( in super :: super ) use super :: __fields :: uh ;",
+            "pub ( in super :: super ) use super :: __fields :: All ;",
         ].iter().cloned());
 
 

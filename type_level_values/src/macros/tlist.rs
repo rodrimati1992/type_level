@@ -150,7 +150,7 @@ fn main(){
 #[macro_export]
 macro_rules! tlist_val {
     ($($all:tt)*) => {
-        < tlist!($($all)*) as $crate::core_extensions::MarkerType >::MTVAL
+        < $crate::tlist!($($all)*) as $crate::core_extensions::MarkerType >::MTVAL
     };
 }
 

@@ -564,8 +564,10 @@ impl<'a> ToTokens for StructDeclarations<'a>{
         
         let vis_kind_submod=self.vis_kind.submodule_level(2);
         let vis_kind_submod_rep=iter::repeat(vis_kind_submod);
+        let vis_kind_submod_rep2=iter::repeat(vis_kind_submod);
         
         let priv_field_vis_submod2 =self.priv_field_vis().submodule_level(2);
+        let priv_field_vis_submod2_rep2 =iter::repeat(&priv_field_vis_submod2);
         let priv_field_vis_submod =self.priv_field_vis().submodule_level(1);
         let opt_priv_field_vis =self.opt_priv_field_vis().map(|v| v.submodule_level(1) );
         let has_priv_fields=self.opt_priv_field_vis().map(|_| &self.tokens.priv_struct );
@@ -573,10 +575,8 @@ impl<'a> ToTokens for StructDeclarations<'a>{
 
         let priv_struct_reexport=self.opt_priv_field_vis().map(|_|{
             quote!(
-                #priv_field_vis_submod use self::__private_mod::{
-                    __PrivTrait,
-                    __IsPriv,
-                };
+                #priv_field_vis_submod use self::__private_mod::__PrivTrait;
+                #priv_field_vis_submod use self::__private_mod::__IsPriv;
             )
         });
         if  self.attribute_settings.derived.get_discriminant.inner.is_implemented()  {
@@ -636,14 +636,13 @@ impl<'a> ToTokens for StructDeclarations<'a>{
             (Structs are implicitly enums with 1 variant).
             */
             pub mod fields{
-                #vis_kind_submod use super::__fields::{
-                    #(#pub_fields,)*
-                };
-
-                #priv_field_vis_submod2 use super::__fields::{
-                    #(#priv_fields,)*
-                    All,
-                };
+                #(
+                    #vis_kind_submod_rep2 use super::__fields::#pub_fields;
+                )*
+                #(
+                    #priv_field_vis_submod2_rep2 use super::__fields::#priv_fields;
+                )*
+                #priv_field_vis_submod2 use super::__fields::All;
             }
         });
 

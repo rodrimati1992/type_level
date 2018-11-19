@@ -1,17 +1,9 @@
 extern crate rustc_version;
 
-#[macro_use]
-extern crate bitflags;
-
-extern crate core_extensions;
-
 use rustc_version::{version, Version};
 
-pub mod test;
-
 fn main() {
-    println!("cargo:rerun-if-changed=build");
-
+    println!("cargo:rerun-if-changed=build.rs");
 
     let rver = version().unwrap();
 
@@ -25,10 +17,5 @@ fn main() {
         println!("cargo:rustc-cfg=rust_1_27");
     }
 
-    println!("cargo:warning=RERUNNING type_level_values BUILD SCRIPT");
-
-
-    const RERUNNING_BUILD_SCRIPT:()=();
-
-    self::test::build_tests().unwrap();
+    println!("cargo:warning=RERUNNING type_level_examples BUILD SCRIPT");
 }

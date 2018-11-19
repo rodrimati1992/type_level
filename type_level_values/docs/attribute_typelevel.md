@@ -8,44 +8,44 @@ The `TypeLevel` derive attribute,used to create a compile-time equivalent of a t
 
 # Generated items:
 
-All of the generated items are inside a module called type_level_\<DerivingType>,
+All of the generated items are inside a module called type_level_\<DerivingType\>,
 where `<DerivingType>` is the name of the type deriving TypeLevel.
 
 
-Items inside type_level_\<DerivingType>:
+Items inside type_level_\<DerivingType\>:
 
 - \<ConstValue> :
     A type that represents compile-time values of the deriving type.<br>
     For enums it generates as many as there are variants.
     <br>
-    The default name for structs is Const\<DerivingType>.
-    The default name for enum variants is <VariantName> ,the same as in the enum declaration.
+    The default name for structs is Const\<DerivingType\>.
+    The default name for enum variants is \<VariantName\> ,the same as in the enum declaration.
 
 
 - \<ConstType>:
     A marker type representing the ConstType equivalent of the deriving type.
     <br>
-    The default name is \<DerivingType>Type
+    The default name is \<DerivingType\>Type
 
 - \<Struct/Variant>Trait:
     Trait used to operate on a ConstValue in generic contexts and 
     to get the fields of the struct/variant.
     <br>
-    The default name for structs is \<DerivingType>Trait.
-    The default name for enum variants is <VariantName>Trait.
+    The default name for structs is \<DerivingType\>Trait.
+    The default name for enum variants is \<VariantName\>Trait.
 
 - \<Struct/Variant>WithRuntime:
     Trait used to access the fields of the ConstValue with extra bounds 
     specified using the `#[typelevel(bound_runt="...")` attribute on a field.
     <br>
-    The default name for structs is \<DerivingType>Trait.
-    The default name for enum variants is <VariantName>Trait.
+    The default name for structs is \<DerivingType\>Trait.
+    The default name for enum variants is \<VariantName\>Trait.
 
 - \<Struct/Variant>FromTrait:
     To get the \<ConstValue> type from a type parameter constrained by \<Struct/Variant>Trait .
     <br>
-    The default name for structs is \<DerivingType>FromTrait.
-    The default name for enum variants is <VariantName>FromTrait.
+    The default name for structs is \<DerivingType\>FromTrait.
+    The default name for enum variants is \<VariantName\>FromTrait.
 
 - fields :
     A module containing field accessors.
@@ -55,11 +55,11 @@ Items inside type_level_\<DerivingType>:
     A module containing the discriminants and 
     variant name(which is a unit struct) of the type.
     <br>
-    The default name for the discriminant of structs is \<DerivingType>\_Discr.
-    The default name for the discriminant of enum variants is <VariantName>\_Discr.
+    The default name for the discriminant of structs is \<DerivingType\>\_Discr.
+    The default name for the discriminant of enum variants is \<VariantName\>\_Discr.
     <br>
-    The default name for the variant name of structs is \<DerivingType>\_Variant.
-    The default name for the variant name of enum variants is <VariantName>\_Variant.
+    The default name for the variant name of structs is \<DerivingType\>\_Variant.
+    The default name for the variant name of enum variants is \<VariantName\>\_Variant.
 
 
 # Attributes
@@ -110,11 +110,11 @@ Most attributes lists support these attributes:
     Or Of the form `reexport( $(<reexport_kind>),* )`
     Where <reexport_kind> enables re-exporting a group of items and is one/many of:
     - Traits:<br>
-        For structs \<DerivingType>Trait and \<DerivingType>IntoRuntime.<br>
-        For enums \<DerivingType>Trait,<Variant>Trait and \<DerivingType>IntoRuntime.
+        For structs \<DerivingType\>Trait and \<DerivingType\>IntoRuntime.<br>
+        For enums \<DerivingType\>Trait,<Variant>Trait and \<DerivingType\>IntoRuntime.
     <br>
     - Variants/Struct:<br>
-        For structs Const\<DerivingType> .<br>
+        For structs Const\<DerivingType\> .<br>
         For enums types of the same name as the variants.
     <br>
     - Discriminants:the `variants` module
@@ -141,7 +141,7 @@ Most attributes lists support these attributes:
     Of the form `rename_trait = "new_name"`,the string must be a valid identifier.
 
 - rename_wr_trait :
-    Renames the \<DerivingType>WithRuntime trait <br>
+    Renames the \<DerivingType\>WithRuntime trait <br>
     Of the form `rename_wr_trait = "new_name"`,the string must be a valid identifier.
 
 - derive : 
@@ -195,19 +195,19 @@ Valid attributes inside items(impl_name( ... )):
 
 
 - pub_trait_accessor:
-    Allows accessing the value of a private field through the \<DerivingType>Trait.
+    Allows accessing the value of a private field through the \<DerivingType\>Trait.
     Does not allow using GetField to access the value of the field.
 
 
 - bound:
-    Allows adding a bound to the associated type of the \<DerivingType>Trait
+    Allows adding a bound to the associated type of the \<DerivingType\>Trait
     representing this field.
     <br>
     Of the form `bound="bound"` where bound must be a valid constraint.
     
 
 - bound_runt:
-    Allows adding a bound to the associated type of the \<DerivingType>WithRuntime
+    Allows adding a bound to the associated type of the \<DerivingType\>WithRuntime
     representing this field.
     <br>
     Of the form `bound_runt="bound"` where bound must be a valid constraint.

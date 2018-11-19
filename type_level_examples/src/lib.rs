@@ -35,6 +35,7 @@ pub mod _06_channel;
 pub mod _07_split_mut;
 pub mod _08_ranged_int;
 pub mod _09_type_hof;
+#[cfg(rust_1_26)]
 pub mod _10_state_machine;
 pub mod playground_01;
 pub mod playground_02;

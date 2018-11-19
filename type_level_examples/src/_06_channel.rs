@@ -40,10 +40,10 @@ use self::type_level_State::{Closed, Open, OpenTrait};
 #[mcv(
     Type = "ChannelEnd", ConstValue = "S"
 )]
-pub struct __ChannelEnd<Chan, S: WrapperTrait> {
+pub struct __ChannelEnd<Chan, S> {
     channel: Chan,
     #[allow(dead_code)]
-    state: ConstWrapperFromTrait<S>,
+    state: ConstWrapper<S>,
 }
 
 pub type Sender<T, S> = ChannelEnd<MPSCSender<T>, S>;
