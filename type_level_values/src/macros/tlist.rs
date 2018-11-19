@@ -147,10 +147,10 @@ fn main(){
 
 
 */
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! tlist_val {
     ($($all:tt)*) => {
-        < $crate::tlist!($($all)*) as $crate::core_extensions::MarkerType >::MTVAL
+        < tlist!($($all)*) as $crate::core_extensions::MarkerType >::MTVAL
     };
 }
 
