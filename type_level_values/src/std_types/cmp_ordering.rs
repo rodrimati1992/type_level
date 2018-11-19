@@ -1,8 +1,11 @@
+/*!
+Contains the type-level equivalent of a std::cmp::Ordering.
+*/
+
 use prelude::*;
 
 use ops::const_from::ConstFrom_;
 use ops::{ConstEq, ConstOrd,AssertEq};
-use collection_ops::{Reverse_,Reverse};
 
 use typenum::consts::{U0, U1, U2};
 
@@ -22,29 +25,23 @@ use core_extensions::type_level_bool::{False, True};
 #[allow(dead_code)]
 #[doc(hidden)]
 pub enum Ordering {
-    #[typelevel(rename = "Less_", rename_trait = "LessTrait")]
+    #[typelevel(rename_constvalue = "Less_")]
     Less,
-    #[typelevel(rename = "Equal_", rename_trait = "EqualTrait")]
+    #[typelevel(rename_constvalue = "Equal_")]
     Equal,
-    #[typelevel(rename = "Greater_", rename_trait = "GreaterTrait")]
+    #[typelevel(rename_constvalue = "Greater_")]
     Greater,
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 
 
-impl Reverse_ for Less_{
-    type Output=Greater_;
+type_fn!{
+    pub fn 
+        ReverseOrd(Less_   ){ Greater_ }
+        ReverseOrd(Equal_  ){ Equal_ }
+        ReverseOrd(Greater_){ Less_ }
 }
-
-impl Reverse_ for Equal_{
-    type Output=Equal_;
-}
-
-impl Reverse_ for Greater_{
-    type Output=Less_;
-}
-
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -203,9 +200,9 @@ mod tests {
 
     #[test]
     fn cmp_ordering_reverse() {
-        let _: AssertEq<Reverse<Less_>,Greater_>;
-        let _: AssertEq<Reverse<Equal_>,Equal_>;
-        let _: AssertEq<Reverse<Greater_>,Less_>;
+        let _: AssertEq< TypeFn<ReverseOrd,Less_>,Greater_>;
+        let _: AssertEq< TypeFn<ReverseOrd,Equal_>,Equal_>;
+        let _: AssertEq< TypeFn<ReverseOrd,Greater_>,Less_>;
     }
     #[test]
     fn cmp_ordering_comparison() {

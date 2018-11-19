@@ -1,3 +1,6 @@
+/*!
+Contains the type-level equivalent of a std::option::Option.
+*/
 use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
@@ -9,7 +12,7 @@ use crate_::ops::{
     AndThen_,OrElse_,AndThenMt,OrElseMt,
     IntoInner_,
     If,
-    AssertEq,AssertFnRet,AssertConstTypeMt,
+    AssertEq,AssertPipedRet,AssertConstTypeMt,
     ConstEqMt,
     ConstIntoMt,
     SafeDivOp,Add1Op,
@@ -21,6 +24,10 @@ use crate_::collection_ops::{
     Map, Map_,
     Filter_,Filter,
     TryFoldType,TFVal,TFBreak,
+    Collection,DefaultCollectionItems,collfns_f,
+    Use_PopBackOp,Use_PushBackOp,
+    PushBack_,PushFront_,PopBack_,PopFront_,
+    Any,All,
 };
 use prelude::*;
 
@@ -37,53 +44,23 @@ use std_::option::Option as StdOption;
 #[allow(dead_code)]
 #[doc(hidden)]
 pub enum Option<T> {
-    #[typelevel(rename = "Some_")]
-    Some(T),
-    #[typelevel(rename = "None_")]
+    #[typelevel(rename_constvalue = "Some_")]
+    Some(
+        #[typelevel(doc="The value `Some` wraps.")]
+        T
+    ),
+    #[typelevel(rename_constvalue = "None_")]
     None,
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
 type_fn!{
+    /// Constructs a Some_<v>
     pub fn NewSome[v](v){ Some_<v> }
 }
+/// Constructs a None_
 pub type NewNone=Const<None_>;
-
-///////////////////////////////////////////////////////////////////////////////////////
-
-impl<Func,Params> TypeFn_<Params> for Some_<Func>
-where
-    Func: TypeFn_<Params>,
-{
-    type Output = Func::Output;
-}
-impl<Params> TypeFn_<Params> for None_ {
-    type Output = Params;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////
-
-impl<Op, T> Map_<Op> for Some_<T>
-where
-    Op: TypeFn_<T>,
-{
-    type Output = Some_<Op::Output>;
-}
-impl<Op> Map_<Op> for None_ {
-    type Output = None_;
-}
-///////////////////////////////////////////////////////////////////////////////////////
-
-impl<Pred,Out, T> Filter_<Pred> for Some_<T>
-where
-    If<Pred,NewSome,NewNone>: TypeFn_<T,Output=Out>,
-{
-    type Output = Out;
-}
-impl<Pred> Filter_<Pred> for None_ {
-    type Output = None_;
-}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -111,6 +88,42 @@ where
 {
     type Output=Out;
 }
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+
+impl Collection for OptionType{
+    type CollectEmpty=None_;
+    type Items=SetFields<DefaultCollectionItems<Self>,tlist!(
+        (collfns_f::pop ,Use_PopBackOp),
+        (collfns_f::push,Use_PushBackOp),
+    )>;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<Op, T> Map_<Op> for Some_<T>
+where
+    Op: TypeFn_<T>,
+{
+    type Output = Some_<Op::Output>;
+}
+impl<Op> Map_<Op> for None_ {
+    type Output = None_;
+}
+///////////////////////////////////////////////////////////////////////////////////////
+
+impl<Pred,Out, T> Filter_<Pred> for Some_<T>
+where
+    If<Pred,NewSome,NewNone>: TypeFn_<T,Output=Out>,
+{
+    type Output = Out;
+}
+impl<Pred> Filter_<Pred> for None_ {
+    type Output = None_;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 impl<DefaultValue, Op, T> FoldR_<DefaultValue, Op> for Some_<T>
@@ -158,6 +171,42 @@ where
 impl<DefaultValue, Op> TryFoldL_<DefaultValue, Op> for None_ {
     type Output = TFVal<DefaultValue>;
 }
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+
+impl<T,Val> PushBack_<Val> for Some_<T>{
+    type Output=Some_<Val>;
+}
+impl<T,Val> PushFront_<Val> for Some_<T>{
+    type Output=Some_<Val>;
+}
+impl<T> PopBack_ for Some_<T>{
+    type Output=(T,None_);
+}
+impl<T> PopFront_ for Some_<T>{
+    type Output=(T,None_);
+}
+
+impl<Val> PushBack_<Val> for None_{
+    type Output=Some_<Val>;
+}
+impl<Val> PushFront_<Val> for None_{
+    type Output=Some_<Val>;
+}
+impl PopBack_ for None_{
+    type Output=None_;
+}
+impl PopFront_ for None_{
+    type Output=None_;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -209,11 +258,13 @@ impl<O> BitAnd<O> for None_ {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 type_fn!{
+    /// Returns wether the OptionType parameter is a Some_.
     pub fn IsSome(None_){False}
            IsSome[T](Some_<T>){True}
 }
 
 type_fn!{
+    /// Returns wether the OptionType parameter is a None_.
     pub fn IsNone(None_){True}
            IsNone[T](Some_<T>){False}
 }
@@ -250,8 +301,9 @@ impl<T> IntoInner_ for Some_<T> {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#[cfg(test)]
-// #[cfg(all(test,feature="passed_tests"))]
+
+// #[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests {
     use super::*;
 
@@ -292,6 +344,14 @@ mod tests {
         let _: AssertEq< None_ , Filter<Some_<U3>, ConstEqMt<U0>>>;
         let _: AssertEq< None_ , Filter<None_,Const<True>>>;
         let _: AssertEq< None_ , Filter<None_,Const<False>>>;
+
+
+        let _: AssertEq< Any<None_     ,ConstEqMt<U10>>,False>;
+        let _: AssertEq< Any<Some_<U0> ,ConstEqMt<U10>>,False>;
+        let _: AssertEq< Any<Some_<U10>,ConstEqMt<U10>>,True>;
+        let _: AssertEq< All<None_     ,ConstEqMt<U10>>,True >;
+        let _: AssertEq< All<Some_<U0 >,ConstEqMt<U10>>,False>;
+        let _: AssertEq< All<Some_<U10>,ConstEqMt<U10>>,True >;
     }
 
     #[test]
@@ -337,10 +397,10 @@ mod tests {
     #[test]
     fn and_then_or_else(){
         type TestAT<Val,Func,Expected>=
-            AssertFnRet<Val,AndThenMt<Func>,Expected>;
+            AssertPipedRet<Val,AndThenMt<Func>,Expected>;
 
         type TestOE<Val,Func,Expected>=
-            AssertFnRet<Val,OrElseMt<Func>,Expected>;
+            AssertPipedRet<Val,OrElseMt<Func>,Expected>;
 
         type AddSome=(Add1Op,NewSome);
 

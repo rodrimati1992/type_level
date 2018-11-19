@@ -57,6 +57,10 @@ impl<'a> ToTokens for VariantsMod<'a>{
 
             tokens.append_all(quote!(
                 use self::variants::*;
+                /**
+                Contains discriminants/marker-types for each variant
+                (Structs are implicitly enums with 1 variant).
+                */
                 pub mod variants{
                     use super::*;
 

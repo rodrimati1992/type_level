@@ -22,15 +22,24 @@ otherwise they would be innacessible outside of this module.
 
 This is the constructor function for the `ConstNonZero3DPoint`,the only way to construct one.
 
-This function checks that each parameter (x/y/z)  is not zero 
-before constructing a `ConstNonZero3DPoint` with them.
+Here we use AssertThat_ to check that every parameter (x/y/z)  is not zero 
+before constructing a `ConstNonZero3DPoint` with them,
+if the assertion fails it prints 
+`NonZero3DPoint_cannot_have_0_coordinates<x,y,z>` as the error message.
 
-The `construct` macro here ensures that we correctly initialize a ConstValue,
+AllMt is a function which captures the predicate and 
+takes the collection as a function parameter,
+returning whether all the elements in the collection satisfy the predicate.
+
+
+The `Construct` type alias here ensures that we correctly initialize a ConstValue,
 producing an error message mentioning which fields are not initialized 
 if they are not.
 
-The `NonZero3DPoint_Uninit` used by the `construct` macro is innacessible outside of the module
+The `NonZero3DPoint_Uninit` used by the `Construct` type alias is 
+innacessible outside of the module
 so as to prevent users from constructing an invalid `ConstNonZero3DPoint`.
+
 
 //@use_codeblock:distance_struct,ignore
 
@@ -74,7 +83,9 @@ extern crate derive_type_level;
 use std::ops::Add;
 
 use type_level_values::field_traits::*;
-use type_level_values::ops::ConstNE_;
+use type_level_values::collection_ops::{AllMt};
+use type_level_values::ops::{ConstNE_,IsZeroOp,AssertThat_};
+use type_level_values::std_ops::{NotOp};
 use type_level_values::prelude::*;
 
 
@@ -111,21 +122,24 @@ mod non_zero_3d_point{
     
     //@codeblock-start:new_non0_point_struct
 
+    #[doc(hidden)]
+    pub struct NonZero3DPoint_cannot_have_0_coordinates<x,y,z>(x,y,z);
+
     type_fn!{
         pub fn NewNonZero3DPoint[x,y,z](x,y,z)
         where[
-            x:ConstNE_<Z0,Output=True>,
-            y:ConstNE_<Z0,Output=True>,
-            z:ConstNE_<Z0,Output=True>,
+            tlist![x,y,z]:AssertThat_<
+                AllMt<(IsZeroOp,NotOp)>,
+                NonZero3DPoint_cannot_have_0_coordinates<x,y,z>
+            >,
         ]{
-            construct!(NonZero3DPoint_Uninit=>
-                fields::x=x,
-                fields::y=y,
-                fields::z=z,
-            )
+            Construct<NonZero3DPoint_Uninit,(
+                (fields::x,x),
+                (fields::y,y),
+                (fields::z,z),
+            )>
         }
     }
-
     //@codeblock-end  :new_non0_point_struct
 }
 

@@ -336,6 +336,14 @@ impl<'ar> UpdateWithMeta<'ar> for ImplVariant<'ar> {
 
 #[derive(Debug, Default, Clone)]
 pub(crate) struct Renames<'a> {
+
+    /// The base used to generate the identifiers for the
+    /// \<ConstValue\>/*Type/*Trait/*WithRuntime/*_Uninit/*_Discr/*_Variant
+    pub(crate) basename: Option<&'a Ident>,
+
+    /// The ConstType.
+    pub(crate) const_type: Option<&'a Ident>,
+    
     /// The struct representing either an enum variant or a struct.
     pub(crate) variant_type: Option<&'a Ident>,
     
@@ -346,8 +354,6 @@ pub(crate) struct Renames<'a> {
     /// that can have bounds mentioning for every field mentioning the runtime type .
     pub(crate) wr_trait: Option<&'a Ident>,
 
-    /// The ConstType.
-    pub(crate) const_type: Option<&'a Ident>,
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -412,6 +418,9 @@ fn attr_settings_new_attr<'alloc>(
                     );
                 }
                 "rename" => {
+                    settings.renames.basename = Some(ident_from_nested(&value,arenas));
+                }
+                "rename_constvalue" => {
                     settings.renames.variant_type = Some(ident_from_nested(&value,arenas));
                 }
                 "rename_trait" => {

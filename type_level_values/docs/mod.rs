@@ -5,6 +5,7 @@ Where all the documentation about how to use the library resides.
 */
 
 #[macro_use]
+#[doc(hidden)]
 pub mod doc_code_snippets_macro;
 
 #[path = "attribute_typelevel.md"]

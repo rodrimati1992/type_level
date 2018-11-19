@@ -4,10 +4,10 @@ doc_code_snippets! {
     template=r##"
 
 
-This chapter demonstrates how a Const-method is declared and used.
+This chapter demonstrates how to mutate the ConstValue parameter with a Mutator Function.
 
-Const-methods are constrained ways in which a type allows mutating its ConstValue-parameter,
-declared using the `const_method` macro.
+Mutator Functions are TypeFn which can mutate the ConstValue parameter of a type,
+declared using the mutator_fn macro.
 
 
 Here is an example of a builder which checks that all fields have been initialized 
@@ -21,16 +21,16 @@ one must fill as many lines as possible before the pieces run out.
 
 //@use_codeblock:field_init_enum,ignore
 
-This is the type-level enum describing whether a field is initialized.
+This is the enum describing whether a field is initialized.
 
 //@use_codeblock:init_struct,ignore
 
-This is the type-level struct describing describing the initialization state of all fields.
+This is the struct describing describing the initialization state of all fields.
 
 //@use_codeblock:init_aliases,ignore
 
 These are aliases for ConstInitializedFields where all the fields are either 
-described as initialized (AllInitialized) or as uninitialized (AllUninitialized).
+initialized (AllInitialized) or uninitialized (AllUninitialized).
 
 //@use_codeblock:builder_struct_decl,ignore
 
@@ -38,15 +38,16 @@ This is the builder struct itself,
 taking the initialization of each field as the ConstValue-parameter `C`.
 
 
-//@use_codeblock:const_method,ignore
+//@use_codeblock:mutator_fn,ignore
 
-This declares a ConstMethod for TetrisBuilder,
-by way of the ConstConstructor of TetrisBuilder which is TetrisBuilderCC .
+This declares a Mutator Function for TetrisBuilder,
+I is the current value of the ConstValue parameter,and Field is the field we want to initialize.
 
-A ConstConstructor represents the type without the ConstValue parameter.
+The `AllowedSelf` associated type allows us to control which methods of 
+MutConstParam we can call,by value/reference/mutable_reference/all.
 
-For [more information on the const_method macro look here ](../../macro.const_method.html).
-
+the `let` syntax here is used to declare a variable in the impl of TypeFn_ 
+for InitializeField.
 
 //@use_codeblock:declare_setter_macro,ignore
 
@@ -58,6 +59,13 @@ ConstValue-parameter of a value.
 
 MCPBounds is a trait alias for the constraints required by most MutConstParam methods.
 
+The `NextSelf=_Out` is an example of the 
+[`generic type as type alias`
+](../../appendix_patterns/index.html#patterngeneric-type-as-type-alias) 
+pattern,
+which allows us to return whatever the trait's associated type is without
+repeating the constraint in the return type.
+
 //@use_codeblock:setter_impls,ignore
 
 This decares the setter methods for each field in the builder.
@@ -65,7 +73,7 @@ This decares the setter methods for each field in the builder.
 //@use_codeblock:build_fn,ignore
 
 This constructs the TetrisPieces,the unwraps are fine since this 
-type already checks whether all the fields are initialized with the Const-parameter.
+type already checks whether all the fields are initialized with the ConstValue-parameter.
 
 The `C:TypeIdentity<Type= AllInitialized >` constraint in the method 
 is an equality constraint,requiring that the ConstValue-parameter be AllInitialized,
@@ -183,9 +191,9 @@ pub type AllInitialized=SetField<
 #[derive(MutConstValue)]
 #[mcv(
     derive(Clone,Default, Debug),
-    Type = "TetrisBuilder",Param = "C",
+    Type = "TetrisBuilder",ConstValue = "C",
 )]
-pub struct TetrisBuilderInner<C>{
+pub struct __TetrisBuilder<C>{
     l_pieces:Option<usize>,
     i_pieces:Option<usize>,
     z_pieces:Option<usize>,
@@ -207,18 +215,19 @@ impl TetrisBuilder< AllUninitialized >{
 
 
 
-//@codeblock-start:const_method
+//@codeblock-start:mutator_fn
 
-const_method!{
-    type ConstConstructor[]=( TetrisBuilderCC )
-    type AllowedConversions=( allowed_conversions::ByVal )
+
+mutator_fn!{
+    type This[I]=(TetrisBuilder<I>)
+    type AllowedSelf=(allowed_self_constructors::ByVal)
 
     fn InitializeField[I,Field](I,Field)
     where [ I:SetField_<Field,InitField,Output=Out>, ]
     { let Out;Out }
 }
 
-//@codeblock-end  :const_method
+//@codeblock-end  :mutator_fn
 
 
 
@@ -228,12 +237,12 @@ const_method!{
 macro_rules! declare_setter {
     ( $field:ident ) => (
 
-        fn $field<__OutSelf>(mut self,value:usize)->__OutSelf
+        fn $field<_Out>(mut self,value:usize)->_Out
         where 
-            Self:MCPBounds<InitializeField,if_f::$field,NextSelf=__OutSelf>
+            Self:MCPBounds<InitializeField,if_f::$field,NextSelf=_Out>,
         {
             self.$field=Some(value);
-            self.mutparam(InitializeField::new(),Default::default())
+            self.mutparam(InitializeField::NEW,if_f::$field::T)
         }
 
     )

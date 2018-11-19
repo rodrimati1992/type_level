@@ -99,6 +99,78 @@ fn main(){
 
 ```
 
+# Declaring an function delegating to another TypeFn_
+
+### Syntax
+
+```text
+$( #[ <attribute> ] )*
+
+$( captures( $( <captured_variable> ,)* ) )?
+
+$( #[ <attribute> ] )*
+
+$( <visibility_specifier> )? fn`<function_name> = <function_type>
+```
+
+Where \<function_type\> can be any type that implements TypeFn_
+
+### Example
+
+```
+
+#[macro_use]
+extern crate type_level_values;
+
+use type_level_values::ops::*;
+use type_level_values::std_ops::*;
+use type_level_values::fn_adaptors::*;
+use type_level_values::prelude::*;
+
+type_fn!{
+    /// This function is equivalent to calling AddOp.
+    pub fn MyAdd1 = AddOp;
+}
+
+type_fn!{
+    /// This function only takes 1 parameter.
+    captures(L)
+    pub fn MyAdd2 = ApplyLhs<AddOp,L>;
+}
+
+type_fn!{
+    /// This function ignores all function parameters.
+    captures(L,R)
+    pub fn MyAdd3 = Lazy<AddOp,(L,R)>;
+}
+
+
+fn main(){
+    let _:AssertEq< TypeFn<MyAdd1,(U0,U2)>,U2 >;
+    let _:AssertEq< TypeFn<MyAdd1,(U2,U2)>,U4 >;
+
+
+    let _:AssertEq< TypeFn<MyAdd2<U2>,U0>,U2 >;
+    let _:AssertEq< TypeFn<MyAdd2<U2>,U2>,U4 >;
+
+    
+    //  It ignores the parameters 
+    let _:AssertEq< TypeFn<MyAdd3<U0,U0>,U2 >,U0 >;
+    let _:AssertEq< TypeFn<MyAdd3<U0,U0>,U10>,U0 >;
+    
+    let _:AssertEq< TypeFn<MyAdd3<U2,U0>,U2 >,U2 >;
+    let _:AssertEq< TypeFn<MyAdd3<U2,U0>,U10>,U2 >;
+
+    let _:AssertEq< TypeFn<MyAdd3<U2,U2>,U2 >,U4 >;
+    let _:AssertEq< TypeFn<MyAdd3<U2,U2>,U10>,U4 >;
+
+
+
+}
+
+
+```
+
 
 # Declaring a TypeFn_/method_like alias for a pre-existing trait
 
@@ -124,10 +196,9 @@ $( where[ <where_predicates> ] )?
 ```
 
 method_like is a TypeFn_ which captures all parameters except for the first one,
-allowing one to it in a list of functions,which act like a method chain.
+allowing one to use it in a list of functions,acting like a method chain.
 
-Capturing parameters means that they are generic parameters to the struct representing the 
-type-level function.
+Captures are generic parameters to the struct representing the type-level function.
 
 ### Example
 
@@ -182,9 +253,10 @@ fn main(){
 
 ```
 
-# Defining/Using a trait ,declaring a type alias and TypeFn_ for that trait 
+# Defining/Using a trait ,declaring a type alias and a TypeFn_ for that trait 
 
-define_trait:declares a trait,
+define_trait:declares a trait.
+
 use_trait   :does not declare a trait,
 
 Both of them:
@@ -283,7 +355,7 @@ fn main(){
 
 
 */
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! type_fn {
     (   $(#[$attr_op:meta])*
         alias $op_name:ident[$lhs:ident$(,$param:ident)* $(,)*] 
@@ -292,9 +364,9 @@ macro_rules! type_fn {
     ) => {
         $(#[$attr_op])*
         /**
-        A type-level function.Implements TypeFn<> for the trait of a similar name.
-        
-        To instantiate a runtime value of this function use `Type::CW`/`<Type>::CW`.
+A type-level function.
+
+Implements TypeFn<> for the trait of a similar name.
         */
         #[allow(non_camel_case_types)]
         pub struct $op_name;
@@ -317,16 +389,20 @@ macro_rules! type_fn {
     ) => {
         $(#[$attr_op])*
         /**
-        A type-level function.
-        
-        Implements TypeFn<> for the trait of a similar name.
-        
-        This is defined to encourage function composition,emulating method chains.
-        
-        To instantiate a runtime value of this function use `Type::CW`/`<Type>::CW`.
+A type-level function.
+
+Implements TypeFn<> for the trait of a similar name.
+
+This is defined to encourage function composition,emulating method chains.
         */
         #[allow(non_camel_case_types)]
-        pub struct $op_name<$($param $(= $def_ty )* ),*>($($param),*);
+        pub struct $op_name<$($param:?Sized $(= $def_ty )* ),*>(
+            pub $crate::prelude::VariantPhantom<(
+                $(
+                    $crate::prelude::VariantPhantom<$param>,
+                )*
+            )>
+        );
 
         #[allow(non_camel_case_types)]
         impl<$lhs$(,$param)*> $crate::type_fn::TypeFn_<$lhs> for $op_name<$($param),*>
@@ -438,6 +514,27 @@ macro_rules! type_fn {
         type_fn!{ define_trait;declaring_trait; $($tokens)* }
         type_fn!{ use_trait $($tokens)* }
     };
+    (// declares a new function,aliasing for a pre-existing function
+        $(#[$attr_above:meta])*
+        $(captures($($bound_vars:ident $(= $bound_def:ty )* ),*)
+            $(#[$attr_bellow:meta])*
+        )*
+        $(pub $(($($visibility:tt)*))*)*
+        fn $fn_name:ident=$equals:ty;
+    )=>{
+        type_fn!{
+            $(#[$attr_above])*
+            $(  
+                captures($($bound_vars $(= $bound_def )* ),*)
+                $(#[$attr_bellow])*
+            )*
+            
+            $(pub $(($($visibility:tt)*))*)*
+            fn $fn_name[Params](Params)
+            where[ $equals:$crate::type_fn::TypeFn_<Params,Output=Out> ]
+            { let Out; Out }
+        }
+    };
     (
         $(#[$attr_above:meta])*
         $(captures($($bound_vars:ident $(= $bound_def:ty )* ),*)
@@ -473,33 +570,63 @@ macro_rules! type_fn {
             privacy[ $(pub $(($($visibility)*))*)* ]
             $(#[$attr])*
             #[allow(non_camel_case_types)]
-            ///
-            /// To instantiate a runtime value of this function use `Type::CW`/`<Type>::CW`.
             struct $op_name;
         }
+
+
     };
     (inner_struct_decl;
         captures[$($bound_vars:ident $(= $bound_def:ty )* ),*]
         privacy[pub] $(#[$attr:meta])* struct $op_name:ident;
     )=>{
-        $(#[$attr])*
-        #[allow(non_camel_case_types)]
-        pub struct $op_name<$($bound_vars $(=$bound_def)* ,)*>(
-            pub $crate::prelude::VariantPhantom<(
-                $($crate::prelude::VariantPhantom<$bound_vars>,)*
-            )>
-        );
+        type_fn!{
+            inner_struct_decl;shared;
+            captures[$($bound_vars $(=$bound_def)* ,)*]
+            privacy[pub]
+            $(#[$attr])*
+            #[allow(non_camel_case_types)]
+            struct $op_name;
+        }
+
+        impl<$($bound_vars,)*> Default for $op_name<$($bound_vars,)*> {
+            #[inline]
+            fn default()->Self{
+                $op_name($crate::std_::marker::PhantomData)
+            }
+        }
     };
     (inner_struct_decl;
         captures[$($bound_vars:ident $(= $bound_def:ty )* ),*]
         privacy[$($privacy:tt)*] $(#[$attr:meta])* struct $op_name:ident;
     )=>{
-        #[doc(hidden)]
+        type_fn!{
+            inner_struct_decl;shared;
+            captures[$($bound_vars $(=$bound_def)* ),*]
+            privacy[$($privacy)*]
+            $(#[$attr])*
+            #[doc(hidden)]
+            #[allow(non_camel_case_types)]
+            struct $op_name;
+        }
+    };
+    (inner_struct_decl;shared;
+        captures[$($bound_vars:ident $(= $bound_def:ty )* ),* $(,)* ]
+        privacy[$($privacy:tt)*] $(#[$attr:meta])* struct $op_name:ident;
+    )=>{
         $(#[$attr])*
-        #[allow(non_camel_case_types)]
-        pub struct $op_name<$($bound_vars $(=$bound_def)* ,)*>(
-            $(pub $crate::prelude::VariantPhantom<$bound_vars>,)*
+        pub struct $op_name<$($bound_vars:?Sized $(=$bound_def)* ,)*>(
+            pub $crate::prelude::VariantPhantom<(
+                $(
+                    $crate::prelude::VariantPhantom<$bound_vars>,
+                )*
+            )>
+            
         );
+
+        impl<$($bound_vars,)*> $op_name<$($bound_vars,)*> {
+            #[allow(dead_code)]
+            $($privacy)* const NEW:Self=$op_name($crate::std_::marker::PhantomData);
+        }
     };
     (inner_function_decl0;
         captures[ $bound_vars:tt ]

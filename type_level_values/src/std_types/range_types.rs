@@ -15,7 +15,7 @@ use crate_::collection_ops::{
     FoldL_   ,FoldL   , FoldR_   ,FoldR   ,
     TryFoldL_,TryFoldLMt,TryFoldL, TryFoldR_,TryFoldR,
     Map_,Map,MapMt,Len_,Len,
-    PushOp,Repeat_,TFVal,TFBreak,
+    PushOp,RepeatOp,TFVal,TFBreak,
 };
 
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_, OrderingTrait};
@@ -32,6 +32,8 @@ use std_::ops::{
 #[cfg(rust_1_26)]
 use std_::ops::{RangeInclusive as StdRangeInclusive, RangeToInclusive as StdRangeToInclusive};
 
+
+/// Contains the type-level equivalent of std::ops::Range.
 pub mod range {
     use super::*;
     #[derive(TypeLevel)]
@@ -45,6 +47,7 @@ pub mod range {
     #[allow(dead_code)]
     #[doc(hidden)]
     pub struct Range<T> {
+        #[typelevel(doc="the start of the range")]
         pub start: T,
         pub end: T,
     }
@@ -56,6 +59,7 @@ pub mod range {
 
 //////////////////////////////////////////////////////////////////////////////////
 
+/// Contains the type-level equivalent of std::ops::RangeFrom.
 pub mod range_from {
     use super::*;
 
@@ -97,6 +101,7 @@ pub mod range_from {
 
 /////////////////////////////////////////////////////////////////////////////////////
 
+/// Contains the type-level equivalent of std::ops::RangeFull.
 pub mod range_full {
     use super::*;
 
@@ -124,6 +129,7 @@ pub mod range_full {
 
 }
 
+/// Contains the type-level equivalent of std::ops::RangeTo.
 pub mod range_to {
     use super::*;
 
@@ -159,6 +165,7 @@ pub mod range_to {
 
 }
 
+/// Contains the type-level equivalent of std::ops::RangeInclusive.
 #[cfg(rust_1_26)]
 pub mod range_inclusive {
     use super::*;
@@ -199,6 +206,8 @@ pub mod range_inclusive {
 
 }
 
+
+/// Contains the type-level equivalent of std::ops::RangeToInclusive.
 #[cfg(rust_1_26)]
 pub mod range_to_inclusive {
     use super::*;
@@ -282,7 +291,7 @@ type_fn!{
 impl<DefVal,Func,Leng,list,S,E,_0,Out> FoldL_<DefVal,Func> for ConstRange<S,E>
 where 
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     list:FoldL_<(S,DefVal) , FoldNext<Add1Op,Func>,Output=(_0,Out)>
 {
     type Output=Out;
@@ -292,7 +301,7 @@ impl<DefVal,Func,Leng,list,S,E,_0,EndSub1,Out> FoldR_<DefVal,Func> for ConstRang
 where 
     SatSub1Op:TypeFn_<E,Output=EndSub1>,
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     list:FoldL_<(EndSub1,DefVal) , FoldNext<SatSub1Op,Func>,Output=(_0,Out)>
 {
     type Output=Out;
@@ -305,15 +314,17 @@ where
 impl<DefVal,Func,Leng,list,S,E,_0,Out> FoldL_<DefVal,Func> for ConstRangeInclusive<S,E>
 where 
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     list:FoldL_<(S,DefVal) , FoldNext<Add1Op,Func>,Output=(_0,Out)>
 {
     type Output=Out;
 }
+
+#[cfg(rust_1_26)]
 impl<DefVal,Func,Leng,list,S,E,_0,Out> FoldR_<DefVal,Func> for ConstRangeInclusive<S,E>
 where 
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     list:FoldL_<(E,DefVal) , FoldNext<SatSub1Op,Func>,Output=(_0,Out)>
 {
     type Output=Out;
@@ -325,7 +336,7 @@ where
 impl<DefVal,Func,Leng,list,S,E,Out> TryFoldL_<DefVal,Func> for ConstRange<S,E>
 where 
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     (   
         TryFoldLMt<(S,DefVal),TryFoldNext<Add1Op,Func>>,
         ExtractState
@@ -338,7 +349,7 @@ impl<DefVal,Func,Leng,list,S,E,EndSub1,Out> TryFoldR_<DefVal,Func> for ConstRang
 where 
     SatSub1Op:TypeFn_<E,Output=EndSub1>,
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     (
         TryFoldLMt<(EndSub1,DefVal),TryFoldNext<SatSub1Op,Func>>,
         ExtractState
@@ -354,7 +365,7 @@ where
 impl<DefVal,Func,Leng,list,S,E,Out> TryFoldL_<DefVal,Func> for ConstRangeInclusive<S,E>
 where 
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     (
         TryFoldLMt<(S,DefVal),TryFoldNext<Add1Op,Func>>,
         ExtractState
@@ -362,10 +373,12 @@ where
 {
     type Output=Out;
 }
+
+#[cfg(rust_1_26)]
 impl<DefVal,Func,Leng,list,S,E,Out> TryFoldR_<DefVal,Func> for ConstRangeInclusive<S,E>
 where 
     Self:Len_<Output=Leng>,
-    TListType:Repeat_<(),Leng,Output=list>,
+    RepeatOp:TypeFn_<(TListType,(),Leng),Output=list>,
     (
         TryFoldLMt<(E,DefVal),TryFoldNext<SatSub1Op,Func>>,
         ExtractState
@@ -452,8 +465,8 @@ macro_rules! range_ {
     (                    ) => ( $crate::std_types::range_full::ConstRangeFull );
 }
 
-#[cfg(test)]
-// #[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod test_eq {
     use super::*;
 
@@ -491,12 +504,16 @@ mod test_eq {
         let _:Test<ConstRange<U0,U2>,U2>;
         let _:Test<ConstRange<U0,U3>,U3>;
 
-        let _:Test<ConstRangeInclusive<U2,U0>,U0>;
-        let _:Test<ConstRangeInclusive<U1,U0>,U0>;
-        let _:Test<ConstRangeInclusive<U0,U0>,U1>;
-        let _:Test<ConstRangeInclusive<U0,U1>,U2>;
-        let _:Test<ConstRangeInclusive<U0,U2>,U3>;
-        let _:Test<ConstRangeInclusive<U0,U3>,U4>;
+
+        #[cfg(rust_1_26)]
+        {
+            let _:Test<ConstRangeInclusive<U2,U0>,U0>;
+            let _:Test<ConstRangeInclusive<U1,U0>,U0>;
+            let _:Test<ConstRangeInclusive<U0,U0>,U1>;
+            let _:Test<ConstRangeInclusive<U0,U1>,U2>;
+            let _:Test<ConstRangeInclusive<U0,U2>,U3>;
+            let _:Test<ConstRangeInclusive<U0,U3>,U4>;
+        }
 
     }
     #[test]
@@ -510,12 +527,16 @@ mod test_eq {
         let _:Test<ConstRange<U0,U1>,tlist![U0]>;
         let _:Test<ConstRange<U0,U2>,tlist![U0,U1]>;
         let _:Test<ConstRange<U0,U3>,tlist![U0,U1,U2]>;
-        let _:Test<ConstRangeInclusive<U2,U0>,TNil>;
-        let _:Test<ConstRangeInclusive<U1,U0>,TNil>;
-        let _:Test<ConstRangeInclusive<U0,U0>,tlist![U0]>;
-        let _:Test<ConstRangeInclusive<U0,U1>,tlist![U0,U1]>;
-        let _:Test<ConstRangeInclusive<U0,U2>,tlist![U0,U1,U2]>;
-        let _:Test<ConstRangeInclusive<U0,U3>,tlist![U0,U1,U2,U3]>;
+
+        #[cfg(rust_1_26)]
+        {
+            let _:Test<ConstRangeInclusive<U2,U0>,TNil>;
+            let _:Test<ConstRangeInclusive<U1,U0>,TNil>;
+            let _:Test<ConstRangeInclusive<U0,U0>,tlist![U0]>;
+            let _:Test<ConstRangeInclusive<U0,U1>,tlist![U0,U1]>;
+            let _:Test<ConstRangeInclusive<U0,U2>,tlist![U0,U1,U2]>;
+            let _:Test<ConstRangeInclusive<U0,U3>,tlist![U0,U1,U2,U3]>;
+        }
     }
 
     #[test]

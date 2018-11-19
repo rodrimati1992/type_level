@@ -18,8 +18,8 @@ type_fn!{define_trait
     /// Returns the wrapped value if Self is an ok/some value,
     /// otherwise returns the result of calling DefaultFunc.
     ///
-    /// The parameter of DefaultFunc is `()` for OptionType,
-    /// `Error` for ResultType.
+    /// The parameter of DefaultFunc is `()` for None_,
+    /// `E` for Err_<E>.
     trait=UnwrapOrElse_ [DefaultFunc]
     type=UnwrapOrElse
     fn_type=UnwrapOrElseOp

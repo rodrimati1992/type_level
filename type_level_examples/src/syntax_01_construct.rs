@@ -99,7 +99,7 @@ fn constructing_new_types() {
     );
 
     let _entity0: ConstEntity<
-        Some_<construct!(PointType=> point_f::x = U1, point_f::y = U2,)>,
+        Some_<Construct<PointType,((point_f::x,U1),(point_f::y,U2))>>,
         Up,
         True,
     > = ConstEntity::MTVAL.assert_zst();
@@ -115,10 +115,10 @@ fn constructing_new_types() {
         is_alive: True.to_cw(),
     }.assert_zst();
 
-    let _entity2 = <construct!(EntityType=>
-        entity_f::position = None_,
-        entity_f::facing = Up,
-        entity_f::is_alive = False,
+    let _entity2 = Construct::<EntityType,(
+        (entity_f::position , None_),
+        (entity_f::facing   , Up   ),
+        (entity_f::is_alive , False),
     )>::MTVAL
         .assert_zst();
 }

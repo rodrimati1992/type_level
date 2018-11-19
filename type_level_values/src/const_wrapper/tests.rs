@@ -18,7 +18,10 @@ struct Dim2d {
     height: u32,
 }
 
-type Wrapper0 = ConstWrapper<construct!(Dim2dType=> fields::width = U3, fields::height = U5,)>;
+type Wrapper0 = Construct<Dim2dType,(
+    (fields::width,U3),
+    (fields::height,U5),
+)>;
 
 
 #[test]
@@ -35,7 +38,7 @@ fn whole_ops(){
 
 #[test]
 fn get_field() {
-    let v0 = Wrapper0::NEW;
+    let v0 = Wrapper0::CW;
 
     assert_eq!(v0[fields::width].get_as(u32::T), 3);
     assert_eq!(v0[fields::height].get_as(u32::T), 5);
@@ -47,7 +50,7 @@ fn get_field() {
 #[test]
 fn set_field() {
     {
-        let v0 = Wrapper0::NEW
+        let v0 = Wrapper0::CW
             .set_field_val(fields::width, U0::MTVAL)
             .set_field_val(fields::height, U1::MTVAL);
 
@@ -57,7 +60,7 @@ fn set_field() {
     }
 
     {
-        let v0 = Wrapper0::NEW
+        let v0 = Wrapper0::CW
             .set_field::<fields::width, U10>()
             .set_field::<fields::height, U20>();
 
@@ -70,7 +73,7 @@ fn set_field() {
 
 #[test]
 fn map_field() {
-    let v0 = Wrapper0::NEW;
+    let v0 = Wrapper0::CW;
 
     let v0 = v0
         .map_field(fields::width, <AddMt<U3>>::CW)
@@ -85,7 +88,7 @@ fn map_field() {
 
 #[test]
 fn map_all_to() {
-    let v0 = Wrapper0::NEW;
+    let v0 = Wrapper0::CW;
 
     {
         let v0 = v0.map_to(fields::width, <GetFieldMt<fields::height>>::CW);
@@ -105,7 +108,7 @@ fn map_all_to() {
 
 #[test]
 fn map_all() {
-    let v0 = Wrapper0::NEW;
+    let v0 = Wrapper0::CW;
 
     {
         let v0 = v0.map(MapFieldMt::<fields::height, AddMt<U3>>::CW);

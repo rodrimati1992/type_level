@@ -2,6 +2,10 @@
 
 This appendix is about how to read compiler error messages.
 
+# Really long types
+
+If the compiler prints really long types,take the output of the compiler and remove text matching this regex  ```[^\(\)\[\]{}>`<,= ]+::```.
+
 # Guidelines
 
 The recommended approach to reading error messages is to read the error message in this order of importance:
@@ -36,11 +40,11 @@ struct Point {
 use self::type_level_Point::fields;
 
 fn main(){
-    let _:construct!{Point_Uninit=>
-        fields::x = U0,
-        fields::y = U1,
-        ()=U2,
-    }=MarkerType::MTVAL;
+    let _:Construct<Point_Uninit,(
+        (fields::x , U0),
+        (fields::y , U1),
+        ((),U2),
+    )>=MarkerType::MTVAL;
 }
 
 ```
@@ -51,12 +55,12 @@ This is the error message produced by the previous code example:
 error[E0277]: the trait bound `type_level_Point::ConstPoint<type_level_values::typenum::UTerm, type_level_values::typenum::UInt<type_level_values::typenum::UTerm, type_level_values::values_prelude::B1>>: type_level_values::field_traits::SetField_<(), type_level_values::typenum::UInt<type_level_values::typenum::UInt<type_level_values::typenum::UTerm, type_level_values::values_prelude::B1>, type_level_values::values_prelude::B0>>` is not satisfied
   --> src/../docs/reading_error_messages.md:33:11
    |
-21 |       let _:construct!{Point_Uninit=>
+21 |       let _:Construct<Point_Uninit,(
    |  ___________^
-22 | |         fields::x = U0,
-23 | |         fields::y = U1,
-24 | |         ()=U2,
-25 | |     }=MarkerType::MTVAL;
+22 | |         (fields::x , U0),
+23 | |         (fields::y , U1),
+24 | |         ((),U2),
+25 | |     )>=MarkerType::MTVAL;
    | |_____^ the trait `type_level_values::field_traits::SetField_<(), type_level_values::typenum::UInt<type_level_values::typenum::UInt<type_level_values::typenum::UTerm, type_level_values::values_prelude::B1>, type_level_values::values_prelude::B0>>` is not implemented for `type_level_Point::ConstPoint<type_level_values::typenum::UTerm, type_level_values::typenum::UInt<type_level_values::typenum::UTerm, type_level_values::values_prelude::B1>>`
    |
    = help: the following implementations were found:
@@ -68,15 +72,39 @@ error[E0277]: the trait bound `type_level_Point::ConstPoint<type_level_values::t
 
 ```
 
+After running the error message through the [Really long types](#really-long-types) regex,it reduces down to this:
+
+```text
+
+error[E0277]: the trait bound `ConstPoint<UTerm, UInt<UTerm, B1>>: SetField_<(), UInt<UInt<UTerm, B1>, B0>>` is not satisfied
+  --> src/../docs/reading_error_messages.md:33:11
+   |
+21 |       let _:Construct<Point_Uninit,(
+   |  ___________^
+22 | |         (x , U0),
+23 | |         (y , U1),
+24 | |         ((),U2),
+25 | |     )>=MTVAL;
+   | |_____^ the trait `SetField_<(), UInt<UInt<UTerm, B1>, B0>>` is not implemented for `ConstPoint<UTerm, UInt<UTerm, B1>>`
+   |
+   = help: the following implementations were found:
+             <ConstPoint<x, y> as SetField_<x, NewValue>>
+             <ConstPoint<x, y> as SetField_<y, NewValue>>
+             <ConstPoint<x, y> as SetField_<All, NewValue>>
+   = note: required because of the requirements on the impl of `TypeFn_<(ConstPoint<UTerm, UInt<UTerm, B1>>, ((), UInt<UInt<UTerm, B1>, B0>))>` for `SetFieldValuePair`
+   = note: required because of the requirements on the impl of `FoldL_<ConstPoint<UninitField<x>, UninitField<y>>, SetFieldValuePair>` for `TList<(x, UTerm), TList<(y, UInt<UTerm, B1>), TList<((), UInt<UInt<UTerm, B1>, B0>), TNil>>>`
+
+```
+
 
 Note in the main error message:
 
 ```text
-^ the trait
-`type_level_values::field_traits::SetField_<(), ... >` 
-is not implemented for 
-`type_level_Point::ConstPoint<..>`
+^ the trait `SetField_<(), ... >` is not implemented for  `ConstPoint<..>`
 ```
+
+This means that we are trying to wrongly use `()` as a field accessor,when the only valid ones are 
+`fields::{x,y,All}`.
 
 In the help it also says that ConstPoint<..> implements 
 SetField_\<fields::x>,SetField_\<fields::y>,and SetField_\<fields::All>.
@@ -140,9 +168,9 @@ type AnyBox=Box<Any+Send+'static>;
 
 #[derive(MutConstValue)]
 #[mcv(
-    Type="Channel",Param ="S"
+    Type="Channel",ConstValue ="S"
 )]
-pub struct ChannelInner<S>{
+pub struct __Channel<S>{
     sender  :Sender<AnyBox>,
     receiver:Receiver<AnyBox>,
     state:ConstWrapper<S>,
@@ -202,7 +230,7 @@ error[E0599]: no method named `recv` found for type `ChannelInner<type_level_val
 17 |     let (channel0,value)=channel0.recv().unwrap();
    |                                   ^^^^
 ...
-51 | pub struct ChannelInner<S>{
+51 | pub struct __Channel<S>{
    | -------------------------- method `recv` not found for this
    |
    = note: the method `recv` exists but the following trait bounds were not satisfied:
@@ -210,12 +238,12 @@ error[E0599]: no method named `recv` found for type `ChannelInner<type_level_val
 
 ```
 
-Note that the "main" error is not quite so readable now,
-the note however tells us that the problem is 
+The "main" error is not very readable,
+but if we read the note we can see that the problem is 
 that the ConstValue `MustSend<String>` does not implement `MustReceiveTrait`,
 meaning that we made a mistake in following the sequence of operations.
 
-The fix here is to call `send` with a String since that is the only thing that 
-the `MustSend<String>` parameter allows us to do.
+The fix here is to call `send` with a String since that is what 
+`MustSend<String>` is telling us to do in this type.
 
 */

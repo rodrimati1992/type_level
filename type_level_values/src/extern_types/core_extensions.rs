@@ -97,6 +97,7 @@ pub mod boolean_variants {
 
 ///////////////////////////////////////////////////////////////////////////////////
 
+/// The ConstType of Void.
 #[derive(Debug, Copy, Clone, Default)]
 pub struct VoidType;
 

@@ -16,18 +16,17 @@ Trait/Type glossary:
 - ConstValue: A trait for type-level values,also used here to refer to implementors of it.
 
 - ConstWrapper:
-    Zero-sized wrapper type for type-level-values that unconditionally implements 
+    Zero-sized wrapper type for ConstValue that unconditionally implements 
     Eq/PartialEq/Ord/PartialOrd/Copy/Clone/Debug/etc ,
-    delegating IntoRuntime/GetField/SetField/etc to the wrapped type-level-value.
+    delegating IntoRuntime/GetField/SetField/etc to the wrapped ConstValue.
 
 
-- IntoRuntime : trait for converting a type-level-value to a runtime-value.
+- IntoRuntime : trait for converting a ConstValue to a runtime-value.
 
 
 //@use_codeblock:declare-enum,ignore
 
-This is the enum that derives TypeLevel,whose type-level version will be used as a 
-ConstValue parameter
+This is the enum we will use for declaring the mutability of the wrapper.
 
 //@use_codeblock:declare-struct,ignore
 
@@ -117,9 +116,9 @@ pub enum Mutability {
         are mutable or not with the `Mut` type parameter.
     ",
     derive(Debug,Clone,PartialEq,PartialOrd,Eq,Ord),
-    Type="Wrapper",Param="Mut",
+    Type="Wrapper",ConstValue="Mut",
 )]
-pub struct _WrapperInner<T,Mut>{
+pub struct ___Wrapper<T,Mut>{
     mutability:ConstWrapper<Mut>,
     value:T,
 }

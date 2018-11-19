@@ -1,5 +1,8 @@
 use super::*;
 
+use core_extensions::BoolExt;
+use core_extensions::IteratorExt;
+
 use derive_type_level_lib::parse_syn::{
     parse_syn_use,
     parse_ident,
@@ -102,9 +105,9 @@ mod reexp_e4{
     #[allow(dead_code)]
     #[derive(TypeLevel)]
     #[typelevel(derive_str,reexport(Fields))]
-    pub struct Reexport{
-        x:u32,
-        y:u32,
+    pub enum Reexport{
+        X,
+        Y,
     }
 }
 
@@ -169,84 +172,75 @@ fn text_reexport_inner(
 
     let mut set=HashSet::new();
 
+    let mut reexported_list=Vec::new();
+
+    fn pub_vis(vis:&str)->(&str,&str){
+        ("pub",vis)
+    }
+
+    fn priv_vis(vis:&str)->(&str,&str){
+        ("",vis)
+    }
+
     if reexported!=Reexported::set_all(false) {
-        let co_fields=co_if(reexported.fields);
-        let co_trait=co_if(reexported.traits);
-        
-        let use_str=match enum_or_struct {
-            Enum=>format!("
-                #[allow(unused_imports)]
-                pub use self :: type_level_Reexport :: {{
-                    ReexportType , 
-                    {co_trait} ReexportTrait , 
-                    {co_trait} XTrait , 
-                    {co_trait} XWithRuntime , 
-                    {co_trait} YTrait , 
-                    {co_trait} YWithRuntime , 
-                    {co_fields} fields , 
-                }};
-                ",
-                co_fields=co_fields ,
-                co_trait=co_trait,
-            ),
-            Struct=>format!("
-                #[allow(unused_imports)]
-                pub use self :: type_level_Reexport :: {{
-                    ReexportType , 
-                    {co_trait} ReexportTrait , 
-                    {co_trait} ReexportWithRuntime , 
-                    {co_fields} fields , 
-                }};
-                ",
-                co_fields=co_fields ,
-                co_trait=co_trait,
-            ),
-        };
-        set.insert(parse_syn_use(&use_str));
+        match enum_or_struct {
+            Enum=>vec![
+                Some("ReexportType"),
+                reexported.traits.if_true(|| "ReexportTrait" ),
+                reexported.traits.if_true(|| "XTrait" ),
+                reexported.traits.if_true(|| "XWithRuntime" ),
+                reexported.traits.if_true(|| "YTrait" ),
+                reexported.traits.if_true(|| "YWithRuntime" ),
+                reexported.fields.if_true(|| "fields" ),
+            ],
+            Struct=>vec![
+                Some("ReexportType"),
+                reexported.traits.if_true(|| "ReexportTrait" ),
+                reexported.traits.if_true(|| "ReexportWithRuntime" ),
+                reexported.fields.if_true(|| "fields" ),
+            ],
+        }.into_iter()
+            .filter_map(|x|x)
+            .map(pub_vis)
+            .extending(&mut reexported_list);
     }
 
     if reexported.variants {
         let use_str=match enum_or_struct {
-            Enum=>"
-                #[allow(unused_imports)]
-                pub use self :: type_level_Reexport :: {
-                    X , 
-                    X_Uninit , 
-                    Y , 
-                    Y_Uninit , 
-                } ;
-            ",
-            Struct=>"
-                #[allow(unused_imports)]
-                use self :: type_level_Reexport :: {
-                    ConstReexport , 
-                    Reexport_Uninit , 
-                } ;
-            ",
-        };
-        set.insert(parse_syn_use(use_str));
+            Enum=>vec![
+                pub_vis("X"),
+                pub_vis("X_Uninit"),
+                pub_vis("Y"),
+                pub_vis("Y_Uninit"),
+            ],
+            Struct=>vec![
+                priv_vis("ConstReexport"),
+                priv_vis("Reexport_Uninit"),
+            ],
+        }.into_iter().extending(&mut reexported_list);
     }
 
     if reexported.discriminants {
         let use_str=match enum_or_struct {
-            Enum=>"
-                #[allow(unused_imports)]
-                pub use self :: type_level_Reexport :: variants :: {
-                    X_Variant , 
-                    X_Discr , 
-                    Y_Variant , 
-                    Y_Discr , 
-                };
-            ",
-            Struct=>"
-                #[allow(unused_imports)]
-                use self :: type_level_Reexport :: variants :: { 
-                    Reexport_Variant , 
-                    Reexport_Discr , 
-                } ;
-            ",
-        };
-        set.insert(parse_syn_use(use_str));
+            Enum=>vec![
+                pub_vis("variants::X_Variant"),
+                pub_vis("variants::X_Discr"),
+                pub_vis("variants::Y_Variant"),
+                pub_vis("variants::Y_Discr"),
+            ],
+            Struct=>vec![
+                priv_vis("variants::Reexport_Variant"),
+                priv_vis("variants::Reexport_Discr"),
+            ],
+        }.into_iter().extending(&mut reexported_list);
+    }
+
+    for (vis,item) in reexported_list {
+        let use_str=format!("\
+            #[allow(unused_imports)]
+            {vis} use self :: type_level_Reexport :: {item};
+        ",vis=vis,item=item);
+        set.insert(parse_syn_use(&use_str));
     }
 
 
@@ -258,8 +252,8 @@ fn text_reexport_inner(
 
     visiting.check_derive(derive_str,move|params|{
         if params.mod_index!=TLModIndex::DerivingMod { return } 
-        match params.item {
-            VisitItem::Use(use_)=>{
+        match params.item.clone() {
+            VisitItem::Use(ref use_)=>{
                 if !set.remove(use_) {
                     let s=format!(
                         "{}\n\nRemaining Items:{}",

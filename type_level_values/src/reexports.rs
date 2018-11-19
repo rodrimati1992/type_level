@@ -28,12 +28,14 @@ pub use const_wrapper::{AsConstWrapper, ConstWrapper};
 #[cfg(rust_1_22)]
 pub use runtime_value::IntoConstant;
 pub use runtime_value::{
-    ConstType, ConstTypeOf, ConstTypeOf_, ConstValue, DerivedTraits,
+    ConstType, ConstTypeOf, ConstTypeOf_, ConstValue, DerivedTraits,NoGetDiscriminant,
     FromRuntime, IntoConstType_, IntoRuntime,
 };
 
 pub use field_traits::{GetFieldRuntime_, GetField_, SetField_};
 pub use initialization as __initialization;
+
+pub type __UninitializedField=::initialization::UninitField<()>;
 
 pub use new_types::{TList, TNil};
 

@@ -17,6 +17,7 @@ extern crate regex;
 #[macro_use]
 pub(crate) mod macros;
 #[macro_use]
+#[doc(hidden)]
 pub mod indexable_struct;
 pub(crate) mod attribute_errors;
 pub(crate) mod attribute_detection;
@@ -24,14 +25,19 @@ pub(crate) mod to_token_fn;
 pub(crate) mod find_type_param;
 pub(crate) mod tlist_tokens;
 pub(crate) mod token_suffixed;
+#[doc(hidden)]
 pub mod submod_visibility;
 pub(crate) mod self_removed_bound;
 pub(crate) mod data_structure;
+#[doc(hidden)]
 pub mod common_tokens;
 pub mod typelevel;
 pub mod mutconstvalue;
+#[doc(hidden)]
 pub mod doc_code_snippets;
+#[doc(hidden)]
 pub mod parse_syn;
+pub(crate) mod gen_param_in;
 pub(crate) mod void_like;
 
 
@@ -88,6 +94,7 @@ declare_arenas!{
     types: syn::Type,
     metalists: syn::MetaList,
     visibilities: syn::Visibility,
+    tokenstream: TokenStream,
     strings: String,
 }
 

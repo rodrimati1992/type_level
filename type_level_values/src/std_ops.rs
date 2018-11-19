@@ -75,8 +75,12 @@ type_fn!{use_trait
 
 declare_rev_and_method_like!{
     operator=DivOp,
+
+    /// Division with the operands reversed
     type=DivRev,
+    /// Division with the operands reversed
     rev=DivRevOp,
+    /// Division with the operands reversed
     rev_method_like=DivRevMt,
 }
 
@@ -123,8 +127,12 @@ type_fn!{use_trait
 
 declare_rev_and_method_like!{
     operator=RemOp,
+
+    /// Remainder with the operands reversed
     type=RemRev,
+    /// Remainder with the operands reversed
     rev=RemRevOp,
+    /// Remainder with the operands reversed
     rev_method_like=RemRevMt,
 }
 
@@ -138,8 +146,12 @@ type_fn!{use_trait
 
 declare_rev_and_method_like!{
     operator=ShlOp,
+
+    /// Shift left with the operands reversed
     type=ShlRev,
+    /// Shift left with the operands reversed
     rev=ShlRevOp,
+    /// Shift left with the operands reversed
     rev_method_like=ShlRevMt,
 }
 
@@ -152,8 +164,12 @@ type_fn!{use_trait
 
 declare_rev_and_method_like!{
     operator=ShrOp,
+
+    /// Shift right with the operands reversed
     type=ShrRev,
+    /// Shift right with the operands reversed
     rev=ShrRevOp,
+    /// Shift right with the operands reversed
     rev_method_like=ShrRevMt,
 }
 
@@ -167,8 +183,12 @@ type_fn!{use_trait
 
 declare_rev_and_method_like!{
     operator=SubOp,
+
+    /// Subtraction with the operands reversed
     type=SubRev,
+    /// Subtraction with the operands reversed
     rev=SubRevOp,
+    /// Subtraction with the operands reversed
     rev_method_like=SubRevMt,
 }
 

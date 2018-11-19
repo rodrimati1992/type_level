@@ -4,7 +4,7 @@ doc_code_snippets! {
     template=r##"
 
 This chapter demonstrates creating a `type module`,
-which is a way used to pass many types around with just 1 generic parameter by using a ConstValue.
+which is a way to pass many types around with just 1 generic parameter,by using a ConstValue.
 
 
 Say that we want to read some type from csv file,in this case a Point2D.
@@ -45,7 +45,7 @@ This constructs a ConstModule,
 requiring the caller to pass the types for 
 the type being parsed and the collection it will be stored into.
 
-This function uses the `construct` type macro in its return type to ensure that it
+This function uses the `Construct` type alias in its return type to ensure that it
 initializes every ConstModule field.
 
 Examples of calling this function:
@@ -76,7 +76,7 @@ Then we parse the text using that module,
 providing the closure which returns the default value for each line that couldn't be parsed.
 <br>
 Then we declare a BTreeSet ,
-asserting that the return value of calling parse_lines must be equal to it.
+to check that the return value of calling parse_lines is what we expect.
 
 
 <br><br><br><br><br><br><br><br><br><br>
@@ -131,8 +131,12 @@ impl FromStr for Point2D {
     type Err = InvalidPoint2DStr;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut ints=s.split(",").map(u32::from_str);
-        let x=ints.next().ok_or_else(|| InvalidPoint2DStr::InvalidString(s.into()) )??;
-        let y=ints.next().ok_or_else(|| InvalidPoint2DStr::InvalidString(s.into()) )??;
+        let x=ints.next().ok_or_else(|| {
+            InvalidPoint2DStr::InvalidString(s.into()) 
+        })??;
+        let y=ints.next().ok_or_else(||{
+            InvalidPoint2DStr::InvalidString(s.into())
+        })??;
         Ok(Point2D { x, y })
     }
 }
@@ -181,11 +185,13 @@ use self::type_level_Module::fields as module_type;
 pub fn new_module<T, C, GD>(
     _type: VariantPhantom<T>,
     _collection: VariantPhantom<C>,
-) -> construct!(Module_Uninit=>
-    module_type::type_=T,
-    module_type::collection=C,
-    module_type::get_default=GD,
-) {
+) -> 
+    Construct<Module_Uninit,(
+        (module_type::type_      ,T ),
+        (module_type::collection ,C ),
+        (module_type::get_default,GD),
+    )> 
+{
     ConstModule::MTVAL
 }
 

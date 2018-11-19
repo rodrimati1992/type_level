@@ -16,22 +16,6 @@ use super::{
 
 
 
-pub fn extension_methods_attr()->AttrShape{
-    AttrShape{
-        variants:vec![
-            AttrVariant{ kind:AttrKind::NameValue{value:"false".into()} , clarification:None},
-            AttrVariant{ kind:AttrKind::NameValue{value:"true".into()} , clarification:None},
-        ],
-        word:"ExtensionMethods",
-        description:"\
-            Determines whether extension ConstMethods are allowed to mutate 
-            the Const-parameter of the derived type.\n\
-            Default value is `false`.\
-        ".into(),
-    }
-}
-
-
 pub fn type_attr()->AttrShape{
     AttrShape{
         variants:vec![
@@ -68,51 +52,49 @@ pub fn const_param_attr()->AttrShape{
         variants:vec![
             AttrVariant{
                 kind:AttrKind::NameValue{value:"ident".into()} , 
-                clarification:Some("the string must be one of the type parameters.".into())
+                clarification:Some("\
+                    ident must be the identifier of one of the type parameters.\
+                ".into())
             },
             AttrVariant{
-                kind:AttrKind::NameValue{value:"ident = DefaultType".into()} , 
+                kind:AttrKind::NameValue{value:"ident = DefaultVal".into()} , 
                 clarification:Some("\
                     `ident` must be the identifier of one of the type parameters,\n\
-                    and `DefaultType` must be its default value.\
+                    and `DefaultVal` must be its default value.\
                 ".into())
             },
         ],
-        word:"Param",
+        word:"ConstValue",
         description:"(required attribute) \
-            The identifier of the Const-parameter of this type.\
+            The identifier of the ConstValue-parameter of this type.\
         ".into(),
     }
 }
-
-// pub fn constconstructor_attr()->AttrShape{
-//     AttrShape{
-//         variants:vec![
-//             AttrVariant{ 
-//                 kind:AttrKind::NameValue{value:"ident".into()} ,
-//                 clarification:Some("the string must be a valid identifier".into())
-//             },
-//             AttrVariant{ 
-//                 kind:AttrKind::List{
-//                     value:" name=\"ident\" $(, <metadata_attribute> )* ".into()
-//                 }, 
-//                 clarification:Some("the string must be a valid identifier".into())
-//             },
-//             AttrVariant{ 
-//                 kind:AttrKind::List{
-//                     value:" use_=\"ident\"  $(, <metadata_attribute> )* ".into()
-//                 },
-//                 clarification:Some(use_clarification("<ConstConstructor>"))
-//             },
-//         ],
-//         word:"ConstConstructor",
-//         description:"(optional attribute)\
-//              Determines the name and other optional properties of the ConstConstructor.\
-//         ".into(),
-//     }
-// }
-
-
+pub fn unsafe_repr_attr()->AttrShape{
+    AttrShape{
+        variants:vec![
+            AttrVariant{
+                kind:AttrKind::List{value:"Repr0,Repr1,Repr2".into()} , 
+                clarification:Some("\
+                    The passed representation must be valid.\n\
+                    Examples: C,transparent,Rust \
+                ".into())
+            },
+        ],
+        word:"UnsafeRepr",
+        description:"(optional attribute) \
+            An unsafe attribute which allows using any repr attribute,
+            even if it is not guaranteed to not change the layout of the type \
+            when the ConstValue changes.\n
+            It is plausible that the default \
+            representation might change to be unsafe to use with MutConstValue,\
+            which is why it this derive macro uses `#[repr(C)]` by default,\
+            even though it is a terrible way to do it\
+            (thank the people wanting repr(Rust) to not guarantee anything at all \
+            about layout for this library having to use repr(C)).\
+        ".into(),
+    }
+}
 
 fn use_clarification(item_name:&str)->CowStr{
     format!("the string must be the identifier of a pre-existing {}.",item_name).into()
@@ -167,17 +149,12 @@ pub fn type_subattrs()->ValidAttrs{
     type_subattr("<TypeAlias>")
 }
 
-// pub fn constconstructor_subattrs()->ValidAttrs{
-//     type_subattr("<ConstConstructor>")
-// }
-
 pub fn mutconstvalue_attrs()->ValidAttrs{
     vec![
         type_attr(),
         const_param_attr(),
-        // constconstructor_attr(),
-        extension_methods_attr(),
         items_attr(),
+        unsafe_repr_attr(),
     ].piped(ValidAttrs::new)
 }
 

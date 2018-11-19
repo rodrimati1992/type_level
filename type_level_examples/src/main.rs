@@ -61,6 +61,7 @@ pub fn main (){
         Some(Example(ExampleKind::Regular,7))=>_07_split_mut::main_(),
         Some(Example(ExampleKind::Regular,8))=>_08_ranged_int::main_(),
         Some(Example(ExampleKind::Regular,9))=>_09_type_hof::main_(),
+        #[cfg(rust_1_26)]
         Some(Example(ExampleKind::Regular,10))=>_10_state_machine::main_(),
         Some(Example(ExampleKind::Playground,1))=>playground_01::main(),
         Some(Example(ExampleKind::Playground,2))=>playground_02::main_(),

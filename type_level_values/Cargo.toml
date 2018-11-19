@@ -1,6 +1,6 @@
 [package]
 name = "type_level_values"
-version = "0.0.23"
+version = "0.1.0"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Crate for using type-level values and functions."
@@ -27,9 +27,12 @@ travis-ci = { repository =  "rodrimati1992/type_level/" }
 
 [features]
 default = ["std","serde","identity_feature"]
+# Used in generated code as an example feature.
 identity_feature=[]
+# Enables fixe sized impls for large tlists
 large_tlist=[]
 std=[]
+# If disabled,only runs the tests we are writing at the moment
 passed_tests=["priv_doctests"]
 
 # Hack used to test that certain things do not compile.
@@ -39,11 +42,11 @@ priv_doctests=[]
 [dependencies]
 num-traits={version="0.2"}
 typenum = {version="1.10.0",features=["no_std"]}
-derive_type_level={path="../derive_type_level",version="0.0.23"}
+derive_type_level={path="../derive_type_level",version = "0.1.0"}
 
 
 [dev-dependencies]
-derive_type_level_lib={path="../derive_type_level_lib",version="0.0.23"}
+derive_type_level_lib={path="../derive_type_level_lib",version = "0.1.0"}
 lazy_static="1.0"
 quote = "0.6"
 
@@ -67,7 +70,7 @@ optional=true
 
 [build-dependencies]
 rustc_version = "0.2"
-core_extensions = "0.1"
+core_extensions = {version="0.1"}
 bitflags="1.0"
 
 

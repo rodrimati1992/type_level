@@ -179,7 +179,7 @@ type_fn!{use_trait
     type=TypeFn
     /// Calls the TypeFn_ `__Self` with the `Params` function parameters.
     fn_type=TypeFnOp
-    /// Calls the TypeFn_ `__Self` with the `Params` function parameters.
+    /// Calls the TypeFn_ `__Self` with the captured `Params`.
     method_like=TypeFnMt
 }
 

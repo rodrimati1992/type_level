@@ -1,7 +1,62 @@
+/*!
+Type-lists are type-level-lists of ConstValues which
+can be constructed using the tlist/tlist_val macros.
+
+Prefer using type-lists over tuples if you need to deal with 
+a potentially unbounded ammount of elements,
+since tuples only implement traits up to 16 elements.
+
+Another advantage type-lists have over tuples is that they can be instantiated 
+as values without instantiating any of their elements,
+type-list are zero-sized and their elements stay on the type-level.
+
+
+# Example 
+
+```
+# #[macro_use]
+# extern crate type_level_values;
+
+# use type_level_values::prelude::*;
+
+use std::mem;
+
+type Integers=tlist![
+    U0,U1,U2,U3
+];
+
+type Types0=tlist![
+    u8,u32,(),Vec<()>,Box<[usize]>
+];
+
+fn main(){
+    assert_eq!(
+        mem::size_of_val( &Integers::MTVAL ),
+        0
+    );
+    
+    assert_eq!(
+        mem::size_of_val( &Types0::MTVAL ),
+        0
+    );
+
+    // the type-list type is identical to the type-list value.
+    let primes:
+            tlist![U1,U2,U3,U5,U7,U11,U13,U17,U19,U23]=
+        tlist_val![U1,U2,U3,U5,U7,U11,U13,U17,U19,U23];
+    assert_eq!(mem::size_of_val(&primes),0);
+
+}
+
+```
+
+
+*/
+
 mod generated_impls;
 
-#[cfg(test)]
-// #[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests;
 
 use core_extensions::type_level_bool::{Boolean, False, True};
@@ -32,8 +87,12 @@ use std_::ops::{Add, BitAnd, BitOr,Shr, Index, Sub};
 #[typelevel(
     reexport(Variants, Traits,Discriminants), 
     rename_consttype = "TListType",
-    items(AsTList(NoImpls))
+    items(
+        AsTList(NoImpls),
+        runtime_conv(NoImpls),
+    )
 )]
+#[doc(hidden)]
 pub enum TypeLevelList<Current, Remaining> {
     TNil,
     TList {
@@ -316,6 +375,15 @@ type_fn!{
 
 ////////////////////////////////////////////////////////////////////////////////
 
+impl Collection for TListType{
+    type CollectEmpty=TNil;
+    type Items=SetFields<DefaultCollectionItems<Self>,tlist!(
+        (collfns_f::repeat,Repeat_Override),
+    )>;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 impl<DefaultVal, Func> FoldL_<DefaultVal, Func> for tlist![] {
     type Output = DefaultVal;
 }
@@ -369,7 +437,7 @@ impl<Curr,Rem, DefaultVal,Reversed,Func>
     TryFoldR_<DefaultVal, Func> 
 for tlist![Curr,..Rem] 
 where 
-    Self:Reverse_<Output=Reversed>,
+    ReverseOp:TypeFn_<Self,Output=Reversed>,
     Reversed:TryFoldL_<DefaultVal,Func>,
 {
     type Output=Reversed::Output;
@@ -406,24 +474,6 @@ where
 
 impl<Predicate> Filter_<Predicate> for TNil {
     type Output = TNil;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-impl<Value> Push_<Value> for TNil {
-    type Output = TList<Value, Self>;
-}
-impl<T, Rem, Value> Push_<Value> for TList<T, Rem> {
-    type Output = TList<Value, Self>;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-impl<T, Rem> Pop_ for TList<T, Rem> {
-    type Output = Some_<(T, Rem)>;
-}
-impl Pop_ for TNil {
-    type Output = None_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -497,38 +547,17 @@ impl AsTList_ for TNil {
     type Output = TNil;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
-
-impl Reverse_ for TNil {
-    type Output = TNil;
-}
-
-impl<T, Rem, out> Reverse_ for TList<T, Rem>
-where
-    ReverseHelper: TypeFn_<(TNil, Self), Output = out>,
-{
-    type Output = out;
-}
 
 type_fn!{
-    fn
-    ReverseHelper[Suffix,T,Rem](Suffix,TList<T,Rem>)
-    where [ ReverseHelper:TypeFn_< (TList<T,Suffix>,Rem),Output=out > ]
-    { let out;out }
-
-    ReverseHelper[Suffix](Suffix,TNil){Suffix}
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-impl<V, L,is_lt16, Out> Repeat_<V, L> for TListType
-where
-    ConstLtOp:TypeFn_<(L,U16),Output=is_lt16>,
-    RepeatHelper<V>: TypeFn_<(is_lt16, L), Output = Out>,
-{
-    type Output = Out;
+    pub fn Repeat_Override[V,L](V,L)
+    where[
+        ConstLtOp:TypeFn_<(L,U16),Output=is_lt16>,
+        RepeatHelper<V>: TypeFn_<(is_lt16, L), Output = Out>,
+    ]{
+        let is_lt16;let Out;
+        Out
+    }
 }
 
 

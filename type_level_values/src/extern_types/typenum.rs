@@ -185,22 +185,38 @@ impl Sealed for Greater {}
 impl TNOrdering_ for Greater {}
 
 #[derive(Debug, Default, Copy, Clone)]
+/// The ConstType of typenum::{Equal, Greater, Less}
 pub struct TNOrderingType;
 
 impl ConstType for TNOrderingType {}
 
+impl ConstTypeOf_ for Equal{
+    type Type=TNOrderingType;
+}
+impl ConstTypeOf_ for Greater{
+    type Type=TNOrderingType;
+}
+impl ConstTypeOf_ for Less{
+    type Type=TNOrderingType;
+}
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+/// The ConstType of signed typenum integers.
 #[derive(Debug, Default, Copy, Clone)]
 pub struct SignedInteger;
 
 impl ConstType for SignedInteger {}
 
+/// The ConstType of unsigned typenum integers.
 #[derive(Debug, Default, Copy, Clone)]
 pub struct UnsignedInteger;
 
 impl ConstType for UnsignedInteger {}
 
+/// The ConstType of typenum::bit::{B0,B1}
 #[derive(Debug, Default, Copy, Clone)]
 pub struct BitType;
 

@@ -37,9 +37,9 @@ pub type DeserializeSortedList<T> = SortedList<T, Uninitialized>;
 #[mcv(
     doc="A List that is sorted (its type being SortedList<T>) .",
     derive(Debug, PartialEq, Eq, PartialOrd, Ord),
-    Type= "SortedList", Param = "I=Initialized",
+    Type= "SortedList", ConstValue = "I=Initialized",
 )]
-pub struct SortedListInner<T, I> {
+pub struct __SortedList<T, I> {
     list: Vec<T>,
 
     const_value: I,

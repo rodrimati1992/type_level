@@ -260,27 +260,35 @@ use std::fmt::Write;
 
 fn main(){
 
+    let mut buffer=String::new();
+
+    let _=write!(buffer,"type_fn!{{\n\tpub fn");
+
     for i in 0..=16{
-        let mut buffer=String::new();
-        let _=write!(buffer,"impl<");
+        let _=write!(buffer,"\n\tReverse_Override[");
         for j in 0..i {
             let _=write!(buffer,"L{0},",j);
         }
-        let _=writeln!(buffer,"> Reverse_");
-        let _=write!(buffer,"for (");
+        let _=write!(buffer,"]\n\t\t(");
+        let _=write!(buffer,"(");
         for j in 0..i {
             let _=write!(buffer,"L{0},",j);
         }
-        let _=writeln!(buffer,")");
-        let _=write!(buffer,"{{\n\ttype Output=(");
+        let _=write!(buffer,")");
+        let _=write!(buffer,")\n\t{{ (");
         for j in (0..i).rev() {
             let _=write!(buffer,"L{0},",j);
         }
-        let _=write!(buffer,");\n}}");
-        println!("{}",buffer );
+        let _=write!(buffer,") }}");
+        
     }
+
+    let _=write!(buffer,"}}");
+
+    println!("{}",buffer );
     
 }
+
 
 
 */

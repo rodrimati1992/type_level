@@ -2,6 +2,7 @@
 Operations for collection types,including TypeList,tuples,Option,Result.
 */
 
+
 use std_::ops::Sub;
 
 use prelude::*;
@@ -16,12 +17,155 @@ use crate_::ops::{
     ConstInto_,ConstIntoOp,ConstIntoMt,
     IntoInnerOp,IntoInner_,
     If,
-    AssertFnRet,
+    AssertPipedRet,
     ConstLtOp,ConstLtMt,ConstEqMt,
 };
+use crate_::new_types::type_list;
+
+
+
+/// 
+/// `static=true` means that we don't pass the $this parameter to the $method when calling it.
+macro_rules! declare_collection_op {
+    ( 
+        $(static=$is_static:ident,)*
+        
+        $( #[$all_meta:meta] )*
+        fn $method:ident ( $this:ident $(,$param:ident)* )
+        
+        $( #[$type_meta:meta] )*
+        type=$type_ident:ident,
+
+        $( #[$func_meta:meta] )*
+        function   = $func:ident,
+
+        $( #[$mt_meta:meta] )*
+        methodlike = $methodlike:ident,
+    ) => {
+        $( #[$all_meta] )*
+        $( #[$type_meta] )*
+        pub type $type_ident<$this $(,$param)*>=
+            TypeFn<
+                <
+                    <
+                        $this as $crate::collection_ops::Collection
+                    >::Items as CollectionItemsTrait
+                >::$method , 
+                declare_collection_op!(inner_method_params; 
+                    [$(static=$is_static)*] 
+                    $this 
+                    $(,$param)*
+                )
+            >;
+
+        type_fn!{
+            $( #[$all_meta] )*
+            $( #[$func_meta] )*
+            pub fn $func[$this $(,$param)*]($this $(,$param)*)
+            where[
+                $this:$crate::collection_ops::Collection<Items= Methods >,
+                Methods:CollectionItemsTrait,
+                Methods::$method:TypeFn_<
+                    declare_collection_op!(inner_method_params; 
+                        [$(static=$is_static)*] 
+                        $this 
+                        $(,$param)*
+                    ),
+                    Output=Out
+                >
+            ]{
+                let Methods;let Out;
+                Out
+            }
+
+        }
+
+        type_fn!{
+            captures($($param),*)
+            $( #[$all_meta] )*
+            $( #[$mt_meta] )*
+            pub fn $methodlike[$this]($this)
+            where[
+                $this:$crate::collection_ops::Collection<Items= Methods >,
+                Methods:CollectionItemsTrait,
+                Methods::$method:TypeFn_<
+                    declare_collection_op!(inner_method_params; 
+                        [$(static=$is_static)*] 
+                        $this 
+                        $(,$param)*
+                    ),
+                    Output=Out
+                >
+            ]{
+                let Methods;let Out;
+                Out
+            }
+        }
+    };
+    (inner_method_params; [static=true] $this:ident $(,$param:ident)* )=>{
+        ( $($param),* )
+    };
+    (inner_method_params; [$($anything:tt)*] $this:ident $(,$param:ident)* )=>{
+        ( $this $(,$param)* )
+    };
+}
+
+/**
+Trait defined for all collections.
+
+This delegates most items to Self::Items,
+defined in the 
+[CollectionItemsTrait](./type_level___CollectionItems/trait.CollectionItemsTrait.html)
+impl of 
+[CollectionItems](./type_level___CollectionItems/struct.CollectionItems.html).
+
+# Implementations
+
+Implement this trait on a ConstType,and this trait will be implemented 
+for all values of that ConstType.
+
+This is how TListType implements this trait,
+notice that we use SetFields to override items in 
+[DefaultCollectionItems](type.DefaultCollectionItems.html),
+and that repeat is overriden with a function of the same name with a `_Override` suffix:
+
+```ignore
+impl Collection for TListType{
+    type CollectEmpty=TNil;
+    type Items=SetFields<DefaultCollectionItems<Self>,tlist!(
+        (collfns_f::repeat,Repeat_Override),
+    )>;
+}
+```
+
+*/
+pub trait Collection{
+    /// The collection this collects into by default in every operation that 
+    /// creates a new collection.
+    ///
+    /// This is the same for most ConstTypes with the notable exception of Range*Type.
+    type CollectEmpty;
+
+    /// The associated items of a collection,
+    ///
+    /// Some of the associated functions in `Self::Items`
+    /// may require some of the traits in this module to be implemented in 
+    /// their default implementation 
+    /// [defined in DefaultCollectionItems](./type.DefaultCollectionItems.html).
+    type Items:CollectionItemsTrait;
+}
+
+impl<This,Type> Collection for This
+where
+    This:ConstValue<Type=Type>,
+    Type:ConstType+Collection,
+{
+    type CollectEmpty=Type::CollectEmpty;
+    type Items=Type::Items;
+}
 
 type_fn!{define_trait
-    /// An iterator function that processes the collection incrementally from the start,
+    /// Processes the collection incrementally from the start,
     /// starting with Defaultval and the first element.
     ///
     /// If the collection is empty it must return DefaultVal.
@@ -32,7 +176,7 @@ type_fn!{define_trait
 }
 
 type_fn!{define_trait
-    /// An iterator function that processes the collection incrementally from the end,
+    /// Processes the collection incrementally from the end,
     /// starting with Defaultval and the last element.
     ///
     /// If the collection is empty it must return DefaultVal.
@@ -43,23 +187,27 @@ type_fn!{define_trait
 }
 
 
-type_fn!{define_trait
-    /// An iterator function that processes the collection incrementally from the start,
-    /// starting with the first element.
-    trait=ReduceL_ [Func]
-    type=ReduceL
-    fn_type=ReduceLOp
-    method_like=ReduceLMt
+declare_collection_op!{
+    /// Processes the collection incrementally from the start,using the `Func` function,
+    /// returning the first element if the collection only contains 1 element.
+    fn reduce_l(This,Func)
+
+    type=ReduceL,
+    function=ReduceLOp,
+    methodlike=ReduceLMt,
 }
 
-type_fn!{define_trait
-    /// An iterator function that processes the collection incrementally from the end,
-    /// starting with the last element.
-    trait=ReduceR_ [Func]
-    type=ReduceR
-    fn_type=ReduceROp
-    method_like=ReduceRMt
+
+declare_collection_op!{
+    /// Processes the collection incrementally from the end,using the `Func` function,
+    /// returning the last element if the collection only contains 1 element.
+    fn reduce_r(This,Func)
+
+    type=ReduceR,
+    function=ReduceROp,
+    methodlike=ReduceRMt,
 }
+
 
 type_fn!{define_trait
     /// Transforms the elements of the collection with the `Func` function.
@@ -69,11 +217,10 @@ type_fn!{define_trait
     method_like=MapMt
 }
 
+
 type_fn!{define_trait
     /// Returns the collection in which all the elements that 
     /// do not satisfy the `Predicate` are removed.
-    ///
-    /// Predicate is the equivalent to `Fn(&T)->bool`,where T is the element type.
     trait=Filter_ [Predicate]
     type=Filter
     fn_type=FilterOp
@@ -96,26 +243,32 @@ type_fn!{define_trait
     method_like=InsertMt
 }
 
-type_fn!{define_trait
+declare_collection_op!{
     /// Returns the collection with the value added at one end.
     ///
     /// Push followed by Pop must return the pushed value and
-    /// the collection as it was before pushing.
-    trait=Push_ [Value]
-    type=Push
-    fn_type=PushOp
-    method_like=PushMt
+    /// the collection as it was before pushing 
+    /// (this property does not have apply recursively for any collection,eg:a ring buffer).
+    fn push(This,Value)
+
+    type=Push,
+    function=PushOp,
+    methodlike=PushMt,
 }
 
-type_fn!{define_trait
+
+declare_collection_op!{
     /// Returns the collection with the last/first element removed alongside that element.
     ///
     /// Returns Some_<(Element,CollectionWithoutValue)> if the collection is not empty,
     /// otherwise returns None_.
-    trait=Pop_ []
-    type=Pop
-    fn_type=PopOp
+    fn pop(This)
+
+    type=Pop,
+    function=PopOp,
+    methodlike=PopMt,
 }
+
 
 type_fn!{define_trait
     /// Returns the collection with the value added after the last element.
@@ -168,112 +321,81 @@ type_fn!{define_trait
     fn_type=LenOp
 }
 
-type_fn!{define_trait
-    /// Creates a value of by repeating  `Value` `Repeated` times
+
+declare_collection_op!{
+    static=true,
+    /// Creates a value of the ConstType associated with the function 
+    /// by repeating  `Value` `Repeated` times
     ///
-    trait=Repeat_ [ Value,Repeated ]
-    type=Repeat
-    fn_type=RepeatOp
+    fn repeat(Type,Value,Repeated)
+
+    type=Repeat,
+    function=RepeatOp,
+    methodlike=RepeatMt,
 }
 
-type_fn!{define_trait
-    /// Reverses this data structure
+declare_collection_op!{
+    /// Reverses `This`.
     ///
-    trait=Reverse_ []
-    type=Reverse
-    fn_type=ReverseOp
-}
+    fn reverse(This)
 
-impl<This, Op, Val, Rem, Out> ReduceL_<Op> for This
-where
-    This: PopFront_<Output = Some_<(Val, Rem)>>,
-    Rem: FoldL_<Val, Op, Output = Out>,
-{
-    type Output = Out;
-}
-
-impl<This, Op, Val, Rem, Out> ReduceR_<Op> for This
-where
-    This: PopBack_<Output = Some_<(Val, Rem)>>,
-    Rem: FoldR_<Val, Op, Output = Out>,
-{
-    type Output = Out;
+    type=Reverse,
+    function=ReverseOp,
+    methodlike=ReverseMt,
 }
 
 
+declare_collection_op!{
+    /**
+    Searches for an element in the collection that satisfies a predicate.
 
-/////////////////////////////////////////////////////////////////////////////////////////
+    FindOp takes a collection `This`,and the predicate `Pred`.
 
+    If the predicate returns true for any element 
+    then this function return Some_<TheElement>,otherwise it returns Nnoe_
+    */
+    fn find(This,Pred)
 
-type_fn!{
-    fn FindOp[This,Pred](This,Pred)
-    where[
-        (
-            TryFoldLMt< None_, (GetRhs,If<Pred,(NewSome,NewTFBreak),(NewNone,NewTFVal)>) >,
-            IntoInnerOp
-        ):TypeFn_< This, Output=Out >
-    ]{ let Out; Out }
-}
-
-type_fn!{
-    captures(Func)
-    fn FindMt[This](This)
-    where[ FindOp:TypeFn_<(This,Func),Output=Out> ]
-    { let Out;Out }
+    type=Find,
+    function=FindOp,
+    methodlike=FindMt,
 }
 
 
 
-type_fn!{
-    fn AllOp[This,Pred](This,Pred)
-    where[
-        (
-            TryFoldLMt<True,(GetRhs,Pred,If<IdentityFn,NewTFVal,NewTFBreak>)>,
-            IntoInnerOp
-        ):TypeFn_< This, Output=Out >
-    ]{ let Out; Out }
+declare_collection_op!{
+    /**
+    Tests whether a predicate is true for all elements of a collection.
+
+    This function takes a collection `This`,and the predicate `Pred`.
+
+    If the predicate returns True for all element 
+    then this function return True,otherwise it returns False
+
+    */
+    fn all(This,Pred)
+
+    type=All,
+    function=AllOp,
+    methodlike=AllMt,
 }
 
-type_fn!{
-    captures(Func)
-    fn AllMt[This](This)
-    where[ AllOp:TypeFn_<(This,Func),Output=Out> ]
-    { let Out;Out }
-}
 
 
+declare_collection_op!{
+    /**
+    Tests whether a predicate is true for any elements of a collection.
+    
+    This function takes a collection `This`,and the predicate `Pred`.
+    
+    If the predicate returns True for any element 
+    then this function return True,otherwise it returns False
+    */
+    fn any(This,Pred)
 
-type_fn!{
-    fn AnyOp[This,Pred](This,Pred)
-    where[
-        (
-            TryFoldLMt<False,(GetRhs,Pred,If<IdentityFn,NewTFBreak,NewTFVal>)>,
-            IntoInnerOp
-        ):TypeFn_< This, Output=Out >
-    ]{ let Out; Out }
-}
-
-type_fn!{
-    captures(Func)
-    fn AnyMt[This](This)
-    where[ AnyOp:TypeFn_<(This,Func),Output=Out> ]
-    { let Out;Out }
-}
-
-type_fn!{
-    fn ContainsOp[This,Elem](This,Elem)
-    where[
-        AnyOp:TypeFn_< (This,ConstEqMt<Elem>), Output=Out >
-    ]{
-        let Out; Out 
-    }
-}
-
-type_fn!{
-    captures(Elem)
-    fn ContainsMt[This](This)
-    where[ ContainsOp:TypeFn_<(This,Elem),Output=Out> ]
-    { let Out;Out }
+    type=Any,
+    function=AnyOp,
+    methodlike=AnyMt,
 }
 
 
@@ -282,11 +404,53 @@ type_fn!{
 
 type_fn!{define_trait
     /** 
-    An iterator function that processes the collection incrementally from the start,
+    Processes the collection incrementally from the start,
     starting with Defaultval and the first element,
-    returning early when Func returns a value that converts to TFBreak like Err_<_>/None_,
+    returning early when Func returns a value that converts to TFBreak like Err\_<\_>/None\_,
     
     If the collection is empty it must return TFVal<DefaultVal>.
+
+    # Example
+
+    ```
+
+    # #[macro_use]
+    # extern crate type_level_values;
+
+    # use type_level_values::prelude::*;
+    use type_level_values::ops::*;
+    use type_level_values::collection_ops::*;
+
+    fn main(){
+        struct NotAnInteger;
+        
+        let _:AssertEq<
+            TryFoldL<tlist![ U1 ],U6,SafeSubOp>,
+            TFVal<U5>
+        >;
+        let _:AssertEq<
+            TryFoldL<tlist![ U1,U2 ],U6,SafeSubOp>,
+            TFVal<U3>
+        >;
+        let _:AssertEq<
+            TryFoldL<tlist![ U1,U2,U3 ],U6,SafeSubOp>,
+            TFVal<U0>
+        >;
+        let _:AssertEq<
+            TryFoldL<tlist![ U1,U2,U3,U1, ],U6,SafeSubOp>,
+            TFBreak<None_>
+        >;
+        let _:AssertEq<
+            TryFoldL<tlist![ U1,U2,U3,U1,NotAnInteger ],U6,SafeSubOp>,
+            TFBreak<None_>
+        >;
+        
+
+    }
+
+    ```
+
+
     */
     trait=TryFoldL_ [DefaultVal,Func]
     type=TryFoldL
@@ -296,11 +460,54 @@ type_fn!{define_trait
 
 type_fn!{define_trait
     /** 
-    An iterator function that processes the collection incrementally from the end,
+    Processes the collection incrementally from the end,
     starting with Defaultval and the last element,
-    returning early when Func returns a value that converts to TFBreak like Err_<_>/None_,
+    returning early when Func returns a value that converts to TFBreak like Err\_<\_>/None\_,
     
     If the collection is empty it must return TFVal<DefaultVal>.
+
+    # Example
+
+    ```
+
+    # #[macro_use]
+    # extern crate type_level_values;
+
+    # use type_level_values::prelude::*;
+    use type_level_values::ops::*;
+    use type_level_values::collection_ops::*;
+
+    fn main(){
+            
+        struct NotAnInteger;
+
+        let _:AssertEq<
+            TryFoldR<tlist![ U1 ],U6,SafeSubOp>,
+            TFVal<U5>
+        >;
+        let _:AssertEq<
+            TryFoldR<tlist![ U1,U2 ],U6,SafeSubOp>,
+            TFVal<U3>
+        >;
+        let _:AssertEq<
+            TryFoldR<tlist![ U1,U2,U3 ],U6,SafeSubOp>,
+            TFVal<U0>
+        >;
+        let _:AssertEq<
+            TryFoldR<tlist![ U1,U1,U2,U3 ],U6,SafeSubOp>,
+            TFBreak<None_>
+        >;
+        let _:AssertEq<
+            TryFoldR<tlist![ NotAnInteger,U1,U1,U2,U3 ],U6,SafeSubOp>,
+            TFBreak<None_>
+        >;
+
+        
+
+    }
+
+    ```
+
     */
     trait=TryFoldR_ [DefaultVal,Func]
     type=TryFoldR
@@ -313,14 +520,30 @@ type_fn!{define_trait
 #[typelevel(reexport(Variants))]
 #[typelevel(items(runtime_conv(NoImpls)))]
 pub enum TryFold<T,B>{
+    #[typelevel(doc="\
+Represents a value.
+
+This is mainly used in TryFold{L,R},and anything that uses TryFold.
+
+This can be converted to/from OptionType/ResultType
+    ")]
     TFVal(T),
+    #[typelevel(doc="\
+Represents the intent to break out of the iteration operation.
+
+This is mainly used in TryFold{L,R},and anything that uses TryFold.
+
+This can be converted to/from OptionType/ResultType
+    ")]
     TFBreak(B),
 }
 
 type_fn!{
+    /// Constructs a TFVal<V>
     pub fn NewTFVal[v](v){ TFVal<v> }
 }
 type_fn!{
+    /// Constructs a TFBreak<V>
     pub fn NewTFBreak[v](v){ TFBreak<v> }
 }
 
@@ -358,87 +581,218 @@ define_tryfold_conv!{ generics[]  None_   :OptionType => TFBreak<None_> }
 /////////////////////////////////////////////////////////////////////////////////////////
 
 
+macro_rules! declare_collection_items {
+    (
+        Self_ident=$Self_ident:ident,
+        // assoc_types=[
+        //     $($static_fn:ident = $default_static_fn:ty ),*
+        //     $(,)*
+        // ]
+        static_fns=[
+            $($static_fn:ident = $default_static_fn:ty ),*
+            $(,)*
+        ]
+        methods=[
+            $($method_fn:ident = $default_method_fn:ty ),*
+            $(,)*
+        ]
+    ) => (
+        #[doc(hidden)]
+        #[derive(TypeLevel)]
+        #[typelevel(
+            rename="CollectionItems",
+            rename_constvalue="CollectionItems",
+            doc="\
+        The methods of a collection.
 
-#[cfg(test)]
-mod test{
-    use super::*;
-    type Val0=tlist![U10,U11,U12,U13,U14];
-    type ValEven=tlist![U10,U12,U14];
-    type ValOdd =tlist![U11,U13,U15];
+            ",
+            items(runtime_conv(NoImpls)) //This is only a type-level struct
+        )]
+        pub struct __CollectionItems{
+            // $(pub $assoc:(),)*
+            $(pub $static_fn:(),)*
+            $(pub $method_fn:(),)*
+        }
 
-    type IsOdd =(BitAndMt<U1>,ConstEqMt<U1>);
-    type IsEven=(BitAndMt<U1>,ConstEqMt<U0>);
-    type IsEq<Val>=ConstEqMt<Val>;
-    type IsLt<Val>=ConstLtMt<Val>;
-    
-    #[test]
-    fn find_contains(){
-        type TestFind<Val,Func,Equal>=(
-            AssertFnRet<(Val,Func),FindOp, Equal >,
-            AssertFnRet<Val,FindMt<Func>, Equal >,
-        );
-        let _:TestFind<Val0,IsOdd , Some_<U11> >;
-        let _:TestFind<Val0,IsEven, Some_<U10> >;
-        let _:TestFind<ValEven,IsOdd , None_ >;
-        let _:TestFind<ValOdd ,IsEven, None_ >;
-
-        let _:TestFind<Val0,IsEq<U10>, Some_<U10> >;
-        let _:TestFind<Val0,IsEq<U11>, Some_<U11> >;
-        let _:TestFind<Val0,IsEq<U12>, Some_<U12> >;
-        let _:TestFind<Val0,IsEq<U13>, Some_<U13> >;
-        let _:TestFind<Val0,IsEq<U14>, Some_<U14> >;
+        use self::type_level___CollectionItems::{
+            CollectionItems_Uninit,
+        };
+        pub use self::type_level___CollectionItems::{
+            CollectionItems,
+            CollectionItemsTrait,
+            fields as collfns_f,
+        };
 
 
+        // /// The accessors for the associated types/ConstValues in CollectionItems.
+        // pub type CollectionAssocTypes=tlist!(
+        //     $( collfns_f::$assoc, )*
+        // );
 
-        type TestContains<Val,Elem,Equal>=(
-            AssertFnRet<(Val,Elem),ContainsOp,Equal >,
-            AssertFnRet<Val,ContainsMt<Elem>,Equal >,
-        );
-
-        let _:TestContains<ValEven,U10,True>;
-        let _:TestContains<ValEven,U12,True>;
-        let _:TestContains<ValEven,U14,True>;
-        let _:TestContains<ValOdd ,U11,True>;
-        let _:TestContains<ValOdd ,U13,True>;
-        let _:TestContains<ValOdd ,U15,True>;
-        
-        let _:TestContains<ValOdd ,U10,False>;
-        let _:TestContains<ValOdd ,U12,False>;
-        let _:TestContains<ValOdd ,U14,False>;
-        let _:TestContains<ValEven,U11,False>;
-        let _:TestContains<ValEven,U13,False>;
-        let _:TestContains<ValEven,U15,False>;
-    }
-
-    #[test]
-    fn all_any(){
-        type TestAll<Val,Func,Equal>=(
-            AssertFnRet<(Val,Func),AllOp,Equal >,
-            AssertFnRet<Val,AllMt<Func>, Equal >,
+        /// The accessors for the associated functions (not taking a 
+        /// Self parameter) in CollectionItems.
+        pub type CollectionAssocFns=tlist!(
+            $( collfns_f::$static_fn, )*
         );
 
-        let _:TestAll<Val0,IsLt<U12>,False>;
-        let _:TestAll<Val0,IsLt<U13>,False>;
-        let _:TestAll<Val0,IsLt<U14>,False>;
-        let _:TestAll<Val0,IsLt<U15>,True>;
-        let _:TestAll<Val0,IsLt<U16>,True>;
-        let _:TestAll<Val0,IsLt<U17>,True>;
-
-
-
-        type TestAny<Val,Func,Equal>=(
-            AssertFnRet<(Val,Func),AnyOp, Equal >,
-            AssertFnRet<Val,AnyMt<Func>, Equal >,
+        /// The accessors for the methods in CollectionItems.
+        pub type CollectionMethods=tlist!(
+            $( collfns_f::$method_fn, )*
         );
 
-        let _:TestAny<Val0,IsLt<U8 >,False>;
-        let _:TestAny<Val0,IsLt<U9 >,False>;
-        let _:TestAny<Val0,IsLt<U10>,False>;
-        let _:TestAny<Val0,IsLt<U11>,True>;
-        let _:TestAny<Val0,IsLt<U12>,True>;
-        let _:TestAny<Val0,IsLt<U13>,True>;
-        let _:TestAny<Val0,IsLt<U14>,True>;
-        let _:TestAny<Val0,IsLt<U15>,True>;
-        let _:TestAny<Val0,IsLt<U16>,True>;
+        /// Constructs the default CollectionItems.
+        ///
+        /// The `SelfType` parameter must be a ConstType,eg:TupleType,TListType,OptionType,etc.
+        pub type DefaultCollectionItems<$Self_ident>=Construct<
+            CollectionItems_Uninit,
+            tlist![
+                $((collfns_f::$static_fn , $default_static_fn) ,)*
+                $((collfns_f::$method_fn , $default_method_fn) ,)*
+            ]
+        >;
+    )
+}
+
+declare_collection_items!{
+    Self_ident=SelfType,
+
+    static_fns=[
+        repeat= Repeat_DefaultImpl<SelfType> ,
+    ]
+    methods=[
+        // append=  ,
+        // filter_map=  ,
+        // find_map=  ,
+        // flatten=  ,
+        // last=  ,
+        // partition=  ,
+        // position=  ,
+        // r_position=  ,
+        // scan_l=  ,
+        // scan_r=  ,
+        // skip=  ,
+        // skip_while=  ,
+        // take=  ,
+        // take_while=  ,
+        // try_scan_l=  ,
+        // try_scan_r=  ,
+        // zip=  ,
+        all= All_DefaultImpl ,
+        any= Any_DefaultImpl ,
+        find= Find_DefaultImpl ,
+        pop= Pop_DefaultImpl ,
+        push= Push_DefaultImpl ,
+        reduce_l= ReduceL_DefaultImpl ,
+        reduce_r= ReduceR_DefaultImpl ,
+        reverse= Reverse_DefaultImpl ,
+    ]
+}
+
+
+
+type_fn!{
+    pub fn All_DefaultImpl[This,Pred](This,Pred)
+    where[
+        (
+            TryFoldLMt<True,(GetRhs,Pred,If<IdentityFn,NewTFVal,NewTFBreak>)>,
+            IntoInnerOp
+        ):TypeFn_< This, Output=Out >
+    ]{ let Out; Out }
+}
+type_fn!{
+    pub fn Any_DefaultImpl[This,Pred](This,Pred)
+    where[
+        (
+            TryFoldLMt<False,(GetRhs,Pred,If<IdentityFn,NewTFBreak,NewTFVal>)>,
+            IntoInnerOp
+        ):TypeFn_< This, Output=Out >
+    ]{ let Out; Out }
+}
+
+type_fn!{
+    pub fn Find_DefaultImpl[This,Pred](This,Pred)
+    where[
+        (
+            TryFoldLMt< None_, (GetRhs,If<Pred,(NewSome,NewTFBreak),(NewNone,NewTFVal)>) >,
+            IntoInnerOp
+        ):TypeFn_< This, Output=Out >
+    ]{ let Out; Out }
+}
+
+
+type_fn!{
+    pub fn Pop_DefaultImpl[This](This)
+    where[ This:PopFront_<Output=Out> ]
+    { let Out;Out }
+}
+
+type_fn!{
+    pub fn Use_PopBackOp[This](This)
+    where[ This:PopBack_<Output=Out> ]
+    { let Out;Out }
+}
+
+
+type_fn!{
+    pub fn Push_DefaultImpl[This,Val](This,Val)
+    where[ This:PushFront_<Val,Output=Out> ]
+    { let Out;Out }
+}
+
+type_fn!{
+    pub fn Use_PushBackOp[This,Val](This,Val)
+    where[ This:PushBack_<Val,Output=Out> ]
+    { let Out;Out }
+}
+
+
+type_fn!{
+    pub fn Reverse_DefaultImpl[This](This)
+    where[
+        This: Collection<CollectEmpty=CE>,
+        This: FoldL_<CE, PushFrontOp, Output = Out>,
+    ]{
+        let CE;let Out;
+        Out
     }
 }
+
+type_fn!{
+    pub fn ReduceL_DefaultImpl[This,Op](This,Op)
+    where[
+        This: PopFront_<Output = Some_<(Val, Rem)>>,
+        Rem: FoldL_<Val, Op, Output = Out>,
+    ]{
+        let Val;let Rem;let Out;
+        Out
+    }
+}
+
+
+type_fn!{
+    pub fn ReduceR_DefaultImpl[This,Op](This,Op)
+    where[
+        This: PopBack_<Output = Some_<(Val, Rem)>>,
+        Rem: FoldR_<Val, Op, Output = Out>,
+    ]{
+        let Val;let Rem;let Out;
+        Out
+    }
+}
+
+
+type_fn!{
+    captures(Type)
+    pub fn Repeat_DefaultImpl[Value,Ammount](Value,Ammount)
+    where[
+        Type: Collection,
+        type_list::Repeat_Override:TypeFn_<(Value,Ammount),Output=RepList>,
+        RepList: FoldL_<Type::CollectEmpty, PushFrontOp, Output = Out>,
+    ]{
+        let RepList;
+        let Out;
+        Out
+    }
+}
+
+

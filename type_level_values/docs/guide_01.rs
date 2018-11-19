@@ -17,9 +17,6 @@ Here we define an enum with 2 variants,and a type-level equivalent with TypeLeve
 //@use_codeblock:enum-main,ignore
 
 This shows how to construct a ConstValue enum.
-Each type-level enum variant is a different type ,
-this is necessary to have type-level values.
-
 
 //@use_codeblock:struct-decl,ignore
 
@@ -32,7 +29,7 @@ Here we declare and derive the type-level version of Rectangle.
 Here we construct a type-level struct using both the struct literal syntax and 
 using the MTVAL associated constant of ConstRectangle.
 
-The PW associated constant comes from the AsConstWrapper trait,
+The CW associated constant comes from the AsConstWrapper trait,
 part of this library's prelude,
 wrapping Self in a ConstWrapper.
 <br>
@@ -113,19 +110,20 @@ use self::type_level_Rectangle::fields as rect_f;
 fn main_struct(){
     //@codeblock-start:struct-main
 
-    let rectangle1:ConstRectangle<U0,U1,U2,U3>=ConstRectangle{
-        x:U0::CW, 
-        y:U1::CW,
-        w:U2::CW,
-        h:U3::CW,
-    };
+    let rectangle1:ConstRectangle<U0,U1,U2,U3>=
+        ConstRectangle{
+            x:U0::CW, 
+            y:U1::CW,
+            w:U2::CW,
+            h:U3::CW,
+        };
 
-    let rectangle2:construct!{Rectangle_Uninit=>
-        rect_f::x = U0,
-        rect_f::y = U1,
-        rect_f::w = U2,
-        rect_f::h = U3,
-    }=ConstRectangle::MTVAL;
+    let rectangle2:Construct<Rectangle_Uninit,(
+        (rect_f::x , U0),
+        (rect_f::y , U1),
+        (rect_f::w , U2),
+        (rect_f::h , U3),
+    )>=ConstRectangle::MTVAL;
     
     //@codeblock-end:struct-main
 

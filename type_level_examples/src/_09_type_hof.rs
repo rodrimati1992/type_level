@@ -102,9 +102,9 @@ pub use self::type_level_CFParams::{CFParamsTrait, ConstCFParams};
     derive(Debug, Copy, Clone),
     // PrintDerive,
     Type = "CondType", 
-    Param = "C"
+    ConstValue = "C"
 )]
-pub struct CondTypeInner<T, C> {
+pub struct __CondType<T, C> {
     _marker: ConstWrapper<C>,
     value: T,
 }

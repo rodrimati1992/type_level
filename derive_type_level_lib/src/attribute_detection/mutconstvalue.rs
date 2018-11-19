@@ -26,6 +26,7 @@ use syn::{
     Attribute, 
     Ident,
     Meta,
+    NestedMeta,
 };
 
 use quote::ToTokens;
@@ -39,11 +40,14 @@ pub(crate)struct CCAttributes<'alloc>{
     // pub(crate) const_constructor:ItemMetaData<'alloc,TypeDecl<'alloc>>,
     pub(crate) type_alias       :ItemMetaData<'alloc,TypeDecl<'alloc>>,
     pub(crate) const_param      :Option<(&'alloc Ident,Option<&'alloc syn::Type>)>,
+
+    pub(crate) main_repr:Option<MainRepr>,
+    // This is a Vec so that the user UnsafeRepr can be a list as well as an ident.
+    pub(crate) additional_repr_attrs:Vec<&'alloc Ident>,
     
-    /// Whether extension Const-methods are allowed.
-    pub(crate) extension_methods:ExtMethodIA,
     pub(crate) print_derive: bool,
     pub(crate) skip_derive: bool,
+    pub(crate) derive_str: bool,
 }
 
 
@@ -51,6 +55,17 @@ pub(crate)struct CCAttributes<'alloc>{
 pub enum TypeOrCConstr{
     Type,
     // ConstConstructor,
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+#[derive(Debug,Copy,Clone,PartialEq,Eq)]
+pub enum MainRepr{
+    Rust,
+    C,
+    Transparent,
 }
 
 
@@ -65,8 +80,6 @@ declare_indexable_struct!{
 
     variants=[
         (const_layout_independent,ConstLayoutIndependent),
-        (apply_const_param       ,ApplyConstParam_),
-        (get_const_constructor   ,GetConstConstructor_),
         (get_const_param         ,GetConstParam_),
     ]
 
@@ -214,11 +227,13 @@ fn constructor_inner<'alloc>(
 
     
     if meta_list.ident == "mcv" {
+        let prev_attr_len=this.attrs.attrs.len();
+
         for nested0_syn in &meta_list.nested {
             let nested0: MyMeta = nested0_syn.into_with(arenas);
             let word = &*nested0.word.str;
-            
 
+            
             if let Ok(_)=this.attrs.update_with_meta(&nested0,arenas) {
                 continue;
             }
@@ -226,6 +241,45 @@ fn constructor_inner<'alloc>(
             let is_reserved=word.chars().next().map_or(false,|c| c.is_uppercase());
 
             match word {
+                "UnsafeRepr"=>{
+                    let mut nested0=nested0.clone();
+                    nested0.value.list_to_mylist(arenas).drop_();
+                    match nested0.value {
+                        MyNested::MyList(list)=>{
+                            for elem in list {
+                                this.main_repr=this.main_repr.or(
+                                     match &*elem.word.str {
+                                        "Rust"=>Some(MainRepr::Rust),
+                                        "rust"=>Some(MainRepr::Rust),
+                                        "C"=>Some(MainRepr::C),
+                                        "c"=>Some(MainRepr::C),
+                                        "Transparent"=>Some(MainRepr::Transparent),
+                                        "transparent"=>Some(MainRepr::Transparent),
+                                        _=>None,
+                                    }
+                                );
+                                match this.main_repr {
+                                     Some(MainRepr::Rust)=>{},
+                                     Some(MainRepr::C)
+                                    |Some(MainRepr::Transparent)
+                                    |None
+                                    =>{
+                                        this.additional_repr_attrs.push(elem.word.ident);
+                                    }
+                                }
+                            }
+                        }
+                        v=>{
+                            panic!("\n\n\n\
+                                Invalid attribute inside UnsafeRepr(..):\n\t{:?}\
+                                {}\
+                                ", 
+                                v,
+                                attribute_errors::unsafe_repr_attr()
+                            )
+                        }
+                    }
+                }
                 "SkipDerive" => {
                     this.skip_derive = true;
                     return;
@@ -233,14 +287,8 @@ fn constructor_inner<'alloc>(
                 "PrintDerive" => {
                     this.print_derive = true;
                 }
-                "ExtensionMethods" => {
-                    if let Err(_)=this.extension_methods.update_with_nested(&nested0.value) {
-                        panic!(
-                            "invalid value for ExtensionMethods={:?}\n{}",
-                            nested0.value,
-                            attribute_errors::extension_methods_attr()
-                        );
-                    }
+                "DeriveStr" => {
+                    this.derive_str = true;
                 }
                 "Type" =>{
                     let item=&mut this.type_alias;
@@ -251,7 +299,7 @@ fn constructor_inner<'alloc>(
                         arenas
                     );
                 } 
-                "Param" => {
+                "ConstValue" => {
                     this.const_param = Some( typaram_from_nested(&nested0.value,arenas) );
                 }
                 "Items"=>{
@@ -268,7 +316,6 @@ fn constructor_inner<'alloc>(
                         |value, ind| {
                             let impl_=&mut this.impls[ind];
                             
-                            //for param in value.list_to_mylist(arenas).into_iter().flat_map(|v|v) {
                             for param in value.list_to_mylist(arenas).unwrap() {
                                 impl_
                                     .update_with_meta(param, arenas)
@@ -299,12 +346,47 @@ fn constructor_inner<'alloc>(
                 }
             }
         }
+
+        for pushed_attrs in &this.attrs.attrs[prev_attr_len..] {
+            match **pushed_attrs {
+                NestedMeta::Meta(Meta::List(ref added_attrs))if added_attrs.ident=="repr" =>{
+                    for added_attr in &added_attrs.nested {
+                        if let NestedMeta::Meta(ref meta)=*added_attr {
+                            let (ident,repr)=check_repr_attr(meta);
+                            this.main_repr=Some(repr);
+                        }
+                    }
+                },
+                _=>{}
+            }
+        }
+
     }
 }
 
 
 
 ////////////////////////////////////////////////////////////////////////////////
+
+
+fn check_repr_attr<'alloc>(meta:&'alloc Meta)-> (&'alloc Ident,MainRepr) {
+    if let Meta::Word(ref ident)=*meta {
+        if ident=="C"{
+            (ident,MainRepr::C)
+        }else if ident=="transparent" {
+            (ident,MainRepr::Transparent)
+        }else{
+            panic!("\n\n\
+                repr({0}) attribute not supported by this library,\n\t{:?}\n\n
+                you must use #[mcv(UnsafeRepr( {0} ))] for a representation attribute \
+                other than repr(C)/repr(transparent)\
+                (other reprs are potentially unsafe in future versions of Rust).\n\
+            ", ident)
+        }
+    }else{
+        panic!("inside a repr attribute:{:?}",meta)
+    }
+}
 
 
 fn update_ident_and_metadata<'alloc>(

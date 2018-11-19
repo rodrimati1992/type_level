@@ -1,16 +1,26 @@
 use super::*;
 
+use parsing::CheckDeriveParams;
+
+pub(crate) use super::item_check::{
+    ToItemCheck,
+    ItemToCheck,
+};
+
 use super::typelevel_field::Field;
 
+
+pub type CallbackList<'a,I>=
+    Vec<Box<FnMut(&mut CheckDeriveParams<I>)+'a>>;
 
 ///
 /// The I parameter is the module index enum.
 pub(crate) struct DataType<'a,I>{
-    pub(crate) name:&'a str,
     pub(crate) variants:Variants<'a>,
-    pub(crate) impl_blocks:Option<HashMap<ImplHeader,ImplBlock>>,
-    pub(crate) reexported:Option<HashMap<I,HashSet<ItemUse>>>,
+    pub(crate) item_checks:HashMap<ItemKey,ItemCheck<()>>,
+    pub(crate) reexported:HashMap<I,HashSet<ItemUse>>,
     pub(crate) modules:Rc<Module<I>>,
+    pub(crate) item_callbacks:CallbackList<'a,I>,
 }
 
 
@@ -19,18 +29,17 @@ where I:ModIndex
 {
     fn priv_default(modules:Rc<Module<I>>)->Self{
         Self{
-            name:"",
             variants:Variants::no_checking(),
-            impl_blocks:None,
-            reexported:None,
+            item_checks:Default::default(),
+            reexported :Default::default(),
+            item_callbacks:Default::default(),
             modules,
         }
     }
-    pub fn new<M>(name:&'a str,modules:M,variants:Variants<'a>)->Self
+    pub fn new<M>(modules:M,variants:Variants<'a>)->Self
     where M:Into<Rc<Module<I>>>,
     {
         let mut this=Self::priv_default( modules.into() );
-        this.name=name;
         this.variants=variants;
         this
     }
@@ -43,15 +52,13 @@ where I:ModIndex
         }
         self
     }
-    pub fn add_impl<IM>(mut self,impl_block:IM)->Self
-    where IM:ToImplBlock
+    pub fn add_check<IC>(mut self,item:IC)->Self
+    where IC:ToItemCheck
     {
         {
-            let impl_block=impl_block.to_impl_block();
-            let map=self.impl_blocks.get_or_insert_with(Default::default);
-            let key=ImplHeader::new(&impl_block);
-            if let Some(_)=map.insert(key.clone(),impl_block) {
-                panic!("\n\nAttempting to insert the same impl twice:\n\t{}\n\n",key);
+            let (key,val)=item.to_item_check().split_key();
+            if let Some(_)=self.item_checks.insert(key.clone(),val) {
+                panic!("\n\nAttempting to insert the same item twice:\n\t{}\n\n",key);
             }
         }
         self
@@ -61,7 +68,6 @@ where I:ModIndex
     where S:AsRef<str>
     {
         self.reexported
-            .get_or_insert_with(Default::default)
             .entry(index)
             .or_insert_with(Default::default)
             .insert(parse_syn_use(use_.as_ref()));
@@ -75,6 +81,13 @@ where I:ModIndex
         for reexp in reexports {
             self=self.add_reexport(index.clone(),reexp);
         }
+        self
+    }
+    /// Adds a callback called whenever an item is visited.
+    pub fn add_item_callback<F>(mut self,f:F)->Self
+    where F:FnMut(&mut CheckDeriveParams<I>)+'a
+    {
+        self.item_callbacks.push(Box::new(f));
         self
     }
 }
@@ -130,8 +143,8 @@ pub(crate) static FIELD_ALL_ATTR:&str=r###"
 
 
 
-pub(crate) fn test_typelevel_items<'a,I>(
-    mut variants:DataType<'a,I>,
+pub(crate) fn test_items<I>(
+    mut variants:DataType<I>,
     ctokens:&CommonTokens,
     derive_str:&str,
 )
@@ -165,25 +178,23 @@ where
     };
 
     
-    test_typelevel_non_variants(
+    test_non_variants(
         ctokens,
         variants.modules.clone(),
-        variants.impl_blocks.take(),
+        variants.item_checks,
         accessor_exhaus,
         accessor_structs,
-        variants.reexported.take(),
+        variants.reexported,
+        &mut variants.item_callbacks,
         derive_str,
     );
-
-
-    let type_level_mod=format!("type_level_{}",variants.name);
 
     match variants.variants {
         Variants::TypeLevel(ref tl)=>{
             for variant in &tl.list {
                 println!("\nIn variant:{}\n",variant.const_value);
 
-                test_typelevel_items_variant(
+                test_items_typelevel_variant(
                     ctokens,
                     variant,
                     variants.modules.clone(),
@@ -197,44 +208,133 @@ where
 }
 
 
-fn test_typelevel_non_variants<'a,I>(
+fn test_non_variants<'a,I>(
     ctokens:&CommonTokens,
     modules:Rc<Module<I>>,
-    mut impl_blocks:Option<HashMap<ImplHeader,ImplBlock>>,
+    mut item_checks:HashMap<ItemKey,ItemCheck<()>>,
     accessor_exhaus:Exhaustiveness,
     mut accessor_structs:HashMap<Ident,Vec<syn::Attribute>>,
-    mut reexported:Option<HashMap<I,HashSet<ItemUse>>>,
+    mut reexported:HashMap<I,HashSet<ItemUse>>,
+    item_callbacks:&mut CallbackList<'a,I>,
     derive_str:&str,
 )
 where 
     I:ModIndex
 {
     let pub_vis=parse_visibility("pub");
-    let pub_vis=MyVisibility::new(&pub_vis,ctokens);
-
+    
     let mut visiting=Visiting::new(modules);
 
     visiting.check_derive(derive_str,|params|{
-        let x=reexported.as_mut()
-            .and_then(|r| r.get_mut(&params.mod_index) );
+        for callback in &mut *item_callbacks {
+            callback(params);
+        }
 
-        match (x,params.item) {
-            (Some(reexports),VisitItem::Use(use_))=>{
+        let x=reexported.get_mut(&params.mod_index);
+
+        if let Some(check)=params.item.item_to_check() {
+            let (key,item)=check.split_key();
+            
+            match item_checks.remove(&key).map(|x| (x.existence,x)  ) {
+                Some((Exists,mut e_item))=>{
+
+                    let mut unexp_attrs=Vec::new();
+                    for (attr,_) in &item.attributes {
+                        match e_item.attributes.remove(attr){
+                            Some(Exists)=>{}
+                            _=>{
+                                unexp_attrs.push(attr);
+                            }
+                        }
+                    }
+
+                    let mut unexp_where_preds=Vec::new();
+                    for predicate in &item.where_preds {
+                        if !e_item.where_preds.remove(predicate) {
+                            unexp_where_preds.push(predicate);
+                        }
+                    }
+
+
+                    /////////////
+
+
+
+                    if !unexp_attrs.is_empty() && e_item.attributes_exhaus==Exhaustive {
+                        params.push_err(
+                            VIEK::WrongDefinition,
+                            format!(
+                                "Unexpected attributes present in definition:\n{}",
+                                totoken_iter_to_string(&unexp_attrs)
+                            )
+                        );
+                    }
+                    if !unexp_where_preds.is_empty() && e_item.where_preds_exhaus==Exhaustive{
+                        params.push_err(
+                            VIEK::WrongDefinition,
+                            format!(
+                                "Unexpected where predicated present in definition:\n{}",
+                                totoken_iter_to_string(&unexp_where_preds)
+                            )
+                        );
+                    }
+
+                    // Only need to check that the existing attributes have been 
+                    // removed from the `e_item.attributes`.
+                    e_item.attributes.retain(|_,v|*v==Exists);
+                    if !e_item.attributes.is_empty() {
+                        params.push_err(
+                            VIEK::WrongDefinition,
+                            format!(
+                                "Expected more attributes in definition:\n{}",
+                                totoken_iter_to_string(e_item.attributes.keys())
+                            )
+                        );
+                    }
+
+                    if !e_item.where_preds.is_empty() {
+                        params.push_err(
+                            VIEK::WrongDefinition,
+                            format!(
+                                "Expected more where predicates in definition:\n{}",
+                                totoken_iter_to_string(&e_item.where_preds)
+                            )
+                        );
+                    }
+
+                }
+                Some((NotExists,e_item))=>{
+                    params.push_err(
+                        VIEK::UnexpectedItem,
+                        format!("{} must not exist.",key),
+                    );
+                }
+                None=>{
+                    println!("unexpected item:\n{}\n",key);
+                    // do nothing for now since item_checks are considered NonExhaustive
+                }
+            }
+        }
+
+        match (x,params.item.clone()) {
+            (Some(ref mut reexports),VisitItem::Use(ref use_))=>{
                 if !reexports.remove(use_) {
                     return params.push_err(
                         VIEK::UnexpectedItem,
                         format!(
                             "{}\n\nRemaining Items:{}",
                             tokens_to_string(use_),
-                            totoken_iter_to_string(&*reexports)
+                            totoken_iter_to_string(&**reexports)
                         )
                     );
                 }
             }
-            (Some(_),VisitItem::Struct(struct_))=>{
+            (Some(_),VisitItem::Struct(ref struct_))=>{
                 match accessor_structs.remove( &struct_.ident ) {
                     Some(attrs)=>{
-                        if pub_vis!=MyVisibility::new(&struct_.vis,ctokens){
+                        let my_pub_vis=MyVisibility::new(&pub_vis,ctokens);
+                        let was_not_public=my_pub_vis!=MyVisibility::new(&struct_.vis,ctokens);
+                        if was_not_public {
                             params.push_err(VIEK::WrongDefinition,format!(
                                 "visibility is '{}' instead of 'pub'",
                                 tokens_to_string(&struct_.vis),
@@ -264,85 +364,6 @@ where
                     format!("expected item reexports:\n{}",totoken_iter_to_string(&**reexports))
                 );
             }
-            (_,VisitItem::Impl(impl_))=>{
-                let impl_blocks=match impl_blocks.as_mut() {
-                    Some(x)=>x,
-                    None=>return,
-                };
-
-                let header=ImplHeader::from_itemimpl(impl_);
-
-                match impl_blocks.remove(&header).map(|x| (x.existence,x)  ) {
-                    Some((Exists,mut e_impl))=>{
-                        let mut unexp_attrs=Vec::new();
-                        for attr in &impl_.attrs {
-                            if !e_impl.attributes.remove(attr) {
-                                unexp_attrs.push(attr);
-                            }
-                        }
-
-                        let iter=impl_.generics.where_clause.as_ref().into_iter()
-                            .flat_map(|x| &x.predicates );
-
-                        let mut unexp_where_preds=Vec::new();
-                        for predicate in iter {
-                            if !e_impl.where_preds.remove(&predicate) {
-                                unexp_where_preds.push(predicate);
-                            }
-                        }
-
-                        if !unexp_attrs.is_empty() && e_impl.attributes_exhaus==Exhaustive {
-                            params.push_err(
-                                VIEK::WrongDefinition,
-                                format!(
-                                    "Unexpected attributes present in definition:\n{}",
-                                    totoken_iter_to_string(unexp_attrs)
-                                )
-                            );
-                        }
-                        if !unexp_where_preds.is_empty() && e_impl.where_preds_exhaus==Exhaustive{
-                            params.push_err(
-                                VIEK::WrongDefinition,
-                                format!(
-                                    "Unexpected where predicated present in definition:\n{}",
-                                    totoken_iter_to_string(unexp_where_preds)
-                                )
-                            );
-                        }
-
-                        if !e_impl.attributes.is_empty() {
-                            params.push_err(
-                                VIEK::WrongDefinition,
-                                format!(
-                                    "Expected more attributes in definition:\n{}",
-                                    totoken_iter_to_string(e_impl.attributes)
-                                )
-                            );
-                        }
-
-                        if !e_impl.where_preds.is_empty() {
-                            params.push_err(
-                                VIEK::WrongDefinition,
-                                format!(
-                                    "Expected more where predicates in definition:\n{}",
-                                    totoken_iter_to_string(e_impl.where_preds)
-                                )
-                            );
-                        }
-
-                    }
-                    Some((NotExists,e_impl))=>{
-                        params.push_err(
-                            VIEK::UnexpectedItem,
-                            format!("{} must not exist.",header),
-                        );
-                    }
-                    None=>{
-                        println!("unexpected impl:{} \n",header);
-                        // do nothing for now since impl_blocks are considered NonExhaustive
-                    }
-                }
-            }
             (_,VisitItem::EndOfVisitor)=>{
 
                 if !accessor_structs.is_empty() {
@@ -358,30 +379,28 @@ where
                     );
                 }
             
-                if let Some(impl_blocks)=impl_blocks.as_mut() {
 
-                    impl_blocks.retain(|_,impl_| impl_.existence==Exists );
+                item_checks.retain(|_,impl_| impl_.existence==Exists );
 
-                    if !impl_blocks.is_empty() {
-                        params.push_err(
-                            VIEK::ExpectedMoreItems,
-                            format!(
-                                "Did not define these impls:\n{:#?}.",
-                                impl_blocks.keys()
-                                    .map(|x|AlwaysDisplay(x))
-                                    .collect::<Vec<_>>()
-                            )
-                        );
-                    }
+                if !item_checks.is_empty() {
+                    params.push_err(
+                        VIEK::ExpectedMoreItems,
+                        format!(
+                            "Did not define these impls:\n{:#?}.",
+                            item_checks.keys()
+                                .map(|x|AlwaysDisplay(x))
+                                .collect::<Vec<_>>()
+                        )
+                    );
                 }
-
             }
             _=>{}
         };
+
     });
 
 }
-fn test_typelevel_items_variant<'a,I>(
+fn test_items_typelevel_variant<'a,I>(
     ctokens:&CommonTokens,
     variant:&TLVariant<'a>,
     modules:Rc<Module<I>>,
@@ -419,7 +438,7 @@ where
     let mut visiting=Visiting::new(modules);
 
     visiting.check_derive(derive_str,|params|{
-        match params.item {
+        match params.item.clone() {
             VisitItem::Struct(struct_)=> {
                 if struct_.ident!=variant.const_value {
                     return;

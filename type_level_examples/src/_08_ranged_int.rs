@@ -88,9 +88,9 @@ pub type RangedInt<Start, End> = RangedIntR<ConstRange<Start, End>>;
         The ConstRange also determines the integer type stored.
     ",
     derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord),
-    Type = "RangedIntR", Param = "R"
+    Type = "RangedIntR", ConstValue = "R"
 )]
-pub struct RangedIntInner<R>
+pub struct __RangedInt<R>
 where
     R: WrapperTrait,
     UnwrapConst<R>: RangeTypes,

@@ -2,9 +2,13 @@
 
 Examples of using type-level values and functions.
 
+You are free to copy any of the examples here,improvements to this examples should be (preferably) an issue or a pull request.
+
+This is a library purely so that `docs.rs` can show documentation for it,
+do not use this crate as a dependency.
+
 To run the examples do `cargo run -- ` and then add one of the arguments from the help message.
 
-**Work in progress.**
 **Please create issues for any problem.**
 
 This crate uses [`derive_type_level`](https://crates.io/crates/derive_type_level) to access the 

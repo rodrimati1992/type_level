@@ -34,13 +34,13 @@ value returned from the second call to  iter.next().
 
 Here we declare a trait alias which ensures that the output of a TypeFn_
 is a valid collection,
-and we declare a type alias for that trait for convenience.
+and we declare a type alias of that trait for convenience.
 
 //@use_codeblock:parse_names_fn,ignore
 
-The parse_names function parses the `text` into multiple `T`,
+The parse_names function parses the `text` into multiple values of type `T`,
 outputs the &str from which each `T` was parsed and 
-output the parse errors as a Vec<T::Err>.
+outputs the parse errors as a Vec\<T::Err\>.
 
 This function takes the `T` type being parsed explicitly,
 using the `TypeName::T`/`<Type>::T` syntax,
@@ -56,7 +56,7 @@ Then we declare the text we'll parse,with 3 FullNames.
 <br>
 Then we call parse_names,
 specifying the type being parsed with `FullName::T` 
-and specifying the constructed collection with `VecFn::CW`.
+and specifying the constructed collection with `VecFn::NEW`.
 <br>
 Then we check that the returned value is what we expect.
 
@@ -64,6 +64,9 @@ Then we check that the returned value is what we expect.
 
 This is basically identical to the previous example,except that it involves a BTreeSet.
 
+The mutated method here is defined in the core_extensions::SelfOps trait,
+allowing us to initialize an immutable variable with 
+temporary mutable access to the value being initialize.
 
 <br><br><br><br><br><br><br><br><br><br>
 <hr>
@@ -125,7 +128,8 @@ impl FromStr for FullName {
     type Err = InvalidFullNameStr;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut iter=s.split(",").map(String::from);
-        let name=iter.next().ok_or_else(|| InvalidFullNameStr::NoName(s.into()) )?;
+        let name=iter.next()
+            .ok_or_else(|| InvalidFullNameStr::NoName(s.into()) )?;
         Ok(FullName { 
             name , 
             surname :iter.next(),
@@ -202,7 +206,7 @@ fn main() {
         let text="thomas,anderson;matt,parker;joe";
 
         let (ret,ret_slices,set_errors) = 
-            parse_names(text, FullName::T , VecFn::CW );
+            parse_names(text, FullName::T , VecFn::NEW );
             
         let cmp = vec![
             FullName::new("thomas",Some("anderson")),
@@ -229,7 +233,7 @@ fn main() {
         let text="thomas,anderson;matt,parker;joe";
 
         let (ret,ret_slices,set_errors) = 
-            parse_names(text, FullName::T , BTreeSetFn::CW );
+            parse_names(text, FullName::T , BTreeSetFn::NEW );
         let cmp = BTreeSet::new().mutated(|v| {
             v.insert(FullName::new("thomas",Some("anderson")));
             v.insert(FullName::new("matt",Some("parker")));

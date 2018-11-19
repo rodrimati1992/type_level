@@ -1,8 +1,8 @@
 
 pub mod constrange_stuff;
 
-#[cfg(test)]
-// #[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests;
 
 use core_extensions::{TryFrom, TryInto,BoolExt,OptionExt};
@@ -23,14 +23,19 @@ pub use self::constrange_stuff::{
 };
 
 
+/// Alias for a ranged integer of the half open range Start..End.
 pub type RangedInt<Integer,Start, End> = 
     RangedIntR<Integer,ConstRange<Start, End>>;
 
+/// Alias for a ranged integer of the half open range Start..(Start+Len).
 pub type RangedIntL<Integer,Start,Len>=
     RangedIntR<Integer,ConstRange<Start,AddTA<Start,Len>>>;
 
 
-/**
+#[derive(MutConstValue)]
+#[mcv(
+    doc=r###"
+
 Ranged unsigned integer type,
 using a ConstRange to determine the range it is limited to.
 
@@ -91,13 +96,12 @@ macro_rules! new_ranged{( $ty:ty, $num:expr )=>{
 
 ```
 
-*/
-#[derive(MutConstValue)]
-#[mcv(
+
+    "###,
     derive(Debug, Copy, Clone),
-    Type = "RangedIntR", Param = "R"
+    Type = "RangedIntR", ConstValue = "R"
 )]
-pub struct RangedIntInner<N,R>
+pub struct __RangedInt<N,R>
 where
     R: WrapperTrait,
 {
@@ -225,6 +229,8 @@ where
     }
 }
 
+
+/// Error produced when trying to construct a RangedIntR with a number outside the range.
 #[derive(Debug,Copy, Clone,PartialEq)]
 pub struct IntOutsideRange<N> {
     pub value: N,
@@ -234,6 +240,7 @@ pub struct IntOutsideRange<N> {
 }
 
 
+/// Error produced when trying to parse a RangedIntR.
 #[derive(Debug, Clone)]
 pub enum RangedIntParseError<N> {
     InvalidInt { 

@@ -2,7 +2,7 @@ use crate_::discriminant::GetDiscriminant;
 use new_types::type_list::{TList, TListType, TypeLevelListTrait};
 use prelude::*;
 
-/// Converts a type to a tlist.
+/// Converts a ConstValue to a tlist,mostly used for deriving traits.
 pub trait AsTList_ {
     type Output;
 }
@@ -15,7 +15,8 @@ type_fn!{use_trait
 
 
 
-/// Converts an enum variant to a tlist with the discriminant as the first element.
+/// Converts an ConstValue to a tlist with the discriminant as the first element,
+/// mostly used for deriving traits.
 pub trait VariantAsTList_ {
     type Output: TypeLevelListTrait;
 }
@@ -54,6 +55,8 @@ mod test{
         let _:AssEqTy<AsTList<Err_<U32>>, tlist![U32]>;
         
         let _:AssEqTy<AsTList<ConstRange<U10,U20>>, tlist![U10,U20]>;
+
+        #[cfg(rust_1_26)]
         let _:AssEqTy<AsTList<ConstRangeInclusive<U10,U20>>, tlist![U10,U20]>;
         
         let _:AssEqTy<AsTList<()>, tlist![]>;
@@ -69,9 +72,10 @@ mod test{
 
     #[test]
     fn test_variant_as_tlist(){
-        use std_types::option::{None__Discr,Some__Discr};
-        use std_types::result::{Ok__Discr,Err__Discr};
+        use std_types::option::{None_Discr,Some_Discr};
+        use std_types::result::{Ok_Discr,Err_Discr};
         use std_types::range::Range_Discr;
+        #[cfg(rust_1_26)]
         use std_types::range_inclusive::RangeInclusive_Discr;
         use std_types::tuples::Tuple_Discr;
         use new_types::type_list::{TList_Discr,TNil_Discr};
@@ -79,18 +83,20 @@ mod test{
         type Test<L,R>=
             AssEqTy<VariantAsTList<L>,R>;
 
-        let _:Test<None_, tlist![ None__Discr ]>;
+        let _:Test<None_, tlist![ None_Discr ]>;
         
-        let _:Test<Some_<()>, tlist![ Some__Discr, ()]>;
-        let _:Test<Some_<U32>, tlist![ Some__Discr, U32]>;
+        let _:Test<Some_<()>, tlist![ Some_Discr, ()]>;
+        let _:Test<Some_<U32>, tlist![ Some_Discr, U32]>;
         
-        let _:Test<Ok_<()>, tlist![ Ok__Discr, ()]>;
-        let _:Test<Ok_<U32>, tlist![ Ok__Discr, U32]>;
+        let _:Test<Ok_<()>, tlist![ Ok_Discr, ()]>;
+        let _:Test<Ok_<U32>, tlist![ Ok_Discr, U32]>;
         
-        let _:Test<Err_<()>, tlist![ Err__Discr, ()]>;
-        let _:Test<Err_<U32>, tlist![ Err__Discr, U32]>;
+        let _:Test<Err_<()>, tlist![ Err_Discr, ()]>;
+        let _:Test<Err_<U32>, tlist![ Err_Discr, U32]>;
         
         let _:Test<ConstRange<U10,U20>, tlist![ Range_Discr, U10,U20]>;
+
+        #[cfg(rust_1_26)]
         let _:Test<ConstRangeInclusive<U10,U20>, tlist![ RangeInclusive_Discr,U10,U20]>;
 
         let _:Test<(), tlist![Tuple_Discr]>;

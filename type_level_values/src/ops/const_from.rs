@@ -7,6 +7,7 @@ use core_extensions::type_level_bool::{Boolean, BooleanType, False, True};
 use typenum::bit::{B0, B1};
 use typenum::consts::{P1, U0, U1, Z0};
 
+/// Converts `Other` to a value of the `Self` ConstType
 pub trait ConstFrom_<Other>: ConstType {
     type Output;
 }
@@ -18,6 +19,7 @@ where
     type Output = T;
 }
 
+/// Converts `Self` to a value of the `Other` ConstType
 pub trait ConstInto_<Other> {
     type Output;
 }
@@ -30,15 +32,22 @@ where
 }
 
 type_fn!{use_trait 
+    /// Converts `From` to a value of the `Self` ConstType
     trait=ConstFrom_ [From_]
+    /// Converts `From` to a value of the `Self` ConstType
     type=ConstFrom
+    /// Converts `From` to a value of the `Self` ConstType
     fn_type=ConstFromOp
 }
 
 type_fn!{use_trait 
+    /// Converts `Self` to a value of the `IntoConstType` ConstType
     trait=ConstInto_ [IntoConstType]
+    /// Converts `Self` to a value of the `IntoConstType` ConstType
     type=ConstInto
+    /// Converts `Self` to a value of the `IntoConstType` ConstType
     fn_type=ConstIntoOp
+    /// Converts `Self` to a value of the `IntoConstType` ConstType
     method_like=ConstIntoMt
 }
 
@@ -81,8 +90,8 @@ mod boolean_impls {
     }
 }
 
-#[cfg(test)]
-// #[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests {
     use super::*;
 
@@ -110,9 +119,15 @@ mod tests {
             ConstRange<U0,U0>,
             ConstRange<U1,U4>,
             ConstRange<U6,U10000>,
-            ConstRangeInclusive<U0,U0>,
-            ConstRangeInclusive<U1,U4>,
-            ConstRangeInclusive<U6,U10000>,
+        }
+        
+        #[cfg(rust_1_26)]
+        {
+            check_identity_conv!{
+                ConstRangeInclusive<U0,U0>,
+                ConstRangeInclusive<U1,U4>,
+                ConstRangeInclusive<U6,U10000>,
+            }
         }
     }
 

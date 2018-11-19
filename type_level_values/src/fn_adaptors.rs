@@ -8,7 +8,7 @@ Operator adaptors for TypeFn_ implementors.
 use prelude::*;
 
 use crate_::field_traits::{MapFieldOp};
-use crate_::collection_ops::{Insert_};
+use crate_::collection_ops::{Insert_,PushFrontMt,PushBackMt};
 
 pub use crate_::type_fn::{
     TypeFn_,
@@ -46,11 +46,10 @@ type_fn!{
 }
 
 type_fn!{
-    /// Applies a parameter of a TypeFn_< SomeTuple > ,
-    /// reducing the arity of the resulting TypeFn_<> by 1.
+    /// Applies a parameter of a function (3+ params).
     /// 
-    /// This only works with functions that take at least 3 parameters.
-    /// 
+    /// For unary functions use ops::Lazy.
+    /// For binary functions use either ApplyRhs or ApplyLhs
     captures(Op,Nth,Value)
     pub fn ApplyNth[Input](Input)
     where[
@@ -60,11 +59,12 @@ type_fn!{
 }
 
 type_fn!{
-    /// Applies every parameter to Op except for the nth,creating a unary function
+    /// Applies every parameter to a TypeFn_ (with 3 or more parameters)
+    /// except for the nth,creating a unary function
     /// that takes that parameter and evaluates Op.
     /// 
-    /// This only works with functions that take at least 3 parameters.
-    /// 
+    /// For unary functions use ops::Lazy.
+    /// For binary functions use either ApplyRhs or ApplyLhs
     captures(Op,Nth,Value)
     pub fn ApplyNonNth[Input](Input)
     where[
@@ -73,77 +73,121 @@ type_fn!{
     ]{ Op::Output }
 }
 
-/**
-Applies every parameter except the self parameter,which is by convention the first.
 
-This only works with functions that take at least 2 parameters other than Self.
 
-# Example
+type_fn!{
+    /**
+    Applies every parameter of a function (3+ params) except the self parameter,
+    which is by convention the first.
 
-```
-# #[macro_use]
-# extern crate derive_type_level;
+    This only works with functions that take at least 2 parameters other than Self.
 
-# #[macro_use]
-# extern crate type_level_values;
+    For functions taking 1 parameter other than Self use ApplyRhs.
 
-# use type_level_values::prelude::*;
 
-use type_level_values::field_traits::{SetField,SetFieldOp};
-use type_level_values::fn_adaptors::ApplyNonSelf;
+    # Example
 
-#[derive(TypeLevel)]
-#[typelevel(reexport(Struct,Traits))]
-pub struct Rectangle{
-    pub x:u32,
-    pub y:u32,
-    pub w:u32,
-    pub h:u32,
+    ```
+    # #[macro_use]
+    # extern crate derive_type_level;
+
+    # #[macro_use]
+    # extern crate type_level_values;
+
+    # use type_level_values::prelude::*;
+
+    use type_level_values::field_traits::{SetField,SetFieldOp};
+    use type_level_values::fn_adaptors::ApplyNonSelf;
+
+    #[derive(TypeLevel)]
+    #[typelevel(reexport(Struct,Traits))]
+    pub struct Rectangle{
+        pub x:u32,
+        pub y:u32,
+        pub w:u32,
+        pub h:u32,
+    }
+    use self::type_level_Rectangle::fields;
+
+    type InitialRectangle=SetField<
+        Rectangle_Uninit,
+        fields::All,
+        U0
+    >;
+
+
+    type SetX<X>=ApplyNonSelf<SetFieldOp,(fields::x,X)>;
+
+    type SetY<Y>=ApplyNonSelf<SetFieldOp,(fields::y,Y)>;
+
+    type SetW<W>=ApplyNonSelf<SetFieldOp,(fields::w,W)>;
+
+    type SetH<H>=ApplyNonSelf<SetFieldOp,(fields::h,H)>;
+
+
+    fn main(){
+        let _:ConstRectangle<U0,U0,U0,U0>=InitialRectangle::MTVAL;
+
+        let _:ConstRectangle<U5,U10,U20,U0>=TypeFn::<
+            (SetX<U5>,SetY<U10>,SetW<U20>),
+            InitialRectangle
+        >::MTVAL;
+
+        let _:ConstRectangle<U0,U0,U1024,U128>=TypeFn::<
+            (SetW<U1024>,SetH<U128>),
+            InitialRectangle,
+        >::MTVAL;
+    }
+
+    ```
+
+
+    */
+    captures(Op, Params)
+    pub fn ApplyNonSelf[self_](self_)
+    where[ (PushFrontMt<self_>,Op):TypeFn_< Params,Output=Out > ]
+    {  
+        let Out;
+        Out
+    }
 }
-use self::type_level_Rectangle::fields;
 
-type InitialRectangle=SetField<
-    Rectangle_Uninit,
-    fields::All,
-    U0
->;
+type_fn!{
+    /**
+    Applies the Self parameter of a function (3+ params),which is by convention the first.
 
+    This only works with functions that take at least 2 parameters other than Self.
 
-type SetX<X>=ApplyNonSelf<SetFieldOp,(fields::x,X)>;
-
-type SetY<Y>=ApplyNonSelf<SetFieldOp,(fields::y,Y)>;
-
-type SetW<W>=ApplyNonSelf<SetFieldOp,(fields::w,W)>;
-
-type SetH<H>=ApplyNonSelf<SetFieldOp,(fields::h,H)>;
-
-
-fn main(){
-    let _:ConstRectangle<U0,U0,U0,U0>=InitialRectangle::MTVAL;
-
-    let _:ConstRectangle<U5,U10,U20,U0>=TypeFn::<
-        (SetX<U5>,SetY<U10>,SetW<U20>),
-        InitialRectangle
-    >::MTVAL;
-
-    let _:ConstRectangle<U0,U0,U1024,U128>=TypeFn::<
-        (SetW<U1024>,SetH<U128>),
-        InitialRectangle,
-    >::MTVAL;
+    For functions taking 1 parameter other than Self use ApplyLhs.
+    */
+    captures(Op, self_)
+    pub fn ApplySelf[Params](Params)
+    where[ (PushFrontMt<self_>,Op):TypeFn_< Params,Output=Out > ]
+    {  
+        let Out;
+        Out
+    }
 }
 
-```
 
+type_fn!{
+    /**
+    Applies the last parameter of a function (3+ params).
 
-*/
-pub type ApplyNonSelf<Op, Params> = ApplyNonNth<Op, U0, Params>;
+    This only works with functions that take at least 3 parameters.
 
-/**
-Applies the Self parameter for a function,which is by convention the first.
+    For unary functions use ops::Lazy.
+    For functions taking 2 parameter use ApplyRhs.
+    */
+    captures(Op, last)
+    pub fn ApplyLast[Params](Params)
+    where[ (PushBackMt<last>,Op):TypeFn_< Params,Output=Out > ]
+    {  
+        let Out;
+        Out
+    }
+}
 
-This only works with functions that take at least 2 parameters other than Self.
-*/
-pub type ApplySelf<Op, This> = ApplyNth<Op, U0, This>;
 
 type_fn!{
     captures(Op, Mapper)
@@ -173,9 +217,9 @@ type_fn!{
 
 type_fn!{
     captures(Op, Nth, Mapper)
-    /// Maps the nth parameter using Mapper and then passes it to Op.
+    /// Maps the nth parameter of a function(2+ params) using Mapper and then passes it to Op.
     ///
-    /// Note:This does not work with unary functions because they don't use tuples.
+    /// For unary functions use `(MapOperation,TheUnaryFunction)` instead.
     pub fn MapNth[Params](Params)
     where[
         MapFieldOp: TypeFn_<(Params, Nth, Mapper), Output = Res0>,
@@ -184,20 +228,6 @@ type_fn!{
         let Res0;
         Op::Output
     }
-}
-
-type_fn!{
-    /// Type-level version of "|l,r| r(l) "
-    pub fn EvalRhsOp[Lhs, Rhs](Lhs, Rhs)
-    where[ Rhs: TypeFn_<Lhs> ]
-    { Rhs::Output }
-}
-
-type_fn!{
-    /// Type-level version of "|l,r| l(r) "
-    pub fn EvalLhsOp[Lhs, Rhs](Lhs, Rhs)
-    where[ Lhs: TypeFn_<Rhs> ]
-    { Lhs::Output }
 }
 
 type_fn!{
@@ -228,4 +258,89 @@ pub type IgnoreFirst<First, Second> = TypeFn<Ignoring<First>, Second>;
 type_fn!{
     /// Type-level version of "|x| x ".
     pub fn IdentityFn[P](P){P}
+}
+
+
+
+#[cfg(test)]
+mod tests{
+    use super::*;
+    use crate_::ops::{AssertPipedRet,AssertEq};
+    use crate_::field_traits::{SetFieldOp};
+    use crate_::std_ops::{AddOp,DivOp,SubOp};
+
+    macro_rules! define_apply_test {
+        ( $test_ident:ident , $test_type_alias:item ) => (
+            $test_type_alias
+            
+            let _:$test_ident<(U0,U1,U2,U3),U0,False,(False,U1,U2,U3)>;
+            let _:$test_ident<(U0,U1,U2,U3),U1,False,(U0,False,U2,U3)>;
+            let _:$test_ident<(U0,U1,U2,U3),U2,False,(U0,U1,False,U3)>;
+            let _:$test_ident<(U0,U1,U2,U3),U3,False,(U0,U1,U2,False)>;
+        )
+    }
+
+    #[test]
+    fn flip(){
+        let _:AssertPipedRet<(U3,U10),Flip<SubOp>,U7>;
+        let _:AssertPipedRet<(U2,U10),Flip<DivOp>,U5>;
+    }
+
+    #[test]
+    fn apply_non_self(){
+        define_apply_test!{
+            Test,
+            type Test<This,Field,Value,Expected>=(
+                AssertEq<TypeFn< ApplyNonSelf<SetFieldOp,(Field,Value)> , This >, Expected >,
+            );
+        }
+    }
+
+    #[test]
+    fn apply_nth(){
+        define_apply_test!{
+            Test,
+            type Test<This,Field,Value,Expected>=(
+                AssertEq<TypeFn< ApplyNth<SetFieldOp,U0,This > , (Field,Value) >, Expected >,
+                AssertEq<TypeFn< ApplyNth<SetFieldOp,U1,Field> , (This,Value) >, Expected >,
+                AssertEq<TypeFn< ApplyNth<SetFieldOp,U2,Value> , (This,Field) >, Expected >,
+            );
+        }
+    }
+
+    #[test]
+    fn apply_self(){
+        define_apply_test!{
+            Test,
+            type Test<This,Field,Value,Expected>=(
+                AssertEq<TypeFn< ApplySelf<SetFieldOp,This> , (Field,Value) >, Expected >,
+            );
+        }
+    }
+
+    #[test]
+    fn apply_last(){
+        define_apply_test!{
+            Test,
+            type Test<This,Field,Value,Expected>=(
+                AssertEq<TypeFn< ApplyLast<SetFieldOp,Value> , (This,Field) >, Expected >,
+            );
+        }
+    }
+
+    #[test]
+    fn map_param(){
+        type Test<Func,Mapper,Params,ExpectedMapLhs,ExpectedMapRhs>=(
+            AssertPipedRet<Params,MapLhs<Func,Mapper> , ExpectedMapLhs >,
+            AssertPipedRet<Params,MapRhs<Func,Mapper> , ExpectedMapRhs >,
+            
+            AssertPipedRet<Params,MapNth<Func,U0,Mapper> , ExpectedMapLhs >,
+            AssertPipedRet<Params,MapNth<Func,U1,Mapper> , ExpectedMapRhs >,
+        );
+
+        let _:Test<DivOp,Const<U1  >,(U10,U10),U0,U10>;
+        let _:Test<DivOp,Const<U8 >,(U16,U4 ),U2,U2 >;
+        let _:Test<DivOp,Const<U100>,(U200,U200 ),U0,U2 >;
+    }
+    
 }

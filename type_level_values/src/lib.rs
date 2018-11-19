@@ -55,11 +55,19 @@ Using a build script to enable features after Rust 1.20.
 
 To use this crate in no_std contexts disable the default-feature.
 
+Disabling the std feature disables these things:
+
+- the MutConstParam methods taking Box/Rc/Arc.
+
+
 # Cargo Features
 
-"std":Enables standard library support.Enabled by default.
+"std":Enables standard library support,otherwise uses the core library.Enabled by default.
 
 "serde":Enables serde support.Enabled by default.
+
+"large_tlist":to enable fixed-size impls for type-lists of 
+up to 32 elements instead of 16 elements,
 
 */
 
@@ -68,9 +76,13 @@ To use this crate in no_std contexts disable the default-feature.
 #![allow(non_camel_case_types)]
 #![allow(unused_imports)]
 
+// this is pub because it is used by the derive macros to access the standard/core library.
+#[doc(hidden)]
 #[cfg(feature = "std")]
 pub extern crate std as std_;
 
+// this is pub because it is used by the derive macros to access the standard/core library.
+#[doc(hidden)]
 #[cfg(not(feature = "std"))]
 pub extern crate core as std_;
 
@@ -80,20 +92,24 @@ pub extern crate typenum;
 pub extern crate core_extensions;
 
 #[macro_use]
-pub extern crate derive_type_level;
+extern crate derive_type_level;
 
 #[cfg(feature = "serde")]
 extern crate serde;
 
 extern crate num_traits;
 
+#[macro_use]
+mod macros{
+    #[macro_use]
+    mod tlist;
+    #[macro_use]
+    mod type_fn;
+    #[macro_use]
+    mod mutator_fn;
+}
+use self::macros::*;
 
-
-include!( "./macros/const_method_macro.rs");
-include!( "./macros/construct.rs");
-include!( "./macros/set_fields.rs");
-include!( "./macros/tlist.rs");
-include!( "./macros/type_fn.rs");
 
 
 
@@ -143,4 +159,7 @@ pub mod reexports ;
 mod crate_ {
     pub(crate) use super::*;
 }
+
+
+
 

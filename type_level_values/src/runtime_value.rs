@@ -1,5 +1,5 @@
 /*!
-Traits for converting between type-level-values and constants/runtime values.
+Traits for converting between ConstValues and constants/runtime values.
 
 
 # Rust versions
@@ -13,15 +13,16 @@ use core_extensions::MarkerType;
 use prelude::*;
 use std_::ops::BitAnd;
 
-/// Represents a compile-time type,like SignedInteger/BooleanType/OptionType/ResultType.
+/// Represents the "type" of a ConstValue,
+/// eg:SignedInteger/BooleanType/OptionType/ResultType.
 pub trait ConstType {}
 
-/// A compile-time value.
+/// A compile-time value.Eg:True,False,U0,U1,ConstRange<U0,U100>.
 pub trait ConstValue: MarkerType + ConstTypeOf_ {}
 
 impl<This> ConstValue for This where This: MarkerType + ConstTypeOf_ {}
 
-/// The ConstType of this Const-value.
+/// The ConstType of this ConstValue.
 pub trait ConstTypeOf_ {
     ///
     type Type: ConstType;
@@ -38,7 +39,7 @@ pub trait IntoConstType_ {
 /// The ConstType equivalent of `This`.
 pub type FromRuntime<This> = <This as IntoConstType_>::ToConst;
 
-/// Converts a compile-time value into a runtime value
+/// Converts a ConstValue into a runtime value
 pub trait IntoRuntime<To> {
     /// Gets the runtime equivalent of this ConstValue.
     fn to_runtime() -> To;
@@ -63,31 +64,41 @@ pub trait IntoRuntime<To> {
 }
 
 #[cfg(rust_1_22)]
-/// Converts a compile-time value into a runtime value
+/// Converts a ConstValue into a constant
+/// 
 pub trait IntoConstant<To> {
     const VALUE: To;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-/// Trait alias for the variants/the Const\<DerivingType> created by the TypeLevel macro.
-///
-pub trait DerivedTraits:
+
+/// Trait alias,for ConstValues created by the TypeLevel derive macro.
+pub trait NoGetDiscriminant:
     Copy + Clone + 
     Send + Sync + 
     Sized + Default + 
     MarkerType + ConstValue + 
-    ConstTypeOf_ + GetDiscriminant
-{
-}
+    ConstTypeOf_
+{}
 
-impl<This> DerivedTraits for This where
+impl<This> NoGetDiscriminant for This where
     This: 
         Copy + Clone + 
         Send + Sync + 
         Sized + Default + 
         MarkerType + ConstValue + 
-        ConstTypeOf_ + GetDiscriminant
+        ConstTypeOf_
+{}
+
+
+/// Trait alias,for ConstValues created by the TypeLevel derive macro,where no impls are disabled.
+///
+pub trait DerivedTraits: NoGetDiscriminant + GetDiscriminant
+{}
+
+impl<This> DerivedTraits for This where
+    This: NoGetDiscriminant+ GetDiscriminant
 {}
 
 /////////////////////////////////////////////////////////////////////////////
@@ -97,6 +108,12 @@ impl<This> DerivedTraits for This where
 /////////////////////////////////////////////////////////////////////////////
 
 
-type_fn!{alias ConstTypeOfOp[This]::Type =ConstTypeOf_ }
+type_fn!{
+    /// The ConstType of this ConstValue.
+    alias ConstTypeOfOp[This]::Type =ConstTypeOf_ 
+}
 
-type_fn!{alias IntoConstTypeOp[This]::ToConst =IntoConstType_ }
+type_fn!{
+    /// The ConstType equivalent of Self.
+    alias IntoConstTypeOp[This]::ToConst =IntoConstType_ 
+}

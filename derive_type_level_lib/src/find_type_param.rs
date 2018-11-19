@@ -88,7 +88,8 @@ impl<'a> FindTypeParam<'a>{
 }
 
 
-#[cfg(test)]
+// #[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests{
     use super::*;
     #[test]

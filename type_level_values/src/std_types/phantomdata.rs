@@ -1,3 +1,7 @@
+/*!
+Items for  std::marker::PhantomData.
+*/
+
 use crate_::field_traits::{GetField_, SetField_};
 use crate_::user_traits::const_traits;
 use prelude::*;
@@ -7,6 +11,7 @@ use crate_::std_types::cmp_ordering::Equal_;
 use crate_::std_types::option::fields as option_f;
 use crate_::std_types::Some_;
 
+/// The ConstType of a PhantomData
 #[derive(Debug, Default, Copy, Clone)]
 pub struct PhantomDataType;
 
@@ -16,6 +21,7 @@ impl<T: ?Sized> ConstTypeOf_ for PhantomData<T> {
     type Type = PhantomDataType;
 }
 
+/// To access a PhantomData in generic contexts.
 pub trait PhantomDataTrait {
     type field_0: ?Sized;
 }
@@ -79,12 +85,14 @@ impl<T> const_traits::ApplyConstParam_<T> for PhantomDataType {
 
 
 type_fn!{
+    /// Constructs a PhantomData<v>
     pub fn NewPhantomData[v](v)
     where[ v:?Sized ]
     { PhantomData<v> }
 }
 
 type_fn!{
+    /// Constructs a VariantPhantom<v>
     pub fn NewVariantPhantom[v](v)
     where[ v:?Sized ]
     { VariantPhantom<v> }

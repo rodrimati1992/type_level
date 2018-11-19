@@ -1,9 +1,13 @@
+/*!
+The type-level equivalent of std::result::Result.
+*/
+
 use core_extensions::type_level_bool::{False, True};
 use core_extensions::Void;
 
 use crate_::std_ops::{BitAndOp, BitOrOp, DivOp, MulOp, NotOp};
 use crate_::ops::{
-    AssertConstTypeMt,AssertEq,AssertFnRet,
+    AssertConstTypeMt,AssertEq,AssertPipedRet,
     Unwrap_,Unwrap,UnwrapOrElse_,UnwrapOr,
     IntoInner_,
     Add1Op,
@@ -26,9 +30,9 @@ use std_::result::Result as StdResult;
 #[allow(dead_code)]
 #[doc(hidden)]
 pub enum Result<T, E> {
-    #[typelevel(rename = "Ok_")]
+    #[typelevel(rename_constvalue = "Ok_")]
     Ok(T),
-    #[typelevel(rename = "Err_")]
+    #[typelevel(rename_constvalue = "Err_")]
     Err(E),
 }
 
@@ -38,9 +42,11 @@ pub use self::type_level_Result::*;
 /////////////////////////////
 
 type_fn!{
+    /// Constructs an Ok_<v>.
     pub fn NewOk[v](v){ Ok_<v> }
 }
 type_fn!{
+    /// Constructs an Err_<v>.
     pub fn NewErr[v](v){ Err_<v> }
 }
 
@@ -59,6 +65,7 @@ impl<T,Func> Map_<Func> for Err_<T>{
 ///////////////////////////////////////////////////////////////////////////////////////
 
 type_fn!{
+    /// Transforms the value of an Err_<v> with Func.
     pub fn 
         MapErrOp[T,Func](Ok_<T>,Func){ Ok_<T>  }
         
@@ -68,6 +75,7 @@ type_fn!{
 }
 
 type_fn!{
+    /// Transforms the value of an Err_<v> with the captured Func.
     captures(Func)
     pub fn 
         MapErrMt[T](Ok_<T>){ Ok_<T>  }
@@ -145,10 +153,12 @@ impl<E, O> BitAnd<O> for Err_<E> {
 /////////////////////////////
 
 type_fn!{
+    /// Returns whether the ResultType parameter is an Ok_<_>.
     pub fn IsOk[V](Ok_<V>){True}
            IsOk[V](Err_<V>){False}
 }
 
+/// Returns whether the ResultType parameter is an Err_<_>.
 pub type IsErr = (IsOk, NotOp);
 
 /////////////////////////////
@@ -184,8 +194,8 @@ impl<T> IntoInner_ for Err_<T> {
 
 /////////////////////////////
 
-#[cfg(test)]
-// #[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
 mod tests {
     use super::*;
 
@@ -240,8 +250,8 @@ mod tests {
         let _:Test0<Err_<U1>,Add1Op,Err_<U1>>;
         
         type Test1<Val,Func,Expected>=(
-            AssertFnRet<(Val,Func),MapErrOp,Expected>,
-            AssertFnRet<Val,MapErrMt<Func>,Expected>,
+            AssertPipedRet<(Val,Func),MapErrOp,Expected>,
+            AssertPipedRet<Val,MapErrMt<Func>,Expected>,
         );
 
         let _:Test1<Err_<U0>,Add1Op,Err_<U1>>;
@@ -254,10 +264,10 @@ mod tests {
     #[test]
     fn and_then_or_else(){
         type TestAT<Val,Func,Expected>=
-            AssertFnRet<Val,AndThenMt<Func>,Expected>;
+            AssertPipedRet<Val,AndThenMt<Func>,Expected>;
 
         type TestOE<Val,Func,Expected>=
-            AssertFnRet<Val,OrElseMt<Func>,Expected>;
+            AssertPipedRet<Val,OrElseMt<Func>,Expected>;
 
         type AddOk=(Add1Op,NewOk);
         type AddErr=(Add1Op,NewErr);

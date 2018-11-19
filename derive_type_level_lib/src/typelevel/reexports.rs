@@ -76,18 +76,17 @@ impl<'a> ToTokens for ReExportPrinter<'a>{
             tokens:&mut TokenStream
         ){
             if idents.is_empty() { return; }
-            to_stream!(tokens ; c_t.allow_unused_imports, vis,c_t.use_,c_t.low_self,c_t.colon2, );
-            for submod in mods{
-                submod.to_tokens(tokens);
-                c_t.colon2.to_tokens(tokens);
-            }
-            c_t.brace.surround(tokens,|tokens|{
-                for ident in idents {
-                    ident.to_tokens(tokens);
-                    c_t.comma.to_tokens(tokens);
+            for ident in idents {
+                to_stream!(tokens ; 
+                    c_t.allow_unused_imports, vis,c_t.use_,c_t.low_self,c_t.colon2, 
+                );
+                for submod in mods{
+                    submod.to_tokens(tokens);
+                    c_t.colon2.to_tokens(tokens);
                 }
-            });
-            c_t.semicolon.to_tokens(tokens);
+                ident.to_tokens(tokens);
+                c_t.semicolon.to_tokens(tokens);
+            }
         }
 
         use_mod_with_vis( vis,&[self.created_module],pub_top_reexports,c_t,tokens );

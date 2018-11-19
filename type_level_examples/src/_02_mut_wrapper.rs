@@ -26,16 +26,16 @@ use self::type_level_Mutability::{Immutable, MutabilityTrait, Mutable};
 #[derive(MutConstValue)]
 #[mcv(
     doc="
-        A Wrapper type whose mutability is a const-parameter.
+        A Wrapper type whose mutability is a ConstValue-parameter.
         Many impls are implemented on [MutabilityWrapper].
     ",
     derive(Debug, Copy, Clone, PartialEq, Eq, Ord, PartialOrd),
     Type="MutabilityWrapper",
-    Param ="M",
+    ConstValue ="M",
 )]
-pub struct MutabilityWrapperInner<T, M> {
+pub struct __MutabilityWrapper<T, M> {
     value: T,
-    mutability: M,
+    mutability: ConstWrapper<M>,
 }
 
 impl<T, M> MutabilityWrapper<T, M>
@@ -50,16 +50,17 @@ where
     }
 
     pub fn into_immutable(self) -> MutabilityWrapper<T, Immutable> {
-        self.mutparam(ChangeMutability::new(),Immutable::T)
+        self.mutparam(ChangeMutability::NEW,Immutable::T)
     }
     pub fn as_immutable(&self) -> &MutabilityWrapper<T, Immutable> {
-        self.mutparam_ref(ChangeMutability::new(),Immutable::T)
+        self.mutparam_ref(ChangeMutability::NEW,Immutable::T)
     }
 }
 
-const_method!{
-    type ConstConstructor[T]=( MutabilityWrapperCC<T> )
-    type AllowedConversions=( allowed_conversions::All )
+
+mutator_fn!{
+    type This[T, M]=(MutabilityWrapper<T, M>)
+    type AllowedSelf=(allowed_self_constructors::All)
 
     fn ChangeMutability[I,I2](I,I2) { I2 }
 }

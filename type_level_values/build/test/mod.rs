@@ -1,3 +1,6 @@
+// This is disabled because Rust keeps rebuilding the entire crate every time I modify 
+// a module in the tests folder.
+
 pub mod disabled_enabled_iter;
 
 // use self::disabled_enabled_iter::DisabledEnabled;
@@ -134,7 +137,7 @@ type TestEq<L,R,Val>=(
 
 type TestOrd<L,R,Val>=( 
     AssertEq<ConstOrd<L,R>,Val> ,
-    AssertEq<ConstOrd<R,L>,Reverse<Val>> ,
+    AssertEq<ConstOrd<R,L>,TypeFn<ReverseOrd,Val>> ,
 );
 
 type TestSetField<This,Field,Val,NewThis>=
@@ -426,7 +429,7 @@ type TestGetF<This,Field,Val>=(
                     {co}    Open0,
                     {co}    fields::{accessor},
                     {co}    U3,
-                    {co}    construct!(Open_Uninit=>fields::{accessor}=U3)
+                    {co}    Construct<Open_Uninit,tlist!((fields::{accessor},U3))>
                     {co}>;
                     {co}
                     {co}let _:TestGetF<Open2,fields::{accessor},U100 >;
@@ -624,11 +627,14 @@ fn type_decls<W:ioWrite>(mut w:W)->io::Result<()> {
                         |VariantKind::Tupled=>("U0",tuple_acc_1),
                     };
                     write!(w,"\
-                        pub type {alias}{col}<X,Y>{cor}=construct!(\n\
-                            self::type_level_{deriving}::{deriving}_Uninit {col} =>
-                            self::type_level_{deriving}::fields::{x} =X ,\n\
-                            self::type_level_{deriving}::fields::{y} =Y ,\n {cor}
-                        );\n
+                        pub type {alias}{col}<X,Y>{cor}=Construct<\n\
+                            self::type_level_{deriving}::{deriving}_Uninit ,
+                            ({col}
+                                (self::type_level_{deriving}::fields::{x},X),\n\
+                                (self::type_level_{deriving}::fields::{y},Y),\n 
+                            {cor}
+                            )
+                        >;\n
                         ",
                         col=col,cor=cor,
                         alias=type_alias,
@@ -686,7 +692,7 @@ use std::ops::Index;
 use type_level_values::prelude::*;
 use type_level_values::ops::*;
 use type_level_values::collection_ops::{{Reverse}};
-use type_level_values::std_types::cmp_ordering::{{Less_,Equal_}};
+use type_level_values::std_types::cmp_ordering::{{Less_,Equal_,ReverseOrd}};
 use type_level_values::discriminant::{{GetDiscrOf,GetVariantOf,Discriminant}};
 use type_level_values::field_traits::{{GetField,SetField,GetFieldRuntime}};
 use type_level_values::initialization::{{
@@ -704,6 +710,7 @@ macro_rules! assert_eq_into{{
             <$tylevel as IntoRuntime<_>>::to_runtime() , 
             runtime_val
         );
+        #[cfg(rust_1_22)]
         assert_eq!( 
             <$tylevel as IntoConstant<_>>::VALUE , 
             runtime_val

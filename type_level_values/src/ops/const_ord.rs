@@ -103,9 +103,13 @@ type_fn!{
 
 
 type_fn!{define_trait
+    /// Returns the minimum value between Self and R.
     trait=Min_ [R]
+    /// Returns the minimum value between Self and R.
     type=Min
+    /// Returns the minimum value between Self and R.
     fn_type=MinOp
+    /// Returns the minimum value between Self and R.
     method_like=MinMt
 }
 
@@ -117,9 +121,13 @@ where
 }
 
 type_fn!{define_trait
+    /// Returns the maximum value between Self and R.
     trait=Max_ [R]
+    /// Returns the maximum value between Self and R.
     type=Max
+    /// Returns the maximum value between Self and R.
     fn_type=MaxOp
+    /// Returns the maximum value between Self and R.
     method_like=MaxMt
 }
 
@@ -132,9 +140,13 @@ where
 
 
 type_fn!{define_trait
+    /// Returns a (mimumum_value,maximum_value) tuple by comparing Self and R.
     trait=MinMax_ [R]
+    /// Returns a (mimumum_value,maximum_value) tuple by comparing Self and R.
     type=MinMax
+    /// Returns a (mimumum_value,maximum_value) tuple by comparing Self and R.
     fn_type=MinMaxOp
+    /// Returns a (mimumum_value,maximum_value) tuple by comparing Self and R.
     method_like=MinMaxMt
 }
 
@@ -193,8 +205,8 @@ mod numtype_impls {
 
 }
 
-// #[cfg(all(test,feature="passed_tests"))]
-#[cfg(test)]
+#[cfg(all(test,feature="passed_tests"))]
+// #[cfg(test)]
 mod tests {
     use super::*;
     use typenum::consts::{U0, U1, U2};
