@@ -75,9 +75,7 @@ To ensure that the ConstValue-parameter does not affect the layout:
 # Manual implementors
 
 Manual implementors of this trait must constrain every field which
-mentions the ConstValue-parameter implements ConstLayoutIndependent< NewFieldType >,
-and optionally SameConstConstructor< NewFieldType >
-(if one wants the ConstConstructor to stay the same) .<br>
+mentions the ConstValue-parameter implements ConstLayoutIndependent< NewFieldType >.<br>
 NewFieldType is the type of the same field in `Other`.
 
 # Incompatible memory layouts 
