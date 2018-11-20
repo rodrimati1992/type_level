@@ -2,12 +2,6 @@
 
 Package for declaring and using type level values and functions.
 
-**Work in progress.**
-
-**This will be ready for consumption when the "0.1.0" is published on crates.io .**
-
-**Please create issues for any problem.**
-
 # Library Features
 
 This library provides these (non-exhaustive list of) type-level features:
