@@ -1,7 +1,8 @@
-//! This example demonstrates a zero overhead builder using a ConstValue-parameter
+//! This example demonstrates a builder using a ConstValue-parameter
 //! to track initialization of the fields.
 //!
-//!
+//! Because this uses unsafe,it is not recommended that you try this approach without 
+//! knowing what you are doing.
 //!
 
 
@@ -56,6 +57,7 @@ type AnimalBuilder<I> = AnimalBuilder_Ty<ConstWrapper<I>>;
 
 #[derive(MutConstValue)]
 #[mcv(
+    repr(C),
     Type(use_ = "AnimalBuilder"), 
     ConstValue = "I"
 )]
