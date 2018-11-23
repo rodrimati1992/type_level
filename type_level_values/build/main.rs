@@ -28,7 +28,7 @@ fn main() {
     println!("cargo:warning=RERUNNING type_level_values BUILD SCRIPT");
 
 
-    const RERUNNING_BUILD_SCRIPT:()=();
+    // const RERUNNING_BUILD_SCRIPT:()=();
 
     self::test::build_tests().unwrap();
 }

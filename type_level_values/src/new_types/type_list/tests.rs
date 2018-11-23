@@ -1,14 +1,14 @@
 use super::*;
 
-use crate_::std_ops::{SubOp,AddMt};
+use crate_::std_ops::{SubOp,MulMt,AddMt,SubRevMt};
 
 use crate_::field_traits::{GetField, SetField};
 use crate_::ops::{
     AssertEq,AssertPipedRet,ConstGEOp,
-    Add1Op,Add1Op as AddOne,SafeDivOp,
+    Add1Op,Add1Op as AddOne,SafeDivOp,SafeSubOp,SatSub1,
     ConstInto,ConstIntoMt,
     ConstFrom,
-    ConstEqMt,
+    ConstEqMt,ConstNEMt,
     ConstLtMt,
 };
 use crate_::collection_ops::*;
@@ -380,6 +380,12 @@ fn try_fold_r() {
         safe_sub,
         TFBreak<Err_<CannotSubstract<U4,U5>>>, 
     >;
+    let _: TestTryFoldR< 
+        tlist![(),U5,U1], 
+        U4 , 
+        safe_sub,
+        TFBreak<Err_<CannotSubstract<U3,U5>>>, 
+    >;
 
 }
 
@@ -418,6 +424,154 @@ fn filter() {
     
 }
 
+
+#[test]
+fn take(){
+    type Test<List,N,Expected>=(
+        AssertEq<Take<List,N>,Expected>,
+        AssertPipedRet<List,TakeMt<N>,Expected>,
+    );
+
+    let _:Test< tlist![],U0,tlist![] >;
+    let _:Test< tlist![],U1,tlist![] >;
+    let _:Test< tlist![U1],U0,tlist![] >;
+    let _:Test< tlist![U1],U1,tlist![U1] >;
+    let _:Test< tlist![U1,U2],U1,tlist![U1] >;
+    let _:Test< tlist![U1,U2],U2,tlist![U1,U2] >;
+    let _:Test< tlist![U1,U2,U3],U2,tlist![U1,U2] >;
+    let _:Test< tlist![U1,U2,U3],U3,tlist![U1,U2,U3] >;
+    let _:Test< tlist![U1,U2,U3],U4,tlist![U1,U2,U3] >;
+}
+
+
+#[test]
+fn skip(){
+    type Test<List,N,Expected>=(
+        AssertEq<Skip<List,N>,Expected>,
+        AssertPipedRet<List,SkipMt<N>,Expected>,
+    );
+
+    let _:Test< tlist![],U0,tlist![] >;
+    let _:Test< tlist![],U1,tlist![] >;
+    let _:Test< tlist![U1],U0,tlist![U1] >;
+    let _:Test< tlist![U1],U1,tlist![] >;
+    let _:Test< tlist![U1,U2],U0,tlist![U1,U2] >;
+    let _:Test< tlist![U1,U2],U1,tlist![U2] >;
+    let _:Test< tlist![U1,U2],U2,tlist![] >;
+    let _:Test< tlist![U1,U2,U3],U0,tlist![U1,U2,U3] >;
+    let _:Test< tlist![U1,U2,U3],U1,tlist![U2,U3] >;
+    let _:Test< tlist![U1,U2,U3],U2,tlist![U3] >;
+    let _:Test< tlist![U1,U2,U3],U3,tlist![] >;
+    let _:Test< tlist![U1,U2,U3],U4,tlist![] >;
+}
+
+
+#[test]
+fn skip_while(){
+    type Test<List,Val,Expected>=(
+        AssertEq<SkipWhile<List,ConstNEMt<Val>>,Expected>,
+        AssertPipedRet<List,SkipWhileMt< ConstNEMt<Val> >,Expected>,
+    );
+
+    let _:Test< tlist![],U0,tlist![] >;
+    let _:Test< tlist![U1],U1  ,tlist![U1] >;
+    let _:Test< tlist![U1],U100,tlist![] >;
+    let _:Test< tlist![U1,U2],U1,tlist![U1,U2] >;
+    let _:Test< tlist![U1,U2],U2,tlist![U2] >;
+    let _:Test< tlist![U1,U2],U100,tlist![] >;
+    let _:Test< tlist![U1,U2,U3],U1,tlist![U1,U2,U3] >;
+    let _:Test< tlist![U1,U2,U3],U2,tlist![U2,U3] >;
+    let _:Test< tlist![U1,U2,U3],U3,tlist![U3] >;
+    let _:Test< tlist![U1,U2,U3],U100,tlist![] >;
+}
+
+
+#[test]
+fn take_while(){
+    type Test<List,Val,Expected>=(
+        AssertEq<TakeWhile<List,ConstNEMt<Val>>,Expected>,
+        AssertPipedRet<List,TakeWhileMt< ConstNEMt<Val> >,Expected>,
+    );
+
+    let _:Test< tlist![],U0,tlist![] >;
+    let _:Test< tlist![U1],U1,tlist![] >;
+    let _:Test< tlist![U1],U100,tlist![U1] >;
+    let _:Test< tlist![U1,U2],U100,tlist![U1,U2] >;
+    let _:Test< tlist![U1,U2],U2,tlist![U1] >;
+    let _:Test< tlist![U1,U2],U1,tlist![] >;
+    let _:Test< tlist![U1,U2,U3],U100,tlist![U1,U2,U3] >;
+    let _:Test< tlist![U1,U2,U3],U3,tlist![U1,U2] >;
+    let _:Test< tlist![U1,U2,U3],U2,tlist![U1] >;
+    let _:Test< tlist![U1,U2,U3],U1,tlist![] >;
+}
+
+
+#[test]
+fn partition() {
+    type Test<List,Pred,Expected>=(
+        AssertEq<Partition<List,Pred>,Expected>,
+        AssertPipedRet<List,PartitionMt<Pred>,Expected>
+    );
+
+    type Val0=tlist![U10,U11,U12,U13,U14];
+    
+    let _:Test<Val0,IsEven,(tlist![U11,U13],tlist![U10,U12,U14])>;
+    let _:Test<Val0,Const<False>,(Val0,tlist![])>;
+    let _:Test<Val0,Const<True >,(tlist![],Val0)>;
+}
+
+#[test]
+fn partition_as() {
+    type Test<List,Type,Pred,Expected>=(
+        AssertEq<PartitionAs<List,Type,Pred>,Expected>,
+        AssertPipedRet<List,PartitionAsMt<Type,Pred>,Expected>
+    );
+
+    type Val0=tlist![U10,U11,U12,U13,U14];
+    
+    let _:Test<Val0,TupleType,IsEven,((U11,U13),(U10,U12,U14))>;
+    let _:Test<Val0,TupleType,Const<False>,(ConstInto<Val0,TupleType>,())>;
+    let _:Test<Val0,TupleType,Const<True >,((),ConstInto<Val0,TupleType>)>;
+}
+
+
+#[test]
+fn filter_map() {
+    type Test<This,Func,Expected>=(
+        AssertEq<FilterMap<This,Func>,Expected>,
+        AssertPipedRet<This,FilterMapMt<Func>,Expected>,
+    );
+
+    {
+        type Op_Option=ApplyLhs<SafeSubOp,U10>;
+        type Op_Result=ApplyLhs<safe_sub,U10>;
+        type Val0=tlist![U0,U5,U8,U9,U10,U11,U12,U13];
+
+        let _:Test< Val0 , Op_Option , tlist![U10,U5,U2,U1,U0]>;
+        let _:Test< Val0 , Op_Result , tlist![U10,U5,U2,U1,U0]>;
+    }
+}
+
+
+#[test]
+fn flatten() {
+    type Test<This,Expected>=(
+        AssertEq<Flatten<This>,Expected>,
+        AssertPipedRet<This,FlattenOp,Expected>,
+    );
+
+    let _:Test< 
+        tlist![ tlist![U0,U1],tlist![],tlist![U2],tlist![U3,U4,U5] ] ,
+        tlist![U0,U1,U2,U3,U4,U5]
+    >;
+
+    let _:Test< 
+        tlist![ Some_<U0>,None_,Some_<U2>,(U3,U4,U5) ] ,
+        tlist![U0,U2,U3,U4,U5]
+    >;
+}
+
+
 #[test]
 fn into_() {
     type TestInto<From_,Type,Expected>=(
@@ -452,6 +606,61 @@ fn repeat() {
         Repeat<TListType,(),U100 > 
     >;
 }
+
+#[test]
+fn append() {
+    type Test<List,Other,Expected>=(
+        AssertEq<Append<List,Other>,Expected>,
+        AssertPipedRet<List,AppendMt<Other>,Expected>
+    );
+
+
+    let _:Test<tlist![], (),tlist![]>;
+    let _:Test<tlist![], (U0,),tlist![U0]>;
+    let _:Test<tlist![U0], (U1,),tlist![U0, U1]>;
+    let _:Test<tlist![U0, U1], (U2,U3),tlist![U0, U1, U2, U3]>;
+    let _:Test<tlist![U0, U1, U2], (U3,U4,U5),tlist![U0, U1, U2, U3, U4, U5]>;
+    let _:Test<tlist![], (U3,U4,U5),tlist![U3, U4, U5]>;
+
+    let _:Test<tlist![          ], tlist![        ],tlist![]>;
+    let _:Test<tlist![          ], tlist![U0      ],tlist![U0]>;
+    let _:Test<tlist![U0        ], tlist![U1      ],tlist![U0, U1]>;
+    let _:Test<tlist![U0, U1    ], tlist![U2,U3   ],tlist![U0, U1, U2, U3]>;
+    let _:Test<tlist![U0, U1, U2], tlist![U3,U4,U5],tlist![U0, U1, U2, U3, U4, U5]>;
+    let _:Test<tlist![], tlist![U3,U4,U5],tlist![U3, U4, U5]>;
+
+
+}
+
+#[test]
+fn zip() {
+    type Test<List,Other,Expected>=(
+        AssertEq<Zip<List,Other>,Expected>,
+        AssertPipedRet<List,ZipMt<Other>,Expected>,
+    );
+
+    type Test2<List,Other,Expected>=(
+        Test<List,Other,Expected>,
+        AssertEq<Zip<Other,List>,Map<Expected,ReverseOp>>,
+        AssertPipedRet<Other,ZipMt<List>,Map<Expected,ReverseOp>>,
+    );
+
+
+    let _:Test<tlist![], (),tlist![]>;
+    let _:Test<tlist![], (U0,),tlist![]>;
+    let _:Test<tlist![U0], (U1,),tlist![(U0, U1)]>;
+    let _:Test<tlist![U0, U1], (U2,U3),tlist![(U0,U2),(U1, U3)]>;
+    let _:Test<tlist![U0, U1, U2], (U3,U4,U5),tlist![(U0,U3), (U1,U4), (U2,U5)]>;
+
+    let _:Test2<tlist![], tlist!(),tlist![]>;
+    let _:Test2<tlist![], tlist!(U0,),tlist![]>;
+    let _:Test2<tlist![U0], tlist!(U1,),tlist![(U0, U1)]>;
+    let _:Test2<tlist![U0, U1], tlist!(U2,U3),tlist![(U0,U2),(U1, U3)]>;
+    let _:Test2<tlist![U0, U1, U2], tlist!(U3,U4,U5),tlist![(U0,U3), (U1,U4), (U2,U5)]>;
+
+    
+}
+
 
 #[test]
 fn push_back() {
@@ -604,6 +813,45 @@ fn find(){
     let _:TestFind<IterVal0,ConstEqMt<U13>, Some_<U13> >;
     let _:TestFind<IterVal0,ConstEqMt<U14>, Some_<U14> >;
 
+}
+
+
+#[test]
+fn position(){
+    type Test<Val,Func,LEqual,REqual>=(
+        AssertPipedRet<(Val,Func),PositionOp, LEqual >,
+        AssertPipedRet<Val,PositionMt<Func>, LEqual >,
+        AssertPipedRet<(Val,Func),RPositionOp, REqual >,
+        AssertPipedRet<Val,RPositionMt<Func>, REqual >,
+    );
+
+    let _:Test<IterVal0,IsOdd , Some_<U1> , Some_<U1> >;
+    let _:Test<IterVal0,IsEven, Some_<U0> , Some_<U0> >;
+    let _:Test<ValEven ,IsOdd , None_ , None_ >;
+    let _:Test<ValOdd  ,IsEven, None_ , None_ >;
+
+    let _:Test<IterVal0,ConstEqMt<U10>, Some_<U0> , Some_<U4> >;
+    let _:Test<IterVal0,ConstEqMt<U11>, Some_<U1> , Some_<U3> >;
+    let _:Test<IterVal0,ConstEqMt<U12>, Some_<U2> , Some_<U2> >;
+    let _:Test<IterVal0,ConstEqMt<U13>, Some_<U3> , Some_<U1> >;
+    let _:Test<IterVal0,ConstEqMt<U14>, Some_<U4> , Some_<U0> >;
+    let _:Test<IterVal0,ConstEqMt<U20>, None_ , None_ >;
+
+}
+
+
+#[test]
+fn find_map(){
+    type TestFind<Val,Func,Equal>=(
+        AssertPipedRet<(Val,Func),FindMapOp, Equal >,
+        AssertPipedRet<Val,FindMapMt<Func>, Equal >,
+    );
+    let _:TestFind<IterVal0,If<IsOdd ,(MulMt<U2>,NewSome),NewNone>, Some_<U22> >;
+    let _:TestFind<IterVal0,If<IsEven,(MulMt<U2>,NewSome),NewNone>, Some_<U20> >;
+    let _:TestFind<IterVal0,If<ConstEqMt<U13>,(MulMt<U2>,NewSome),NewNone>, Some_<U26> >;
+    let _:TestFind<IterVal0,If<ConstEqMt<U14>,(MulMt<U2>,NewSome),NewNone>, Some_<U28> >;
+    let _:TestFind<IterVal0,If<ConstEqMt<U15>,(MulMt<U2>,NewSome),NewNone>, None_ >;
+    let _:TestFind<IterVal0,NewNone, None_ >;
 }
 
 #[test]

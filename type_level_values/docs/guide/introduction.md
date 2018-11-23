@@ -47,7 +47,7 @@ pub enum Direction{
 
 To define such a type we use the MutConstValue macro
 
-Go to [attribute_const_constructor](../attribute_mut_const_value/index.html) for more details on 
+Go to [attribute_mut_const_value](../../attribute_mut_const_value/index.html) for more details on 
 the MutConstValue derive macro.
 
 This is an example example of a wrapper type 

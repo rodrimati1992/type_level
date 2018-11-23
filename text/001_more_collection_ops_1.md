@@ -60,43 +60,18 @@ Returns the collection after skipping the first `N` elements.
 
 Returns the collection of the first `N` elements.
 
-### Function:ScanL (Collection,impl TypeFn(State)->(State,TryFold<T,T>))->T
-
-Allows incrementally consuming the collection from the start,
-while keeping some internal state.
-Returning early when the function returns a TFBreak<Value>.
-Comment:Use TryFoldL_ in the implementation of the function.
-Comment:Use IntoInner to unwrap a TryFold value before returning from ScalL.
-
-### Function:ScanR (Collection,impl TypeFn(State)->(State,TryFold<T,T>))->T
-
-the same a ScalL,but starting from the end,
-Comment:Use TryFoldR_ in the implementation of the function.
-
-### Function:TryScanL (Collection,impl TypeFn(State)->(State,impl TryFold<T,E>))->TryFold<T,E>
-
-Allows incrementally consuming the collection from the start,
-with the possibility of returning early.
-
-Comment:Use TryFoldL_ in the implementation of the function.
-Comment:Necessary to implement stateful traits.
-
-### Function:TryScanR
-
-The same as TryScanL but starting from the end of the collection.
-
-Comment:Use TryFoldR_ in the implementation of the function.
-
 ### Function:Flatten
 
 Takes a doubly nested collection and flatten it to a single level of nesting.
 
-Comment:Use FoldR_ and PushFront_.
-Comment:Specialize the OptionType implementation,since it does not implement PushFront_.
-
 ### Function:Partition
 
 Splits the collection into 2 collections of the same ConstType ,
+using a predicate to determine which collection is goes to.
+
+### Function:PartitionAs
+
+Splits the collection into 2 collections of a ConstType (passed in as a parameter),
 using a predicate to determine which collection is goes to.
 
 ### Function:FindMap

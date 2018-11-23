@@ -494,24 +494,6 @@ where
     }
 }
 
-// /////////////////////////////////////////////////////////////////////////////////////
-
-// /// The ConstConstructor for a ConstWrapper.
-// pub struct ConstWrapperCC;
-
-// impl<T:?Sized> const_traits::GetConstParam_ for ConstWrapper<T> {
-//     type Const = T;
-// }
-// impl<T:?Sized> const_traits::GetConstConstructor_ for ConstWrapper<T> {
-//     type Constructor = ConstWrapperCC;
-// }
-
-// impl const_traits::ConstConstructor for ConstWrapperCC {}
-
-// impl<T:?Sized> const_traits::ApplyConstParam_<T> for ConstWrapperCC {
-//     type Applied = ConstWrapper<T>;
-// }
-
 /////////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(all(test,feature="passed_tests"))]

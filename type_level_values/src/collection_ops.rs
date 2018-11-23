@@ -15,10 +15,11 @@ use crate_::std_ops::*;
 use crate_::ops::{
     ConstFrom_,
     ConstInto_,ConstIntoOp,ConstIntoMt,
-    IntoInnerOp,IntoInner_,
+    IntoInnerOp,IntoInner_,UnwrapOrMt,UnwrapOp,
     If,
     AssertPipedRet,
     ConstLtOp,ConstLtMt,ConstEqMt,
+    Add1Op,SatSub1Op
 };
 use crate_::new_types::type_list;
 
@@ -199,6 +200,17 @@ declare_collection_op!{
 
 
 declare_collection_op!{
+    /// Creates a collection of  pairs of 
+    /// each element of This and Other,truncating to the smaller collection.
+    fn zip(This,Func)
+
+    type=Zip,
+    function=ZipOp,
+    methodlike=ZipMt,
+}
+
+
+declare_collection_op!{
     /// Processes the collection incrementally from the end,using the `Func` function,
     /// returning the last element if the collection only contains 1 element.
     fn reduce_r(This,Func)
@@ -206,6 +218,18 @@ declare_collection_op!{
     type=ReduceR,
     function=ReduceROp,
     methodlike=ReduceRMt,
+}
+
+
+declare_collection_op!{
+    /// Turns a nested collection of some ConstType into an unnested collection of 
+    /// the same ConstType.
+    fn flatten(This)
+
+    type=Flatten,
+    function=FlattenOp,
+    // This is here for consistency's sake
+    methodlike=FlattenMt,
 }
 
 
@@ -258,6 +282,31 @@ declare_collection_op!{
 
 
 declare_collection_op!{
+    /// Puts all the elements of the Other collection at the end of This.
+    fn append(This,Other)
+
+    type=Append,
+    function=AppendOp,
+    methodlike=AppendMt,
+}
+
+
+declare_collection_op!{
+    /// Transforms the elements of the collection using a function that returns 
+    /// `impl ConstInto_<TryFold>`,
+    /// filtering out the TFBreak<_> values and unwrapping the TFVal<_> values.
+    ///
+    /// 
+    ///
+    fn filter_map(This,Value)
+
+    type=FilterMap,
+    function=FilterMapOp,
+    methodlike=FilterMapMt,
+}
+
+
+declare_collection_op!{
     /// Returns the collection with the last/first element removed alongside that element.
     ///
     /// Returns Some_<(Element,CollectionWithoutValue)> if the collection is not empty,
@@ -267,6 +316,46 @@ declare_collection_op!{
     type=Pop,
     function=PopOp,
     methodlike=PopMt,
+}
+
+declare_collection_op!{
+    /// Returns the collection only containing the first N elements.
+    fn take(This,N)
+
+    type=Take,
+    function=TakeOp,
+    methodlike=TakeMt,
+}
+
+
+declare_collection_op!{
+    /// Returns the collection only containing the first elements 
+    /// which match the Pred predicate.
+    fn take_while(This,Pred)
+
+    type=TakeWhile,
+    function=TakeWhileOp,
+    methodlike=TakeWhileMt,
+}
+
+
+declare_collection_op!{
+    /// Returns the collection skipping the first N elements.
+    fn skip(This,N)
+
+    type=Skip,
+    function=SkipOp,
+    methodlike=SkipMt,
+}
+
+
+declare_collection_op!{
+    /// Returns the collection skipping the first elements matching the Pred predicate.
+    fn skip_while(This,Pred)
+
+    type=SkipWhile,
+    function=SkipWhileOp,
+    methodlike=SkipWhileMt,
 }
 
 
@@ -346,6 +435,34 @@ declare_collection_op!{
 
 
 declare_collection_op!{
+    /// Separates the elements of `This` into a pair of collections of the same ConstType
+    /// based on 
+    /// the return value of Pred,if it return False the element goes 
+    /// to the first,True goes to the second,
+    ///
+    fn partition(This,Pred)
+
+    type=Partition,
+    function=PartitionOp,
+    methodlike=PartitionMt,
+}
+
+
+declare_collection_op!{
+    /// Separates the elements of `This` into a pair of collections of the `Type` 
+    /// ConstType based on 
+    /// the return value of Pred,if it return False the element goes 
+    /// to the first,True goes to the second,
+    ///
+    fn partition_as(This,Type,Pred)
+
+    type=PartitionAs,
+    function=PartitionAsOp,
+    methodlike=PartitionAsMt,
+}
+
+
+declare_collection_op!{
     /**
     Searches for an element in the collection that satisfies a predicate.
 
@@ -359,6 +476,51 @@ declare_collection_op!{
     type=Find,
     function=FindOp,
     methodlike=FindMt,
+}
+
+
+declare_collection_op!{
+    /**
+    Returns the first position from the start at which the Pred predicate returns True.
+
+    Returns Some_<pos> if the Predicate returns True for some element,
+    None_ if it returns False for all elements.
+    */
+    fn position(This,Pred)
+
+    type=Position,
+    function=PositionOp,
+    methodlike=PositionMt,
+}
+
+declare_collection_op!{
+    /**
+    Returns the first position from the end at which the Pred predicate returns True.
+
+    Returns Some_<pos> if the Predicate returns True for some element,
+    None_ if it returns False for all elements.
+    */
+    fn r_position(This,Pred)
+
+    type=RPosition,
+    function=RPositionOp,
+    methodlike=RPositionMt,
+}
+
+
+
+declare_collection_op!{
+    /**
+    Searches for an element in the collection,found when Finder returns Some_<Element>
+
+    If Finder Some_<Elem> this returns early with that value,otherwise it keeps looking,
+    returning None_ if nothing is found.
+    */
+    fn find_map(This,Finder)
+
+    type=FindMap,
+    function=FindMapOp,
+    methodlike=FindMapMt,
 }
 
 
@@ -554,6 +716,22 @@ impl<T> IntoInner_ for TFBreak<T> {
     type Output=T;
 }
 
+
+///////////////////////////
+
+impl<T,Func> Map_<Func> for TFVal<T>
+where Func:TypeFn_<T>
+{
+    type Output=TFVal<Func::Output>;
+}
+
+impl<T,Func> Map_<Func> for TFBreak<T>{
+    type Output=TFBreak<T>;
+}
+
+///////////////////////////
+
+
 /** 
 Alias for converting a value to a TryFoldType.
 */
@@ -660,23 +838,21 @@ declare_collection_items!{
         repeat= Repeat_DefaultImpl<SelfType> ,
     ]
     methods=[
-        // append=  ,
-        // filter_map=  ,
-        // find_map=  ,
-        // flatten=  ,
-        // last=  ,
-        // partition=  ,
-        // position=  ,
-        // r_position=  ,
-        // scan_l=  ,
-        // scan_r=  ,
-        // skip=  ,
-        // skip_while=  ,
-        // take=  ,
-        // take_while=  ,
-        // try_scan_l=  ,
-        // try_scan_r=  ,
-        // zip=  ,
+        append= Append_DefaultImpl ,
+        filter_map=FilterMap_DefaultImpl  ,
+        find_map= FindMap_DefaultImpl ,
+        flatten= Flatten_DefaultImpl ,
+        first= First_DefaultImpl ,
+        last= Last_DefaultImpl ,
+        partition= Partition_DefaultImpl ,
+        partition_as= PartitionAs_DefaultImpl,
+        position=  Position_DefaultImpl,
+        r_position=  RPosition_DefaultImpl,
+        skip= Skip_DefaultImpl ,
+        skip_while= SkipWhile_DefaultImpl ,
+        take= Take_DefaultImpl ,
+        take_while= TakeWhile_DefaultImpl ,
+        zip= Zip_DefaultImpl ,
         all= All_DefaultImpl ,
         any= Any_DefaultImpl ,
         find= Find_DefaultImpl ,
@@ -691,6 +867,257 @@ declare_collection_items!{
 
 
 type_fn!{
+    pub fn Take_DefaultImpl[This,N](This,N)
+    where[
+        This:Collection<CollectEmpty=Empty>,
+        RepeatOp:TypeFn_<(type_list::TListType,(),N),Output=Taken>,
+        Taken:FoldL_<(This,Empty),Take_Helper0,Output=rev>,
+        (GetRhs,ReverseOp):TypeFn_<rev,Output=Out>
+    ]{
+        let Empty;let Taken;let rev;let Out;
+        Out
+    }
+}
+
+
+type_fn!{
+    fn Take_Helper0[This,OutList]((This,OutList),())
+    where[ ( PopFrontOp, Take_Helper1<This,OutList>):TypeFn_<This,Output=Out> ]
+    { let Out; Out }
+}
+
+type_fn!{
+    captures(This,OutList)
+    fn 
+        Take_Helper1[Elem,Rem](Some_<(Elem,Rem)>)
+        where[ OutList:PushFront_<Elem,Output=OutList1> ]
+        {
+            let OutList1;
+            (Rem,OutList1)
+        }
+
+        Take_Helper1(None_){
+            (This,OutList)
+        }
+}
+
+
+
+type_fn!{
+    pub fn Skip_DefaultImpl[This,N](This,N)
+    where[
+        This:Collection<CollectEmpty=Empty>,
+        RepeatOp:TypeFn_<(type_list::TListType,(),N),Output=Removed>,
+        Removed:FoldL_<
+            This,
+            (GetLhs,PopFrontOp,MapMt<GetRhs>,UnwrapOrMt<Empty>),
+            Output=Out
+        >,
+    ]{
+        let Empty;let Removed;let Out;
+        Out
+    }
+}
+
+
+
+
+type_fn!{
+    pub fn SkipWhile_DefaultImpl[This,Pred](This,Pred)
+    where[
+        (
+            TryFoldLMt<
+                This,
+                If<(GetRhs,Pred),
+                    (GetLhs,PopFrontOp,UnwrapOp,GetRhs,NewTFVal),
+                    (GetLhs,NewTFBreak),
+                > 
+            >,
+            IntoInnerOp,
+        ):TypeFn_<This,Output=Out>,
+    ]{
+        let Out;
+        Out
+    }
+}
+
+
+
+type_fn!{
+    pub fn TakeWhile_DefaultImpl[This,Pred](This,Pred)
+    where[
+        This:Collection<CollectEmpty=Empty>,
+        (
+            TryFoldLMt<
+                Empty,
+                If<(GetRhs,Pred),
+                    (PushFrontOp,NewTFVal),
+                    (GetLhs,NewTFBreak),
+                > 
+            >,
+            IntoInnerOp,
+            ReverseOp,
+        ):TypeFn_<This,Output=Out>,
+    ]{
+        let Empty;
+        let Out;
+        Out
+    }
+}
+
+
+
+type_fn!{
+    pub fn Position_DefaultImpl[This,Pred](This,Pred)
+    where[
+        (
+            TryFoldLMt< U0, If<(GetRhs,Pred),(GetLhs,NewTFBreak),(GetLhs,Add1Op,NewTFVal)> >,
+            BreakToSome,
+        ):TypeFn_< This, Output=Out >
+    ]{ let Out; Out }
+}
+
+type_fn!{
+    pub fn RPosition_DefaultImpl[This,Pred](This,Pred)
+    where[
+        (
+            TryFoldRMt< U0, If<(GetRhs,Pred),(GetLhs,NewTFBreak),(GetLhs,Add1Op,NewTFVal)> >,
+            BreakToSome,
+        ):TypeFn_< This, Output=Out >
+    ]{ let Out; Out }
+}
+
+type_fn!{
+    fn 
+        BreakToSome[v](TFBreak<v>){ Some_<v> }
+        BreakToSome[v](TFVal<v>){ None_ }
+}
+
+
+type_fn!{
+    pub fn Partition_DefaultImpl[This,Pred](This,Pred)
+    where[ PartitionAsOp:TypeFn_<(This,This,Pred),Output=Out>, ]
+    { let Out; Out }
+}
+
+
+type_fn!{
+    pub fn PartitionAs_DefaultImpl[This,Type,Pred](This,Type,Pred)
+    where[
+        Type:Collection<CollectEmpty=Empty>,
+        This:FoldR_<(Empty,Empty),Partition_helper<Pred>,Output=Out>
+    ]{
+        let Empty;
+        let Out;
+        Out
+    }
+}
+type_fn!{
+    captures(Pred)
+    fn Partition_helper[Pair,Elem](Pair,Elem)
+    where[
+        If<Pred,Const<U1>,Const<U0>>:TypeFn_<Elem,Output=Which>,
+        MapFieldOp:TypeFn_<(Pair,Which,PushFrontMt<Elem>),Output=Out>,
+    ]{
+        let Which;
+        let Out;
+        Out
+    }
+}
+
+
+
+type_fn!{
+    pub fn Zip_DefaultImpl[This,Other](This,Other)
+    where[
+        This:Collection<CollectEmpty=Empty>,
+        (
+            TryFoldLMt<(This,Empty),Zip_Helper0>,
+            IntoInnerOp,
+            GetRhs,
+            ReverseOp,
+        ):TypeFn_<Other,Output=Out>
+    ]{ let Empty;let Out; Out }
+}
+
+
+type_fn!{
+    fn Zip_Helper0[Reved,OutList,Elem1]((Reved,OutList),Elem1)
+    where[
+        (
+            PopFrontOp,
+            Zip_Helper1<Reved,OutList,Elem1>,
+        ):TypeFn_<Reved,Output=Out>
+    ]{
+        let Out;
+        Out
+    }
+}
+
+type_fn!{
+    captures(Reved,OutList,Elem1)
+    fn 
+        Zip_Helper1[Elem0,Rem](Some_<(Elem0,Rem)>)
+        where[ OutList:PushFront_<(Elem0,Elem1),Output=Out> ]
+        {
+            let Out;
+            TFVal<(Rem,Out)>
+        }
+
+        Zip_Helper1(None_){
+            TFBreak<(Reved,OutList)>
+        }
+
+}
+
+
+
+type_fn!{
+    pub fn First_DefaultImpl[This](This)
+    where[
+        (
+            PopFrontOp,
+            MapMt<GetLhs>,
+        ):TypeFn_<This,Output=Out>
+    ]{
+        let Out;
+        Out
+    }
+}
+
+
+type_fn!{
+    pub fn Last_DefaultImpl[This](This)
+    where[
+        (
+            PopBackOp,
+            MapMt<GetLhs>,
+        ):TypeFn_<This,Output=Out>
+    ]{
+        let Out;
+        Out
+    }
+}
+
+
+type_fn!{
+    pub fn Append_DefaultImpl[This,Other](This,Other)
+    where[
+        // Implemented like this because using PushBack on lists is O(n^2),
+        // and doing PushFront on Other is not guaranteed to return the same ConstType as This.
+        This:Collection<CollectEmpty=Empty>,
+        Other:FoldR_<Empty,PushFrontOp,Output=tmp0>,
+        This :FoldR_<tmp0 ,PushFrontOp,Output=Out>,
+    ]{ 
+        let Empty;
+        let tmp0;
+        let Out;
+        Out 
+    }
+}
+
+
+type_fn!{
     pub fn All_DefaultImpl[This,Pred](This,Pred)
     where[
         (
@@ -699,6 +1126,8 @@ type_fn!{
         ):TypeFn_< This, Output=Out >
     ]{ let Out; Out }
 }
+
+
 type_fn!{
     pub fn Any_DefaultImpl[This,Pred](This,Pred)
     where[
@@ -709,6 +1138,7 @@ type_fn!{
     ]{ let Out; Out }
 }
 
+
 type_fn!{
     pub fn Find_DefaultImpl[This,Pred](This,Pred)
     where[
@@ -718,6 +1148,74 @@ type_fn!{
         ):TypeFn_< This, Output=Out >
     ]{ let Out; Out }
 }
+
+
+type_fn!{
+    pub fn FindMap_DefaultImpl[This,Finder](This,Finder)
+    where[
+        (
+            TryFoldLMt< None_, (GetRhs,Finder,BreakIfSome) >,
+            IntoInnerOp
+        ):TypeFn_< This, Output=Out >
+    ]{ let Out; Out }
+}
+
+type_fn!{
+    fn 
+        BreakIfSome[v](Some_<v>){ TFBreak<Some_<v>> }
+        BreakIfSome(None_){ TFVal<None_> }
+}
+
+
+type_fn!{
+    pub fn FilterMap_DefaultImpl[This,Func](This,Func)
+    where[
+        This:Collection<CollectEmpty=Empty>,
+        This:FoldR_< 
+            Empty, 
+            MapRhs<PushFrontIfTFVal,(Func,IntoTryFold)> ,
+            Output=Out
+        >,
+    ]{ 
+        let Empty;
+        let Out; 
+        Out 
+    }
+}
+type_fn!{
+    fn 
+        PushFrontIfTFVal[Coll,Val](Coll,TFVal<Val>)
+        where[ Coll:PushFront_<Val,Output=Out> ]
+        { let Out;Out }
+
+        PushFrontIfTFVal[Coll,E](Coll,TFBreak<E>)
+        { Coll }
+}
+
+
+
+type_fn!{
+    pub fn Flatten_DefaultImpl[This](This)
+    where[
+        This:Collection<CollectEmpty=Empty>,
+        This:FoldR_<Empty,Flatten_Helper,Output=Out>,
+    ]{ 
+        let Empty;
+        let Out; 
+        Out 
+    }
+}
+
+
+type_fn!{
+    fn Flatten_Helper[Accum,Collection](Accum,Collection)
+    where[ Collection:FoldR_<Accum,PushFrontOp,Output=Out>, ]
+    {
+        let Out; 
+        Out 
+    }
+}
+
 
 
 type_fn!{
