@@ -8,17 +8,13 @@ To instantiate a ConstWrapper use either `Value::CW` or `value.to_cw()`.
 
 use prelude::*;
 
-use crate_::user_traits::const_traits;
-use crate_::discriminant::{
-    Discriminant,
-};
-use crate_::runtime_value::{
-    DerivedTraits,
-};
+use crate_::discriminant::Discriminant;
 use crate_::field_traits::{
     GetField, GetFieldRuntime, GetFieldRuntime_, GetField_, SetField, SetField_,
 };
 use crate_::initialization::InitializationValues;
+use crate_::runtime_value::DerivedTraits;
+use crate_::user_traits::const_traits;
 
 use std_types::cmp_ordering::OrderingTrait;
 
@@ -36,8 +32,7 @@ mod sealed {
 use self::sealed::Sealed;
 
 /// Creates a ConstWrapper from a type implementing WrapperTrait.
-pub type ConstWrapperFromTrait<ConstParam> =
-    ConstWrapper<UnwrapConst<ConstParam>>;
+pub type ConstWrapperFromTrait<ConstParam> = ConstWrapper<UnwrapConst<ConstParam>>;
 
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -50,22 +45,21 @@ impl ConstType for ConstWrapperType {}
 //////////////////////////////////////////////////////////////////////////////////////
 
 /// Trait used to access the type parameters of ConstWrapper in a generic context.
-pub trait WrapperTrait: Sealed + DerivedTraits<Type = ConstWrapperType>
-{
-    type ConstValue:?Sized;
+pub trait WrapperTrait: Sealed + DerivedTraits<Type = ConstWrapperType> {
+    type ConstValue: ?Sized;
 }
 
-impl<T:?Sized> WrapperTrait for ConstWrapper<T> {
+impl<T: ?Sized> WrapperTrait for ConstWrapper<T> {
     type ConstValue = T;
 }
 
-impl<T:?Sized> GetDiscriminant for ConstWrapper<T>{
-    type Discriminant=Discriminant<ConstWrapperType,ConstWrapperType, U0>;
-    type UIntDiscr=U0;
-    type Variant=ConstWrapperType;
+impl<T: ?Sized> GetDiscriminant for ConstWrapper<T> {
+    type Discriminant = Discriminant<ConstWrapperType, ConstWrapperType, U0>;
+    type UIntDiscr = U0;
+    type Variant = ConstWrapperType;
 }
 
-impl<T:?Sized> Sealed for ConstWrapper<T> {}
+impl<T: ?Sized> Sealed for ConstWrapper<T> {}
 
 /// Gets the `ConstValue` associated type from a WrapperTrait.
 pub type UnwrapConst<ConstWrapper> = <ConstWrapper as WrapperTrait>::ConstValue;
@@ -76,25 +70,23 @@ pub type UnwrapConst<ConstWrapper> = <ConstWrapper as WrapperTrait>::ConstValue;
 /// always implements standard library traits,
 /// delegating many trait (from type_level_values) impls to the wrapped ConstValue.
 ///
-pub struct ConstWrapper<Compiletime:?Sized>(
-    VariantPhantom<Compiletime>
-);
+pub struct ConstWrapper<Compiletime: ?Sized>(VariantPhantom<Compiletime>);
 
-unsafe impl<T:?Sized> MarkerType for ConstWrapper<T> {}
+unsafe impl<T: ?Sized> MarkerType for ConstWrapper<T> {}
 
-unsafe impl<Compiletime:?Sized> Send for ConstWrapper<Compiletime> {}
-unsafe impl<Compiletime:?Sized> Sync for ConstWrapper<Compiletime> {}
+unsafe impl<Compiletime: ?Sized> Send for ConstWrapper<Compiletime> {}
+unsafe impl<Compiletime: ?Sized> Sync for ConstWrapper<Compiletime> {}
 
-impl<T:?Sized> Default for ConstWrapper<T> {
+impl<T: ?Sized> Default for ConstWrapper<T> {
     #[inline(always)]
     fn default() -> Self {
         ConstWrapper(PhantomData)
     }
 }
 
-impl<T:?Sized> Copy for ConstWrapper<T> {}
+impl<T: ?Sized> Copy for ConstWrapper<T> {}
 
-impl<T:?Sized> Clone for ConstWrapper<T> {
+impl<T: ?Sized> Clone for ConstWrapper<T> {
     #[inline(always)]
     fn clone(&self) -> Self {
         *self
@@ -103,12 +95,11 @@ impl<T:?Sized> Clone for ConstWrapper<T> {
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-
 /// Used to wrap a type in a ConstWrapper.
 pub trait AsConstWrapper {
     /// Use this if you want to initialize a field of a ConstValue.
     const CW: ConstWrapper<Self> = ConstWrapper::NEW;
-    /// Use this if you want to construct a 
+    /// Use this if you want to construct a
     /// ConstWrapper<ConstValueParam> field on a struct deriving MutConstValue.
     const CW2: ConstWrapper<ConstWrapper<Self>> = ConstWrapper::NEW;
     const CW3: ConstWrapper<ConstWrapper<ConstWrapper<Self>>> = ConstWrapper::NEW;
@@ -120,25 +111,23 @@ pub trait AsConstWrapper {
     }
 }
 
-impl<This:?Sized> AsConstWrapper for This {}
-
+impl<This: ?Sized> AsConstWrapper for This {}
 
 type_fn!{
     /// Constructs a ConstWrapper<v> (on the type-level).
     pub fn NewConstWrapper[v:?Sized](v){ ConstWrapper<v> }
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////////
 
-impl<T:?Sized> fmt::Display for ConstWrapper<T> {
+impl<T: ?Sized> fmt::Display for ConstWrapper<T> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Display::fmt(&"ConstWrapper(T)", f)
     }
 }
 
-impl<T:?Sized> fmt::Debug for ConstWrapper<T> {
+impl<T: ?Sized> fmt::Debug for ConstWrapper<T> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Display::fmt(&"ConstWrapper(T)", f)
@@ -147,21 +136,21 @@ impl<T:?Sized> fmt::Debug for ConstWrapper<T> {
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-impl<T:?Sized> Eq for ConstWrapper<T> {}
+impl<T: ?Sized> Eq for ConstWrapper<T> {}
 
-impl<T:?Sized> PartialEq for ConstWrapper<T> {
+impl<T: ?Sized> PartialEq for ConstWrapper<T> {
     #[inline(always)]
     fn eq(&self, _: &Self) -> bool {
         true
     }
 }
-impl<T:?Sized> Ord for ConstWrapper<T> {
+impl<T: ?Sized> Ord for ConstWrapper<T> {
     #[inline(always)]
     fn cmp(&self, _: &Self) -> cmp::Ordering {
         cmp::Ordering::Equal
     }
 }
-impl<T:?Sized> PartialOrd for ConstWrapper<T> {
+impl<T: ?Sized> PartialOrd for ConstWrapper<T> {
     #[inline(always)]
     fn partial_cmp(&self, _: &Self) -> Option<cmp::Ordering> {
         Some(cmp::Ordering::Equal)
@@ -170,7 +159,7 @@ impl<T:?Sized> PartialOrd for ConstWrapper<T> {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-impl<T:?Sized> hash::Hash for ConstWrapper<T> {
+impl<T: ?Sized> hash::Hash for ConstWrapper<T> {
     fn hash<H: hash::Hasher>(&self, state: &mut H) {
         ().hash(state)
     }
@@ -181,15 +170,15 @@ mod serde_impl {
     use super::*;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-    impl<'de, T:?Sized> Deserialize<'de> for ConstWrapper<T> {
+    impl<'de, T: ?Sized> Deserialize<'de> for ConstWrapper<T> {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where
             D: Deserializer<'de>,
         {
-            <()>::deserialize(deserializer).map(|_| ConstWrapper::NEW )
+            <()>::deserialize(deserializer).map(|_| ConstWrapper::NEW)
         }
     }
-    impl<T:?Sized> Serialize for ConstWrapper<T> {
+    impl<T: ?Sized> Serialize for ConstWrapper<T> {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
@@ -205,14 +194,14 @@ impl<T> From<T> for ConstWrapper<T> {
         ConstWrapper::NEW
     }
 }
-impl<T:?Sized> Into<VariantPhantom<T>> for ConstWrapper<T> {
+impl<T: ?Sized> Into<VariantPhantom<T>> for ConstWrapper<T> {
     #[inline(always)]
     fn into(self) -> VariantPhantom<T> {
         PhantomData
     }
 }
 
-impl<T:?Sized, R> IntoRuntime<R> for ConstWrapper<T>
+impl<T: ?Sized, R> IntoRuntime<R> for ConstWrapper<T>
 where
     T: IntoRuntime<R>,
 {
@@ -222,33 +211,33 @@ where
     }
 }
 #[cfg(rust_1_22)]
-impl<T:?Sized, R> IntoConstant<R> for ConstWrapper<T>
+impl<T: ?Sized, R> IntoConstant<R> for ConstWrapper<T>
 where
     T: IntoConstant<R>,
 {
     const VALUE: R = T::VALUE;
 }
 
-impl<T:?Sized> InitializationValues for ConstWrapper<T>
-where T:InitializationValues
+impl<T: ?Sized> InitializationValues for ConstWrapper<T>
+where
+    T: InitializationValues,
 {
     type Uninitialized = ConstWrapper<T::Uninitialized>;
     type Initialized = ConstWrapper<T::Initialized>;
 }
 
-impl<T:?Sized> ConstWrapper<T> {
+impl<T: ?Sized> ConstWrapper<T> {
     pub const NEW: Self = MarkerType::MTVAL;
 
     #[inline(always)]
-    pub fn from_ty(_:VariantPhantom<T>)->Self{
-        Self::NEW
-    }
-    
-    #[inline(always)]
-    pub fn from_phantomdata(_:PhantomData<T>)->Self{
+    pub fn from_ty(_: VariantPhantom<T>) -> Self {
         Self::NEW
     }
 
+    #[inline(always)]
+    pub fn from_phantomdata(_: PhantomData<T>) -> Self {
+        Self::NEW
+    }
 
     #[inline(always)]
     pub fn get(self) -> T
@@ -292,9 +281,7 @@ impl<T:?Sized> ConstWrapper<T> {
 
     #[inline(always)]
     /// Sets the `Field` field with the `Value` value.
-    pub fn set_field_val<Field, Value>(
-        self, _: Field, _: Value
-    ) -> SetField<Self, Field, Value>
+    pub fn set_field_val<Field, Value>(self, _: Field, _: Value) -> SetField<Self, Field, Value>
     where
         T: SetField_<Field, Value>,
         SetField<Self, Field, Value>: WrapperTrait,
@@ -304,7 +291,7 @@ impl<T:?Sized> ConstWrapper<T> {
 
     #[inline(always)]
     /// Changes the ConstValue being wrapped.
-    pub fn set<T2:?Sized>(self) -> ConstWrapper<T2> {
+    pub fn set<T2: ?Sized>(self) -> ConstWrapper<T2> {
         ConstWrapper::NEW
     }
 
@@ -395,28 +382,28 @@ impl_map_methods!{
     map_all   (map    constraint=[CallInto<T,Returns=T2>])
 }
 
-impl<T:?Sized> ConstTypeOf_ for ConstWrapper<T> {
+impl<T: ?Sized> ConstTypeOf_ for ConstWrapper<T> {
     type Type = ConstWrapperType;
 }
-impl<T:?Sized> IntoConstType_ for ConstWrapper<T> {
+impl<T: ?Sized> IntoConstType_ for ConstWrapper<T> {
     type ToConst = ConstWrapperType;
 }
 
-impl<T:?Sized, Field> GetField_<Field> for ConstWrapper<T>
+impl<T: ?Sized, Field> GetField_<Field> for ConstWrapper<T>
 where
     T: GetField_<Field>,
 {
     type Output = T::Output;
 }
 
-impl<T:?Sized, Runtime, Field> GetFieldRuntime_<Field, Runtime> for ConstWrapper<T>
+impl<T: ?Sized, Runtime, Field> GetFieldRuntime_<Field, Runtime> for ConstWrapper<T>
 where
     T: GetFieldRuntime_<Field, Runtime>,
 {
     type Runtime = T::Runtime;
 }
 
-impl<T:?Sized, Field, Value> SetField_<Field, Value> for ConstWrapper<T>
+impl<T: ?Sized, Field, Value> SetField_<Field, Value> for ConstWrapper<T>
 where
     T: SetField_<Field, Value>,
 {
@@ -425,7 +412,7 @@ where
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-impl<T:?Sized, Params> TypeFn_<Params> for ConstWrapper<T>
+impl<T: ?Sized, Params> TypeFn_<Params> for ConstWrapper<T>
 where
     T: TypeFn_<Params>,
 {
@@ -467,10 +454,9 @@ where
     }
 }
 
-
 /////////////////////////////////////////////////////////////////////////////////////
 
-impl<T:?Sized> Deref for ConstWrapper<T>
+impl<T: ?Sized> Deref for ConstWrapper<T>
 where
     T: MarkerType,
 {
@@ -482,7 +468,7 @@ where
     }
 }
 
-impl<T:?Sized, Field> Index<Field> for ConstWrapper<T>
+impl<T: ?Sized, Field> Index<Field> for ConstWrapper<T>
 where
     T: GetField_<Field>,
 {
@@ -496,5 +482,5 @@ where
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-#[cfg(all(test,feature="passed_tests"))]
+#[cfg(all(test, feature = "passed_tests"))]
 mod tests;

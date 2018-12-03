@@ -2,7 +2,6 @@
 Operations for collection types,including TypeList,tuples,Option,Result.
 */
 
-
 use std_::ops::Sub;
 
 use prelude::*;
@@ -11,29 +10,22 @@ use crate_::field_traits::{
     GetField, GetFieldOp, MapField, MapFieldOp, MapIntoField, MapIntoFieldOp, SetField,
 };
 use crate_::fn_adaptors::*;
-use crate_::std_ops::*;
-use crate_::ops::{
-    ConstFrom_,
-    ConstInto_,ConstIntoOp,ConstIntoMt,
-    IntoInnerOp,IntoInner_,UnwrapOrMt,UnwrapOp,
-    If,
-    AssertPipedRet,
-    ConstLtOp,ConstLtMt,ConstEqMt,
-    Add1Op,SatSub1Op
-};
 use crate_::new_types::type_list;
+use crate_::ops::{
+    Add1Op, AssertPipedRet, ConstEqMt, ConstFrom_, ConstIntoMt, ConstIntoOp, ConstInto_, ConstLtMt,
+    ConstLtOp, If, IntoInnerOp, IntoInner_, SatSub1Op, UnwrapOp, UnwrapOrMt,
+};
+use crate_::std_ops::*;
 
-
-
-/// 
+///
 /// `static=true` means that we don't pass the $this parameter to the $method when calling it.
 macro_rules! declare_collection_op {
-    ( 
+    (
         $(static=$is_static:ident,)*
-        
+
         $( #[$all_meta:meta] )*
         fn $method:ident ( $this:ident $(,$param:ident)* )
-        
+
         $( #[$type_meta:meta] )*
         type=$type_ident:ident,
 
@@ -51,10 +43,10 @@ macro_rules! declare_collection_op {
                     <
                         $this as $crate::collection_ops::Collection
                     >::Items as CollectionItemsTrait
-                >::$method , 
-                declare_collection_op!(inner_method_params; 
-                    [$(static=$is_static)*] 
-                    $this 
+                >::$method ,
+                declare_collection_op!(inner_method_params;
+                    [$(static=$is_static)*]
+                    $this
                     $(,$param)*
                 )
             >;
@@ -67,9 +59,9 @@ macro_rules! declare_collection_op {
                 $this:$crate::collection_ops::Collection<Items= Methods >,
                 Methods:CollectionItemsTrait,
                 Methods::$method:TypeFn_<
-                    declare_collection_op!(inner_method_params; 
-                        [$(static=$is_static)*] 
-                        $this 
+                    declare_collection_op!(inner_method_params;
+                        [$(static=$is_static)*]
+                        $this
                         $(,$param)*
                     ),
                     Output=Out
@@ -90,9 +82,9 @@ macro_rules! declare_collection_op {
                 $this:$crate::collection_ops::Collection<Items= Methods >,
                 Methods:CollectionItemsTrait,
                 Methods::$method:TypeFn_<
-                    declare_collection_op!(inner_method_params; 
-                        [$(static=$is_static)*] 
-                        $this 
+                    declare_collection_op!(inner_method_params;
+                        [$(static=$is_static)*]
+                        $this
                         $(,$param)*
                     ),
                     Output=Out
@@ -140,8 +132,8 @@ impl Collection for TListType{
 ```
 
 */
-pub trait Collection{
-    /// The collection this collects into by default in every operation that 
+pub trait Collection {
+    /// The collection this collects into by default in every operation that
     /// creates a new collection.
     ///
     /// This is the same for most ConstTypes with the notable exception of Range*Type.
@@ -150,19 +142,19 @@ pub trait Collection{
     /// The associated items of a collection,
     ///
     /// Some of the associated functions in `Self::Items`
-    /// may require some of the traits in this module to be implemented in 
-    /// their default implementation 
+    /// may require some of the traits in this module to be implemented in
+    /// their default implementation
     /// [defined in DefaultCollectionItems](./type.DefaultCollectionItems.html).
-    type Items:CollectionItemsTrait;
+    type Items: CollectionItemsTrait;
 }
 
-impl<This,Type> Collection for This
+impl<This, Type> Collection for This
 where
-    This:ConstValue<Type=Type>,
-    Type:ConstType+Collection,
+    This: ConstValue<Type = Type>,
+    Type: ConstType + Collection,
 {
-    type CollectEmpty=Type::CollectEmpty;
-    type Items=Type::Items;
+    type CollectEmpty = Type::CollectEmpty;
+    type Items = Type::Items;
 }
 
 type_fn!{define_trait
@@ -187,7 +179,6 @@ type_fn!{define_trait
     method_like=FoldRMt
 }
 
-
 declare_collection_op!{
     /// Processes the collection incrementally from the start,using the `Func` function,
     /// returning the first element if the collection only contains 1 element.
@@ -198,9 +189,8 @@ declare_collection_op!{
     methodlike=ReduceLMt,
 }
 
-
 declare_collection_op!{
-    /// Creates a collection of  pairs of 
+    /// Creates a collection of  pairs of
     /// each element of This and Other,truncating to the smaller collection.
     fn zip(This,Func)
 
@@ -208,7 +198,6 @@ declare_collection_op!{
     function=ZipOp,
     methodlike=ZipMt,
 }
-
 
 declare_collection_op!{
     /// Processes the collection incrementally from the end,using the `Func` function,
@@ -220,9 +209,8 @@ declare_collection_op!{
     methodlike=ReduceRMt,
 }
 
-
 declare_collection_op!{
-    /// Turns a nested collection of some ConstType into an unnested collection of 
+    /// Turns a nested collection of some ConstType into an unnested collection of
     /// the same ConstType.
     fn flatten(This)
 
@@ -232,7 +220,6 @@ declare_collection_op!{
     methodlike=FlattenMt,
 }
 
-
 type_fn!{define_trait
     /// Transforms the elements of the collection with the `Func` function.
     trait=Map_ [Func]
@@ -241,9 +228,8 @@ type_fn!{define_trait
     method_like=MapMt
 }
 
-
 type_fn!{define_trait
-    /// Returns the collection in which all the elements that 
+    /// Returns the collection in which all the elements that
     /// do not satisfy the `Predicate` are removed.
     trait=Filter_ [Predicate]
     type=Filter
@@ -271,7 +257,7 @@ declare_collection_op!{
     /// Returns the collection with the value added at one end.
     ///
     /// Push followed by Pop must return the pushed value and
-    /// the collection as it was before pushing 
+    /// the collection as it was before pushing
     /// (this property does not have apply recursively for any collection,eg:a ring buffer).
     fn push(This,Value)
 
@@ -279,7 +265,6 @@ declare_collection_op!{
     function=PushOp,
     methodlike=PushMt,
 }
-
 
 declare_collection_op!{
     /// Puts all the elements of the Other collection at the end of This.
@@ -290,13 +275,12 @@ declare_collection_op!{
     methodlike=AppendMt,
 }
 
-
 declare_collection_op!{
-    /// Transforms the elements of the collection using a function that returns 
+    /// Transforms the elements of the collection using a function that returns
     /// `impl ConstInto_<TryFold>`,
     /// filtering out the TFBreak<_> values and unwrapping the TFVal<_> values.
     ///
-    /// 
+    ///
     ///
     fn filter_map(This,Value)
 
@@ -304,7 +288,6 @@ declare_collection_op!{
     function=FilterMapOp,
     methodlike=FilterMapMt,
 }
-
 
 declare_collection_op!{
     /// Returns the collection with the last/first element removed alongside that element.
@@ -327,9 +310,8 @@ declare_collection_op!{
     methodlike=TakeMt,
 }
 
-
 declare_collection_op!{
-    /// Returns the collection only containing the first elements 
+    /// Returns the collection only containing the first elements
     /// which match the Pred predicate.
     fn take_while(This,Pred)
 
@@ -337,7 +319,6 @@ declare_collection_op!{
     function=TakeWhileOp,
     methodlike=TakeWhileMt,
 }
-
 
 declare_collection_op!{
     /// Returns the collection skipping the first N elements.
@@ -348,7 +329,6 @@ declare_collection_op!{
     methodlike=SkipMt,
 }
 
-
 declare_collection_op!{
     /// Returns the collection skipping the first elements matching the Pred predicate.
     fn skip_while(This,Pred)
@@ -357,7 +337,6 @@ declare_collection_op!{
     function=SkipWhileOp,
     methodlike=SkipWhileMt,
 }
-
 
 type_fn!{define_trait
     /// Returns the collection with the value added after the last element.
@@ -410,10 +389,9 @@ type_fn!{define_trait
     fn_type=LenOp
 }
 
-
 declare_collection_op!{
     static=true,
-    /// Creates a value of the ConstType associated with the function 
+    /// Creates a value of the ConstType associated with the function
     /// by repeating  `Value` `Repeated` times
     ///
     fn repeat(Type,Value,Repeated)
@@ -433,11 +411,10 @@ declare_collection_op!{
     methodlike=ReverseMt,
 }
 
-
 declare_collection_op!{
     /// Separates the elements of `This` into a pair of collections of the same ConstType
-    /// based on 
-    /// the return value of Pred,if it return False the element goes 
+    /// based on
+    /// the return value of Pred,if it return False the element goes
     /// to the first,True goes to the second,
     ///
     fn partition(This,Pred)
@@ -447,11 +424,10 @@ declare_collection_op!{
     methodlike=PartitionMt,
 }
 
-
 declare_collection_op!{
-    /// Separates the elements of `This` into a pair of collections of the `Type` 
-    /// ConstType based on 
-    /// the return value of Pred,if it return False the element goes 
+    /// Separates the elements of `This` into a pair of collections of the `Type`
+    /// ConstType based on
+    /// the return value of Pred,if it return False the element goes
     /// to the first,True goes to the second,
     ///
     fn partition_as(This,Type,Pred)
@@ -461,14 +437,13 @@ declare_collection_op!{
     methodlike=PartitionAsMt,
 }
 
-
 declare_collection_op!{
     /**
     Searches for an element in the collection that satisfies a predicate.
 
     FindOp takes a collection `This`,and the predicate `Pred`.
 
-    If the predicate returns true for any element 
+    If the predicate returns true for any element
     then this function return Some_<TheElement>,otherwise it returns Nnoe_
     */
     fn find(This,Pred)
@@ -477,7 +452,6 @@ declare_collection_op!{
     function=FindOp,
     methodlike=FindMt,
 }
-
 
 declare_collection_op!{
     /**
@@ -507,8 +481,6 @@ declare_collection_op!{
     methodlike=RPositionMt,
 }
 
-
-
 declare_collection_op!{
     /**
     Searches for an element in the collection,found when Finder returns Some_<Element>
@@ -523,15 +495,13 @@ declare_collection_op!{
     methodlike=FindMapMt,
 }
 
-
-
 declare_collection_op!{
     /**
     Tests whether a predicate is true for all elements of a collection.
 
     This function takes a collection `This`,and the predicate `Pred`.
 
-    If the predicate returns True for all element 
+    If the predicate returns True for all element
     then this function return True,otherwise it returns False
 
     */
@@ -542,15 +512,13 @@ declare_collection_op!{
     methodlike=AllMt,
 }
 
-
-
 declare_collection_op!{
     /**
     Tests whether a predicate is true for any elements of a collection.
-    
+
     This function takes a collection `This`,and the predicate `Pred`.
-    
-    If the predicate returns True for any element 
+
+    If the predicate returns True for any element
     then this function return True,otherwise it returns False
     */
     fn any(This,Pred)
@@ -560,16 +528,14 @@ declare_collection_op!{
     methodlike=AnyMt,
 }
 
-
 /////////////////////////////////////////////////////////////////////////////////////////
 
-
 type_fn!{define_trait
-    /** 
+    /**
     Processes the collection incrementally from the start,
     starting with Defaultval and the first element,
     returning early when Func returns a value that converts to TFBreak like Err\_<\_>/None\_,
-    
+
     If the collection is empty it must return TFVal<DefaultVal>.
 
     # Example
@@ -585,7 +551,7 @@ type_fn!{define_trait
 
     fn main(){
         struct NotAnInteger;
-        
+
         let _:AssertEq<
             TryFoldL<tlist![ U1 ],U6,SafeSubOp>,
             TFVal<U5>
@@ -606,7 +572,7 @@ type_fn!{define_trait
             TryFoldL<tlist![ U1,U2,U3,U1,NotAnInteger ],U6,SafeSubOp>,
             TFBreak<None_>
         >;
-        
+
 
     }
 
@@ -621,11 +587,11 @@ type_fn!{define_trait
 }
 
 type_fn!{define_trait
-    /** 
+    /**
     Processes the collection incrementally from the end,
     starting with Defaultval and the last element,
     returning early when Func returns a value that converts to TFBreak like Err\_<\_>/None\_,
-    
+
     If the collection is empty it must return TFVal<DefaultVal>.
 
     # Example
@@ -640,7 +606,7 @@ type_fn!{define_trait
     use type_level_values::collection_ops::*;
 
     fn main(){
-            
+
         struct NotAnInteger;
 
         let _:AssertEq<
@@ -664,7 +630,7 @@ type_fn!{define_trait
             TFBreak<None_>
         >;
 
-        
+
 
     }
 
@@ -677,26 +643,29 @@ type_fn!{define_trait
     method_like=TryFoldRMt
 }
 
-
 #[derive(TypeLevel)]
 #[typelevel(reexport(Variants))]
 #[typelevel(items(runtime_conv(NoImpls)))]
-pub enum TryFold<T,B>{
-    #[typelevel(doc="\
+pub enum TryFold<T, B> {
+    #[typelevel(
+        doc = "\
 Represents a value.
 
 This is mainly used in TryFold{L,R},and anything that uses TryFold.
 
 This can be converted to/from OptionType/ResultType
-    ")]
+    "
+    )]
     TFVal(T),
-    #[typelevel(doc="\
+    #[typelevel(
+        doc = "\
 Represents the intent to break out of the iteration operation.
 
 This is mainly used in TryFold{L,R},and anything that uses TryFold.
 
 This can be converted to/from OptionType/ResultType
-    ")]
+    "
+    )]
     TFBreak(B),
 }
 
@@ -710,33 +679,31 @@ type_fn!{
 }
 
 impl<T> IntoInner_ for TFVal<T> {
-    type Output=T;
+    type Output = T;
 }
 impl<T> IntoInner_ for TFBreak<T> {
-    type Output=T;
+    type Output = T;
 }
-
 
 ///////////////////////////
 
-impl<T,Func> Map_<Func> for TFVal<T>
-where Func:TypeFn_<T>
+impl<T, Func> Map_<Func> for TFVal<T>
+where
+    Func: TypeFn_<T>,
 {
-    type Output=TFVal<Func::Output>;
+    type Output = TFVal<Func::Output>;
 }
 
-impl<T,Func> Map_<Func> for TFBreak<T>{
-    type Output=TFBreak<T>;
+impl<T, Func> Map_<Func> for TFBreak<T> {
+    type Output = TFBreak<T>;
 }
 
 ///////////////////////////
-
 
 /** 
 Alias for converting a value to a TryFoldType.
 */
-pub type IntoTryFold=ConstIntoMt<TryFoldType>;
-
+pub type IntoTryFold = ConstIntoMt<TryFoldType>;
 
 macro_rules! define_tryfold_conv {
     ( generics[$($generic:tt)*] $from:ty : $from_consttype:ty => $try_flow:ty ) => (
@@ -755,9 +722,7 @@ define_tryfold_conv!{ generics[T] Err_<T>:ResultType => TFBreak<Err_<T>> }
 define_tryfold_conv!{ generics[T] Some_<T>:OptionType => TFVal<T> }
 define_tryfold_conv!{ generics[]  None_   :OptionType => TFBreak<None_> }
 
-
 /////////////////////////////////////////////////////////////////////////////////////////
-
 
 macro_rules! declare_collection_items {
     (
@@ -807,7 +772,7 @@ macro_rules! declare_collection_items {
         //     $( collfns_f::$assoc, )*
         // );
 
-        /// The accessors for the associated functions (not taking a 
+        /// The accessors for the associated functions (not taking a
         /// Self parameter) in CollectionItems.
         pub type CollectionAssocFns=tlist!(
             $( collfns_f::$static_fn, )*
@@ -864,8 +829,6 @@ declare_collection_items!{
     ]
 }
 
-
-
 type_fn!{
     pub fn Take_DefaultImpl[This,N](This,N)
     where[
@@ -879,7 +842,6 @@ type_fn!{
     }
 }
 
-
 type_fn!{
     fn Take_Helper0[This,OutList]((This,OutList),())
     where[ ( PopFrontOp, Take_Helper1<This,OutList>):TypeFn_<This,Output=Out> ]
@@ -888,7 +850,7 @@ type_fn!{
 
 type_fn!{
     captures(This,OutList)
-    fn 
+    fn
         Take_Helper1[Elem,Rem](Some_<(Elem,Rem)>)
         where[ OutList:PushFront_<Elem,Output=OutList1> ]
         {
@@ -900,8 +862,6 @@ type_fn!{
             (This,OutList)
         }
 }
-
-
 
 type_fn!{
     pub fn Skip_DefaultImpl[This,N](This,N)
@@ -919,9 +879,6 @@ type_fn!{
     }
 }
 
-
-
-
 type_fn!{
     pub fn SkipWhile_DefaultImpl[This,Pred](This,Pred)
     where[
@@ -931,7 +888,7 @@ type_fn!{
                 If<(GetRhs,Pred),
                     (GetLhs,PopFrontOp,UnwrapOp,GetRhs,NewTFVal),
                     (GetLhs,NewTFBreak),
-                > 
+                >
             >,
             IntoInnerOp,
         ):TypeFn_<This,Output=Out>,
@@ -940,8 +897,6 @@ type_fn!{
         Out
     }
 }
-
-
 
 type_fn!{
     pub fn TakeWhile_DefaultImpl[This,Pred](This,Pred)
@@ -953,7 +908,7 @@ type_fn!{
                 If<(GetRhs,Pred),
                     (PushFrontOp,NewTFVal),
                     (GetLhs,NewTFBreak),
-                > 
+                >
             >,
             IntoInnerOp,
             ReverseOp,
@@ -964,8 +919,6 @@ type_fn!{
         Out
     }
 }
-
-
 
 type_fn!{
     pub fn Position_DefaultImpl[This,Pred](This,Pred)
@@ -988,18 +941,16 @@ type_fn!{
 }
 
 type_fn!{
-    fn 
+    fn
         BreakToSome[v](TFBreak<v>){ Some_<v> }
         BreakToSome[v](TFVal<v>){ None_ }
 }
-
 
 type_fn!{
     pub fn Partition_DefaultImpl[This,Pred](This,Pred)
     where[ PartitionAsOp:TypeFn_<(This,This,Pred),Output=Out>, ]
     { let Out; Out }
 }
-
 
 type_fn!{
     pub fn PartitionAs_DefaultImpl[This,Type,Pred](This,Type,Pred)
@@ -1025,8 +976,6 @@ type_fn!{
     }
 }
 
-
-
 type_fn!{
     pub fn Zip_DefaultImpl[This,Other](This,Other)
     where[
@@ -1039,7 +988,6 @@ type_fn!{
         ):TypeFn_<Other,Output=Out>
     ]{ let Empty;let Out; Out }
 }
-
 
 type_fn!{
     fn Zip_Helper0[Reved,OutList,Elem1]((Reved,OutList),Elem1)
@@ -1056,7 +1004,7 @@ type_fn!{
 
 type_fn!{
     captures(Reved,OutList,Elem1)
-    fn 
+    fn
         Zip_Helper1[Elem0,Rem](Some_<(Elem0,Rem)>)
         where[ OutList:PushFront_<(Elem0,Elem1),Output=Out> ]
         {
@@ -1069,8 +1017,6 @@ type_fn!{
         }
 
 }
-
-
 
 type_fn!{
     pub fn First_DefaultImpl[This](This)
@@ -1085,7 +1031,6 @@ type_fn!{
     }
 }
 
-
 type_fn!{
     pub fn Last_DefaultImpl[This](This)
     where[
@@ -1099,7 +1044,6 @@ type_fn!{
     }
 }
 
-
 type_fn!{
     pub fn Append_DefaultImpl[This,Other](This,Other)
     where[
@@ -1108,14 +1052,13 @@ type_fn!{
         This:Collection<CollectEmpty=Empty>,
         Other:FoldR_<Empty,PushFrontOp,Output=tmp0>,
         This :FoldR_<tmp0 ,PushFrontOp,Output=Out>,
-    ]{ 
+    ]{
         let Empty;
         let tmp0;
         let Out;
-        Out 
+        Out
     }
 }
-
 
 type_fn!{
     pub fn All_DefaultImpl[This,Pred](This,Pred)
@@ -1127,7 +1070,6 @@ type_fn!{
     ]{ let Out; Out }
 }
 
-
 type_fn!{
     pub fn Any_DefaultImpl[This,Pred](This,Pred)
     where[
@@ -1138,7 +1080,6 @@ type_fn!{
     ]{ let Out; Out }
 }
 
-
 type_fn!{
     pub fn Find_DefaultImpl[This,Pred](This,Pred)
     where[
@@ -1148,7 +1089,6 @@ type_fn!{
         ):TypeFn_< This, Output=Out >
     ]{ let Out; Out }
 }
-
 
 type_fn!{
     pub fn FindMap_DefaultImpl[This,Finder](This,Finder)
@@ -1161,29 +1101,28 @@ type_fn!{
 }
 
 type_fn!{
-    fn 
+    fn
         BreakIfSome[v](Some_<v>){ TFBreak<Some_<v>> }
         BreakIfSome(None_){ TFVal<None_> }
 }
-
 
 type_fn!{
     pub fn FilterMap_DefaultImpl[This,Func](This,Func)
     where[
         This:Collection<CollectEmpty=Empty>,
-        This:FoldR_< 
-            Empty, 
+        This:FoldR_<
+            Empty,
             MapRhs<PushFrontIfTFVal,(Func,IntoTryFold)> ,
             Output=Out
         >,
-    ]{ 
+    ]{
         let Empty;
-        let Out; 
-        Out 
+        let Out;
+        Out
     }
 }
 type_fn!{
-    fn 
+    fn
         PushFrontIfTFVal[Coll,Val](Coll,TFVal<Val>)
         where[ Coll:PushFront_<Val,Output=Out> ]
         { let Out;Out }
@@ -1192,31 +1131,26 @@ type_fn!{
         { Coll }
 }
 
-
-
 type_fn!{
     pub fn Flatten_DefaultImpl[This](This)
     where[
         This:Collection<CollectEmpty=Empty>,
         This:FoldR_<Empty,Flatten_Helper,Output=Out>,
-    ]{ 
+    ]{
         let Empty;
-        let Out; 
-        Out 
+        let Out;
+        Out
     }
 }
-
 
 type_fn!{
     fn Flatten_Helper[Accum,Collection](Accum,Collection)
     where[ Collection:FoldR_<Accum,PushFrontOp,Output=Out>, ]
     {
-        let Out; 
-        Out 
+        let Out;
+        Out
     }
 }
-
-
 
 type_fn!{
     pub fn Pop_DefaultImpl[This](This)
@@ -1230,7 +1164,6 @@ type_fn!{
     { let Out;Out }
 }
 
-
 type_fn!{
     pub fn Push_DefaultImpl[This,Val](This,Val)
     where[ This:PushFront_<Val,Output=Out> ]
@@ -1242,7 +1175,6 @@ type_fn!{
     where[ This:PushBack_<Val,Output=Out> ]
     { let Out;Out }
 }
-
 
 type_fn!{
     pub fn Reverse_DefaultImpl[This](This)
@@ -1266,7 +1198,6 @@ type_fn!{
     }
 }
 
-
 type_fn!{
     pub fn ReduceR_DefaultImpl[This,Op](This,Op)
     where[
@@ -1277,7 +1208,6 @@ type_fn!{
         Out
     }
 }
-
 
 type_fn!{
     captures(Type)
@@ -1292,5 +1222,3 @@ type_fn!{
         Out
     }
 }
-
-

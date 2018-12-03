@@ -8,7 +8,4 @@ format!("{:?}",ConstTupledNoImpls::<U10,U20>::MTVAL);
 */
 #[derive(TypeLevel)]
 #[typelevel(reexport(Variants))]
-pub struct TupledNoImpls(
-    pub u32,
-    pub u32,
-);
+pub struct TupledNoImpls(pub u32, pub u32);

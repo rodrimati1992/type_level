@@ -1,6 +1,6 @@
 use crate_::extern_types::typenum::{BitType, SignedInteger, UnsignedInteger};
-use crate_::prelude::*;
 use crate_::ops::AssertEq;
+use crate_::prelude::*;
 
 use core_extensions::type_level_bool::{Boolean, BooleanType, False, True};
 
@@ -31,7 +31,7 @@ where
     type Output = S::Output;
 }
 
-type_fn!{use_trait 
+type_fn!{use_trait
     /// Converts `From` to a value of the `Self` ConstType
     trait=ConstFrom_ [From_]
     /// Converts `From` to a value of the `Self` ConstType
@@ -40,7 +40,7 @@ type_fn!{use_trait
     fn_type=ConstFromOp
 }
 
-type_fn!{use_trait 
+type_fn!{use_trait
     /// Converts `Self` to a value of the `IntoConstType` ConstType
     trait=ConstInto_ [IntoConstType]
     /// Converts `Self` to a value of the `IntoConstType` ConstType
@@ -91,13 +91,12 @@ mod boolean_impls {
 }
 
 // #[cfg(test)]
-#[cfg(all(test,feature="passed_tests"))]
+#[cfg(all(test, feature = "passed_tests"))]
 mod tests {
     use super::*;
 
     #[test]
     fn identity_conversion() {
-
         macro_rules! check_identity_conv {
             ( $($type_:ty),*  $(,)* ) => (
                 $(
@@ -120,7 +119,7 @@ mod tests {
             ConstRange<U1,U4>,
             ConstRange<U6,U10000>,
         }
-        
+
         #[cfg(rust_1_26)]
         {
             check_identity_conv!{
@@ -131,29 +130,22 @@ mod tests {
         }
     }
 
-
     #[test]
-    fn typenum_integer_convs(){
-        type Test<L,Type,Expected>=
-            AssertEq<
-                ConstInto<L,Type>,
-                Expected
-            >;
+    fn typenum_integer_convs() {
+        type Test<L, Type, Expected> = AssertEq<ConstInto<L, Type>, Expected>;
 
-        let _:Test< U0,SignedInteger,Z0 >;
-        let _:Test< U1,SignedInteger,P1 >;
-        let _:Test< U2,SignedInteger,P2 >;
-        let _:Test< U3,SignedInteger,P3 >;
-        let _:Test< U4,SignedInteger,P4 >;
-        let _:Test< U5,SignedInteger,P5 >;
+        let _: Test<U0, SignedInteger, Z0>;
+        let _: Test<U1, SignedInteger, P1>;
+        let _: Test<U2, SignedInteger, P2>;
+        let _: Test<U3, SignedInteger, P3>;
+        let _: Test<U4, SignedInteger, P4>;
+        let _: Test<U5, SignedInteger, P5>;
 
-        let _:Test< Z0,UnsignedInteger,U0 >;
-        let _:Test< P1,UnsignedInteger,U1 >;
-        let _:Test< P2,UnsignedInteger,U2 >;
-        let _:Test< P3,UnsignedInteger,U3 >;
-        let _:Test< P4,UnsignedInteger,U4 >;
-        let _:Test< P5,UnsignedInteger,U5 >;
-
-
+        let _: Test<Z0, UnsignedInteger, U0>;
+        let _: Test<P1, UnsignedInteger, U1>;
+        let _: Test<P2, UnsignedInteger, U2>;
+        let _: Test<P3, UnsignedInteger, U3>;
+        let _: Test<P4, UnsignedInteger, U4>;
+        let _: Test<P5, UnsignedInteger, U5>;
     }
 }

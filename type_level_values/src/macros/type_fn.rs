@@ -358,7 +358,7 @@ fn main(){
 #[macro_export(local_inner_macros)]
 macro_rules! type_fn {
     (   $(#[$attr_op:meta])*
-        alias $op_name:ident[$lhs:ident$(,$param:ident)* $(,)*] 
+        alias $op_name:ident[$lhs:ident$(,$param:ident)* $(,)*]
             $(::$assoc_ty:ident)* =$trait_name:ident
         $(where[$($bound:tt)*])*
     ) => {
@@ -382,8 +382,8 @@ Implements TypeFn<> for the trait of a similar name.
         }
     };
     (   $(#[$attr_op:meta])*
-        method_like_alias 
-            $op_name:ident[$lhs:ident $(,$param:ident $( = $def_ty:ty )* )* $(,)* ] 
+        method_like_alias
+            $op_name:ident[$lhs:ident $(,$param:ident $( = $def_ty:ty )* )* $(,)* ]
             $(::$assoc_ty:ident)* =$trait_name:ident
         $(where[$($bound:tt)*])*
     ) => {
@@ -469,7 +469,7 @@ This is defined to encourage function composition,emulating method chains.
 
         $(#[$attr_op:meta])*
         fn_type=$op_name:ident
-        
+
         $(
             $(#[$attr_mt:meta])*
             method_like=$mt_name:ident
@@ -481,7 +481,7 @@ This is defined to encourage function composition,emulating method chains.
             alias $op_name[__Self $(,$param)*] $(::$assoc_ty)* =$trait_name
             $(where[$($bound)*])*
         }
-        
+
         type_fn!{
             define_trait;method_like;
             [
@@ -494,7 +494,7 @@ This is defined to encourage function composition,emulating method chains.
                 $(#[$attr_mt])*
                 method_like=$mt_name
             )*]
-            
+
         }
 
         $(#[$attr_type])*
@@ -524,11 +524,11 @@ This is defined to encourage function composition,emulating method chains.
     )=>{
         type_fn!{
             $(#[$attr_above])*
-            $(  
+            $(
                 captures($($bound_vars $(= $bound_def )* ),*)
                 $(#[$attr_bellow])*
             )*
-            
+
             $(pub $(($($visibility:tt)*))*)*
             fn $fn_name[Params](Params)
             where[ $equals:$crate::type_fn::TypeFn_<Params,Output=Out> ]
@@ -563,8 +563,8 @@ This is defined to encourage function composition,emulating method chains.
         $(pub $(($($visibility:tt)*))*)*
         fn $op_name:ident $($rest:tt)*
     )=>{
-        
-        
+
+
         type_fn!{inner_struct_decl;
             captures[$($bound_vars)*]
             privacy[ $(pub $(($($visibility)*))*)* ]
@@ -620,7 +620,7 @@ This is defined to encourage function composition,emulating method chains.
                     $crate::prelude::VariantPhantom<$bound_vars>,
                 )*
             )>
-            
+
         );
 
         impl<$($bound_vars,)*> $op_name<$($bound_vars,)*> {

@@ -17,7 +17,7 @@ macro_rules! with_docs {
 
         The minimum required version for ranged integers is 1.26 .
 
-        The reason is because the tests 
+        The reason is because the tests
         take a ludicrous ammount of time to compile before 1.26.
 
         */

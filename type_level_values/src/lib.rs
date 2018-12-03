@@ -100,7 +100,7 @@ extern crate serde;
 extern crate num_traits;
 
 #[macro_use]
-mod macros{
+mod macros {
     #[macro_use]
     mod tlist;
     #[macro_use]
@@ -110,33 +110,28 @@ mod macros{
 }
 use self::macros::*;
 
-
-
-
 #[macro_use]
 pub mod type_fn;
-pub mod std_ops;
 pub mod fn_adaptors;
-
+pub mod std_ops;
 
 #[macro_use]
 pub mod ops;
 
-
 pub mod discriminant;
 #[macro_use]
 pub mod field_traits;
-pub mod const_wrapper;
 pub mod collection_ops;
+pub mod const_wrapper;
 pub mod extern_types;
+pub mod initialization;
 pub mod new_types;
 pub mod runtime_value;
 pub mod std_types;
 pub mod user_traits;
 pub mod util_types;
-pub mod initialization;
 
-#[cfg(feature="priv_doctests")]
+#[cfg(feature = "priv_doctests")]
 pub mod derive_tests;
 
 #[cfg(test)]
@@ -152,14 +147,10 @@ pub(crate) mod type_level_values {
 }
 
 #[doc(hidden)]
-pub mod reexports ;
+pub mod reexports;
 
 // emulating Rust 2018 edition's crate:: prefix.
 // Used instead of it so as to stay compatible with Rust pre-1.30 .
 mod crate_ {
     pub(crate) use super::*;
 }
-
-
-
-

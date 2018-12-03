@@ -3,9 +3,9 @@ use super::*;
 use crate_::fn_adaptors::*;
 use crate_::std_ops::*;
 
+use crate_::collection_ops::*;
 use crate_::field_traits::{GetField, SetField};
 use crate_::ops::*;
-use crate_::collection_ops::*;
 use crate_::std_types::{Equal_, Greater_, Less_};
 
 macro_rules! tuple_ {
@@ -133,11 +133,9 @@ fn fold_r() {
     let _: U50 = FoldR::<Repeat<TupleType, U1, U16>, U66, SubOp>::MTVAL;
 }
 
-
-
-pub struct CannotSubstract<Lhs,Rhs>{
-    lhs:Lhs,
-    rhs:Rhs,
+pub struct CannotSubstract<Lhs, Rhs> {
+    lhs: Lhs,
+    rhs: Rhs,
 }
 
 type_fn!{
@@ -152,66 +150,49 @@ type_fn!{
     }
 }
 
-
-
 #[test]
 fn try_fold_l() {
-    type TestTryFoldL<List,DefVal,Func,Expected>=(
-        AssertEq<TryFoldL<List,DefVal,Func>,Expected>,
-        AssertPipedRet<List,TryFoldLMt<DefVal,Func>,Expected>
+    type TestTryFoldL<List, DefVal, Func, Expected> = (
+        AssertEq<TryFoldL<List, DefVal, Func>, Expected>,
+        AssertPipedRet<List, TryFoldLMt<DefVal, Func>, Expected>,
     );
 
+    let _: TestTryFoldL<tuple_![], U10, SafeDivOp, TFVal<U10>>;
+    let _: TestTryFoldL<tuple_![U2], U10, SafeDivOp, TFVal<U5>>;
+    let _: TestTryFoldL<tuple_![U2, U2], U10, SafeDivOp, TFVal<U2>>;
+    let _: TestTryFoldL<tuple_![U2, U2, U2], U10, SafeDivOp, TFVal<U1>>;
+    let _: TestTryFoldL<tuple_![U2, U2, U2, U2], U10, SafeDivOp, TFVal<U0>>;
+    let _: TestTryFoldL<tuple_![U0, ()], U10, SafeDivOp, TFBreak<None_>>;
 
-    let _: TestTryFoldL<tuple_![]            , U10 , SafeDivOp , TFVal<U10>>;
-    let _: TestTryFoldL<tuple_![U2]          , U10 , SafeDivOp , TFVal<U5>>;
-    let _: TestTryFoldL<tuple_![U2,U2]       , U10 , SafeDivOp , TFVal<U2>>;
-    let _: TestTryFoldL<tuple_![U2,U2,U2]    , U10 , SafeDivOp , TFVal<U1>>;
-    let _: TestTryFoldL<tuple_![U2,U2,U2,U2] , U10 , SafeDivOp , TFVal<U0>>;
-    let _: TestTryFoldL<tuple_![U0,()]      , U10 , SafeDivOp , TFBreak<None_>>;
-
-    let _: TestTryFoldL<tuple_![]          , U4 , safe_sub , TFVal<U4>>;
-    let _: TestTryFoldL<tuple_![U2]       , U4 , safe_sub , TFVal<U2>>;
-    let _: TestTryFoldL<tuple_![U2,U2]    , U4 , safe_sub , TFVal<U0>>;
-    let _: TestTryFoldL< 
-        tuple_![U5,()], 
-        U4 , 
-        safe_sub, 
-        TFBreak<Err_<CannotSubstract<U4,U5>>>, 
-    >;
+    let _: TestTryFoldL<tuple_![], U4, safe_sub, TFVal<U4>>;
+    let _: TestTryFoldL<tuple_![U2], U4, safe_sub, TFVal<U2>>;
+    let _: TestTryFoldL<tuple_![U2, U2], U4, safe_sub, TFVal<U0>>;
+    let _: TestTryFoldL<tuple_![U5, ()], U4, safe_sub, TFBreak<Err_<CannotSubstract<U4, U5>>>>;
 }
 
 #[test]
 fn try_fold_r() {
-    type TestTryFoldR<List,DefVal,Func,Expected>=(
-        AssertEq<TryFoldR<List,DefVal,Func>,Expected>,
-        AssertPipedRet<List,TryFoldRMt<DefVal,Func>,Expected>
+    type TestTryFoldR<List, DefVal, Func, Expected> = (
+        AssertEq<TryFoldR<List, DefVal, Func>, Expected>,
+        AssertPipedRet<List, TryFoldRMt<DefVal, Func>, Expected>,
     );
 
-    let _: TestTryFoldR<tuple_![]            , U10 , SafeDivOp , TFVal<U10> >;
-    let _: TestTryFoldR<tuple_![U2]          , U10 , SafeDivOp , TFVal<U5> >;
-    let _: TestTryFoldR<tuple_![U2,U2]       , U10 , SafeDivOp , TFVal<U2> >;
-    let _: TestTryFoldR<tuple_![U2,U2,U2]    , U10 , SafeDivOp , TFVal<U1> >;
-    let _: TestTryFoldR<tuple_![U2,U2,U2,U2] , U10 , SafeDivOp , TFVal<U0> >;
-    let _: TestTryFoldR<tuple_![(),U0]       , U10 , SafeDivOp , TFBreak<None_> >;
+    let _: TestTryFoldR<tuple_![], U10, SafeDivOp, TFVal<U10>>;
+    let _: TestTryFoldR<tuple_![U2], U10, SafeDivOp, TFVal<U5>>;
+    let _: TestTryFoldR<tuple_![U2, U2], U10, SafeDivOp, TFVal<U2>>;
+    let _: TestTryFoldR<tuple_![U2, U2, U2], U10, SafeDivOp, TFVal<U1>>;
+    let _: TestTryFoldR<tuple_![U2, U2, U2, U2], U10, SafeDivOp, TFVal<U0>>;
+    let _: TestTryFoldR<tuple_![(), U0], U10, SafeDivOp, TFBreak<None_>>;
 
-    let _: TestTryFoldR<tuple_![]          , U4 , safe_sub , TFVal<U4> >;
-    let _: TestTryFoldR<tuple_![U2]       , U4 , safe_sub , TFVal<U2> >;
-    let _: TestTryFoldR<tuple_![U2,U2]    , U4 , safe_sub , TFVal<U0> >;
-    let _: TestTryFoldR< 
-        tuple_![(),U5], 
-        U4 , 
-        safe_sub,
-        TFBreak<Err_<CannotSubstract<U4,U5>>>, 
-    >;
-
+    let _: TestTryFoldR<tuple_![], U4, safe_sub, TFVal<U4>>;
+    let _: TestTryFoldR<tuple_![U2], U4, safe_sub, TFVal<U2>>;
+    let _: TestTryFoldR<tuple_![U2, U2], U4, safe_sub, TFVal<U0>>;
+    let _: TestTryFoldR<tuple_![(), U5], U4, safe_sub, TFBreak<Err_<CannotSubstract<U4, U5>>>>;
 }
-
-
-
 
 #[test]
 fn map() {
-    type AddOne = AddMt< U1>;
+    type AddOne = AddMt<U1>;
     let _: tuple_![] = Map::<tuple_![], AddOne>::MTVAL;
     let _: tuple_![U1,] = Map::<tuple_![U0], AddOne>::MTVAL;
     let _: tuple_![U1, U2] = Map::<tuple_![U0, U1], AddOne>::MTVAL;
@@ -275,17 +256,9 @@ fn set_field() {
 
 #[test]
 fn type_fn_() {
-    let _: AssertPipedRet<U0,tuple_![],U0>;
-    let _: AssertPipedRet<U0,tuple_![AddMt<U1>],U1>;
-    let _: AssertPipedRet<U0,tuple_![AddMt<U1>,AddMt<U1 >],U2>;
-    let _: AssertPipedRet<U10,tuple_![AddMt<U1>,AddMt<U10>],U21>;
-    let _: AssertPipedRet<
-        U10,
-        tuple_![
-            AddMt<U1>,
-            AddMt<U10>,
-            AddMt<U20>
-        ],
-        U41
-    >;
+    let _: AssertPipedRet<U0, tuple_![], U0>;
+    let _: AssertPipedRet<U0, tuple_![AddMt<U1>], U1>;
+    let _: AssertPipedRet<U0, tuple_![AddMt<U1>, AddMt<U1>], U2>;
+    let _: AssertPipedRet<U10, tuple_![AddMt<U1>, AddMt<U10>], U21>;
+    let _: AssertPipedRet<U10, tuple_![AddMt<U1>, AddMt<U10>, AddMt<U20>], U41>;
 }

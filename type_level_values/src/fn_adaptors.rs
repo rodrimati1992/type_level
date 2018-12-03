@@ -7,17 +7,10 @@ Operator adaptors for TypeFn_ implementors.
 
 use prelude::*;
 
-use crate_::field_traits::{MapFieldOp};
-use crate_::collection_ops::{Insert_,PushFrontMt,PushBackMt};
+use crate_::collection_ops::{Insert_, PushBackMt, PushFrontMt};
+use crate_::field_traits::MapFieldOp;
 
-pub use crate_::type_fn::{
-    TypeFn_,
-    TypeFn,
-    TypeFnMt,
-    Piped_,
-    Piped,
-    PipedOp,
-};
+pub use crate_::type_fn::{Piped, PipedOp, Piped_, TypeFn, TypeFnMt, TypeFn_};
 
 type_fn!{
     captures(Op,Rhs)
@@ -47,7 +40,7 @@ type_fn!{
 
 type_fn!{
     /// Applies a parameter of a function (3+ params).
-    /// 
+    ///
     /// For unary functions use ops::Lazy.
     /// For binary functions use either ApplyRhs or ApplyLhs
     captures(Op,Nth,Value)
@@ -62,7 +55,7 @@ type_fn!{
     /// Applies every parameter to a TypeFn_ (with 3 or more parameters)
     /// except for the nth,creating a unary function
     /// that takes that parameter and evaluates Op.
-    /// 
+    ///
     /// For unary functions use ops::Lazy.
     /// For binary functions use either ApplyRhs or ApplyLhs
     captures(Op,Nth,Value)
@@ -72,8 +65,6 @@ type_fn!{
         Op:TypeFn_< Value::Output >,
     ]{ Op::Output }
 }
-
-
 
 type_fn!{
     /**
@@ -146,7 +137,7 @@ type_fn!{
     captures(Op, Params)
     pub fn ApplyNonSelf[self_](self_)
     where[ (PushFrontMt<self_>,Op):TypeFn_< Params,Output=Out > ]
-    {  
+    {
         let Out;
         Out
     }
@@ -163,12 +154,11 @@ type_fn!{
     captures(Op, self_)
     pub fn ApplySelf[Params](Params)
     where[ (PushFrontMt<self_>,Op):TypeFn_< Params,Output=Out > ]
-    {  
+    {
         let Out;
         Out
     }
 }
-
 
 type_fn!{
     /**
@@ -182,12 +172,11 @@ type_fn!{
     captures(Op, last)
     pub fn ApplyLast[Params](Params)
     where[ (PushBackMt<last>,Op):TypeFn_< Params,Output=Out > ]
-    {  
+    {
         let Out;
         Out
     }
 }
-
 
 type_fn!{
     captures(Op, Mapper)
@@ -260,19 +249,17 @@ type_fn!{
     pub fn IdentityFn[P](P){P}
 }
 
-
-
 #[cfg(test)]
-mod tests{
+mod tests {
     use super::*;
-    use crate_::ops::{AssertPipedRet,AssertEq};
-    use crate_::field_traits::{SetFieldOp};
-    use crate_::std_ops::{AddOp,DivOp,SubOp};
+    use crate_::field_traits::SetFieldOp;
+    use crate_::ops::{AssertEq, AssertPipedRet};
+    use crate_::std_ops::{AddOp, DivOp, SubOp};
 
     macro_rules! define_apply_test {
         ( $test_ident:ident , $test_type_alias:item ) => (
             $test_type_alias
-            
+
             let _:$test_ident<(U0,U1,U2,U3),U0,False,(False,U1,U2,U3)>;
             let _:$test_ident<(U0,U1,U2,U3),U1,False,(U0,False,U2,U3)>;
             let _:$test_ident<(U0,U1,U2,U3),U2,False,(U0,U1,False,U3)>;
@@ -281,13 +268,13 @@ mod tests{
     }
 
     #[test]
-    fn flip(){
-        let _:AssertPipedRet<(U3,U10),Flip<SubOp>,U7>;
-        let _:AssertPipedRet<(U2,U10),Flip<DivOp>,U5>;
+    fn flip() {
+        let _: AssertPipedRet<(U3, U10), Flip<SubOp>, U7>;
+        let _: AssertPipedRet<(U2, U10), Flip<DivOp>, U5>;
     }
 
     #[test]
-    fn apply_non_self(){
+    fn apply_non_self() {
         define_apply_test!{
             Test,
             type Test<This,Field,Value,Expected>=(
@@ -297,7 +284,7 @@ mod tests{
     }
 
     #[test]
-    fn apply_nth(){
+    fn apply_nth() {
         define_apply_test!{
             Test,
             type Test<This,Field,Value,Expected>=(
@@ -309,7 +296,7 @@ mod tests{
     }
 
     #[test]
-    fn apply_self(){
+    fn apply_self() {
         define_apply_test!{
             Test,
             type Test<This,Field,Value,Expected>=(
@@ -319,7 +306,7 @@ mod tests{
     }
 
     #[test]
-    fn apply_last(){
+    fn apply_last() {
         define_apply_test!{
             Test,
             type Test<This,Field,Value,Expected>=(
@@ -329,18 +316,17 @@ mod tests{
     }
 
     #[test]
-    fn map_param(){
-        type Test<Func,Mapper,Params,ExpectedMapLhs,ExpectedMapRhs>=(
-            AssertPipedRet<Params,MapLhs<Func,Mapper> , ExpectedMapLhs >,
-            AssertPipedRet<Params,MapRhs<Func,Mapper> , ExpectedMapRhs >,
-            
-            AssertPipedRet<Params,MapNth<Func,U0,Mapper> , ExpectedMapLhs >,
-            AssertPipedRet<Params,MapNth<Func,U1,Mapper> , ExpectedMapRhs >,
+    fn map_param() {
+        type Test<Func, Mapper, Params, ExpectedMapLhs, ExpectedMapRhs> = (
+            AssertPipedRet<Params, MapLhs<Func, Mapper>, ExpectedMapLhs>,
+            AssertPipedRet<Params, MapRhs<Func, Mapper>, ExpectedMapRhs>,
+            AssertPipedRet<Params, MapNth<Func, U0, Mapper>, ExpectedMapLhs>,
+            AssertPipedRet<Params, MapNth<Func, U1, Mapper>, ExpectedMapRhs>,
         );
 
-        let _:Test<DivOp,Const<U1  >,(U10,U10),U0,U10>;
-        let _:Test<DivOp,Const<U8 >,(U16,U4 ),U2,U2 >;
-        let _:Test<DivOp,Const<U100>,(U200,U200 ),U0,U2 >;
+        let _: Test<DivOp, Const<U1>, (U10, U10), U0, U10>;
+        let _: Test<DivOp, Const<U8>, (U16, U4), U2, U2>;
+        let _: Test<DivOp, Const<U100>, (U200, U200), U0, U2>;
     }
-    
+
 }

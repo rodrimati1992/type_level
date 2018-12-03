@@ -4,8 +4,7 @@
 //!
 //!
 
-
-pub fn main_ () {
+pub fn main_() {
     let side_effects =
         SideEffectful::new(FakeFileSystemOps, FakeExecuteCommand, AllCapabilities::CW);
 
@@ -17,7 +16,7 @@ pub fn main_ () {
     exec_cmd.execute_command("grep".as_ref(), &["-h"]).unwrap();
 
     requires_fs_ops(&side_effects);
-    
+
     // This won't compile because the "filesystem" capability is disabled for the reference.
     // requires_fs_ops(
     //     side_effects.mutparam_ref(DisableCapability::NEW,cap_fields::filesystem.wrap_msg()));
@@ -30,7 +29,7 @@ pub fn main_ () {
     //     cap_fields::execute_command.wrap_msg()
     // ).piped(requires_execute_command);
 
-    side_effects.mutparam_ref(DisableCapability::NEW,cap_fields::All::T);
+    side_effects.mutparam_ref(DisableCapability::NEW, cap_fields::All::T);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,9 +62,7 @@ pub struct Capabilities {
     pub drop_tables: Capability,
 }
 
-use self::type_level_Capabilities::{
-    fields as cap_fields, CapabilitiesTrait, Capabilities_Uninit,
-};
+use self::type_level_Capabilities::{fields as cap_fields, CapabilitiesTrait, Capabilities_Uninit};
 
 pub type AllCapabilities = SetField<Capabilities_Uninit, cap_fields::All, EnabledCap>;
 pub type NoCapabilities = SetField<Capabilities_Uninit, cap_fields::All, DisabledCap>;
@@ -86,7 +83,7 @@ pub trait FieldAccessor<Field> {
     Type(name = "SideEffectful", doc = "oh hi"),
     ConstValue = "Caps"
 )]
-pub struct __SideEffectful<FS, EC, Caps>{
+pub struct __SideEffectful<FS, EC, Caps> {
     filesystem: FS,
     execute_command: EC,
     _capabilities: ConstWrapper<Caps>,
@@ -127,7 +124,7 @@ where
         Self {
             filesystem,
             execute_command,
-            _capabilities:ConstWrapper::NEW,
+            _capabilities: ConstWrapper::NEW,
         }
     }
 }
@@ -138,7 +135,6 @@ capability_accessor!{
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-
 
 mutator_fn!{
     type This[FS, EC, Caps]=(SideEffectful<FS, EC, Caps>)

@@ -1,12 +1,11 @@
 //! This example demonstrates a builder using a ConstValue-parameter
 //! to track initialization of the fields.
 //!
-//! Because this uses unsafe,it is not recommended that you try this approach without 
+//! Because this uses unsafe,it is not recommended that you try this approach without
 //! knowing what you are doing.
 //!
 
-
-pub fn main_ () {
+pub fn main_() {
     let animal = AnimalBuilder::new()
         .children(2)
         .years_lived(10)
@@ -15,7 +14,6 @@ pub fn main_ () {
     println!("{:?}", animal);
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 // use std::fmt;
@@ -23,44 +21,33 @@ pub fn main_ () {
 use std::mem::{self, ManuallyDrop};
 use std::ptr;
 
-use type_level_values::initialization::*;
 use type_level_values::field_traits::*;
+use type_level_values::initialization::*;
 use type_level_values::prelude::*;
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-
 #[derive(TypeLevel)]
 #[typelevel(derive(Debug))]
-#[typelevel(reexport(Struct,Traits))]
+#[typelevel(reexport(Struct, Traits))]
 pub struct AnimalInitialization {
     years_lived: FieldInit,
     children: FieldInit,
     family: FieldInit,
 }
 
-use self::type_level_AnimalInitialization::{
-    fields as ai_field, 
-};
+use self::type_level_AnimalInitialization::fields as ai_field;
 
+pub type AnimalUninitialized = <AnimalInitialization_Uninit as InitializationValues>::Uninitialized;
 
-pub type AnimalUninitialized = 
-    <AnimalInitialization_Uninit as InitializationValues>::Uninitialized;
-    
-pub type AnimalInitialized = 
-    <AnimalInitialization_Uninit as InitializationValues>::Initialized;
-
+pub type AnimalInitialized = <AnimalInitialization_Uninit as InitializationValues>::Initialized;
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 type AnimalBuilder<I> = AnimalBuilder_Ty<ConstWrapper<I>>;
 
 #[derive(MutConstValue)]
-#[mcv(
-    repr(C),
-    Type(use_ = "AnimalBuilder"), 
-    ConstValue = "I"
-)]
+#[mcv(repr(C), Type(use_ = "AnimalBuilder"), ConstValue = "I")]
 pub struct __AnimalBuilder<I>
 where
     I: IntoRuntime<AnimalInitialization>,
@@ -71,9 +58,9 @@ where
     _marker: ConstWrapper<I>,
 }
 
-impl<I> AnimalBuilder<I> 
-where 
-    AnimalUninitialized:TypeIdentity<Type=I>,
+impl<I> AnimalBuilder<I>
+where
+    AnimalUninitialized: TypeIdentity<Type = I>,
     I: IntoRuntime<AnimalInitialization>,
 {
     pub fn new() -> Self {
@@ -152,7 +139,6 @@ where
     }
 }
 
-
 mutator_fn!{
     type This[I]=(AnimalBuilder<I>)
     where[ I: IntoRuntime<AnimalInitialization>, ]
@@ -169,7 +155,6 @@ type_fn!{
     pub fn InitializeFieldHelper[V](UninitField<V>){ IsInitField<V> }
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
@@ -180,4 +165,3 @@ pub struct Animal {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-

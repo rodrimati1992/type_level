@@ -2,12 +2,10 @@
 //! and converted to a runtime value.
 //!
 
-
 use type_level_values::field_traits::*;
 use type_level_values::prelude::*;
 // use type_level_values::std_types::option::fields as option_f;
 use type_level_values::std_types::*;
-
 
 use std::fmt;
 use std::mem;
@@ -99,7 +97,7 @@ fn constructing_new_types() {
     );
 
     let _entity0: ConstEntity<
-        Some_<Construct<PointType,((point_f::x,U1),(point_f::y,U2))>>,
+        Some_<Construct<PointType, ((point_f::x, U1), (point_f::y, U2))>>,
         Up,
         True,
     > = ConstEntity::MTVAL.assert_zst();
@@ -115,15 +113,18 @@ fn constructing_new_types() {
         is_alive: True.to_cw(),
     }.assert_zst();
 
-    let _entity2 = Construct::<EntityType,(
-        (entity_f::position , None_),
-        (entity_f::facing   , Up   ),
-        (entity_f::is_alive , False),
-    )>::MTVAL
+    let _entity2 = Construct::<
+        EntityType,
+        (
+            (entity_f::position, None_),
+            (entity_f::facing, Up),
+            (entity_f::is_alive, False),
+        ),
+    >::MTVAL
         .assert_zst();
 }
 
-pub fn main_ () {
+pub fn main_() {
     constructing_std_types();
     constructing_types_from_type_level_values();
     constructing_new_types();

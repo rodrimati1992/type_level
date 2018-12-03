@@ -7,11 +7,7 @@ use super::*;
 use field_traits::GetFieldMt;
 
 use user_traits::const_traits::{
-    ConstLayoutIndependent,
-    GetConstParam_,
-    SetConstParam,
-    SetConstParam_,
-    GetAllowedSelfOp,
+    ConstLayoutIndependent, GetAllowedSelfOp, GetConstParam_, SetConstParam, SetConstParam_,
 };
 
 use user_traits::self_constructors_type::type_level_AllowedConstructors::fields as fields_ac;
@@ -21,7 +17,6 @@ use std_::mem::{size_of, size_of_val};
 use std_::rc::Rc;
 #[cfg(feature = "std")]
 use std_::sync::Arc;
-
 
 /**
 Extension trait to mutate the ConstValue-parameter of Self.
@@ -241,28 +236,20 @@ pub trait MutConstParam {
     }
 }
 
-impl<This:?Sized> MutConstParam for This {}
+impl<This: ?Sized> MutConstParam for This {}
 
 /// Trait used to alias the constraints for every MutConstParam method,
 /// which are on the blanket impl of this trait.
-pub trait MutConstParamConstraints<Op, Msg, Pointerness>:MCPBounds<Op, Msg>
-{}
+pub trait MutConstParamConstraints<Op, Msg, Pointerness>: MCPBounds<Op, Msg> {}
 
-impl<This: ?Sized, Op, Msg, Pointerness>
-    MutConstParamConstraints<Op, Msg, Pointerness> 
-for This
+impl<This: ?Sized, Op, Msg, Pointerness> MutConstParamConstraints<Op, Msg, Pointerness> for This
 where
     This: MCPBounds<Op, Msg>,
-    Op:Piped_<(
-        GetAllowedSelfOp,
-        GetFieldMt<Pointerness>
-    ),Output=True>,
+    Op: Piped_<(GetAllowedSelfOp, GetFieldMt<Pointerness>), Output = True>,
 {}
 
-
-
 /// The constraints for calling any MutConstParam methods.
-pub unsafe trait MCPBounds<Op, Msg>{
+pub unsafe trait MCPBounds<Op, Msg> {
     /// The mutated ConstValue-parameter.
     type NextConst;
 
@@ -273,11 +260,10 @@ pub unsafe trait MCPBounds<Op, Msg>{
 unsafe impl<This: ?Sized, NextConst, Func, Msg> MCPBounds<Func, Msg> for This
 where
     Func: TypeFn_<(This::Const, Msg), Output = NextConst>,
-    This:
-        AllowMutatorFn<Func>+
-        GetConstParam_+
-        SetConstParam_<NextConst>+
-        ConstLayoutIndependent<SetConstParam<This, NextConst>>,
+    This: AllowMutatorFn<Func>
+        + GetConstParam_
+        + SetConstParam_<NextConst>
+        + ConstLayoutIndependent<SetConstParam<This, NextConst>>,
 {
     type NextConst = NextConst;
     type NextSelf = SetConstParam<This, NextConst>;

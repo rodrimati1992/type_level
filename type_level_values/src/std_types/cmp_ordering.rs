@@ -5,7 +5,7 @@ Contains the type-level equivalent of a std::cmp::Ordering.
 use prelude::*;
 
 use ops::const_from::ConstFrom_;
-use ops::{ConstEq, ConstOrd,AssertEq};
+use ops::{AssertEq, ConstEq, ConstOrd};
 
 use typenum::consts::{U0, U1, U2};
 
@@ -35,9 +35,8 @@ pub enum Ordering {
 
 //////////////////////////////////////////////////////////////////////////////////
 
-
 type_fn!{
-    pub fn 
+    pub fn
         ReverseOrd(Less_   ){ Greater_ }
         ReverseOrd(Equal_  ){ Equal_ }
         ReverseOrd(Greater_){ Less_ }
@@ -187,7 +186,7 @@ mod typenum_conv {
 }
 
 //#[cfg(test)]
-#[cfg(all(test,feature="passed_tests"))]
+#[cfg(all(test, feature = "passed_tests"))]
 mod tests {
     use super::*;
 
@@ -200,9 +199,9 @@ mod tests {
 
     #[test]
     fn cmp_ordering_reverse() {
-        let _: AssertEq< TypeFn<ReverseOrd,Less_>,Greater_>;
-        let _: AssertEq< TypeFn<ReverseOrd,Equal_>,Equal_>;
-        let _: AssertEq< TypeFn<ReverseOrd,Greater_>,Less_>;
+        let _: AssertEq<TypeFn<ReverseOrd, Less_>, Greater_>;
+        let _: AssertEq<TypeFn<ReverseOrd, Equal_>, Equal_>;
+        let _: AssertEq<TypeFn<ReverseOrd, Greater_>, Less_>;
     }
     #[test]
     fn cmp_ordering_comparison() {

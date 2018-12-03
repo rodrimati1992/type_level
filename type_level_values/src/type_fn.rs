@@ -12,7 +12,6 @@ The most convenient way to define a type-level function is with the type_fn macr
 
 */
 
-
 /**
 A type-level function.
 
@@ -168,7 +167,7 @@ fn main(){
 
 
 */
-pub trait TypeFn_<Params:?Sized> {
+pub trait TypeFn_<Params: ?Sized> {
     /// The return value of the function
     type Output;
 }
@@ -183,24 +182,20 @@ type_fn!{use_trait
     method_like=TypeFnMt
 }
 
-
-
-
 /// Calls the TypeFn_ `Func` with `__Self` as the function parameters.
-pub trait Piped_<Func>{
+pub trait Piped_<Func> {
     type Output;
 }
 
-impl<__Self,Func> Piped_<Func> for __Self
-where Func:TypeFn_<__Self>
+impl<__Self, Func> Piped_<Func> for __Self
+where
+    Func: TypeFn_<__Self>,
 {
-    type Output=Func::Output;
+    type Output = Func::Output;
 }
 
-
 /// Calls the TypeFn_ `Func` with `__Self` as the function parameters.
-pub type Piped<__Self,Func>=TypeFn<Func,__Self>;
-
+pub type Piped<__Self, Func> = TypeFn<Func, __Self>;
 
 type_fn!{
     /// Calls the TypeFn_ `Func` with `__Self` as the function parameters.
@@ -208,4 +203,3 @@ type_fn!{
     where[ Func:TypeFn_<__Self> ]
     { Func::Output }
 }
-

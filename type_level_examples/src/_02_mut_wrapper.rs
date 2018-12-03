@@ -4,7 +4,6 @@
 //! if Mutability==Mutable,otherwise T is only accessible immutably.
 //!
 
-
 use type_level_values::prelude::*;
 
 use std::ops::{Deref, DerefMut};
@@ -25,13 +24,13 @@ use self::type_level_Mutability::{Immutable, MutabilityTrait, Mutable};
 
 #[derive(MutConstValue)]
 #[mcv(
-    doc="
+    doc = "
         A Wrapper type whose mutability is a ConstValue-parameter.
         Many impls are implemented on [MutabilityWrapper].
     ",
     derive(Debug, Copy, Clone, PartialEq, Eq, Ord, PartialOrd),
-    Type="MutabilityWrapper",
-    ConstValue ="M",
+    Type = "MutabilityWrapper",
+    ConstValue = "M",
 )]
 pub struct __MutabilityWrapper<T, M> {
     value: T,
@@ -50,13 +49,12 @@ where
     }
 
     pub fn into_immutable(self) -> MutabilityWrapper<T, Immutable> {
-        self.mutparam(ChangeMutability::NEW,Immutable::T)
+        self.mutparam(ChangeMutability::NEW, Immutable::T)
     }
     pub fn as_immutable(&self) -> &MutabilityWrapper<T, Immutable> {
-        self.mutparam_ref(ChangeMutability::NEW,Immutable::T)
+        self.mutparam_ref(ChangeMutability::NEW, Immutable::T)
     }
 }
-
 
 mutator_fn!{
     type This[T, M]=(MutabilityWrapper<T, M>)
@@ -64,7 +62,6 @@ mutator_fn!{
 
     fn ChangeMutability[I,I2](I,I2) { I2 }
 }
-
 
 impl<T, M> Deref for MutabilityWrapper<T, M> {
     type Target = T;
@@ -83,7 +80,7 @@ impl<T> DerefMut for MutabilityWrapper<T, Mutable> {
 /////////////////////////////////////////////////////////////////////
 
 #[allow(unused_mut)]
-pub fn main_ () {
+pub fn main_() {
     let mut wrapper: MutabilityWrapper<_, Mutable> = MutabilityWrapper::new(100, Mutable {});
     assert_eq!(*wrapper, 100);
     *wrapper = 200;

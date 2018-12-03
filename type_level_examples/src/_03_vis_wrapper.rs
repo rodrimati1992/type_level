@@ -4,13 +4,11 @@
 //! Rectangle\<I> is a rectangle with a ConstValue-parameter that determines what fields are accessible.
 //!
 
-
 use type_level_values::field_traits::*;
-use type_level_values::prelude::*;
 use type_level_values::fn_adaptors::Const;
+use type_level_values::prelude::*;
 
-
-pub fn main_ () {
+pub fn main_() {
     let mut rect = Rectangle::new();
     let rect_a = Rectangle::new().mutated(|r| {
         r.set_x(0);
@@ -71,7 +69,6 @@ pub fn main_ () {
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 pub mod rectangle {
     use super::*;
@@ -171,7 +168,6 @@ pub mod rectangle {
         }
     }
 
-
     mutator_fn!{
         type This[I]=(Rectangle<I>)
         type AllowedSelf=(allowed_self_constructors::All)
@@ -180,12 +176,12 @@ pub mod rectangle {
         where [ I:SetField_<Field,Inaccessible>, ]
         {I::Output}
     }
-    
+
     mutator_fn!{
         type This[I]=(Rectangle<I>)
         type AllowedSelf=(allowed_self_constructors::ByVal)
 
-        fn ResetVis=Const<RectangleAcessibleDefault>; 
+        fn ResetVis=Const<RectangleAcessibleDefault>;
     }
 
 }
@@ -200,8 +196,8 @@ pub struct RectangleAcessible {
 }
 
 use self::type_level_RectangleAcessible::{
-    fields as ra, RectangleAcessibleTrait,
-    RectangleAcessibleTrait as RectAT, RectangleAcessible_Uninit,
+    fields as ra, RectangleAcessibleTrait, RectangleAcessibleTrait as RectAT,
+    RectangleAcessible_Uninit,
 };
 
 pub type RectangleAcessibleDefault = SetField<RectangleAcessible_Uninit, ra::All, Accessible>;
@@ -214,5 +210,3 @@ pub enum Accessibility {
 }
 
 use self::type_level_Accessibility::{Accessible, Inaccessible};
-
-

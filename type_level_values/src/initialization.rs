@@ -2,9 +2,9 @@
 Traits,types,`TypeFn_`s related to ConstValue construction.
 */
 
+use crate_::collection_ops::Map_;
 use field_traits::*;
 use prelude::*;
-use crate_::collection_ops::{Map_};
 
 /// Trait used by the `Construct` type alias to construct a fully initialized version of a value.
 ///
@@ -206,35 +206,27 @@ fn main(){
 */
 pub type Construct<Type, FVPairs> = <Type as Construct_<FVPairs>>::Output;
 
-
 /// The state of initialization of a field.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, TypeLevel)]
-#[typelevel(
-    reexport(Variants),
-    items(runtime_conv(NoImpls)),
-)]
+#[typelevel(reexport(Variants), items(runtime_conv(NoImpls)),)]
 pub enum FieldInit {
-    #[typelevel(doc="Represents an initialized field.Used by the TypeLevel derive macro.")]
+    #[typelevel(doc = "Represents an initialized field.Used by the TypeLevel derive macro.")]
     IsInitField(()),
-    #[typelevel(doc="Represents an uninitialized field.Used by the TypeLevel derive macro.")]
+    #[typelevel(doc = "Represents an uninitialized field.Used by the TypeLevel derive macro.")]
     UninitField(()),
 }
 
-
-impl<F> IntoRuntime<FieldInit> for IsInitField<F>{
-    fn to_runtime()->FieldInit{
+impl<F> IntoRuntime<FieldInit> for IsInitField<F> {
+    fn to_runtime() -> FieldInit {
         FieldInit::IsInitField(())
     }
 }
 
-impl<F> IntoRuntime<FieldInit> for UninitField<F>{
-    fn to_runtime()->FieldInit{
+impl<F> IntoRuntime<FieldInit> for UninitField<F> {
+    fn to_runtime() -> FieldInit {
         FieldInit::UninitField(())
     }
 }
-
-
-
 
 impl<Type, FVPairs, Out> Construct_<FVPairs> for Type
 where

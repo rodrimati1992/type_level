@@ -1,6 +1,6 @@
 //! This example demonstrates a type-level state machine.
 //!
-//!     
+//!
 //!
 //!
 
@@ -11,23 +11,13 @@ pub mod generic_variant;
 pub mod channel_end;
 pub mod user_input;
 
+mod ranged_usize {
+    use type_level_values::util_types::ranged_int::RangedInt;
+    pub use type_level_values::util_types::ranged_int::{IntOutsideRange, RangedTrait};
 
-mod ranged_usize{
-    use type_level_values::util_types::ranged_int::{
-        RangedInt,
-    }; 
-    pub use type_level_values::util_types::ranged_int::{
-        RangedTrait,
-        IntOutsideRange,
-    }; 
-
-    pub type RangedUsize<Start,End>=
-        RangedInt<usize,Start,End>;
-
-
+    pub type RangedUsize<Start, End> = RangedInt<usize, Start, End>;
 
 }
-
 
 // use type_level_values::ops::{ TypeFn, TypeFn_};
 use type_level_values::prelude::*;
@@ -82,7 +72,7 @@ pub type ExampleOperations = tlist!(
     TransferTo<Server,StopPlaying>,
 );
 
-pub fn main_ () {
+pub fn main_() {
     let operations = ExampleOperations::MTVAL;
 
     let (client, server) = Channel::new(operations);

@@ -6,16 +6,14 @@ and reversed versions of non-commutative binary operators.
 use prelude::*;
 
 use std_::ops::{
-    Add, BitAnd, BitOr, BitXor, Deref,Div,
-    Index, IndexMut, Mul, Neg, Not,
-    Rem, Shl, Shr, Sub,
+    Add, BitAnd, BitOr, BitXor, Deref, Div, Index, IndexMut, Mul, Neg, Not, Rem, Shl, Shr, Sub,
 };
 // use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_};
 use fn_adaptors::*;
 // use crate_::collection_ops::*;
 
 macro_rules! declare_rev_and_method_like {
-    (  
+    (
         operator=$op:ty,
 
         $(#[$type_meta:meta])*
@@ -38,35 +36,35 @@ macro_rules! declare_rev_and_method_like {
     )
 }
 
-type_fn!{use_trait 
+type_fn!{use_trait
     trait=Add [Rhs]
     type=AddTA
     fn_type=AddOp
     method_like=AddMt
 }
 
-type_fn!{use_trait 
+type_fn!{use_trait
     trait=BitAnd [Rhs]
     type=BitAndTA
     fn_type=BitAndOp
     method_like=BitAndMt
 }
 
-type_fn!{use_trait 
+type_fn!{use_trait
     trait=BitXor [Rhs]
     type=BitXorTA
     fn_type=BitXorOp
     method_like=BitXorMt
 }
 
-type_fn!{use_trait 
+type_fn!{use_trait
     trait=BitOr [Rhs]
     type=BitOrTA
     fn_type=BitOrOp
     method_like=BitOrMt
 }
 
-type_fn!{use_trait 
+type_fn!{use_trait
     trait=Div [Rhs]
     type=DivTA
     fn_type=DivOp
@@ -84,41 +82,41 @@ declare_rev_and_method_like!{
     rev_method_like=DivRevMt,
 }
 
-type_fn!{use_trait 
+type_fn!{use_trait
     trait=Index [Rhs]
     type=IndexTA
     fn_type=IndexOp
     method_like=IndexMt
 }
-type_fn!{use_trait 
+type_fn!{use_trait
     trait=Deref []::Target
     type=DerefTA
     fn_type=DerefOp
     method_like=DerefMt
 }
 
-type_fn!{use_trait 
+type_fn!{use_trait
     trait=Mul [Rhs]
     type=MulTA
     fn_type=MulOp
     method_like=MulMt
 }
 
-type_fn!{use_trait 
+type_fn!{use_trait
     trait=Neg []
     type=NegTA
     fn_type=NegOp
     method_like=NegMt
 }
 
-type_fn!{use_trait 
+type_fn!{use_trait
     trait=Not []
     type=NotTA
     fn_type=NotOp
     method_like=NotMt
 }
 
-type_fn!{use_trait 
+type_fn!{use_trait
     trait=Rem [Rhs]
     type=RemTA
     fn_type=RemOp
@@ -136,8 +134,7 @@ declare_rev_and_method_like!{
     rev_method_like=RemRevMt,
 }
 
-
-type_fn!{use_trait 
+type_fn!{use_trait
     trait=Shl [Rhs]
     type=ShlTA
     fn_type=ShlOp
@@ -155,7 +152,7 @@ declare_rev_and_method_like!{
     rev_method_like=ShlRevMt,
 }
 
-type_fn!{use_trait 
+type_fn!{use_trait
     trait=Shr [Rhs]
     type=ShrTA
     fn_type=ShrOp
@@ -173,8 +170,7 @@ declare_rev_and_method_like!{
     rev_method_like=ShrRevMt,
 }
 
-
-type_fn!{use_trait 
+type_fn!{use_trait
     trait=Sub [Rhs]
     type=SubTA
     fn_type=SubOp
@@ -191,4 +187,3 @@ declare_rev_and_method_like!{
     /// Subtraction with the operands reversed
     rev_method_like=SubRevMt,
 }
-

@@ -7,7 +7,7 @@ use crate_::std_ops::*;
 
 use core_extensions::type_level_bool::False;
 
-#[derive(Debug, Clone, TypeLevel,PartialEq)]
+#[derive(Debug, Clone, TypeLevel, PartialEq)]
 #[typelevel(
     // skip_derive,
     // print_derive,
@@ -18,22 +18,18 @@ struct Dim2d {
     height: u32,
 }
 
-type Wrapper0 = Construct<Dim2dType,(
-    (fields::width,U3),
-    (fields::height,U5),
-)>;
-
+type Wrapper0 = Construct<Dim2dType, ((fields::width, U3), (fields::height, U5))>;
 
 #[test]
-fn whole_ops(){
-    let v:ConstWrapper<()>=().to_cw();
-    let _:()=v.identity_(());
+fn whole_ops() {
+    let v: ConstWrapper<()> = ().to_cw();
+    let _: () = v.identity_(());
 
-    let v:ConstWrapper<&'static str>=v.set::<&'static str>();
-    let _:&'static str=v.identity_("hello");
+    let v: ConstWrapper<&'static str> = v.set::<&'static str>();
+    let _: &'static str = v.identity_("hello");
 
-    let v:ConstWrapper<True>=v.set_val(True);
-    let _:True=v.identity_(True);
+    let v: ConstWrapper<True> = v.set_val(True);
+    let _: True = v.identity_(True);
 }
 
 #[test]
@@ -54,9 +50,15 @@ fn set_field() {
             .set_field_val(fields::width, U0::MTVAL)
             .set_field_val(fields::height, U1::MTVAL);
 
-        let _: ConstDim2d<U0,U1> = *v0;
+        let _: ConstDim2d<U0, U1> = *v0;
 
-        assert_eq!(v0.get_runt(), Dim2d{width:0, height:1});
+        assert_eq!(
+            v0.get_runt(),
+            Dim2d {
+                width: 0,
+                height: 1
+            }
+        );
     }
 
     {
@@ -64,11 +66,16 @@ fn set_field() {
             .set_field::<fields::width, U10>()
             .set_field::<fields::height, U20>();
 
-        let _: ConstDim2d<U10,U20> = *v0;
+        let _: ConstDim2d<U10, U20> = *v0;
 
-        assert_eq!(v0.get_runt(), Dim2d{width:10, height:20});
+        assert_eq!(
+            v0.get_runt(),
+            Dim2d {
+                width: 10,
+                height: 20
+            }
+        );
     }
-
 }
 
 #[test]

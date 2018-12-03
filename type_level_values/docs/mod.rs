@@ -36,7 +36,7 @@ pub mod appendix_functions;
 The guide for how to use this library,starting with the introduction.
 
 */
-pub mod guide{
+pub mod guide {
 
     #[path = "introduction.md"]
     pub mod introduction;
@@ -63,4 +63,3 @@ pub mod guide{
 
     include!{"./guide_11.rs"}
 }
-

@@ -1,4 +1,4 @@
-// This is disabled because Rust keeps rebuilding the entire crate every time I modify 
+// This is disabled because Rust keeps rebuilding the entire crate every time I modify
 // a module in the tests folder.
 
 pub mod disabled_enabled_iter;
@@ -6,33 +6,29 @@ pub mod disabled_enabled_iter;
 // use self::disabled_enabled_iter::DisabledEnabled;
 
 #[allow(unused_imports)]
-use core_extensions::{Void,SelfOps};
+use core_extensions::{SelfOps, Void};
 
 use std::io::Write as ioWrite;
-use std::{iter,slice,env, fs, io, path};
+use std::{env, fs, io, iter, path, slice};
 
-
-#[derive(Debug,Copy,Clone,PartialEq,Eq,Hash)]
-pub enum VariantKind{
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum VariantKind {
     Braced,
     Tupled,
     Unit,
 }
 
-#[derive(Debug,Copy,Clone,PartialEq,Eq)]
-pub enum Privacy{
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum Privacy {
     Public,
     PrivateField,
 }
 
-
-#[derive(Debug,Copy,Clone,PartialEq,Eq,Hash)]
-pub enum StructOrEnum{
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum StructOrEnum {
     Struct,
     Enum,
 }
-
-
 
 bitflags! {
     pub struct EnabledImpl: u32 {
@@ -43,93 +39,96 @@ bitflags! {
     }
 }
 
-impl Default for EnabledImpl{
-    fn default()->Self{
+impl Default for EnabledImpl {
+    fn default() -> Self {
         EnabledImpl::empty()
     }
 }
 
-
-#[derive(Debug,Copy,Clone,PartialEq,Eq)]
-pub enum ConstOrRunt{
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum ConstOrRunt {
     Const,
     Runt,
 }
 
-
 fn get_typename(
-    s_or_e:StructOrEnum,
-    var_kind:VariantKind,
-    privacy:Privacy,
-    c_or_r:ConstOrRunt,
-    impls:EnabledImpl,
-)->String {
-    let mut name=String::new();
+    s_or_e: StructOrEnum,
+    var_kind: VariantKind,
+    privacy: Privacy,
+    c_or_r: ConstOrRunt,
+    impls: EnabledImpl,
+) -> String {
+    let mut name = String::new();
 
-    if let (Privacy::PrivateField,ConstOrRunt::Const)=(privacy,c_or_r) {
+    if let (Privacy::PrivateField, ConstOrRunt::Const) = (privacy, c_or_r) {
         name.push_str("New");
     }
 
-    if c_or_r==ConstOrRunt::Const && s_or_e==StructOrEnum::Struct {
+    if c_or_r == ConstOrRunt::Const && s_or_e == StructOrEnum::Struct {
         name.push_str("Const");
     }
 
     name.push_str(match s_or_e {
-        StructOrEnum::Struct=>"Struct_",
-        StructOrEnum::Enum=>"Enum_",
+        StructOrEnum::Struct => "Struct_",
+        StructOrEnum::Enum => "Enum_",
     });
     name.push_str(match var_kind {
-        VariantKind::Unit  =>"Unit_",
-        VariantKind::Braced=>"Braced_",
-        VariantKind::Tupled=>"Tupled_",
+        VariantKind::Unit => "Unit_",
+        VariantKind::Braced => "Braced_",
+        VariantKind::Tupled => "Tupled_",
     });
-    if impls.contains(EnabledImpl::CONST_EQ ) {
+    if impls.contains(EnabledImpl::CONST_EQ) {
         name.push_str("Eq_");
     }
     if impls.contains(EnabledImpl::CONST_ORD) {
         name.push_str("Ord_");
     }
     match privacy {
-        Privacy::PrivateField=>name.push_str("Priv"),
-        Privacy::Public=>{},
+        Privacy::PrivateField => name.push_str("Priv"),
+        Privacy::Public => {}
     }
 
     name
 }
 
+pub type ItemType = (StructOrEnum, VariantKind, Privacy, EnabledImpl);
 
-pub type ItemType=(StructOrEnum,VariantKind,Privacy,EnabledImpl);
-
-pub static TEST_CASES:&'static [ItemType]={
-    use self::StructOrEnum as SOE;
+pub static TEST_CASES: &'static [ItemType] = {
     use self::EnabledImpl as EI;
+    use self::StructOrEnum as SOE;
     use self::VariantKind as VK;
     &[
-        (SOE::Struct,VK::Braced,Privacy::Public      ,EI::EMPTY       ),
-        (SOE::Struct,VK::Braced,Privacy::Public      ,EI::CONST_EQ    ),
-        (SOE::Struct,VK::Braced,Privacy::Public      ,EI::CONST_ORD   ),
-        (SOE::Struct,VK::Braced,Privacy::Public      ,EI::CONST_EQ_ORD),
-        (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::EMPTY       ),
-        (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::CONST_EQ    ),
-        (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::CONST_ORD   ),
-        (SOE::Enum  ,VK::Braced,Privacy::Public      ,EI::CONST_EQ_ORD),
-        (SOE::Struct,VK::Braced,Privacy::PrivateField,EI::CONST_EQ    ),
-        (SOE::Struct,VK::Tupled,Privacy::PrivateField,EI::CONST_EQ_ORD),
-        (SOE::Struct,VK::Tupled,Privacy::Public      ,EI::CONST_EQ_ORD),
-        (SOE::Enum  ,VK::Tupled,Privacy::Public      ,EI::CONST_EQ_ORD),
-        (SOE::Struct,VK::Unit  ,Privacy::Public      ,EI::CONST_EQ_ORD),
-        (SOE::Enum  ,VK::Unit  ,Privacy::Public      ,EI::CONST_EQ_ORD),
+        (SOE::Struct, VK::Braced, Privacy::Public, EI::EMPTY),
+        (SOE::Struct, VK::Braced, Privacy::Public, EI::CONST_EQ),
+        (SOE::Struct, VK::Braced, Privacy::Public, EI::CONST_ORD),
+        (SOE::Struct, VK::Braced, Privacy::Public, EI::CONST_EQ_ORD),
+        (SOE::Enum, VK::Braced, Privacy::Public, EI::EMPTY),
+        (SOE::Enum, VK::Braced, Privacy::Public, EI::CONST_EQ),
+        (SOE::Enum, VK::Braced, Privacy::Public, EI::CONST_ORD),
+        (SOE::Enum, VK::Braced, Privacy::Public, EI::CONST_EQ_ORD),
+        (SOE::Struct, VK::Braced, Privacy::PrivateField, EI::CONST_EQ),
+        (
+            SOE::Struct,
+            VK::Tupled,
+            Privacy::PrivateField,
+            EI::CONST_EQ_ORD,
+        ),
+        (SOE::Struct, VK::Tupled, Privacy::Public, EI::CONST_EQ_ORD),
+        (SOE::Enum, VK::Tupled, Privacy::Public, EI::CONST_EQ_ORD),
+        (SOE::Struct, VK::Unit, Privacy::Public, EI::CONST_EQ_ORD),
+        (SOE::Enum, VK::Unit, Privacy::Public, EI::CONST_EQ_ORD),
     ]
 };
 
-fn type_impls_permutations()->iter::Cloned<slice::Iter<'static,ItemType>>{
+fn type_impls_permutations() -> iter::Cloned<slice::Iter<'static, ItemType>> {
     TEST_CASES.iter().cloned()
 }
 
-
-
-fn impls_test<W:ioWrite>(mut w:W)->io::Result<()> {
-    writeln!(w,"{}","
+fn impls_test<W: ioWrite>(mut w: W) -> io::Result<()> {
+    writeln!(
+        w,
+        "{}",
+        "
 type TestEq<L,R,Val>=( 
     AssertEq<ConstEq<L,R>,Val> ,
     AssertEq<ConstEq<R,L>,Val> ,
@@ -162,53 +161,83 @@ type TestGetF<This,Field,Val>=(
 );
     
 
-")?;
-    for (soe,var_kind,privacy,impls) in type_impls_permutations() {
-        let name=get_typename(soe,var_kind,privacy,ConstOrRunt::Const,impls);
-        let deriving_type=get_typename(soe,var_kind,privacy,ConstOrRunt::Runt,impls);
-        let consttype=format!("{}Type",deriving_type);
-        let pre_priv=match privacy {
-            Privacy::PrivateField=>"priv_",
-            Privacy::Public=>"",
+"
+    )?;
+    for (soe, var_kind, privacy, impls) in type_impls_permutations() {
+        let name = get_typename(soe, var_kind, privacy, ConstOrRunt::Const, impls);
+        let deriving_type = get_typename(soe, var_kind, privacy, ConstOrRunt::Runt, impls);
+        let consttype = format!("{}Type", deriving_type);
+        let pre_priv = match privacy {
+            Privacy::PrivateField => "priv_",
+            Privacy::Public => "",
         };
-        
-        let co =if var_kind==VariantKind::Unit {"//"}else{""};
-        let col=if var_kind==VariantKind::Unit {"/*"}else{""};
-        let cor=if var_kind==VariantKind::Unit {"*/"}else{""};
 
-        writeln!(w,"
+        let co = if var_kind == VariantKind::Unit {
+            "//"
+        } else {
+            ""
+        };
+        let col = if var_kind == VariantKind::Unit {
+            "/*"
+        } else {
+            ""
+        };
+        let cor = if var_kind == VariantKind::Unit {
+            "*/"
+        } else {
+            ""
+        };
+
+        writeln!(
+            w,
+            "
             #[allow(non_snake_case)]
             #[test]
             fn test_{name}(){{
             use self::type_level_{deriving}::*;
-        ",name=name,deriving=deriving_type)?;
-    
+        ",
+            name = name,
+            deriving = deriving_type
+        )?;
+
         match soe {
-            StructOrEnum::Enum=>{
-                writeln!(w,"
+            StructOrEnum::Enum => {
+                writeln!(
+                    w,
+                    "
                     type Open0=Open {col} <U0> {cor};
                     type Open1=Open {col} <U10> {cor};
                     type Open2=Open {col} <U100> {cor};
-                ", col=col,cor=cor )?;
+                ",
+                    col = col,
+                    cor = cor
+                )?;
             }
-            StructOrEnum::Struct=>{
-                writeln!(w,"
+            StructOrEnum::Struct => {
+                writeln!(
+                    w,
+                    "
                     type Val0={name} {col} <U0,U0> {cor};
                     type Val1={name} {col} <U0,U10> {cor};
                     type Val2={name} {col} <U10,U0> {cor};
                     type Val3={name} {col} <U10,U10> {cor};
-                ", col=col,cor=cor , name=name)?;
+                ",
+                    col = col,
+                    cor = cor,
+                    name = name
+                )?;
             }
         }
 
-        
-        match (impls.contains(EnabledImpl::CONST_EQ ),var_kind,soe) {
-            (false,_,_)=>{},
-            (true,VariantKind::Unit,StructOrEnum::Struct)=>{
-                writeln!(w,"let _:TestEq<{name},{name},True>;",name=name)?;
+        match (impls.contains(EnabledImpl::CONST_EQ), var_kind, soe) {
+            (false, _, _) => {}
+            (true, VariantKind::Unit, StructOrEnum::Struct) => {
+                writeln!(w, "let _:TestEq<{name},{name},True>;", name = name)?;
             }
-            (true ,_,StructOrEnum::Struct)=>{
-                writeln!(w,"
+            (true, _, StructOrEnum::Struct) => {
+                writeln!(
+                    w,
+                    "
 
     let _:TestEq<Val0,Val0,True>;
     let _:TestEq<Val0,Val1,False>;
@@ -224,10 +253,13 @@ type TestGetF<This,Field,Val>=(
                     
     let _:TestEq<Val3,Val3,True>;
 
-")?;
-            },
-            (true ,_,StructOrEnum::Enum  )=>{
-                writeln!(w,"
+"
+                )?;
+            }
+            (true, _, StructOrEnum::Enum) => {
+                writeln!(
+                    w,
+                    "
 
     let _:TestEq<HalfOpen,HalfOpen,True>;
     let _:TestEq<HalfOpen,Open0,False>;
@@ -247,18 +279,20 @@ type TestGetF<This,Field,Val>=(
     {co}let _:TestEq<Open0,Open2,False>;
     {co}let _:TestEq<Open1,Open2,False>;
 ",
-    co=co
-)?;
-            },
+                    co = co
+                )?;
+            }
         }
 
-        match (impls.contains(EnabledImpl::CONST_ORD ),var_kind,soe) {
-            (false,_,_)=>{},
-            (true,VariantKind::Unit,StructOrEnum::Struct)=>{
-                writeln!(w,"let _:TestOrd<{name},{name},Equal_>;",name=name)?;
+        match (impls.contains(EnabledImpl::CONST_ORD), var_kind, soe) {
+            (false, _, _) => {}
+            (true, VariantKind::Unit, StructOrEnum::Struct) => {
+                writeln!(w, "let _:TestOrd<{name},{name},Equal_>;", name = name)?;
             }
-            (true,_,StructOrEnum::Struct)=>{
-                writeln!(w,"
+            (true, _, StructOrEnum::Struct) => {
+                writeln!(
+                    w,
+                    "
     let _:TestOrd<Val0,Val0,Equal_>;
     let _:TestOrd<Val0,Val1,Less_>;
     let _:TestOrd<Val0,Val2,Less_>;
@@ -273,10 +307,13 @@ type TestGetF<This,Field,Val>=(
 
     let _:TestOrd<Val3,Val3,Equal_>;
 
-")?;
-            },
-            (true,_,StructOrEnum::Enum)=>{
-                writeln!(w,"
+"
+                )?;
+            }
+            (true, _, StructOrEnum::Enum) => {
+                writeln!(
+                    w,
+                    "
     
     let _:TestOrd<HalfOpen,HalfOpen,Equal_>;
     let _:TestOrd<HalfOpen,Open0,Less_>;
@@ -296,23 +333,25 @@ type TestGetF<This,Field,Val>=(
     {co}let _:TestOrd<Open1,Open2,Less_>;
 
 ",
-    co=co
-)?;
-
-            },
+                    co = co
+                )?;
+            }
         }
         match soe {
-            StructOrEnum::Struct=>{
-                let tuple_acc_1=match privacy {
-                    Privacy::PrivateField=>"field_1",
-                    Privacy::Public=>"U1",
+            StructOrEnum::Struct => {
+                let tuple_acc_1 = match privacy {
+                    Privacy::PrivateField => "field_1",
+                    Privacy::Public => "U1",
                 };
-                let (const_fields,runt_fields,assoc_fields)=match var_kind {
-                     VariantKind::Unit
-                    |VariantKind::Tupled=>(("U0",tuple_acc_1),("0","1"),("field_0","field_1")),
-                    VariantKind::Braced=>("x","y").piped(|x| (x,x,x) ),
+                let (const_fields, runt_fields, assoc_fields) = match var_kind {
+                    VariantKind::Unit | VariantKind::Tupled => {
+                        (("U0", tuple_acc_1), ("0", "1"), ("field_0", "field_1"))
+                    }
+                    VariantKind::Braced => ("x", "y").piped(|x| (x, x, x)),
                 };
-                writeln!(w,"
+                writeln!(
+                    w,
+                    "
 
                     let _:AssertEq<
                         GetDiscrOf<Val1>,
@@ -382,24 +421,26 @@ type TestGetF<This,Field,Val>=(
                         {name} {col} < IsInitField<fields::{x}> , IsInitField<fields::{y}> > {cor}
                     >;
 
-                    ",   
-                    col=col,cor=cor,co=co,
-                    x=const_fields.0,
-                    y=const_fields.1,
-                    at_x=assoc_fields.0,
-                    at_y=assoc_fields.1,
-                    rx=runt_fields.0,
-                    ry=runt_fields.1,
-                    name=name,
-                    deriving=deriving_type,
-                    consttype=consttype,
-                    ppriv=pre_priv,
+                    ",
+                    col = col,
+                    cor = cor,
+                    co = co,
+                    x = const_fields.0,
+                    y = const_fields.1,
+                    at_x = assoc_fields.0,
+                    at_y = assoc_fields.1,
+                    rx = runt_fields.0,
+                    ry = runt_fields.1,
+                    name = name,
+                    deriving = deriving_type,
+                    consttype = consttype,
+                    ppriv = pre_priv,
                 )?;
-
-
             }
-            StructOrEnum::Enum=>{
-                writeln!(w,"
+            StructOrEnum::Enum => {
+                writeln!(
+                    w,
+                    "
 
                     let _:AssertEq<
                         GetDiscrOf<HalfOpen>,
@@ -522,66 +563,81 @@ type TestGetF<This,Field,Val>=(
 
 
                     ",
-                    remaining=match var_kind {
-                        VariantKind::Braced=>"remaining",
-                        VariantKind::Tupled=>"0",
-                        VariantKind::Unit=>"",
+                    remaining = match var_kind {
+                        VariantKind::Braced => "remaining",
+                        VariantKind::Tupled => "0",
+                        VariantKind::Unit => "",
                     },
-                    accessor=match var_kind {
-                        VariantKind::Braced=>"remaining",
-                        VariantKind::Tupled=>"U0",
-                        VariantKind::Unit=>"",
+                    accessor = match var_kind {
+                        VariantKind::Braced => "remaining",
+                        VariantKind::Tupled => "U0",
+                        VariantKind::Unit => "",
                     },
-                    assoc_ty=match var_kind {
-                        VariantKind::Braced=>"remaining",
-                        VariantKind::Tupled=>"field_0",
-                        VariantKind::Unit=>"",
+                    assoc_ty = match var_kind {
+                        VariantKind::Braced => "remaining",
+                        VariantKind::Tupled => "field_0",
+                        VariantKind::Unit => "",
                     },
-                    co=co ,col=col,cor=cor,
-                    deriving=deriving_type,
-                    consttype=consttype,
+                    co = co,
+                    col = col,
+                    cor = cor,
+                    deriving = deriving_type,
+                    consttype = consttype,
                 )?;
-
             }
         };
-        write!(w,"}}\n\n")?;
+        write!(w, "}}\n\n")?;
     }
     Ok(())
 }
 
+fn type_decls<W: ioWrite>(mut w: W) -> io::Result<()> {
+    for (soe, var_kind, privacy, impls) in type_impls_permutations() {
+        let deriving_type = get_typename(soe, var_kind, privacy, ConstOrRunt::Runt, impls);
 
-
-fn type_decls<W:ioWrite>(mut w:W)->io::Result<()> {
-    for (soe,var_kind,privacy,impls) in type_impls_permutations() {
-        let deriving_type=get_typename(soe,var_kind,privacy,ConstOrRunt::Runt,impls);
-        
         #[allow(unused_variables)]
-        let co =if var_kind==VariantKind::Unit {"//"}else{""};
-        let col=if var_kind==VariantKind::Unit {"/*"}else{""};
-        let cor=if var_kind==VariantKind::Unit {"*/"}else{""};
+        let co = if var_kind == VariantKind::Unit {
+            "//"
+        } else {
+            ""
+        };
+        let col = if var_kind == VariantKind::Unit {
+            "/*"
+        } else {
+            ""
+        };
+        let cor = if var_kind == VariantKind::Unit {
+            "*/"
+        } else {
+            ""
+        };
 
-        write!(w,"
+        write!(
+            w,
+            "
 #[derive(TypeLevel)]
 //#[typelevel(print_derive)]
 #[typelevel(derive_str)]
 #[typelevel(derive(
-")?;
-        if impls.contains(EnabledImpl::CONST_EQ ) {
-            write!(w,"ConstEq,")?; 
+"
+        )?;
+        if impls.contains(EnabledImpl::CONST_EQ) {
+            write!(w, "ConstEq,")?;
         }
         if impls.contains(EnabledImpl::CONST_ORD) {
-            write!(w,"ConstOrd,")?;
+            write!(w, "ConstOrd,")?;
         }
-        writeln!(w,"))]")?;
+        writeln!(w, "))]")?;
         match soe {
-            StructOrEnum::Struct=>{
-                let priv_=match privacy {
-                    Privacy::Public=>"pub",
-                    Privacy::PrivateField=>"",
+            StructOrEnum::Struct => {
+                let priv_ = match privacy {
+                    Privacy::Public => "pub",
+                    Privacy::PrivateField => "",
                 };
                 match var_kind {
-                    VariantKind::Braced=>
-                        writeln!(w,"
+                    VariantKind::Braced => writeln!(
+                        w,
+                        "
                             #[derive(Debug,PartialEq,Eq)]
                             pub struct {deriving}<T> {{
                                 pub x:bool,
@@ -589,44 +645,52 @@ fn type_decls<W:ioWrite>(mut w:W)->io::Result<()> {
                             }}
                             type Alias{deriving}={deriving}<()>;
                             ",
-                            priv_=priv_,
-                            deriving=deriving_type
-                        )?,
-                    VariantKind::Tupled=>
-                        writeln!(w,"
+                        priv_ = priv_,
+                        deriving = deriving_type
+                    )?,
+                    VariantKind::Tupled => writeln!(
+                        w,
+                        "
                             #[derive(Debug,PartialEq,Eq)]
                             pub struct {deriving}<T> (
                                 pub bool,{priv_} Option<T>
                             );
                             type Alias{deriving}={deriving}<()>;
                             ",
-                            priv_=priv_,
-                            deriving=deriving_type
-                        )?,
-                    VariantKind::Unit=>
-                        writeln!(w,"
+                        priv_ = priv_,
+                        deriving = deriving_type
+                    )?,
+                    VariantKind::Unit => writeln!(
+                        w,
+                        "
                             #[derive(Debug,PartialEq,Eq)]
                             pub struct {deriving};
                             type Alias{deriving}={deriving};
                             ",
-                            deriving=deriving_type
-                        )?,
+                        deriving = deriving_type
+                    )?,
                 }
 
-                if privacy==Privacy::PrivateField {
-                    let type_alias=
-                        get_typename(soe,var_kind,Privacy::PrivateField,ConstOrRunt::Const,impls);
+                if privacy == Privacy::PrivateField {
+                    let type_alias = get_typename(
+                        soe,
+                        var_kind,
+                        Privacy::PrivateField,
+                        ConstOrRunt::Const,
+                        impls,
+                    );
 
-                    let tuple_acc_1=match privacy {
-                        Privacy::PrivateField=>"field_1",
-                        Privacy::Public=>"U1",
+                    let tuple_acc_1 = match privacy {
+                        Privacy::PrivateField => "field_1",
+                        Privacy::Public => "U1",
                     };
-                    let (x,y)=match var_kind {
-                        VariantKind::Braced=>("x","y"),
-                         VariantKind::Unit
-                        |VariantKind::Tupled=>("U0",tuple_acc_1),
+                    let (x, y) = match var_kind {
+                        VariantKind::Braced => ("x", "y"),
+                        VariantKind::Unit | VariantKind::Tupled => ("U0", tuple_acc_1),
                     };
-                    write!(w,"\
+                    write!(
+                        w,
+                        "\
                         pub type {alias}{col}<X,Y>{cor}=Construct<\n\
                             self::type_level_{deriving}::{deriving}_Uninit ,
                             ({col}
@@ -636,16 +700,20 @@ fn type_decls<W:ioWrite>(mut w:W)->io::Result<()> {
                             )
                         >;\n
                         ",
-                        col=col,cor=cor,
-                        alias=type_alias,
-                        x=x,y=y,
-                        deriving=deriving_type,
+                        col = col,
+                        cor = cor,
+                        alias = type_alias,
+                        x = x,
+                        y = y,
+                        deriving = deriving_type,
                     )?;
-                    writeln!(w,"")?;
+                    writeln!(w, "")?;
                 }
             }
-            StructOrEnum::Enum=>{
-                writeln!(w,"
+            StructOrEnum::Enum => {
+                writeln!(
+                    w,
+                    "
                     #[derive(Debug,PartialEq,Eq)]
                     pub enum {deriving} {{
                         HalfOpen,
@@ -663,17 +731,18 @@ fn type_decls<W:ioWrite>(mut w:W)->io::Result<()> {
                         }}
                     }}
                 ",
-                    col=col,cor=cor,
-                    open=match var_kind {
-                        VariantKind::Braced=>"Open{remaining:u32}",
-                        VariantKind::Tupled=>"Open(u32)",
-                        VariantKind::Unit=>"Open",
+                    col = col,
+                    cor = cor,
+                    open = match var_kind {
+                        VariantKind::Braced => "Open{remaining:u32}",
+                        VariantKind::Tupled => "Open(u32)",
+                        VariantKind::Unit => "Open",
                     },
-                    deriving=deriving_type,
-                    const_open=match var_kind {
-                        VariantKind::Braced=>"Open{remaining:U0::CW}",
-                        VariantKind::Tupled=>"Open(U0::CW)",
-                        VariantKind::Unit=>"Open",
+                    deriving = deriving_type,
+                    const_open = match var_kind {
+                        VariantKind::Braced => "Open{remaining:U0::CW}",
+                        VariantKind::Tupled => "Open(U0::CW)",
+                        VariantKind::Unit => "Open",
                     }
                 )?;
             }
@@ -682,8 +751,10 @@ fn type_decls<W:ioWrite>(mut w:W)->io::Result<()> {
     Ok(())
 }
 
-fn imports<W:ioWrite>(mut w:W)->io::Result<()> {
-    write!(w,"
+fn imports<W: ioWrite>(mut w: W) -> io::Result<()> {
+    write!(
+        w,
+        "
 #[allow(dead_code)]
 mod tests{{
 
@@ -718,12 +789,12 @@ macro_rules! assert_eq_into{{
     }})
 }}
 
-    ")?;
+    "
+    )?;
     Ok(())
 }
 
-
-pub fn build_tests()->io::Result<()>{
+pub fn build_tests() -> io::Result<()> {
     let out_dir = env::var("OUT_DIR").unwrap();
     let test_path = path::Path::new(&out_dir).join("struct_enum_tests.rs");
     let test_file = fs::File::create(&test_path)?;
@@ -732,8 +803,8 @@ pub fn build_tests()->io::Result<()>{
     imports(&mut test_file)?;
     type_decls(&mut test_file)?;
     impls_test(&mut test_file)?;
-    
-    write!(test_file,"\n}}")?;
+
+    write!(test_file, "\n}}")?;
 
     Ok(())
 }

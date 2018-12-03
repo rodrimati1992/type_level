@@ -28,26 +28,19 @@ Eg:Rectangle\<I> in type_level_examples::_03_vis_wrapper.
 
 */
 
-pub mod self_constructors_type;
-pub mod functions;
 pub mod const_traits;
 pub mod example_const_user;
+pub mod functions;
 pub mod mut_const_param;
+pub mod self_constructors_type;
 
 pub use self::mut_const_param::{MCPBounds, MutConstParam};
 
 pub use self::self_constructors_type::allowed_self_constructors;
 
-pub use self::const_traits::{
-    AllowMutatorFn,
-    MutatorFnAttrs,
-};
+pub use self::const_traits::{AllowMutatorFn, MutatorFnAttrs};
 
-pub use self::functions::{
-    ReplaceWithParamFn,
-    AdaptUnary,
-    AdaptFn,
-};
+pub use self::functions::{AdaptFn, AdaptUnary, ReplaceWithParamFn};
 
 use crate_::fn_adaptors::*;
 use crate_::ops::*;

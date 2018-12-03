@@ -14,9 +14,7 @@ please look for RangedIntR in type_level_values.
 
 */
 
-
 use type_level_values::prelude::*;
-
 
 use num_traits::cast::AsPrimitive;
 
@@ -24,7 +22,7 @@ use std::fmt::Debug;
 use std::mem::size_of;
 use std::ops::{Add, Range, Shr, Sub};
 
-pub fn main_ () {
+pub fn main_() {
     type U65535 = <U65536 as Sub<U1>>::Output;
 
     assert_eq!(size_of::<u8>(), size_of::<RangedInt<U0, U0>>());
@@ -81,14 +79,15 @@ pub type RangedInt<Start, End> = RangedIntR<ConstRange<Start, End>>;
 
 #[derive(MutConstValue)]
 #[mcv(
-    doc="
+    doc = "
         Ranged unsigned integer type,
         using a ConstRange to determine the range it is limited to.
 
         The ConstRange also determines the integer type stored.
     ",
     derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord),
-    Type = "RangedIntR", ConstValue = "R"
+    Type = "RangedIntR",
+    ConstValue = "R"
 )]
 pub struct __RangedInt<R>
 where

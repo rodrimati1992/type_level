@@ -1,14 +1,8 @@
 use super::item_metadata::ItemMetaData;
 use super::my_meta::{MyMeta, MyNested};
 use super::shared::{
-    NotUpdated,
-    UpdateWithMeta,
-    ident_from_nested,
-    foreach_nestedmeta_index,
-    bounds_from_str,
-    parse_syn_path,
-    parse_ident,
-    parse_visibility,
+    bounds_from_str, foreach_nestedmeta_index, ident_from_nested, parse_ident, parse_syn_path,
+    parse_visibility, NotUpdated, UpdateWithMeta,
 };
 
 use indexable_struct::GetEnumIndices;
@@ -17,32 +11,29 @@ use attribute_errors::typelevel as attribute_errors;
 
 use ArenasRef;
 
-
 // use arrayvec::ArrayString;
-
 
 use core_extensions::*;
 #[allow(unused_imports)]
-use ::void_like::VoidLike as UsedVoid;
+use void_like::VoidLike as UsedVoid;
 // #[allow(unused_imports)]
 // use core_extensions::Void as UsedVoid;
-use ::*;
+use *;
 
 use syn::punctuated::Punctuated;
-use syn::token::{Comma,Add};
+use syn::token::{Add, Comma};
 use syn::{
-    self, Attribute, Ident, Meta, MetaList, NestedMeta, Path as SynPath, Visibility,TypeParamBound,
+    self, Attribute, Ident, Meta, MetaList, NestedMeta, Path as SynPath, TypeParamBound, Visibility,
 };
 
 use quote::ToTokens;
-
 
 use std::marker::PhantomData;
 // use std::str::FromStr;
 
 ////////////////////////////////////////////////////////////////////////////
 
-pub(crate) type ImplMetaData<'a> = ItemMetaData<'a,ImplVariant<'a>>;
+pub(crate) type ImplMetaData<'a> = ItemMetaData<'a, ImplVariant<'a>>;
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -50,39 +41,39 @@ pub(crate) type ImplMetaData<'a> = ItemMetaData<'a,ImplVariant<'a>>;
 #[derive(Debug, Clone, Default)]
 pub(crate) struct TLAttributes<'a> {
     pub(crate) renames: Renames<'a>,
-    pub(crate) reexports:ReExportCfg<'a>,
+    pub(crate) reexports: ReExportCfg<'a>,
     /// Traits derived for the generated item.
     pub(crate) derived: DerivedTraits<'a>,
     /// The derives applied to the generated item that don't come built into this macro.
     pub(crate) additional_derives: Vec<Ident>,
-    pub(crate) attrs:ItemMetaData<'a,()>,
+    pub(crate) attrs: ItemMetaData<'a, ()>,
     pub(crate) print_derive: bool,
     pub(crate) skip_derive: bool,
     pub(crate) print_debug: bool,
-    pub(crate) print_attributes:bool,
+    pub(crate) print_attributes: bool,
     /// If true,creates an associated constant containing the derive output.
-    pub(crate) derive_str:bool,
+    pub(crate) derive_str: bool,
     pub(crate) _marker: PhantomData<&'a ()>,
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
-#[derive(Debug,Clone,Default)]
-pub(crate) struct ReExportCfg<'a>{
-    pub(crate) reexported:ReExports,
-    pub(crate) visibility:ReExportVis<'a>,
+#[derive(Debug, Clone, Default)]
+pub(crate) struct ReExportCfg<'a> {
+    pub(crate) reexported: ReExports,
+    pub(crate) visibility: ReExportVis<'a>,
 }
 
 macro_rules! declare_reexports {
-    (   
-        $( ($items:ident,$index:ident) ),* $(,)* 
+    (
+        $( ($items:ident,$index:ident) ),* $(,)*
         multi_indices=[ $($multi_indices:tt)* ]
     ) => (
         declare_indexable_struct!{
             enum index=ReExportIndex
             struct indexable=ReExports__
             variants=[ $( ( $items , $index ) ),* ]
-            
+
             multi_indices=[ $($multi_indices)* ]
         }
 
@@ -106,7 +97,6 @@ macro_rules! declare_reexports {
     )
 }
 
-
 declare_reexports!{
     (traits       ,Traits       ),
     (variants     ,Variants     ),
@@ -116,14 +106,14 @@ declare_reexports!{
     multi_indices=[
         ("Struct",[Variants])
     ]
-    
+
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
 /// Determines whether and how the items inside of
 /// the generated module are re-exported outside of it.
-#[derive(Debug,Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub(crate) enum ReExportVis<'a> {
     NoReexport,
     /// The visibility of the type being annotated
@@ -137,9 +127,7 @@ impl<'a> Default for ReExportVis<'a> {
     }
 }
 
-
 ////////////////////////////////////////////////////////////////////////////
-
 
 macro_rules! derived_traits {
     (
@@ -199,61 +187,59 @@ derived_traits!{
 /// Determines whether and how an impl is derived.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub(crate) enum ImplVariant<
-    'a, 
-    Priv = &'static ImplVariant<'static, UsedVoid,UsedVoid> , 
-    Path:'a=&'a SynPath 
-> 
-{
+    'a,
+    Priv = &'static ImplVariant<'static, UsedVoid, UsedVoid>,
+    Path: 'a = &'a SynPath,
+> {
     Unspecified(Priv),
     NoImpls,
     DefaultImpls,
-    Internal { type_:Path,manual:bool,_marker:PhantomData<&'a ()>},
+    Internal {
+        type_: Path,
+        manual: bool,
+        _marker: PhantomData<&'a ()>,
+    },
 }
 
-static UNSPEC_NO_IMPLS:ImplVariant<UsedVoid, UsedVoid>= 
-    ImplVariant::NoImpls;
+static UNSPEC_NO_IMPLS: ImplVariant<UsedVoid, UsedVoid> = ImplVariant::NoImpls;
 
-static UNSPEC_DEFAULT_IMPLS:ImplVariant<UsedVoid, UsedVoid>= 
-    ImplVariant::DefaultImpls;
+static UNSPEC_DEFAULT_IMPLS: ImplVariant<UsedVoid, UsedVoid> = ImplVariant::DefaultImpls;
 
-
-
-pub(crate) trait ImplVariantMethods{
+pub(crate) trait ImplVariantMethods {
     /// Whether the trait is derived or not.Being derived implies being implemented.
-    fn is_derived(self)->bool;
+    fn is_derived(self) -> bool;
 }
 
-
-impl<'a> ImplVariant<'a,UsedVoid,UsedVoid> {
-    fn void_to<A,B>(self)->ImplVariant<'a,A,B>{
+impl<'a> ImplVariant<'a, UsedVoid, UsedVoid> {
+    fn void_to<A, B>(self) -> ImplVariant<'a, A, B> {
         match self {
-            ImplVariant::Unspecified{..} => unreachable!(),
+            ImplVariant::Unspecified { .. } => unreachable!(),
             ImplVariant::NoImpls => ImplVariant::NoImpls,
             ImplVariant::DefaultImpls => ImplVariant::DefaultImpls,
-            ImplVariant::Internal {..} => unreachable!(),
+            ImplVariant::Internal { .. } => unreachable!(),
         }
     }
 }
 
-
-impl<'a,Priv> ImplVariantMethods for  ImplVariant<'a,Priv> 
-where Priv:ImplVariantMethods
+impl<'a, Priv> ImplVariantMethods for ImplVariant<'a, Priv>
+where
+    Priv: ImplVariantMethods,
 {
     fn is_derived(self) -> bool {
         match self {
             ImplVariant::Unspecified(v) => v.is_derived(),
             ImplVariant::NoImpls => false,
             ImplVariant::DefaultImpls => true,
-            ImplVariant::Internal { manual , ..} => !manual,
+            ImplVariant::Internal { manual, .. } => !manual,
         }
     }
 }
 
-
 impl ImplVariantMethods for UsedVoid {
-    fn is_derived(self)->bool{ false }
+    fn is_derived(self) -> bool {
+        false
+    }
 }
-
 
 impl<'a> ImplVariant<'a> {
     pub(crate) fn specified_or(self, or: ImplVariant<'a>) -> Self {
@@ -267,16 +253,23 @@ impl<'a> ImplVariant<'a> {
         self.to_specified() != ImplVariant::NoImpls
     }
 
-    pub(crate) fn to_specified(self) -> ImplVariant<'a, UsedVoid,&'a SynPath> {
+    pub(crate) fn to_specified(self) -> ImplVariant<'a, UsedVoid, &'a SynPath> {
         match self {
-            ImplVariant::Unspecified(v) =>  {
-                let ret:ImplVariant<'a, UsedVoid,&'a SynPath>=v.void_to();
+            ImplVariant::Unspecified(v) => {
+                let ret: ImplVariant<'a, UsedVoid, &'a SynPath> = v.void_to();
                 ret
             }
             ImplVariant::NoImpls => ImplVariant::NoImpls,
             ImplVariant::DefaultImpls => ImplVariant::DefaultImpls,
-            ImplVariant::Internal { type_,manual,_marker } => 
-                ImplVariant::Internal { type_,manual,_marker },
+            ImplVariant::Internal {
+                type_,
+                manual,
+                _marker,
+            } => ImplVariant::Internal {
+                type_,
+                manual,
+                _marker,
+            },
         }
     }
 }
@@ -289,42 +282,47 @@ impl<'a> Default for ImplVariant<'a> {
 
 impl<'ar> UpdateWithMeta<'ar> for ImplVariant<'ar> {
     fn update_with_meta(
-        &mut self, meta: &MyMeta<'ar>, arenas: ArenasRef<'ar>
+        &mut self,
+        meta: &MyMeta<'ar>,
+        arenas: ArenasRef<'ar>,
     ) -> Result<(), NotUpdated> {
-        let new_type=|str_| arenas.paths.alloc(parse_syn_path(str_)) ;
+        let new_type = |str_| arenas.paths.alloc(parse_syn_path(str_));
 
         *self = match (&*meta.word.str, &meta.value) {
             ("NoImpls", _) => ImplVariant::NoImpls,
             ("DefaultImpls", _) => ImplVariant::DefaultImpls,
             ("Internal", _) => {
-                let mut type_=None::<&'ar SynPath> ;
-                let mut manual=false;
-                
-                if let MyNested::Value(str_)=meta.value {
+                let mut type_ = None::<&'ar SynPath>;
+                let mut manual = false;
+
+                if let MyNested::Value(str_) = meta.value {
                     type_ = Some(new_type(str_));
-                }else if let Some(list)=meta.value.to_mylist(arenas) {
+                } else if let Some(list) = meta.value.to_mylist(arenas) {
                     for nested in &*list {
                         match (&*nested.word.str, &nested.value) {
-                            ("Type", &MyNested::Value(str_))=>{
+                            ("Type", &MyNested::Value(str_)) => {
                                 type_ = Some(new_type(str_));
                             }
-                            ("Manual",_)=>{
-                                manual=true;
+                            ("Manual", _) => {
+                                manual = true;
                             }
-                            (attr_,_)=>panic!(
+                            (attr_, _) => panic!(
                                 " inside {},attribute {} not recognized,\
-                                 must be either type_ or manual", 
-                                meta.word.str,
-                                attr_
-                            )
+                                 must be either type_ or manual",
+                                meta.word.str, attr_
+                            ),
                         }
                     }
                 }
-                let type_=type_.unwrap_or_else(||{
+                let type_ = type_.unwrap_or_else(|| {
                     panic!("must specify the type for Internal derive.");
                 });
 
-                ImplVariant::Internal{type_,manual,_marker:PhantomData}
+                ImplVariant::Internal {
+                    type_,
+                    manual,
+                    _marker: PhantomData,
+                }
             }
             (_, _) => return Err(NotUpdated),
         };
@@ -336,24 +334,22 @@ impl<'ar> UpdateWithMeta<'ar> for ImplVariant<'ar> {
 
 #[derive(Debug, Default, Clone)]
 pub(crate) struct Renames<'a> {
-
     /// The base used to generate the identifiers for the
     /// \<ConstValue\>/*Type/*Trait/*WithRuntime/*_Uninit/*_Discr/*_Variant
     pub(crate) basename: Option<&'a Ident>,
 
     /// The ConstType.
     pub(crate) const_type: Option<&'a Ident>,
-    
+
     /// The struct representing either an enum variant or a struct.
     pub(crate) variant_type: Option<&'a Ident>,
-    
+
     /// The trait used to access the enum variant/struct in generic contexts
-    pub(crate) trait_  : Option<&'a Ident>,
+    pub(crate) trait_: Option<&'a Ident>,
 
     /// The trait used to access the enum variant/struct in generic contexts,
     /// that can have bounds mentioning for every field mentioning the runtime type .
     pub(crate) wr_trait: Option<&'a Ident>,
-
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -375,23 +371,23 @@ fn attr_settings_new_attr<'alloc>(
     settings: &mut TLAttributes<'alloc>,
     arenas: ArenasRef<'alloc>,
 ) {
-    let meta_list:&'alloc MetaList = match attr.interpret_meta() {
+    let meta_list: &'alloc MetaList = match attr.interpret_meta() {
         Some(Meta::List(meta_list)) => arenas.metalists.alloc(meta_list),
-        Some(_)=>{ return }
-        None=>{
-            panic!("not a valid attribute:\n{}\n",attr.into_token_stream() );
+        Some(_) => return,
+        None => {
+            panic!("not a valid attribute:\n{}\n", attr.into_token_stream());
         }
     };
 
     if meta_list.ident == "typelevel" {
         for nested0 in &meta_list.nested {
             let nested0: MyMeta = nested0.into_with(arenas);
-            
-            if let Ok(_)=settings.attrs.update_with_meta(&nested0,arenas) {
+
+            if let Ok(_) = settings.attrs.update_with_meta(&nested0, arenas) {
                 continue;
             }
 
-            let value=&nested0.value;
+            let value = &nested0.value;
 
             match &*nested0.word.str {
                 "skip_derive" => {
@@ -411,43 +407,39 @@ fn attr_settings_new_attr<'alloc>(
                     settings.derive_str = true;
                 }
                 "reexport" => {
-                    reexport_attribute(
-                        value,
-                        &mut settings.reexports,
-                        arenas,
-                    );
+                    reexport_attribute(value, &mut settings.reexports, arenas);
                 }
                 "rename" => {
-                    settings.renames.basename = Some(ident_from_nested(&value,arenas));
+                    settings.renames.basename = Some(ident_from_nested(&value, arenas));
                 }
                 "rename_constvalue" => {
-                    settings.renames.variant_type = Some(ident_from_nested(&value,arenas));
+                    settings.renames.variant_type = Some(ident_from_nested(&value, arenas));
                 }
                 "rename_trait" => {
-                    settings.renames.trait_ = Some(ident_from_nested(&value,arenas));
+                    settings.renames.trait_ = Some(ident_from_nested(&value, arenas));
                 }
                 "rename_wr_trait" => {
-                    settings.renames.wr_trait = Some(ident_from_nested(&value,arenas));
+                    settings.renames.wr_trait = Some(ident_from_nested(&value, arenas));
                 }
                 "rename_consttype" => {
-                    settings.renames.const_type = Some(ident_from_nested(&value,arenas));
+                    settings.renames.const_type = Some(ident_from_nested(&value, arenas));
                 }
                 _ => {
                     if let &MyNested::List(ref list) = value {
                         new_attr_nested_meta(attr, settings, &nested0.word.str, list, arenas);
                     } else {
-                        panic!("\
-                            attribute 'typelevel({})' not recognized.{}", 
+                        panic!(
+                            "\
+                             attribute 'typelevel({})' not recognized.{}",
                             nested0.word,
-                            attribute_errors::type_attrs());
+                            attribute_errors::type_attrs()
+                        );
                     }
                 }
             }
         }
     }
 }
-
-
 
 fn new_attr_nested_meta<'alloc>(
     _attr: &'alloc Attribute,
@@ -467,7 +459,7 @@ fn new_attr_nested_meta<'alloc>(
                     let variant = &mut derived[impl_index].inner;
                     *variant = variant.specified_or(ImplVariant::DefaultImpls);
                 },
-                move |_,word| {
+                move |_, word| {
                     additional_derives.push(parse_ident(&word.0));
                 },
             );
@@ -483,75 +475,74 @@ fn new_attr_nested_meta<'alloc>(
 
                 if let MyNested::MyList(ref list_1) = *value {
                     for param in list_1 {
-                        impl_
-                            .update_with_meta(param, arenas)
-                            .unwrap_or_else(|_|{
-                                panic!("Invalid parameter:{:#?} {}", 
-                                    param,
-                                    attribute_errors::item_attrs()
-                                )
-                            });
+                        impl_.update_with_meta(param, arenas).unwrap_or_else(|_| {
+                            panic!(
+                                "Invalid parameter:{:#?} {}",
+                                param,
+                                attribute_errors::item_attrs()
+                            )
+                        });
                     }
                 }
             },
-            |_,e| panic!("\n\nnot valid inside items( ... ):'{}'\n\nMust be one of:{}\n\n", 
-                e.0,
-                ImplIndex::indices_message()
-            ),
+            |_, e| {
+                panic!(
+                    "\n\nnot valid inside items( ... ):'{}'\n\nMust be one of:{}\n\n",
+                    e.0,
+                    ImplIndex::indices_message()
+                )
+            },
         ),
-        word => panic!("Unsupported nested attribute:{:#?}{}", 
+        word => panic!(
+            "Unsupported nested attribute:{:#?}{}",
             word,
             attribute_errors::type_attrs()
         ),
     }
 }
 
-
 fn reexport_attribute<'alloc>(
-    value:&MyNested<'alloc>,
-    reexports:&mut ReExportCfg<'alloc>,
-    arenas:ArenasRef<'alloc>,
-){
-    let r_reexported=&mut reexports.reexported;
-    let r_visibility=&mut reexports.visibility;
+    value: &MyNested<'alloc>,
+    reexports: &mut ReExportCfg<'alloc>,
+    arenas: ArenasRef<'alloc>,
+) {
+    let r_reexported = &mut reexports.reexported;
+    let r_visibility = &mut reexports.visibility;
 
     match value {
-        &MyNested::Word | &MyNested::Value{..} => {
-            let previous_vis=*r_visibility;
+        &MyNested::Word | &MyNested::Value { .. } => {
+            let previous_vis = *r_visibility;
 
-            *r_visibility=match value {
-                &MyNested::Word=>
-                    ReExportVis::WithDeriveVis,
-                &MyNested::Value(ref val) => 
-                    parse_visibility(&val)
-                        .piped(|v| &*arenas.visibilities.alloc(v) )
-                        .piped(ReExportVis::WithVis),
-                _=>return,
+            *r_visibility = match value {
+                &MyNested::Word => ReExportVis::WithDeriveVis,
+                &MyNested::Value(ref val) => parse_visibility(&val)
+                    .piped(|v| &*arenas.visibilities.alloc(v))
+                    .piped(ReExportVis::WithVis),
+                _ => return,
             };
 
-            if let ReExportVis::NoReexport= previous_vis {
-                *r_reexported=ReExports::all_reexported();
+            if let ReExportVis::NoReexport = previous_vis {
+                *r_reexported = ReExports::all_reexported();
             }
-
         }
-        &MyNested::List (ref list) => {
-            if let ReExportVis::NoReexport=*r_visibility {
-                *r_visibility=ReExportVis::WithDeriveVis;
-                *r_reexported=ReExports::none_reexported();
+        &MyNested::List(ref list) => {
+            if let ReExportVis::NoReexport = *r_visibility {
+                *r_visibility = ReExportVis::WithDeriveVis;
+                *r_reexported = ReExports::none_reexported();
             }
 
             foreach_nestedmeta_index(
                 list,
                 arenas,
-                |_,index| r_reexported[index]=true,
-                |value,word|{
-                    let value=&*value;
-                    match (word.0,value) {
-                        ( "Visibility" , &MyNested::Value(ref val) )=> {
-                            let vis=arenas.visibilities.alloc(parse_visibility(&val));
+                |_, index| r_reexported[index] = true,
+                |value, word| {
+                    let value = &*value;
+                    match (word.0, value) {
+                        ("Visibility", &MyNested::Value(ref val)) => {
+                            let vis = arenas.visibilities.alloc(parse_visibility(&val));
                             *r_visibility = ReExportVis::WithVis(vis);
                         }
-                        _=>panic!(
+                        _ => panic!(
                             "inside reexports(...):\
                              subattribute not supported:{} {:?}\
                              {}",
@@ -560,29 +551,25 @@ fn reexport_attribute<'alloc>(
                             attribute_errors::reexport()
                         ),
                     }
-                }
+                },
             );
         }
-        &MyNested::MyList { .. }=>
-            panic!("unsupported mynested variant here:{:#?}",value),
+        &MyNested::MyList { .. } => panic!("unsupported mynested variant here:{:#?}", value),
     }
 }
 
-
-
 /////////////////////////////////////////////////////////////////////////////////
-
 
 #[derive(Default)]
 pub(crate) struct FieldAttrs<'a> {
     /// Renames field on Some.
     pub(crate) rename: Option<&'a Ident>,
     /// the bounds for the field in the <Type>Trait trait.
-    pub(crate) const_bound:Punctuated<TypeParamBound, Add>,
+    pub(crate) const_bound: Punctuated<TypeParamBound, Add>,
     /// the bounds for the field in the <Type>IntoRuntime trait.
-    pub(crate) runt_bound:Punctuated<TypeParamBound, Add>,
-    pub(crate) pub_trait_getter:bool,
-    pub(crate) docs:Vec<&'a str>,
+    pub(crate) runt_bound: Punctuated<TypeParamBound, Add>,
+    pub(crate) pub_trait_getter: bool,
+    pub(crate) docs: Vec<&'a str>,
 }
 
 impl<'a> FieldAttrs<'a> {
@@ -596,11 +583,11 @@ impl<'a> FieldAttrs<'a> {
 }
 
 fn field_attrs_helper<'a>(
-    attr: &'a Attribute, 
-    settings: &mut FieldAttrs<'a>, 
+    attr: &'a Attribute,
+    settings: &mut FieldAttrs<'a>,
     arenas: ArenasRef<'a>,
 ) {
-    let meta_list :&'a syn::MetaList = match attr.interpret_meta() {
+    let meta_list: &'a syn::MetaList = match attr.interpret_meta() {
         Some(Meta::List(meta_list)) => arenas.metalists.alloc(meta_list),
         _ => return,
     };
@@ -612,35 +599,37 @@ fn field_attrs_helper<'a>(
             let value = nested0.value;
             match word {
                 "rename" => {
-                    settings.rename = Some(ident_from_nested(&value,arenas));
+                    settings.rename = Some(ident_from_nested(&value, arenas));
                 }
-                "bound"|"bound_runt" => {
-                    let str_=match value{
-                        MyNested::Value(str_)=>str_,
-                        v=>panic!("expected string literal found:{:#?}", v)
+                "bound" | "bound_runt" => {
+                    let str_ = match value {
+                        MyNested::Value(str_) => str_,
+                        v => panic!("expected string literal found:{:#?}", v),
                     };
 
-                    let bounds=match word {
-                        "bound"=>&mut settings.const_bound,
-                        "bound_runt"=>&mut settings.runt_bound,
-                        _=>unreachable!(),
+                    let bounds = match word {
+                        "bound" => &mut settings.const_bound,
+                        "bound_runt" => &mut settings.runt_bound,
+                        _ => unreachable!(),
                     };
 
-                    bounds_from_str(str_,bounds);
+                    bounds_from_str(str_, bounds);
                 }
-                "pub_trait_getter"=>{
-                    settings.pub_trait_getter=true;
+                "pub_trait_getter" => {
+                    settings.pub_trait_getter = true;
                 }
-                "doc"=>{
-                    match value {
-                        MyNested::Value(str_)=>settings.docs.push(str_),
-                        e=>panic!("\
-                            doc subattribute expected string literal,instead found:{:#?}\
-                        ",e)
-                    }
-                }
+                "doc" => match value {
+                    MyNested::Value(str_) => settings.docs.push(str_),
+                    e => panic!(
+                        "\
+                         doc subattribute expected string literal,instead found:{:#?}\
+                         ",
+                        e
+                    ),
+                },
                 word => {
-                    panic!("Unsupported nested attribute:{:#?}{}", 
+                    panic!(
+                        "Unsupported nested attribute:{:#?}{}",
                         word,
                         attribute_errors::field_attrs()
                     );
@@ -649,4 +638,3 @@ fn field_attrs_helper<'a>(
         }
     }
 }
-

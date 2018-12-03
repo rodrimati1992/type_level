@@ -79,10 +79,7 @@ impl<T> const_traits::ApplyConstParam_<T> for PhantomDataType {
     type Applied = PhantomData<T>;
 }
 
-
-
 //////////////////////////////////////////////////////////////////////////////////
-
 
 type_fn!{
     /// Constructs a PhantomData<v>

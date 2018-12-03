@@ -6,11 +6,9 @@ Helper Mutator Functions
 Replaces the current constant with the one passed as a parameter,
 using `this.mutparam(ReplaceConstValueOp::NEW, NewConstant::T )`
 */
-
 use prelude::*;
 
-use fn_adaptors::{ApplySelf,GetRhs};
-
+use fn_adaptors::{ApplySelf, GetRhs};
 
 mutator_fn!{
     type AllowedSelf=(allowed_self_constructors::All)
@@ -23,7 +21,6 @@ mutator_fn!{
     */
     pub fn ReplaceWithParamFn=GetRhs;
 }
-
 
 mutator_fn!{
     type AllowedSelf=(allowed_self_constructors::All)
@@ -41,12 +38,11 @@ mutator_fn!{
     { let Out;Out }
 }
 
-
 mutator_fn!{
     type AllowedSelf=(allowed_self_constructors::All)
 
     /**
-    Adapts functions taking 3 or more parameters to take 
+    Adapts functions taking 3 or more parameters to take
     the current ConstValue and a tuple containing the remaining parameters.
 
     For adapting unary functions use AdaptUnary.
@@ -58,4 +54,3 @@ mutator_fn!{
     where[ ApplySelf<Func,I>:TypeFn_<Rem,Output=Out> ]
     { let Out;Out }
 }
-
