@@ -37,33 +37,45 @@ pub mod allowed_self_constructors {
     use super::*;
 
     /// Allows all methods on MutConstParam to be called
-    pub type All = Construct<AllowedConstructorsType,(
-        (fields::by_ref,True),
-        (fields::by_mut,True),
-        (fields::by_val,True),
-    )>;
+    pub type All = Construct<
+        AllowedConstructorsType,
+        (
+            (fields::by_ref, True),
+            (fields::by_mut, True),
+            (fields::by_val, True),
+        ),
+    >;
 
-    /// Allows methods taking &This/Rc<This>/Arc<This>/This/Box<This> 
+    /// Allows methods taking &This/Rc<This>/Arc<This>/This/Box<This>
     /// on MutConstParam to be called
-    pub type ByRef = Construct<AllowedConstructorsType,(
-        (fields::by_ref,True),
-        (fields::by_mut,False),
-        (fields::by_val,True),
-    )>;
+    pub type ByRef = Construct<
+        AllowedConstructorsType,
+        (
+            (fields::by_ref, True),
+            (fields::by_mut, False),
+            (fields::by_val, True),
+        ),
+    >;
 
     /// Allows methods taking &This/Rc<This>/Arc<This>/&mut This
     /// on MutConstParam to be called
-    pub type ByMut = Construct<AllowedConstructorsType,(
-        (fields::by_ref,True),
-        (fields::by_mut,True),
-        (fields::by_val,False),
-    )>;
+    pub type ByMut = Construct<
+        AllowedConstructorsType,
+        (
+            (fields::by_ref, True),
+            (fields::by_mut, True),
+            (fields::by_val, False),
+        ),
+    >;
 
     /// Allows methods taking This/Box<This> on MutConstParam to be called
-    pub type ByVal = Construct<AllowedConstructorsType,(
-        (fields::by_ref,False),
-        (fields::by_mut,False),
-        (fields::by_val,True),
-    )>;
+    pub type ByVal = Construct<
+        AllowedConstructorsType,
+        (
+            (fields::by_ref, False),
+            (fields::by_mut, False),
+            (fields::by_val, True),
+        ),
+    >;
 
 }

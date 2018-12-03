@@ -7,20 +7,17 @@ use std::fmt::{self, Debug, Display};
 
 #[allow(unused_imports)]
 use core_extensions::prelude::*;
-use ::*;
+use *;
 
-use attribute_detection::shared::{
-    parse_ident,
-};
+use attribute_detection::shared::parse_ident;
 
-
-#[derive(Clone,Debug,PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub(crate) struct MyMeta<'alloc> {
-    pub(crate) word : MyWord<'alloc>,
+    pub(crate) word: MyWord<'alloc>,
     pub(crate) value: MyNested<'alloc>,
 }
 
-#[derive(Clone,Debug,PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub(crate) enum MyNested<'alloc> {
     Word,
     List(&'alloc Punctuated<NestedMeta, Comma>),
@@ -28,10 +25,8 @@ pub(crate) enum MyNested<'alloc> {
     Value(&'alloc str),
 }
 
-
-
-impl<'alloc> FromWith<&'alloc Meta,ArenasRef<'alloc>> for MyMeta<'alloc>{
-    fn from_with(meta:&'alloc Meta,arenas:ArenasRef<'alloc>) -> Self {
+impl<'alloc> FromWith<&'alloc Meta, ArenasRef<'alloc>> for MyMeta<'alloc> {
+    fn from_with(meta: &'alloc Meta, arenas: ArenasRef<'alloc>) -> Self {
         match meta {
             &Meta::Word(ref word) => MyMeta {
                 word: word.into(),
@@ -45,7 +40,7 @@ impl<'alloc> FromWith<&'alloc Meta,ArenasRef<'alloc>> for MyMeta<'alloc>{
                 word: (&n_v.ident).into(),
                 value: match n_v.lit {
                     syn::Lit::Str(ref s) => {
-                        let str_=arenas.strings.alloc(s.value());
+                        let str_ = arenas.strings.alloc(s.value());
                         MyNested::Value(str_)
                     }
                     ref other => panic!("invalid literal,expected a string:{:?}", other),
@@ -55,13 +50,10 @@ impl<'alloc> FromWith<&'alloc Meta,ArenasRef<'alloc>> for MyMeta<'alloc>{
     }
 }
 
-
-impl<'alloc> FromWith<&'alloc NestedMeta,ArenasRef<'alloc>> for MyMeta<'alloc>{
-    fn from_with(n_meta:&'alloc NestedMeta,arenas:ArenasRef<'alloc>) -> Self {
+impl<'alloc> FromWith<&'alloc NestedMeta, ArenasRef<'alloc>> for MyMeta<'alloc> {
+    fn from_with(n_meta: &'alloc NestedMeta, arenas: ArenasRef<'alloc>) -> Self {
         match n_meta {
-            &NestedMeta::Meta(ref meta) => {
-                meta.into_with(arenas)
-            }
+            &NestedMeta::Meta(ref meta) => meta.into_with(arenas),
             &NestedMeta::Literal(ref lit) => {
                 let str_ = match lit {
                     &Lit::Str(ref x) => x.value(),
@@ -71,10 +63,10 @@ impl<'alloc> FromWith<&'alloc NestedMeta,ArenasRef<'alloc>> for MyMeta<'alloc>{
                         lit
                     ),
                 };
-                let ident=arenas.idents.alloc(parse_ident(&str_));
+                let ident = arenas.idents.alloc(parse_ident(&str_));
 
                 MyMeta {
-                    word: MyWord{ident,str:str_},
+                    word: MyWord { ident, str: str_ },
                     value: MyNested::Word,
                 }
             }
@@ -82,49 +74,48 @@ impl<'alloc> FromWith<&'alloc NestedMeta,ArenasRef<'alloc>> for MyMeta<'alloc>{
     }
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-
-impl<'alloc> MyNested<'alloc>{
+impl<'alloc> MyNested<'alloc> {
     pub(crate) fn list_to_mylist(
-            &mut self,
-            arenas:ArenasRef<'alloc>
-    )->Result<&mut [MyMeta<'alloc>],&mut Self>{
+        &mut self,
+        arenas: ArenasRef<'alloc>,
+    ) -> Result<&mut [MyMeta<'alloc>], &mut Self> {
         match self {
-            &mut MyNested::List(list)=>{
-                let list=list.into_iter().map(|x|MyMeta::from_with(x,arenas)).collect();
-                *self=MyNested::MyList(list);
+            &mut MyNested::List(list) => {
+                let list = list
+                    .into_iter()
+                    .map(|x| MyMeta::from_with(x, arenas))
+                    .collect();
+                *self = MyNested::MyList(list);
             }
-            _=>{}
+            _ => {}
         }
         match self {
-            &mut MyNested::MyList(ref mut list)=>Ok(list),
-            this=>Err(this),
+            &mut MyNested::MyList(ref mut list) => Ok(list),
+            this => Err(this),
         }
     }
 
     pub(crate) fn to_mylist<'s>(
-            &'s self,
-            arenas:ArenasRef<'alloc>
-    )->Option<Cow<'s,[MyMeta<'alloc>]>>{
+        &'s self,
+        arenas: ArenasRef<'alloc>,
+    ) -> Option<Cow<'s, [MyMeta<'alloc>]>> {
         match self {
-            &MyNested::List(list)=>{
-                Some(Cow::Owned(list.into_iter().map(|x|MyMeta::from_with(x,arenas)).collect()))
-            }
-            &MyNested::MyList(ref list)=>Some(Cow::Borrowed(list)),
-            _=>None
+            &MyNested::List(list) => Some(Cow::Owned(
+                list.into_iter()
+                    .map(|x| MyMeta::from_with(x, arenas))
+                    .collect(),
+            )),
+            &MyNested::MyList(ref list) => Some(Cow::Borrowed(list)),
+            _ => None,
         }
     }
 }
 
-
 ////////////////////////////////////////////////////////////////////////////
 
-
-#[derive(Clone,PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct MyWord<'alloc> {
     pub ident: &'alloc Ident,
     pub str: String,
@@ -132,9 +123,9 @@ pub struct MyWord<'alloc> {
 
 impl<'alloc> From<&'alloc Ident> for MyWord<'alloc> {
     fn from(ident: &'alloc Ident) -> Self {
-        Self { 
+        Self {
             ident,
-            str: ident.to_string() 
+            str: ident.to_string(),
         }
     }
 }

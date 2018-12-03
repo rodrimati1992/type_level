@@ -61,36 +61,28 @@ mod tests;
 
 use core_extensions::type_level_bool::{Boolean, False, True};
 
+use crate_::collection_ops::*;
 use crate_::extern_types::typenum::UnsignedInteger;
 use crate_::field_traits::{GetField_, SetField_};
+use crate_::fn_adaptors::*;
 use crate_::ops::control_flow::{If, Lazy};
 use crate_::ops::{
-    AsTList_,
-    ConstEq,ConstEqOp,ConstEqMt,
-    ConstNE_, 
-    ConstOrd,ConstOrdOp,
-    ConstLtOp, 
-    ConstFrom_, 
+    AsTList_, ConstEq, ConstEqMt, ConstEqOp, ConstFrom_, ConstLtOp, ConstNE_, ConstOrd, ConstOrdOp,
     UnwrapOp,
 };
-use crate_::fn_adaptors::*;
-use crate_::std_ops::{AddOp,BitAndMt,NotOp};
-use crate_::collection_ops::*;
+use crate_::std_ops::{AddOp, BitAndMt, NotOp};
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_, OrderingTrait};
 use crate_::std_types::option::{None_, Some_};
 use crate_::std_types::tuples::TupleType;
 use prelude::*;
 
-use std_::ops::{Add, BitAnd, BitOr,Shr, Index, Sub};
+use std_::ops::{Add, BitAnd, BitOr, Index, Shr, Sub};
 
 #[derive(TypeLevel)]
 #[typelevel(
-    reexport(Variants, Traits,Discriminants), 
+    reexport(Variants, Traits, Discriminants),
     rename_consttype = "TListType",
-    items(
-        AsTList(NoImpls),
-        runtime_conv(NoImpls),
-    )
+    items(AsTList(NoImpls), runtime_conv(NoImpls))
 )]
 #[doc(hidden)]
 pub enum TypeLevelList<Current, Remaining> {
@@ -114,10 +106,7 @@ impl<T0, Rem0> ConstEq_<TNil> for TList<T0, Rem0> {
 }
 impl<T0, T1, Rem0, Rem1, out> ConstEq_<TList<T1, Rem1>> for TList<T0, Rem0>
 where
-    (T0,T1): Piped_<
-        If<ConstEqOp, Lazy<ConstEqOp, (Rem0, Rem1)>, Const<False>>,
-        Output = out
-    >,
+    (T0, T1): Piped_<If<ConstEqOp, Lazy<ConstEqOp, (Rem0, Rem1)>, Const<False>>, Output = out>,
     out: Boolean,
 {
     type Output = out;
@@ -136,10 +125,13 @@ impl<T0, Rem0> ConstOrd_<TNil> for TList<T0, Rem0> {
 }
 impl<T0, T1, Rem0, Rem1, out> ConstOrd_<TList<T1, Rem1>> for TList<T0, Rem0>
 where
-    (T0,T1):Piped_<(
-        ConstOrdOp,
-        If<ConstEqMt<Equal_>, Lazy<ConstOrdOp, (Rem0, Rem1)>>,
-    ),Output = out>,
+    (T0, T1): Piped_<
+        (
+            ConstOrdOp,
+            If<ConstEqMt<Equal_>, Lazy<ConstOrdOp, (Rem0, Rem1)>>,
+        ),
+        Output = out,
+    >,
     out: OrderingTrait,
 {
     type Output = out;
@@ -375,11 +367,10 @@ type_fn!{
 
 ////////////////////////////////////////////////////////////////////////////////
 
-impl Collection for TListType{
-    type CollectEmpty=TNil;
-    type Items=SetFields<DefaultCollectionItems<Self>,tlist!(
-        (collfns_f::repeat,Repeat_Override),
-    )>;
+impl Collection for TListType {
+    type CollectEmpty = TNil;
+    type Items =
+        SetFields<DefaultCollectionItems<Self>, tlist!((collfns_f::repeat, Repeat_Override),)>;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -400,20 +391,20 @@ impl<DefaultVal, Func> TryFoldL_<DefaultVal, Func> for tlist![] {
     type Output = TFVal<DefaultVal>;
 }
 
-impl<Curr,Rem, DefVal,Func,Out> TryFoldL_<DefVal, Func> for tlist![Curr,..Rem] 
-where TryFoldLHelper<Func>:TypeFn_<(TFVal<DefVal>,Self),Output=Out>
+impl<Curr, Rem, DefVal, Func, Out> TryFoldL_<DefVal, Func> for tlist![Curr, ..Rem]
+where
+    TryFoldLHelper<Func>: TypeFn_<(TFVal<DefVal>, Self), Output = Out>,
 {
-    type Output=Out;
+    type Output = Out;
 }
-
 
 type_fn!{
     captures(F)
-    fn 
-        TryFoldLHelper[Accum,Curr,Rem](TFBreak<Accum>,tlist![Curr,..Rem]){ 
-            TFBreak<Accum> 
+    fn
+        TryFoldLHelper[Accum,Curr,Rem](TFBreak<Accum>,tlist![Curr,..Rem]){
+            TFBreak<Accum>
         }
-        
+
         TryFoldLHelper[Accum,Curr,Rem](TFVal<Accum>,tlist![Curr,..Rem])
         where[
             tlist![F,IntoTryFold]:TypeFn_<(Accum,Curr),Output=NewAccum>,
@@ -422,10 +413,9 @@ type_fn!{
             let NewAccum;let Out;
             Out
         }
-        
+
         TryFoldLHelper[Accum](Accum,TNil){ Accum }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -433,14 +423,12 @@ impl<DefaultVal, Func> TryFoldR_<DefaultVal, Func> for tlist![] {
     type Output = TFVal<DefaultVal>;
 }
 
-impl<Curr,Rem, DefaultVal,Reversed,Func> 
-    TryFoldR_<DefaultVal, Func> 
-for tlist![Curr,..Rem] 
-where 
-    ReverseOp:TypeFn_<Self,Output=Reversed>,
-    Reversed:TryFoldL_<DefaultVal,Func>,
+impl<Curr, Rem, DefaultVal, Reversed, Func> TryFoldR_<DefaultVal, Func> for tlist![Curr, ..Rem]
+where
+    ReverseOp: TypeFn_<Self, Output = Reversed>,
+    Reversed: TryFoldL_<DefaultVal, Func>,
 {
-    type Output=Reversed::Output;
+    type Output = Reversed::Output;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -467,7 +455,7 @@ impl<Mapper> Map_<Mapper> for TNil {
 
 impl<T, Rem, Predicate, out> Filter_<Predicate> for TList<T, Rem>
 where
-    Self: FoldR_<TNil, If<(GetRhs,Predicate), PushOp,GetLhs>, Output = out>,
+    Self: FoldR_<TNil, If<(GetRhs, Predicate), PushOp, GetLhs>, Output = out>,
 {
     type Output = out;
 }
@@ -539,7 +527,7 @@ impl PopBack_ for TNil {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-impl<Current, Rem> AsTList_ for TList<Current, Rem>{
+impl<Current, Rem> AsTList_ for TList<Current, Rem> {
     type Output = Self;
 }
 
@@ -559,7 +547,6 @@ type_fn!{
         Out
     }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -657,7 +644,7 @@ macro_rules! fixed_size_impls {
     (repeated; $( ($len:ty)=[ $($tparams:ident),* ])* )=>{
         type_fn!{
             captures(V)
-            fn 
+            fn
             $(
                 RepeatHelper(True,$len)
                 { tlist![ $($tparams),* ] }
@@ -665,7 +652,7 @@ macro_rules! fixed_size_impls {
 
             RepeatHelper[Rep](False,Rep)
             where[
-                (   
+                (
                     BitAndMt<U31>,
                     ApplyLhs<RepeatHelper<V>,True>
                 ):TypeFn_<Rep,Output=Rem0>,
@@ -696,7 +683,7 @@ macro_rules! fixed_size_impls {
 
         type_fn!{
             captures(V,Rem)
-            fn 
+            fn
             RepeatHelper2[N](N,U0){
                 Rem
             }
@@ -756,7 +743,6 @@ macro_rules! fixed_size_impls {
         }
     };
 }
-
 
 fixed_size_impls!{repeated;
     (U0)=[]
@@ -866,6 +852,3 @@ fixed_size_impls!{with-idents;
 
 #[cfg(feature = "large_tlist")]
 mod large_impls;
-
-
-

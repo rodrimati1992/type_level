@@ -1,63 +1,58 @@
 use super::*;
 
-use attribute_detection::shared::{
-    parse_type,
-};
+use attribute_detection::shared::parse_type;
 
-pub(crate)struct FieldTraits<'a>{
-    pub(crate)decls:&'a StructDeclarations<'a>,
+pub(crate) struct FieldTraits<'a> {
+    pub(crate) decls: &'a StructDeclarations<'a>,
     // The identifier "NewValue"
-    value_ident:syn::Type,
+    value_ident: syn::Type,
 }
 
-
-impl<'a> FieldTraits<'a>{
-    pub(crate)fn new(decls:&'a StructDeclarations<'a>)->Self{
-        Self{
+impl<'a> FieldTraits<'a> {
+    pub(crate) fn new(decls: &'a StructDeclarations<'a>) -> Self {
+        Self {
             decls,
-            value_ident:parse_type("NewValue"),
+            value_ident: parse_type("NewValue"),
         }
-
     }
 }
 
-
-impl<'a> ToTokens for FieldTraits<'a>{
-    fn to_tokens(&self,tokens:&mut TokenStream){
-        let value_ident=&self.value_ident;
-        let orig_gens_impl_header=&self.decls.orig_gens_impl_header;
-        let orig_gens_item_use=&self.decls.orig_gens_item_use;
+impl<'a> ToTokens for FieldTraits<'a> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let value_ident = &self.value_ident;
+        let orig_gens_impl_header = &self.decls.orig_gens_impl_header;
+        let orig_gens_item_use = &self.decls.orig_gens_item_use;
         // let original_name=&self.decls.original_name;
-        let where_preds=&self.decls.original_where_preds;
+        let where_preds = &self.decls.original_where_preds;
 
-        let priv_suffix=self.decls.priv_param_suffix();
-        
+        let priv_suffix = self.decls.priv_param_suffix();
+
         for struct_ in &self.decls.declarations {
-            let struct_name=&struct_.name;
-            let generics_fn=||struct_.fields.iter().map(|x|x.generic);
-            let generics=&struct_.generics;
+            let struct_name = &struct_.name;
+            let generics_fn = || struct_.fields.iter().map(|x| x.generic);
+            let generics = &struct_.generics;
 
-            let derived=&self.decls.attribute_settings.derived;
-            let specified=derived.into_consttype.inner.to_specified();
-            let into_=match specified {
-                ImplVariant::Unspecified(_)=>unreachable!("because of Void"),
-                ImplVariant::NoImpls|ImplVariant::DefaultImpls=>&self.decls.original_path,
-                ImplVariant::Internal{type_,..}=>type_,
+            let derived = &self.decls.attribute_settings.derived;
+            let specified = derived.into_consttype.inner.to_specified();
+            let into_ = match specified {
+                ImplVariant::Unspecified(_) => unreachable!("because of Void"),
+                ImplVariant::NoImpls | ImplVariant::DefaultImpls => &self.decls.original_path,
+                ImplVariant::Internal { type_, .. } => type_,
             };
-            
-            for (field_i,field) in struct_.fields.iter().enumerate(){
-                let field_name_struct =&field.accessor_ident;
-                let doc_hidden_attr=field.doc_hidden_attr();
-                let original_ty=&field.original_ty;
-                let generic    =&field.generic;
-                
-                let generics_set=ReplaceNth::new(generics_fn(),field_i,value_ident);
+
+            for (field_i, field) in struct_.fields.iter().enumerate() {
+                let field_name_struct = &field.accessor_ident;
+                let doc_hidden_attr = field.doc_hidden_attr();
+                let original_ty = &field.original_ty;
+                let generic = &field.generic;
+
+                let generics_set = ReplaceNth::new(generics_fn(), field_i, value_ident);
                 // let generics_0=generics_fn();
-                
+
                 tokens.append_all(quote!{
 
                     #doc_hidden_attr
-                    impl<#generics #value_ident> 
+                    impl<#generics #value_ident>
                         SetField_<self::fields::#field_name_struct,#value_ident>
                     for #struct_name<#generics #priv_suffix>
                     {
@@ -72,7 +67,7 @@ impl<'a> ToTokens for FieldTraits<'a>{
                     }
 
                     #doc_hidden_attr
-                    impl<#orig_gens_impl_header #generics > 
+                    impl<#orig_gens_impl_header #generics >
                         GetFieldRuntime_<
                             self::fields::#field_name_struct,
                             #into_<#orig_gens_item_use>
@@ -83,19 +78,17 @@ impl<'a> ToTokens for FieldTraits<'a>{
                         type Runtime= #original_ty;
                     }
 
-                    
+
                 });
+            }
 
-
-            } 
-
-            let values=iter::repeat(value_ident).take(struct_.fields.len());
+            let values = iter::repeat(value_ident).take(struct_.fields.len());
 
             tokens.append_all(quote!{
 
-                impl<#generics Field,FieldVal> std_::ops::Index<Field> 
+                impl<#generics Field,FieldVal> std_::ops::Index<Field>
                 for #struct_name<#generics #priv_suffix>
-                where 
+                where
                     Self:GetField_<Field,Output=FieldVal>,
                 {
                     type Output=ConstWrapper<FieldVal>;
@@ -106,8 +99,8 @@ impl<'a> ToTokens for FieldTraits<'a>{
                     }
                 }
 
-                
-                impl<#generics #value_ident> 
+
+                impl<#generics #value_ident>
                     SetField_<self::fields::All,#value_ident>
                 for #struct_name<#generics #priv_suffix>
                 {
@@ -120,5 +113,3 @@ impl<'a> ToTokens for FieldTraits<'a>{
         }
     }
 }
-
-

@@ -12,7 +12,6 @@ pub mod test;
 fn main() {
     println!("cargo:rerun-if-changed=build");
 
-
     let rver = version().unwrap();
 
     if Version::new(1, 22, 0) <= rver {
@@ -26,7 +25,6 @@ fn main() {
     }
 
     println!("cargo:warning=RERUNNING type_level_values BUILD SCRIPT");
-
 
     // const RERUNNING_BUILD_SCRIPT:()=();
 

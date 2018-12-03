@@ -392,9 +392,9 @@ macro_rules! mutator_fn {
             $(pub $(($($visibility)*))*)*
             fn $fn_ident $($rest)+
         }
-        impl<$($($bound_vars,)*)*> 
-            $crate::user_traits::MutatorFnAttrs 
-        for $fn_ident< $($($bound_vars,)*)* > 
+        impl<$($($bound_vars,)*)*>
+            $crate::user_traits::MutatorFnAttrs
+        for $fn_ident< $($($bound_vars,)*)* >
         {
             type AllowedSelf=$allowed_self;
         }
@@ -419,11 +419,10 @@ macro_rules! mutator_fn {
         captures( $($bound_vars:ident),* )
         fn $fn_ident:ident
     )=>{
-        impl< $($self_gens)* , $($bound_vars,)*> 
-            $crate::user_traits::AllowMutatorFn<$fn_ident< $($($bound_vars,)*)* >> 
+        impl< $($self_gens)* , $($bound_vars,)*>
+            $crate::user_traits::AllowMutatorFn<$fn_ident< $($($bound_vars,)*)* >>
         for $this
         where $( $($self_where)* )*
         {}
     };
 }
-

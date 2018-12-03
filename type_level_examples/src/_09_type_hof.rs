@@ -10,8 +10,7 @@ use type_level_values::prelude::*;
 
 use type_level_values::core_extensions::Void;
 
-
-pub fn main_ () {
+pub fn main_() {
     main_0();
     main_1();
     main_2();

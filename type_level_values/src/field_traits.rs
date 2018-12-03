@@ -3,13 +3,12 @@ Traits ,type aliases, and TypeFn_s for manipulating fields.
 
 */
 
-
 use prelude::*;
 
-use crate_::ops::{AssertEq,AssertPipedRet,Sub1Op};
 use crate_::collection_ops::{FoldL_, Map_};
-use crate_::std_ops::{SubOp};
-use crate_::fn_adaptors::{ApplyNth,ApplyRhs};
+use crate_::fn_adaptors::{ApplyNth, ApplyRhs};
+use crate_::ops::{AssertEq, AssertPipedRet, Sub1Op};
+use crate_::std_ops::SubOp;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -19,7 +18,7 @@ pub trait GetField_<Field> {
     type Output;
 }
 
-/// Returns the runtime type/value of the `FieldName` field by 
+/// Returns the runtime type/value of the `FieldName` field by
 /// passing the `RuntimeTy` runtime type .
 pub trait GetFieldRuntime_<Field, RuntimeType>: GetField_<Field> {
     /// The type of the runtime equivalent of `Field`.
@@ -33,7 +32,6 @@ pub trait GetFieldRuntime_<Field, RuntimeType>: GetField_<Field> {
         Self::Output::to_runtime()
     }
 }
-
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -54,20 +52,19 @@ type_fn!{
 }
 
 type_fn!{
-    /// Returns the runtime type of the `FieldName` field by 
+    /// Returns the runtime type of the `FieldName` field by
     /// passing the ``RuntimeTy` runtime type .
     pub fn GetFieldRuntimeOp[This,Field,RuntimeTy](This,Field,RuntimeTy)
     where[ This:GetFieldRuntime_<Field,RuntimeTy> ]
     { This::Runtime }
 }
 
-/// Returns the runtime type of the `FieldName` field by 
+/// Returns the runtime type of the `FieldName` field by
 /// passing the ``RuntimeTy` runtime type .
 pub type GetFieldRuntime<This, FieldName, RuntimeTy> =
     <This as GetFieldRuntime_<FieldName, RuntimeTy>>::Runtime;
 
 //////////////////////////////////////////////////////////////////////////////////////////
-
 
 /// Sets the value of a field of a ConstValue.
 pub trait SetField_<Field, Value: ?Sized>: Sized {
@@ -89,7 +86,6 @@ type_fn!{
     where[ This:SetField_<Field,Value> ]
     { This::Output }
 }
-
 
 /**
 
@@ -158,19 +154,16 @@ fn main(){
 ```
 
 */
-pub trait SetFields_<FVPairs>{
+pub trait SetFields_<FVPairs> {
     type Output;
 }
 
-impl<This,FVPairs,Out> SetFields_<FVPairs> for This
-where 
-    FVPairs:FoldL_<This,SetFieldValuePair,Output=Out>
+impl<This, FVPairs, Out> SetFields_<FVPairs> for This
+where
+    FVPairs: FoldL_<This, SetFieldValuePair, Output = Out>,
 {
-    type Output=Out;
+    type Output = Out;
 }
-
-
-
 
 /**
 For setting fields of a ConstValue struct.
@@ -225,19 +218,18 @@ fn main(){
 */
 pub type SetFields<This, FVPairs> = <This as SetFields_<FVPairs>>::Output;
 
-
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /// Set all the fields mentioned in the `Fields` list to the `Value` value .
 ///
 /// For an example of using the TypeFn_ equivalent look [here](./struct.SetFieldsToOp.html)
-pub type SetFieldsTo<Struct, Fields, Value> = TypeFn<SetFieldsToOp, (Struct, Fields,Value)>;
+pub type SetFieldsTo<Struct, Fields, Value> = TypeFn<SetFieldsToOp, (Struct, Fields, Value)>;
 
 type_fn!{
     /**
     Set all the fields mentioned in the `Fields` list to the `Value` value .
 
-    # Example 
+    # Example
 
     ```
     # #[macro_use]
@@ -248,11 +240,11 @@ type_fn!{
     use type_level_values::field_traits::{SetFieldsToOp};
 
     fn main(){
-        let _:AssertEq< 
-            TypeFn<SetFieldsToOp,( 
+        let _:AssertEq<
+            TypeFn<SetFieldsToOp,(
                 (True,True,True,True,True),
                 (U0,U2),
-                False 
+                False
             )>,
             (False,True,False,True,True),
         >;
@@ -283,7 +275,7 @@ type_fn!{
 type_fn!{
     captures(FVPairs)
     /// Sets the values of fields in FVPairs.
-    /// 
+    ///
     /// For examples using the equivalent trait look [here](./trait.SetFields_.html)
     ///
     /// `FVPairs` example:tlist![ (field::x,U10), (field::y,U5) ] .
@@ -342,7 +334,6 @@ type_fn!{
     }
 }
 
-
 type_fn!{
     captures(Field, Mapper)
     /// Type-level equivalent of "|This|{ This[Field]=Mapper(This); This }".
@@ -352,379 +343,316 @@ type_fn!{
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-
-
-
-
-
-#[cfg(all(test,feature="passed_tests"))]
+#[cfg(all(test, feature = "passed_tests"))]
 // #[cfg(test)]
-mod tests{
+mod tests {
     use super::*;
 
     use crate_::ops::AssertEq;
 
-    use std_types::range::{fields as range_f,ConstRange};
+    use std_types::range::{fields as range_f, ConstRange};
 
     #[allow(dead_code)]
     #[derive(TypeLevel)]
     #[typelevel(reexport(Struct))]
-    struct Tuple2(
-        (),
-        (),
-    );
+    struct Tuple2((), ());
 
     #[allow(dead_code)]
     #[derive(TypeLevel)]
     #[typelevel(reexport(Struct))]
-    struct Tuple3(
-        (),
-        (),
-        (),
-    );
+    struct Tuple3((), (), ());
 
     #[allow(dead_code)]
     #[derive(TypeLevel)]
     #[typelevel(reexport(Struct))]
-    struct Rectangle{
-        x:u32,
-        y:u32,
-        w:u32,
-        h:u32,
+    struct Rectangle {
+        x: u32,
+        y: u32,
+        w: u32,
+        h: u32,
     }
     use self::type_level_Rectangle::fields as rect_f;
 
     #[test]
-    fn test_get_field(){
-        type Test<This,Index,Value>=(
-            AssertEq<GetField<This,Index>,Value>,
-            AssertPipedRet<This,GetFieldMt<Index>,Value>,
+    fn test_get_field() {
+        type Test<This, Index, Value> = (
+            AssertEq<GetField<This, Index>, Value>,
+            AssertPipedRet<This, GetFieldMt<Index>, Value>,
         );
 
-        let _:Test<Some_<True>,U0,True>;
-        let _:Test<Some_<False>,U0,False>;
+        let _: Test<Some_<True>, U0, True>;
+        let _: Test<Some_<False>, U0, False>;
 
+        let _: Test<Ok_<True>, U0, True>;
+        let _: Test<Ok_<False>, U0, False>;
 
-        let _:Test<Ok_<True>,U0,True>;
-        let _:Test<Ok_<False>,U0,False>;
+        let _: Test<Err_<True>, U0, True>;
+        let _: Test<Err_<False>, U0, False>;
 
+        let _: Test<ConstTuple2<U10, U20>, U0, U10>;
+        let _: Test<ConstTuple2<U10, U20>, U1, U20>;
 
-        let _:Test<Err_<True>,U0,True>;
-        let _:Test<Err_<False>,U0,False>;
+        let _: Test<ConstTuple3<U10, U20, U30>, U0, U10>;
+        let _: Test<ConstTuple3<U10, U20, U30>, U1, U20>;
+        let _: Test<ConstTuple3<U10, U20, U30>, U2, U30>;
 
+        let _: Test<ConstRange<U10, U20>, range_f::start, U10>;
+        let _: Test<ConstRange<U10, U20>, range_f::end, U20>;
 
-        let _:Test<ConstTuple2<U10,U20>,U0,U10>;
-        let _:Test<ConstTuple2<U10,U20>,U1,U20>;
-
-
-        let _:Test<ConstTuple3<U10,U20,U30>,U0,U10>;
-        let _:Test<ConstTuple3<U10,U20,U30>,U1,U20>;
-        let _:Test<ConstTuple3<U10,U20,U30>,U2,U30>;
-
-        
-        let _:Test<ConstRange<U10,U20>,range_f::start,U10>;
-        let _:Test<ConstRange<U10,U20>,range_f::end  ,U20>;
-
-        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::x,U0>;
-        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::y,U10>;
-        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::w,U20>;
-        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::h,U30>;
+        let _: Test<ConstRectangle<U0, U10, U20, U30>, rect_f::x, U0>;
+        let _: Test<ConstRectangle<U0, U10, U20, U30>, rect_f::y, U10>;
+        let _: Test<ConstRectangle<U0, U10, U20, U30>, rect_f::w, U20>;
+        let _: Test<ConstRectangle<U0, U10, U20, U30>, rect_f::h, U30>;
     }
 
     #[test]
-    fn test_set_field(){
-        type Test<This,Index,Value,NewValue>=(
-            AssertEq<SetField<This,Index,Value>,NewValue>,
-            AssertPipedRet<This,SetFieldMt<Index,Value>,NewValue>,
+    fn test_set_field() {
+        type Test<This, Index, Value, NewValue> = (
+            AssertEq<SetField<This, Index, Value>, NewValue>,
+            AssertPipedRet<This, SetFieldMt<Index, Value>, NewValue>,
         );
 
-        let _:Test<Some_<True> ,U0,False,Some_<False> >;
-        let _:Test<Some_<False>,U0,True,Some_<True>>;
+        let _: Test<Some_<True>, U0, False, Some_<False>>;
+        let _: Test<Some_<False>, U0, True, Some_<True>>;
 
+        let _: Test<Ok_<True>, U0, False, Ok_<False>>;
+        let _: Test<Ok_<False>, U0, True, Ok_<True>>;
 
-        let _:Test<Ok_<True >,U0,False,Ok_<False>>;
-        let _:Test<Ok_<False>,U0,True,Ok_<True>>;
+        let _: Test<Err_<True>, U0, True, Err_<True>>;
+        let _: Test<Err_<False>, U0, False, Err_<False>>;
 
+        let _: Test<ConstTuple2<U10, U20>, U0, (), ConstTuple2<(), U20>>;
+        let _: Test<ConstTuple2<U10, U20>, U1, (), ConstTuple2<U10, ()>>;
 
-        let _:Test<Err_<True>,U0,True,Err_<True>>;
-        let _:Test<Err_<False>,U0,False,Err_<False>>;
+        let _: Test<ConstTuple3<U10, U20, U30>, U0, (), ConstTuple3<(), U20, U30>>;
+        let _: Test<ConstTuple3<U10, U20, U30>, U1, (), ConstTuple3<U10, (), U30>>;
+        let _: Test<ConstTuple3<U10, U20, U30>, U2, (), ConstTuple3<U10, U20, ()>>;
 
+        let _: Test<ConstRange<U10, U20>, range_f::start, (), ConstRange<(), U20>>;
+        let _: Test<ConstRange<U10, U20>, range_f::end, (), ConstRange<U10, ()>>;
 
-        let _:Test<ConstTuple2<U10,U20>,U0,(),ConstTuple2<() ,U20>>;
-        let _:Test<ConstTuple2<U10,U20>,U1,(),ConstTuple2<U10,() >>;
-
-
-        let _:Test<ConstTuple3<U10,U20,U30>,U0,(),ConstTuple3<() ,U20,U30>>;
-        let _:Test<ConstTuple3<U10,U20,U30>,U1,(),ConstTuple3<U10,() ,U30>>;
-        let _:Test<ConstTuple3<U10,U20,U30>,U2,(),ConstTuple3<U10,U20,() >>;
-
-        
-        let _:Test<ConstRange<U10,U20>,range_f::start,(),ConstRange<() ,U20>>;
-        let _:Test<ConstRange<U10,U20>,range_f::end  ,(),ConstRange<U10,() >>;
-
-        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::x,(),ConstRectangle<(),U10,U20,U30>>;
-        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::y,(),ConstRectangle<U0,() ,U20,U30>>;
-        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::w,(),ConstRectangle<U0,U10,() ,U30>>;
-        let _:Test<ConstRectangle<U0,U10,U20,U30>,rect_f::h,(),ConstRectangle<U0,U10,U20,() >>;
+        let _: Test<
+            ConstRectangle<U0, U10, U20, U30>,
+            rect_f::x,
+            (),
+            ConstRectangle<(), U10, U20, U30>,
+        >;
+        let _: Test<
+            ConstRectangle<U0, U10, U20, U30>,
+            rect_f::y,
+            (),
+            ConstRectangle<U0, (), U20, U30>,
+        >;
+        let _: Test<
+            ConstRectangle<U0, U10, U20, U30>,
+            rect_f::w,
+            (),
+            ConstRectangle<U0, U10, (), U30>,
+        >;
+        let _: Test<
+            ConstRectangle<U0, U10, U20, U30>,
+            rect_f::h,
+            (),
+            ConstRectangle<U0, U10, U20, ()>,
+        >;
     }
 
     #[test]
-    fn test_set_fields(){
-        let _:AssertEq<
-            SetFields<ConstTuple2<(),()> ,(
-                (U0,U10),
-                (U1,U20),
-            )>,
-            ConstTuple2<U10,U20>
-        >;
-        
-        let _:AssertEq<
-            SetFields<ConstTuple3<(),(),()> ,(
-                (U0,U10),
-                (U1,U20),
-                (U2,U30),
-            )>,
-            ConstTuple3<U10,U20,U30>
-        >;
-        
-        let _:AssertEq<
-            SetFields<ConstRange<(),()> ,(
-                (range_f::start,U10),
-                (range_f::end  ,U20),
-            )>,
-            ConstRange<U10 ,U20>
-        >;
-        let _:AssertEq<
-            SetFields<ConstRange<(),()> ,(
-                (range_f::start,U10),
-                (range_f::end  ,U20),
-            )>,
-            ConstRange<U10,U20>
+    fn test_set_fields() {
+        let _: AssertEq<
+            SetFields<ConstTuple2<(), ()>, ((U0, U10), (U1, U20))>,
+            ConstTuple2<U10, U20>,
         >;
 
+        let _: AssertEq<
+            SetFields<ConstTuple3<(), (), ()>, ((U0, U10), (U1, U20), (U2, U30))>,
+            ConstTuple3<U10, U20, U30>,
+        >;
 
-        type TestSetFields<This,FVPairs,Expected>=(
-            AssertPipedRet<(This,FVPairs),SetFieldsOp,Expected>,
-            AssertPipedRet<This,SetFieldsMt<FVPairs>,Expected>,
-            AssertEq<<This as SetFields_<FVPairs>>::Output,Expected>,
+        let _: AssertEq<
+            SetFields<ConstRange<(), ()>, ((range_f::start, U10), (range_f::end, U20))>,
+            ConstRange<U10, U20>,
+        >;
+        let _: AssertEq<
+            SetFields<ConstRange<(), ()>, ((range_f::start, U10), (range_f::end, U20))>,
+            ConstRange<U10, U20>,
+        >;
+
+        type TestSetFields<This, FVPairs, Expected> = (
+            AssertPipedRet<(This, FVPairs), SetFieldsOp, Expected>,
+            AssertPipedRet<This, SetFieldsMt<FVPairs>, Expected>,
+            AssertEq<<This as SetFields_<FVPairs>>::Output, Expected>,
         );
 
-
-        let _:TestSetFields<
-            ConstRectangle<(),(),(),()>,
+        let _: TestSetFields<
+            ConstRectangle<(), (), (), ()>,
             tlist![
-                (rect_f::x,U0),
-                (rect_f::y,U10),
-                (rect_f::w,U20),
-                (rect_f::h,U30),
+                (rect_f::x, U0),
+                (rect_f::y, U10),
+                (rect_f::w, U20),
+                (rect_f::h, U30),
             ],
-            ConstRectangle<U0,U10,U20,U30>
+            ConstRectangle<U0, U10, U20, U30>,
         >;
-        let _:TestSetFields<
-            ConstTuple2<(),()>,
-            tlist![
-                (U0,U10),
-                (U1,U20),
-            ],
-            ConstTuple2<U10,U20>
-        >;
-        
-        let _:TestSetFields<
-            ConstTuple3<(),(),()>,
-            tlist![
-                (U0,U10),
-                (U1,U20),
-                (U2,U30),
-            ],
-            ConstTuple3<U10,U20,U30>
-        >;
-        
-        let _:TestSetFields<
-            ConstRange<(),()>,
-            tlist![
-                (range_f::start,U10),
-                (range_f::end  ,U20),
-            ],
-            ConstRange<U10 ,U20>
-        >;
-        let _:TestSetFields<
-            ConstRange<(),()>,
-            tlist![
-                (range_f::start,U10),
-                (range_f::end  ,U20),
-            ],
-            ConstRange<U10,U20>
+        let _: TestSetFields<
+            ConstTuple2<(), ()>,
+            tlist![(U0, U10), (U1, U20),],
+            ConstTuple2<U10, U20>,
         >;
 
-        let _:TestSetFields<
-            ConstRectangle<(),(),(),()>,
-            tlist![
-                (rect_f::x,U0),
-                (rect_f::y,U10),
-                (rect_f::w,U20),
-                (rect_f::h,U30),
-            ],
-            ConstRectangle<U0,U10,U20,U30>
-        >;  
+        let _: TestSetFields<
+            ConstTuple3<(), (), ()>,
+            tlist![(U0, U10), (U1, U20), (U2, U30),],
+            ConstTuple3<U10, U20, U30>,
+        >;
 
-        
+        let _: TestSetFields<
+            ConstRange<(), ()>,
+            tlist![(range_f::start, U10), (range_f::end, U20),],
+            ConstRange<U10, U20>,
+        >;
+        let _: TestSetFields<
+            ConstRange<(), ()>,
+            tlist![(range_f::start, U10), (range_f::end, U20),],
+            ConstRange<U10, U20>,
+        >;
+
+        let _: TestSetFields<
+            ConstRectangle<(), (), (), ()>,
+            tlist![
+                (rect_f::x, U0),
+                (rect_f::y, U10),
+                (rect_f::w, U20),
+                (rect_f::h, U30),
+            ],
+            ConstRectangle<U0, U10, U20, U30>,
+        >;
     }
 
     #[test]
-    fn test_set_fields_to(){
-        type Test<This,Fields,To,Equals>=(
-            AssertEq<TypeFn<SetFieldsToOp,(This,Fields,To)>,Equals>,
-            AssertEq<SetFieldsTo<This,Fields,To>,Equals>,
+    fn test_set_fields_to() {
+        type Test<This, Fields, To, Equals> = (
+            AssertEq<TypeFn<SetFieldsToOp, (This, Fields, To)>, Equals>,
+            AssertEq<SetFieldsTo<This, Fields, To>, Equals>,
         );
-        let _:Test<
-            ConstRectangle<U100,U100,U100,U100>,
-            tlist![ rect_f::x,rect_f::w ],
+        let _: Test<
+            ConstRectangle<U100, U100, U100, U100>,
+            tlist![rect_f::x, rect_f::w],
             U0,
-            ConstRectangle<U0,U100,U0,U100>,
+            ConstRectangle<U0, U100, U0, U100>,
         >;
 
-        let _:Test<
-            ConstRectangle<U100,U100,U100,U100>,
-            tlist![  ],
+        let _: Test<
+            ConstRectangle<U100, U100, U100, U100>,
+            tlist![],
             U0,
-            ConstRectangle<U100,U100,U100,U100>,
+            ConstRectangle<U100, U100, U100, U100>,
         >;
 
-        let _:Test<
-            ConstTuple2<(),()>,
-            tlist![U0,U1],
+        let _: Test<ConstTuple2<(), ()>, tlist![U0, U1], False, ConstTuple2<False, False>>;
+
+        let _: Test<
+            ConstRange<U100, U100>,
+            tlist![range_f::start, range_f::end],
+            U0,
+            ConstRange<U0, U0>,
+        >;
+
+        let _: Test<
+            ConstTuple3<(), (), ()>,
+            tlist![U0, U2],
             False,
-            ConstTuple2<False,False>
+            ConstTuple3<False, (), False>,
         >;
-        
-        let _:Test<
-            ConstRange<U100,U100>,
-            tlist![range_f::start,range_f::end],
-            U0,
-            ConstRange<U0,U0>
-        >;
-
-        let _:Test<
-            ConstTuple3<(),(),()>,
-            tlist![U0,U2],
-            False,
-            ConstTuple3<False,(),False>
-        >;
-        
     }
 
     #[test]
-    fn map_field(){
-        type Test<This,Field,Mapper,Equals>=(
-            AssertPipedRet<(This,Field,Mapper),MapFieldOp,Equals>,
-            AssertPipedRet<This,MapFieldMt<Field,Mapper>,Equals>,
-            AssertEq<MapField<This,Field,Mapper>,Equals>,
+    fn map_field() {
+        type Test<This, Field, Mapper, Equals> = (
+            AssertPipedRet<(This, Field, Mapper), MapFieldOp, Equals>,
+            AssertPipedRet<This, MapFieldMt<Field, Mapper>, Equals>,
+            AssertEq<MapField<This, Field, Mapper>, Equals>,
         );
-        
 
-        let _:Test<
-            ConstRectangle<U100,U100,U100,U100>,
+        let _: Test<
+            ConstRectangle<U100, U100, U100, U100>,
             rect_f::x,
             Sub1Op,
-            ConstRectangle<U99,U100,U100,U100>,
+            ConstRectangle<U99, U100, U100, U100>,
         >;
 
-        let _:Test<
-            ConstRectangle<U100,U100,U100,U100>,
+        let _: Test<
+            ConstRectangle<U100, U100, U100, U100>,
             rect_f::w,
             Sub1Op,
-            ConstRectangle<U100,U100,U99,U100>,
+            ConstRectangle<U100, U100, U99, U100>,
         >;
 
-        let _:Test<
-            ConstTuple2<U100,U100>,
+        let _: Test<ConstTuple2<U100, U100>, U0, Sub1Op, ConstTuple2<U99, U100>>;
+
+        let _: Test<ConstTuple2<U100, U100>, U1, Sub1Op, ConstTuple2<U100, U99>>;
+
+        let _: Test<ConstRange<U100, U100>, range_f::start, Sub1Op, ConstRange<U99, U100>>;
+
+        let _: Test<ConstRange<U100, U100>, range_f::end, Sub1Op, ConstRange<U100, U99>>;
+
+        let _: Test<
+            ConstTuple3<U100, U100, U100>,
             U0,
             Sub1Op,
-            ConstTuple2<U99,U100>,
+            ConstTuple3<U99, U100, U100>,
         >;
-        
-        let _:Test<
-            ConstTuple2<U100,U100>,
+
+        let _: Test<
+            ConstTuple3<U100, U100, U100>,
             U1,
             Sub1Op,
-            ConstTuple2<U100,U99>,
-        >;
-        
-        let _:Test<
-            ConstRange<U100,U100>,
-            range_f::start,
-            Sub1Op,
-            ConstRange<U99,U100>,
-        >;
-        
-        let _:Test<
-            ConstRange<U100,U100>,
-            range_f::end,
-            Sub1Op,
-            ConstRange<U100,U99>,
+            ConstTuple3<U100, U99, U100>,
         >;
 
-        let _:Test<
-            ConstTuple3<U100,U100,U100>,
-            U0,
-            Sub1Op,
-            ConstTuple3<U99,U100,U100>,
-        >;
-
-        let _:Test<
-            ConstTuple3<U100,U100,U100>,
-            U1,
-            Sub1Op,
-            ConstTuple3<U100,U99,U100>,
-        >;
-
-        let _:Test<
-            ConstTuple3<U100,U100,U100>,
+        let _: Test<
+            ConstTuple3<U100, U100, U100>,
             U2,
             Sub1Op,
-            ConstTuple3<U100,U100,U99>,
+            ConstTuple3<U100, U100, U99>,
         >;
-        
     }
 
     #[test]
-    fn map_into_field(){
-        type Test<This,Field,Mapper,Equals>=(
-            AssertPipedRet<(This,Field,Mapper),MapIntoFieldOp,Equals>,
-            AssertPipedRet<This,MapIntoFieldMt<Field,Mapper>,Equals>,
-            AssertEq<MapIntoField<This,Field,Mapper>,Equals>,
+    fn map_into_field() {
+        type Test<This, Field, Mapper, Equals> = (
+            AssertPipedRet<(This, Field, Mapper), MapIntoFieldOp, Equals>,
+            AssertPipedRet<This, MapIntoFieldMt<Field, Mapper>, Equals>,
+            AssertEq<MapIntoField<This, Field, Mapper>, Equals>,
         );
-        type SubField<Field>=tlist![ GetFieldMt<Field>,Sub1Op ];
+        type SubField<Field> = tlist![GetFieldMt<Field>, Sub1Op];
 
-        let _:Test<
-            ConstRectangle<U10,U20,U30,U40>,
+        let _: Test<
+            ConstRectangle<U10, U20, U30, U40>,
             rect_f::x,
             SubField<rect_f::h>,
-            ConstRectangle<U39,U20,U30,U40>,
+            ConstRectangle<U39, U20, U30, U40>,
         >;
 
-        let _:Test<
-            ConstRectangle<U10,U20,U30,U40>,
+        let _: Test<
+            ConstRectangle<U10, U20, U30, U40>,
             rect_f::y,
             SubField<rect_f::w>,
-            ConstRectangle<U10,U29,U30,U40>,
+            ConstRectangle<U10, U29, U30, U40>,
         >;
 
-        let _:Test<
-            ConstTuple3<U10,U20,U30>,
+        let _: Test<
+            ConstTuple3<U10, U20, U30>,
             U1,
             SubField<U0>,
-            ConstTuple3<U10,U9,U30>,
+            ConstTuple3<U10, U9, U30>,
         >;
 
-        let _:Test<
-            ConstTuple3<U10,U20,U30>,
+        let _: Test<
+            ConstTuple3<U10, U20, U30>,
             U0,
             SubField<U2>,
-            ConstTuple3<U29,U20,U30>,
+            ConstTuple3<U29, U20, U30>,
         >;
-
     }
 }

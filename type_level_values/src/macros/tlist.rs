@@ -102,11 +102,6 @@ macro_rules! tlist {
     };
 }
 
-
-
-
-
-
 /** 
 
 Instantiates a type-list,
@@ -153,5 +148,3 @@ macro_rules! tlist_val {
         < tlist!($($all)*) as $crate::core_extensions::MarkerType >::MTVAL
     };
 }
-
-

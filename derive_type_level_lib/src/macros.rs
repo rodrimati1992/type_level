@@ -10,10 +10,7 @@ macro_rules! annotations_and_bounds {
                 .iter()
                 .map(move |_| outer.impl_annotations());
 
-            $bounds = decls
-                .declarations
-                .iter()
-                .map(move |_| outer.bound_tokens());
+            $bounds = decls.declarations.iter().map(move |_| outer.bound_tokens());
         }
     };
     (outer; $decls:expr, $impl_ind:expr,let($annotations:ident, $bounds:ident) $(,)*) => {

@@ -2,19 +2,17 @@ use std::any::Any;
 use std::ops::Range;
 use std::sync::mpsc::{self, Receiver as MPSCReceiver, RecvError, SendError, Sender as MPSCSender};
 
-use type_level_values::new_types::{TList, TNil};
 use type_level_values::collection_ops::{Len_, PushBack_};
+use type_level_values::new_types::{TList, TNil};
 use type_level_values::prelude::*;
-
 
 #[allow(unused_imports)]
 use type_level_values::core_extensions::TryInto;
-use type_level_values::core_extensions::{Void,CallInto, TryFrom,TypePanic};
+use type_level_values::core_extensions::{CallInto, TryFrom, TypePanic, Void};
 
 use super::generic_variant::{Impossible, MapVariants, VariantsTrait};
 
-use super::ranged_usize::{RangedUsize, RangedTrait, IntOutsideRange};
-
+use super::ranged_usize::{IntOutsideRange, RangedTrait, RangedUsize};
 
 pub type CEResult<T> = ::std::result::Result<T, ProtocolViolation>;
 
@@ -185,10 +183,7 @@ pub struct InvalidOutsideLoop<T>(Void, T);
 pub type Channel<CEnd, S> = Channel_Ty<ConstWrapper<CEnd>, ConstWrapper<S>>;
 
 #[derive(MutConstValue)]
-#[mcv(
-    derive(Debug),
-    Type(use_ = "Channel"), ConstValue = "S",
-)]
+#[mcv(derive(Debug), Type(use_ = "Channel"), ConstValue = "S",)]
 pub struct __Channel<CEnd, S> {
     tx: MPSCSender<Message>,
     rx: MPSCReceiver<Message>,
@@ -324,8 +319,7 @@ mod channel {
                 .map_err(ProtocolViolation::InvalidMessage)?;
             f(index
                 .piped(PhantomVariants::from)
-                .map_variants(ChannelInto(self)))
-                .map(|s| s.change_list())
+                .map_variants(ChannelInto(self))).map(|s| s.change_list())
         }
 
         /// Validates the index used to choose among the different branches
@@ -348,10 +342,9 @@ mod channel {
         /// Returns a VariantPhantom wrapping the type used to choose which branch to take.
         pub fn choice_range(&self) -> Range<usize>
         where
-            RangedUsize<U0, Len>: RangedTrait<Integer=usize>,
+            RangedUsize<U0, Len>: RangedTrait<Integer = usize>,
         {
-            RangedUsize::<U0, Len>::start()..
-            RangedUsize::<U0, Len>::end().unwrap_or(!0usize)
+            RangedUsize::<U0, Len>::start()..RangedUsize::<U0, Len>::end().unwrap_or(!0usize)
         }
 
         pub fn choose<F>(self, index: RangedUsize<U0, Len>, f: F) -> CEResult<Channel<CEnd, Rem>>
@@ -362,8 +355,7 @@ mod channel {
             self.tx.send(Box::new(index))?;
             f(index
                 .piped(PhantomVariants::from)
-                .map_variants(ChannelInto(self)))
-                .map(|s| s.change_list())
+                .map_variants(ChannelInto(self))).map(|s| s.change_list())
         }
     }
 

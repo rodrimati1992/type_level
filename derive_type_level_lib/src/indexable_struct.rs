@@ -3,9 +3,8 @@ use std::ops::IndexMut;
 
 use syn::Ident;
 
-
 #[doc(hidden)]
-pub mod reexp{
+pub mod reexp {
     pub use arrayvec::ArrayString;
     pub use std::str::FromStr;
 }
@@ -22,9 +21,7 @@ pub trait IndexableStruct:
 {
 }
 
-impl<This> IndexableStruct for This 
-where This: StructIndexType + Default + IndexMut<Self::Index> 
-{}
+impl<This> IndexableStruct for This where This: StructIndexType + Default + IndexMut<Self::Index> {}
 
 /// Implementation detail for indexable structs.
 pub trait StructIndexType {
@@ -42,9 +39,9 @@ pub trait GetEnumIndices: Debug + Copy + PartialEq + Eq + 'static {
     fn many_from_str(string: &str) -> Result<&'static [Self], InvalidMultiIndex<&str>>;
 
     /// A message listing all the indices.
-    fn indices_message()->String;
+    fn indices_message() -> String;
 
-    const INDICES:&'static [Self];
+    const INDICES: &'static [Self];
 }
 
 #[doc(hidden)]
@@ -108,8 +105,8 @@ macro_rules! declare_indexable_struct {
                 use core_extensions::utils::as_slice;
 
                 lazy_static! {
-                    static ref MANY_IMPL_MAP: 
-                        $crate::indexable_struct::IndicesMap<$enum_index> 
+                    static ref MANY_IMPL_MAP:
+                        $crate::indexable_struct::IndicesMap<$enum_index>
                     ={
                         [
                             ("all",$enum_index::INDICES),
@@ -132,12 +129,12 @@ macro_rules! declare_indexable_struct {
             fn many_from_ident(
                 ident: &::syn::Ident
             )-> Result<
-                &'static [Self], 
+                &'static [Self],
                 $crate::indexable_struct::InvalidMultiIndex<&::syn::Ident>
             >{
                 #[allow(unused_imports)]
                 use std::fmt::Write;
-                
+
                 use $crate::indexable_struct::reexp::ArrayString;
 
                 let mut str_: ArrayString<[_; 128]> = ArrayString::new();
@@ -154,7 +151,7 @@ macro_rules! declare_indexable_struct {
             fn many_from_str(
                 string: &str
             )-> Result<
-                &'static [Self], 
+                &'static [Self],
                 $crate::indexable_struct::InvalidMultiIndex<&str>
             > {
                 Self::indices_map()
@@ -209,7 +206,7 @@ macro_rules! declare_indexable_struct {
                     $($field:f($enum_index::$index,self.$field),)*
                 }
             }
-            
+
             #[allow(dead_code)]
             pub fn to_vec(self)->Vec<($enum_index,T)>{
                 vec![
@@ -219,7 +216,7 @@ macro_rules! declare_indexable_struct {
         }
 
 
-        impl<T> $crate::indexable_struct::StructIndexType 
+        impl<T> $crate::indexable_struct::StructIndexType
         for $indexable_struct<T>
         {
             type Index=$enum_index;

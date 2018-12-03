@@ -1,10 +1,10 @@
 use proc_macro2::Span;
 use proc_macro2::TokenStream;
 
-use std::cmp::{PartialEq,Eq,PartialOrd,Ord,Ordering};
+use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 
 macro_rules! declare_common_tokens {
-    ( 
+    (
         with_new[ $( $field_new:ident = $token_new:ident , )* ]
         with_default[ $( $field_default:ident = $token_default:ident , )* ]
         token_streams[ $( $field_ts:ident = $ts_str:expr , )* ]
@@ -40,35 +40,30 @@ macro_rules! declare_common_tokens {
     }
 }
 
-
-impl Default for CommonTokens{
-    fn default()->Self{
+impl Default for CommonTokens {
+    fn default() -> Self {
         Self::new()
     }
 }
 
-
-impl Eq for CommonTokens{}
-impl PartialEq for CommonTokens{
-    fn eq(&self,_other:&Self)->bool{
+impl Eq for CommonTokens {}
+impl PartialEq for CommonTokens {
+    fn eq(&self, _other: &Self) -> bool {
         true
     }
 }
 
-impl PartialOrd for CommonTokens{
-    fn partial_cmp(&self,_other:&Self)->Option<Ordering>{
+impl PartialOrd for CommonTokens {
+    fn partial_cmp(&self, _other: &Self) -> Option<Ordering> {
         Some(Ordering::Equal)
     }
 }
 
-impl Ord for CommonTokens{
-    fn cmp(&self,_other:&Self)->Ordering{
+impl Ord for CommonTokens {
+    fn cmp(&self, _other: &Self) -> Ordering {
         Ordering::Equal
     }
 }
-
-
-
 
 declare_common_tokens!{
     with_new[

@@ -4,7 +4,6 @@
 //! taking some configuration/state,which fully initializes the type.
 //!
 
-
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use type_level_values::prelude::*;
@@ -35,9 +34,10 @@ pub type DeserializeSortedList<T> = SortedList<T, Uninitialized>;
 
 #[derive(MutConstValue)]
 #[mcv(
-    doc="A List that is sorted (its type being SortedList<T>) .",
+    doc = "A List that is sorted (its type being SortedList<T>) .",
     derive(Debug, PartialEq, Eq, PartialOrd, Ord),
-    Type= "SortedList", ConstValue = "I=Initialized",
+    Type = "SortedList",
+    ConstValue = "I=Initialized",
 )]
 pub struct __SortedList<T, I> {
     list: Vec<T>,
@@ -106,7 +106,7 @@ impl<T> Deref for SortedList<T> {
 
 /////////////////////////////////////////////////////////////////////
 
-pub fn main_ () {
+pub fn main_() {
     let reversed = Reversed(true);
     let list = ::serde_json::from_str::<DeserializeSortedList<u64>>("[0,10,5,1,4]")
         .unwrap()

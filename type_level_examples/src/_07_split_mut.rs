@@ -11,18 +11,18 @@
 //!
 //!
 
+use type_level_values::collection_ops::FoldL_;
 use type_level_values::field_traits::*;
+use type_level_values::fn_adaptors::{ApplyRhs, Const};
 use type_level_values::new_types::{TList, TNil};
-use type_level_values::ops::{VariantAsTList_};
-use type_level_values::collection_ops::{FoldL_,};
+use type_level_values::ops::VariantAsTList_;
 use type_level_values::prelude::*;
-use type_level_values::fn_adaptors::{ApplyRhs,Const};
 // use type_level_values::reexports::type_level_bool::False;
 
 use std::cmp::{self, PartialOrd};
 use std::mem;
 
-pub fn main_ () {
+pub fn main_() {
     let mut rect = Rectangle::new().mutated(|r| {
         r.set_x(50);
         r.set_y(60);
@@ -214,7 +214,7 @@ pub mod rectangle {
     use super::*;
     #[derive(MutConstValue)]
     #[mcv(
-        doc="
+        doc = "
             A rectangle where certain fields are inaccessible based on a const parameter.
             Many impls are also implemented on [Rectangle].
         ",
@@ -233,7 +233,7 @@ pub mod rectangle {
         w: u32,
         h: u32,
         accessible_fields: ConstWrapper<I>,
-        _pointer:PhantomData<P>
+        _pointer: PhantomData<P>,
     }
 
     impl Rectangle<RectangleAcessibleDefault, IsValue> {
@@ -369,7 +369,7 @@ pub mod rectangle {
     mutator_fn!{
         type This[I, P]=(Rectangle<I, P>)
         type AllowedSelf=(allowed_self_constructors::ByVal)
-        
+
         fn Reset=Const<RectangleAcessibleDefault>;
     }
 

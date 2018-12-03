@@ -2,38 +2,31 @@ use super::*;
 // use super::EnumOrStruct as EOS;
 use tlist_tokens::TListFrom;
 
-
-pub(crate)struct DerivedTraits<'a>{
-    pub(crate)decls:&'a StructDeclarations<'a>,
+pub(crate) struct DerivedTraits<'a> {
+    pub(crate) decls: &'a StructDeclarations<'a>,
 }
 
-
-impl<'a> DerivedTraits<'a>{
-    pub(crate)fn new(decls:&'a StructDeclarations<'a>)->Self{
-        Self{decls}
+impl<'a> DerivedTraits<'a> {
+    pub(crate) fn new(decls: &'a StructDeclarations<'a>) -> Self {
+        Self { decls }
     }
 }
 
-impl<'a> ToTokens for DerivedTraits<'a>{
-    fn to_tokens(&self,tokens:&mut TokenStream){
-        let decls=self.decls;
+impl<'a> ToTokens for DerivedTraits<'a> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let decls = self.decls;
 
-        
+        let d_attr_cfg = decls.attribute_settings;
 
-        let d_attr_cfg=decls.attribute_settings;
-
-
-        let priv_suffix=self.decls.priv_param_suffix();
+        let priv_suffix = self.decls.priv_param_suffix();
 
         // let type_marker_struct=&self.decls.type_marker_struct;
         for struct_ in &self.decls.declarations {
-            let struct_name=&struct_.name;
-            
-            
+            let struct_name = &struct_.name;
 
-            let generics_1=&struct_.generics;
-            
-            let generics_1b=struct_.fields.iter().map(|x|&x.generic);
+            let generics_1 = &struct_.generics;
+
+            let generics_1b = struct_.fields.iter().map(|x| &x.generic);
 
             tokens.append_all(quote!{
                 impl<#generics_1> Copy for #struct_name<#generics_1 #priv_suffix>{}
@@ -49,28 +42,29 @@ impl<'a> ToTokens for DerivedTraits<'a>{
                     }
                 }
 
-                
+
             });
 
-            let s_attr_cfg=&struct_.attribute_settings;
+            let s_attr_cfg = &struct_.attribute_settings;
 
             {
-                let tlist=TListFrom::new(generics_1b);
+                let tlist = TListFrom::new(generics_1b);
 
                 annotations_and_bounds!(outer;
                     self.decls,ImplIndex::AsTList,let (impl_attrs,impl_bounds)
                 );
 
-                if 
-                    d_attr_cfg.derived.as_t_list.inner.is_implemented()||
-                    s_attr_cfg.derived.as_t_list.inner
-                        .specified_or(ImplVariant::NoImpls)
-                        .is_implemented()
+                if d_attr_cfg.derived.as_t_list.inner.is_implemented() || s_attr_cfg
+                    .derived
+                    .as_t_list
+                    .inner
+                    .specified_or(ImplVariant::NoImpls)
+                    .is_implemented()
                 {
                     tokens.append_all(quote!{
                         #impl_attrs
                         impl<#generics_1> AsTList_ for #struct_name<#generics_1 #priv_suffix>
-                        where 
+                        where
                             #impl_bounds
                         {
                             type Output=#tlist;
@@ -79,22 +73,20 @@ impl<'a> ToTokens for DerivedTraits<'a>{
                 }
             }
 
-
             {
                 annotations_and_bounds!(outer;
                     self.decls,ImplIndex::ConstEq,let (impl_attrs,impl_bounds)
                 );
 
-                if 
-                    d_attr_cfg.derived.const_eq.inner.is_implemented()||
-                    s_attr_cfg.derived.const_eq.inner.is_implemented()
+                if d_attr_cfg.derived.const_eq.inner.is_implemented()
+                    || s_attr_cfg.derived.const_eq.inner.is_implemented()
                 {
                     if struct_.fields.is_empty() {
                         tokens.append_all(quote!(
                             #impl_attrs
                             impl<#generics_1 __Other,DiscrL,DiscrR> ConstEq_<__Other>
                             for #struct_name< #generics_1 #priv_suffix>
-                            where 
+                            where
                                 #impl_bounds
                                 Self   :GetDiscriminant<Discriminant=DiscrL>,
                                 __Other:GetDiscriminant<Discriminant=DiscrR>,
@@ -103,12 +95,12 @@ impl<'a> ToTokens for DerivedTraits<'a>{
                                 type Output=<DiscrL as ConstEq_<DiscrR>>::Output;
                             }
                         ));
-                    }else{
+                    } else {
                         tokens.append_all(quote!(
                             #impl_attrs
                             impl<#generics_1 __Other> ConstEq_<__Other>
                             for #struct_name< #generics_1 #priv_suffix>
-                            where 
+                            where
                                 #impl_bounds
                                 Self  : VariantAsTList_,
                                 __Other: VariantAsTList_,
@@ -125,16 +117,16 @@ impl<'a> ToTokens for DerivedTraits<'a>{
                 annotations_and_bounds!(outer;
                     self.decls,ImplIndex::ConstOrd,let (impl_attrs,impl_bounds)
                 );
-                
-                if d_attr_cfg.derived.const_ord.inner.is_implemented()||
-                    s_attr_cfg.derived.const_ord.inner.is_implemented()
+
+                if d_attr_cfg.derived.const_ord.inner.is_implemented()
+                    || s_attr_cfg.derived.const_ord.inner.is_implemented()
                 {
                     if struct_.fields.is_empty() {
                         tokens.append_all(quote!(
                             #impl_attrs
                             impl<#generics_1 __Other,DiscrL,DiscrR> ConstOrd_<__Other>
                             for #struct_name< #generics_1 #priv_suffix>
-                            where 
+                            where
                                 #impl_bounds
                                 Self   :GetDiscriminant<Discriminant=DiscrL>,
                                 __Other:GetDiscriminant<Discriminant=DiscrR>,
@@ -143,12 +135,12 @@ impl<'a> ToTokens for DerivedTraits<'a>{
                                 type Output=<DiscrL as ConstOrd_<DiscrR>>::Output;
                             }
                         ));
-                    }else{
+                    } else {
                         tokens.append_all(quote!(
                             #impl_attrs
                             impl<#generics_1 __Other> ConstOrd_<__Other>
                             for #struct_name< #generics_1 #priv_suffix>
-                            where 
+                            where
                                 #impl_bounds
                                 Self  : VariantAsTList_,
                                 __Other: VariantAsTList_,
@@ -160,7 +152,6 @@ impl<'a> ToTokens for DerivedTraits<'a>{
                     }
                 }
             }
-
         }
     }
 }

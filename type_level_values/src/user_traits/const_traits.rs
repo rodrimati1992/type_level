@@ -57,7 +57,6 @@ pub type ApplyConstParam<Constructor, Const> = <Constructor as ApplyConstParam_<
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-
 /**
 Marker trait for types whose memory layout does not change when the ConstValue-parameter does.
 
@@ -179,14 +178,12 @@ let wrapper_2=MutConstParam::mutparam( wrapper_1 , ReplaceWithParamFn::NEW , u32
 */
 pub unsafe trait ConstLayoutIndependent<Other: ?Sized> {}
 
-unsafe impl<This:?Sized, Other:?Sized> 
-    ConstLayoutIndependent<PhantomData<ConstWrapper<Other>>> 
-for PhantomData<ConstWrapper<This>>
+unsafe impl<This: ?Sized, Other: ?Sized> ConstLayoutIndependent<PhantomData<ConstWrapper<Other>>>
+    for PhantomData<ConstWrapper<This>>
 {}
 
-unsafe impl<This:?Sized, Other:?Sized> 
-    ConstLayoutIndependent<ConstWrapper<ConstWrapper<Other>>> 
-for ConstWrapper<ConstWrapper<This>>
+unsafe impl<This: ?Sized, Other: ?Sized> ConstLayoutIndependent<ConstWrapper<ConstWrapper<Other>>>
+    for ConstWrapper<ConstWrapper<This>>
 {}
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -202,7 +199,7 @@ for ConstWrapper<ConstWrapper<This>>
 ///
 pub trait SetConstParam_<Value> {
     /// This is Self with the ConstValue-parameter replaced with `Value`
-    type Output: GetConstParam_< Const = Value>;
+    type Output: GetConstParam_<Const = Value>;
 }
 
 impl<This, Value> SetConstParam_<Value> for This
@@ -252,7 +249,7 @@ The attributes for a mutator function.
 It is necessary to implement this directly on the function because otherwise Rust 
 doesn't know the value of AllowedSelf in generic methods.
 */
-pub trait MutatorFnAttrs{
+pub trait MutatorFnAttrs {
     /**
     The classes of type containing self allowed in MutConstParam methods.
     
@@ -283,17 +280,14 @@ pub trait MutatorFnAttrs{
     type AllowedSelf: AllowedConstructorsTrait;
 }
 
-
-
 /**
 Allows the `Func` TypeFn_ to mutate the ConstValue parameter of Self
 */
-pub trait AllowMutatorFn<Func>{}
-
+pub trait AllowMutatorFn<Func> {}
 
 type_fn!{
     /**
-    Gets the value of 
+    Gets the value of
     [\<Self as MutatorFnAttrs\>::AllowedSelf
     ](./trait.MutatorFnAttrs.html#associatedtype.AllowedSelf).
     */
@@ -303,7 +297,6 @@ type_fn!{
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-
 
 // /**
 // Marker trait for unit structs which represent a generic type

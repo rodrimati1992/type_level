@@ -65,55 +65,41 @@ pub trait IntoRuntime<To> {
 
 #[cfg(rust_1_22)]
 /// Converts a ConstValue into a constant
-/// 
+///
 pub trait IntoConstant<To> {
     const VALUE: To;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-
 /// Trait alias,for ConstValues created by the TypeLevel derive macro.
 pub trait NoGetDiscriminant:
-    Copy + Clone + 
-    Send + Sync + 
-    Sized + Default + 
-    MarkerType + ConstValue + 
-    ConstTypeOf_
-{}
+    Copy + Clone + Send + Sync + Sized + Default + MarkerType + ConstValue + ConstTypeOf_
+{
+}
 
 impl<This> NoGetDiscriminant for This where
-    This: 
-        Copy + Clone + 
-        Send + Sync + 
-        Sized + Default + 
-        MarkerType + ConstValue + 
-        ConstTypeOf_
+    This: Copy + Clone + Send + Sync + Sized + Default + MarkerType + ConstValue + ConstTypeOf_
 {}
-
 
 /// Trait alias,for ConstValues created by the TypeLevel derive macro,where no impls are disabled.
 ///
-pub trait DerivedTraits: NoGetDiscriminant + GetDiscriminant
-{}
+pub trait DerivedTraits: NoGetDiscriminant + GetDiscriminant {}
 
-impl<This> DerivedTraits for This where
-    This: NoGetDiscriminant+ GetDiscriminant
-{}
+impl<This> DerivedTraits for This where This: NoGetDiscriminant + GetDiscriminant {}
 
 /////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////
-
 
 type_fn!{
     /// The ConstType of this ConstValue.
-    alias ConstTypeOfOp[This]::Type =ConstTypeOf_ 
+    alias ConstTypeOfOp[This]::Type =ConstTypeOf_
 }
 
 type_fn!{
     /// The ConstType equivalent of Self.
-    alias IntoConstTypeOp[This]::ToConst =IntoConstType_ 
+    alias IntoConstTypeOp[This]::ToConst =IntoConstType_
 }

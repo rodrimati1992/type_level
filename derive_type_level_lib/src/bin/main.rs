@@ -1,10 +1,8 @@
 extern crate derive_type_level_lib;
 
-
-
-fn main(){
-    
-    let ret=derive_type_level_lib::typelevel::derive_from_str(r###"
+fn main() {
+    let ret = derive_type_level_lib::typelevel::derive_from_str(
+        r###"
         #[derive(TypeLevel)]
         #[typelevel(
             // print_derive,
@@ -19,9 +17,8 @@ fn main(){
             pub start: T,
             pub end: T,
         }
-    "###);
+    "###,
+    );
 
     println!("returned:\n\n\n{}\n\n", ret);
-
-    
 }

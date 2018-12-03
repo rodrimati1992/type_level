@@ -26,13 +26,12 @@ type_fn!{define_trait
     method_like=UnwrapOrElseMt
 }
 
-
-impl<Def,This,Out> UnwrapOr_<Def> for This
-where This:UnwrapOrElse_<Const<Def>,Output=Out>,
+impl<Def, This, Out> UnwrapOr_<Def> for This
+where
+    This: UnwrapOrElse_<Const<Def>, Output = Out>,
 {
-    type Output=Out;
+    type Output = Out;
 }
-
 
 type_fn!{define_trait
     /// Unwraps a 0/1 element container into the contained value.
@@ -44,7 +43,6 @@ type_fn!{define_trait
     type=IntoInner
     fn_type=IntoInnerOp
 }
-
 
 type_fn!{define_trait
     /// Calls the `Func` function if this is an ok value of the type,eg: Some_<_>,Ok_<_> ,

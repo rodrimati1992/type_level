@@ -1,4 +1,3 @@
-
 #[allow(unused_imports)]
 use derive_type_level_lib::typelevel as derive_typelevel;
 // use derive_type_level_lib::mutconstvalue as derive_mcv;
@@ -6,6 +5,4 @@ use derive_type_level_lib::typelevel as derive_typelevel;
 #[allow(unused_imports)]
 use core_extensions::{measure_time, SelfOps};
 
-pub fn main_() {
-
-}
+pub fn main_() {}

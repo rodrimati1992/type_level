@@ -11,118 +11,133 @@ use crate_::type_fn::TypeFn_;
 ////                    TypeFn_
 ////////////////////////////////////////////////////////////////////////////////////////
 
-impl<OrRes0,>
-    TypeFn_<OrRes0>
-for tlist![]
-where
-{
-    type Output=OrRes0;
+impl<OrRes0> TypeFn_<OrRes0> for tlist![] where {
+    type Output = OrRes0;
 }
 
-impl<L0,OrRes0,OrRes1,>
-    TypeFn_<OrRes0>
-for tlist![L0,]
+impl<L0, OrRes0, OrRes1> TypeFn_<OrRes0> for tlist![L0,]
 where
-    L0:TypeFn_<OrRes0,Output=OrRes1>,
+    L0: TypeFn_<OrRes0, Output = OrRes1>,
 {
-    type Output=OrRes1;
+    type Output = OrRes1;
 }
 
-impl<L0,OrRes0,L1,OrRes1,OrRes2,>
-    TypeFn_<OrRes0>
-for tlist![L0,L1,]
+impl<L0, OrRes0, L1, OrRes1, OrRes2> TypeFn_<OrRes0> for tlist![L0, L1,]
 where
-    L0:TypeFn_<OrRes0,Output=OrRes1>,
-    L1:TypeFn_<OrRes1,Output=OrRes2>,
+    L0: TypeFn_<OrRes0, Output = OrRes1>,
+    L1: TypeFn_<OrRes1, Output = OrRes2>,
 {
-    type Output=OrRes2;
+    type Output = OrRes2;
 }
 
-impl<L0,OrRes0,L1,OrRes1,L2,OrRes2,OrRes3,>
-    TypeFn_<OrRes0>
-for tlist![L0,L1,L2,]
+impl<L0, OrRes0, L1, OrRes1, L2, OrRes2, OrRes3> TypeFn_<OrRes0> for tlist![L0, L1, L2,]
 where
-    L0:TypeFn_<OrRes0,Output=OrRes1>,
-    L1:TypeFn_<OrRes1,Output=OrRes2>,
-    L2:TypeFn_<OrRes2,Output=OrRes3>,
+    L0: TypeFn_<OrRes0, Output = OrRes1>,
+    L1: TypeFn_<OrRes1, Output = OrRes2>,
+    L2: TypeFn_<OrRes2, Output = OrRes3>,
 {
-    type Output=OrRes3;
+    type Output = OrRes3;
 }
 
-impl<L0,OrRes0,L1,OrRes1,L2,OrRes2,L3,OrRes3,OrRes4,>
-    TypeFn_<OrRes0>
-for tlist![L0,L1,L2,L3,]
+impl<L0, OrRes0, L1, OrRes1, L2, OrRes2, L3, OrRes3, OrRes4> TypeFn_<OrRes0>
+    for tlist![L0, L1, L2, L3,]
 where
-    L0:TypeFn_<OrRes0,Output=OrRes1>,
-    L1:TypeFn_<OrRes1,Output=OrRes2>,
-    L2:TypeFn_<OrRes2,Output=OrRes3>,
-    L3:TypeFn_<OrRes3,Output=OrRes4>,
+    L0: TypeFn_<OrRes0, Output = OrRes1>,
+    L1: TypeFn_<OrRes1, Output = OrRes2>,
+    L2: TypeFn_<OrRes2, Output = OrRes3>,
+    L3: TypeFn_<OrRes3, Output = OrRes4>,
 {
-    type Output=OrRes4;
+    type Output = OrRes4;
 }
 
-impl<L0,OrRes0,L1,OrRes1,L2,OrRes2,L3,OrRes3,L4,OrRes4,OrRes5,>
-    TypeFn_<OrRes0>
-for tlist![L0,L1,L2,L3,L4,]
+impl<L0, OrRes0, L1, OrRes1, L2, OrRes2, L3, OrRes3, L4, OrRes4, OrRes5> TypeFn_<OrRes0>
+    for tlist![L0, L1, L2, L3, L4,]
 where
-    L0:TypeFn_<OrRes0,Output=OrRes1>,
-    L1:TypeFn_<OrRes1,Output=OrRes2>,
-    L2:TypeFn_<OrRes2,Output=OrRes3>,
-    L3:TypeFn_<OrRes3,Output=OrRes4>,
-    L4:TypeFn_<OrRes4,Output=OrRes5>,
+    L0: TypeFn_<OrRes0, Output = OrRes1>,
+    L1: TypeFn_<OrRes1, Output = OrRes2>,
+    L2: TypeFn_<OrRes2, Output = OrRes3>,
+    L3: TypeFn_<OrRes3, Output = OrRes4>,
+    L4: TypeFn_<OrRes4, Output = OrRes5>,
 {
-    type Output=OrRes5;
+    type Output = OrRes5;
 }
 
-impl<L0,OrRes0,L1,OrRes1,L2,OrRes2,L3,OrRes3,L4,OrRes4,L5,OrRes5,OrRes6,>
-    TypeFn_<OrRes0>
-for tlist![L0,L1,L2,L3,L4,L5,]
+impl<L0, OrRes0, L1, OrRes1, L2, OrRes2, L3, OrRes3, L4, OrRes4, L5, OrRes5, OrRes6> TypeFn_<OrRes0>
+    for tlist![L0, L1, L2, L3, L4, L5,]
 where
-    L0:TypeFn_<OrRes0,Output=OrRes1>,
-    L1:TypeFn_<OrRes1,Output=OrRes2>,
-    L2:TypeFn_<OrRes2,Output=OrRes3>,
-    L3:TypeFn_<OrRes3,Output=OrRes4>,
-    L4:TypeFn_<OrRes4,Output=OrRes5>,
-    L5:TypeFn_<OrRes5,Output=OrRes6>,
+    L0: TypeFn_<OrRes0, Output = OrRes1>,
+    L1: TypeFn_<OrRes1, Output = OrRes2>,
+    L2: TypeFn_<OrRes2, Output = OrRes3>,
+    L3: TypeFn_<OrRes3, Output = OrRes4>,
+    L4: TypeFn_<OrRes4, Output = OrRes5>,
+    L5: TypeFn_<OrRes5, Output = OrRes6>,
 {
-    type Output=OrRes6;
+    type Output = OrRes6;
 }
 
-impl<L0,OrRes0,L1,OrRes1,L2,OrRes2,L3,OrRes3,L4,OrRes4,L5,OrRes5,L6,OrRes6,OrRes7,>
-    TypeFn_<OrRes0>
-for tlist![L0,L1,L2,L3,L4,L5,L6,]
+impl<
+        L0,
+        OrRes0,
+        L1,
+        OrRes1,
+        L2,
+        OrRes2,
+        L3,
+        OrRes3,
+        L4,
+        OrRes4,
+        L5,
+        OrRes5,
+        L6,
+        OrRes6,
+        OrRes7,
+    > TypeFn_<OrRes0> for tlist![L0, L1, L2, L3, L4, L5, L6,]
 where
-    L0:TypeFn_<OrRes0,Output=OrRes1>,
-    L1:TypeFn_<OrRes1,Output=OrRes2>,
-    L2:TypeFn_<OrRes2,Output=OrRes3>,
-    L3:TypeFn_<OrRes3,Output=OrRes4>,
-    L4:TypeFn_<OrRes4,Output=OrRes5>,
-    L5:TypeFn_<OrRes5,Output=OrRes6>,
-    L6:TypeFn_<OrRes6,Output=OrRes7>,
+    L0: TypeFn_<OrRes0, Output = OrRes1>,
+    L1: TypeFn_<OrRes1, Output = OrRes2>,
+    L2: TypeFn_<OrRes2, Output = OrRes3>,
+    L3: TypeFn_<OrRes3, Output = OrRes4>,
+    L4: TypeFn_<OrRes4, Output = OrRes5>,
+    L5: TypeFn_<OrRes5, Output = OrRes6>,
+    L6: TypeFn_<OrRes6, Output = OrRes7>,
 {
-    type Output=OrRes7;
+    type Output = OrRes7;
 }
 
-impl<L0,OrRes0,L1,OrRes1,L2,OrRes2,L3,OrRes3,L4,OrRes4,L5,OrRes5,L6,OrRes6,L7,OrRes7,OrRes8,OrRes9,Rem,>
-    TypeFn_<OrRes0>
-for tlist![L0,L1,L2,L3,L4,L5,L6,L7,..Rem]
+impl<
+        L0,
+        OrRes0,
+        L1,
+        OrRes1,
+        L2,
+        OrRes2,
+        L3,
+        OrRes3,
+        L4,
+        OrRes4,
+        L5,
+        OrRes5,
+        L6,
+        OrRes6,
+        L7,
+        OrRes7,
+        OrRes8,
+        OrRes9,
+        Rem,
+    > TypeFn_<OrRes0> for tlist![L0, L1, L2, L3, L4, L5, L6, L7, ..Rem]
 where
-    L0:TypeFn_<OrRes0,Output=OrRes1>,
-    L1:TypeFn_<OrRes1,Output=OrRes2>,
-    L2:TypeFn_<OrRes2,Output=OrRes3>,
-    L3:TypeFn_<OrRes3,Output=OrRes4>,
-    L4:TypeFn_<OrRes4,Output=OrRes5>,
-    L5:TypeFn_<OrRes5,Output=OrRes6>,
-    L6:TypeFn_<OrRes6,Output=OrRes7>,
-    L7:TypeFn_<OrRes7,Output=OrRes8>,
-    Rem:TypeFn_<OrRes8,Output=OrRes9>,
+    L0: TypeFn_<OrRes0, Output = OrRes1>,
+    L1: TypeFn_<OrRes1, Output = OrRes2>,
+    L2: TypeFn_<OrRes2, Output = OrRes3>,
+    L3: TypeFn_<OrRes3, Output = OrRes4>,
+    L4: TypeFn_<OrRes4, Output = OrRes5>,
+    L5: TypeFn_<OrRes5, Output = OrRes6>,
+    L6: TypeFn_<OrRes6, Output = OrRes7>,
+    L7: TypeFn_<OrRes7, Output = OrRes8>,
+    Rem: TypeFn_<OrRes8, Output = OrRes9>,
 {
-    type Output=OrRes9;
+    type Output = OrRes9;
 }
-
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////                    FoldL_

@@ -2,28 +2,24 @@ use syn::{NestedMeta, WherePredicate};
 
 use quote::{ToTokens, TokenStreamExt};
 
-use proc_macro2::{TokenStream};
+use proc_macro2::TokenStream;
 
 use syn::token::Comma;
 
+use super::shared::{parse_where_pred, NotUpdated, UpdateWithMeta};
 use super::{MyMeta, MyNested};
-use super::shared::{
-    NotUpdated,
-    UpdateWithMeta,
-    parse_where_pred,
-};
 
 use ArenasRef;
 
 #[derive(Debug, Clone, Default)]
-pub(crate) struct ItemMetaData<'alloc,I> {
+pub(crate) struct ItemMetaData<'alloc, I> {
     pub(crate) inner: I,
     pub(crate) bounds: Vec<WherePredicate>,
     pub(crate) attrs: Vec<&'alloc NestedMeta>,
     pub(crate) docs: Vec<&'alloc str>,
 }
 
-impl<'alloc,I> ItemMetaData<'alloc,I> {
+impl<'alloc, I> ItemMetaData<'alloc, I> {
     pub(crate) fn new(inner: I) -> Self {
         Self {
             inner,
@@ -63,10 +59,7 @@ impl<'alloc,I> ItemMetaData<'alloc,I> {
         }
     }
 
-    pub(crate) fn chain_impl_attrs<'a>(
-        &'a self,
-        other: &'a Self,
-    ) -> AnnotationTokensChain<'a> {
+    pub(crate) fn chain_impl_attrs<'a>(&'a self, other: &'a Self) -> AnnotationTokensChain<'a> {
         AnnotationTokensChain {
             attrs_outer: &self.attrs,
             attrs_inner: &other.attrs,
@@ -89,18 +82,18 @@ impl<'alloc,I> ItemMetaData<'alloc,I> {
     }
 }
 
-impl<'ar, I> UpdateWithMeta<'ar> for ItemMetaData<'ar,I>
+impl<'ar, I> UpdateWithMeta<'ar> for ItemMetaData<'ar, I>
 where
     I: UpdateWithMeta<'ar>,
 {
     fn update_with_meta(
-        &mut self, meta: &MyMeta<'ar>, arenas: ArenasRef<'ar>
+        &mut self,
+        meta: &MyMeta<'ar>,
+        arenas: ArenasRef<'ar>,
     ) -> Result<(), NotUpdated> {
         match (&*meta.word.str, &meta.value) {
-            ("bound", &MyNested::Value(ref str_)) => 
-                self.bounds.push(parse_where_pred(str_)),
-            ("doc", &MyNested::Value(str_)) => 
-                self.docs.push(str_),
+            ("bound", &MyNested::Value(ref str_)) => self.bounds.push(parse_where_pred(str_)),
+            ("doc", &MyNested::Value(str_)) => self.docs.push(str_),
             ("attr", &MyNested::List(list)) => {
                 for elem in list {
                     self.attrs.push(elem);

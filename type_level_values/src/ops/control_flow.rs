@@ -1,8 +1,8 @@
 use prelude::*;
 
 use crate_::field_traits::MapField;
-use crate_::ops::*;
 use crate_::fn_adaptors::*;
+use crate_::ops::*;
 use crate_::std_ops::*;
 use crate_::std_types::cmp_ordering::{Equal_, Greater_, Less_};
 
@@ -13,7 +13,7 @@ use std_::ops::Add;
 /// Equivalent to `|_| function(params) `,where params can be any ammount of parameters.
 pub struct Lazy<Function, Params>(Function, Params);
 
-impl<Function, Params,_0> TypeFn_<_0> for Lazy<Function, Params>
+impl<Function, Params, _0> TypeFn_<_0> for Lazy<Function, Params>
 where
     Function: TypeFn_<Params>,
 {
@@ -46,7 +46,7 @@ type_fn!{
     }
     ```
 
-    # Example 
+    # Example
 
     Implementing a safe division function.
 
@@ -58,7 +58,7 @@ type_fn!{
     use type_level_values::ops::*;
     use type_level_values::std_ops::*;
     use type_level_values::fn_adaptors::*;
-    
+
     type SafeDiv=If<(GetRhs,IsZeroOp),GetLhs,DivOp>;
 
     fn main(){
@@ -82,13 +82,12 @@ type_fn!{
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-
 type_fn!{
     captures(Msg)
     /**
     Immediately causes a compile-time error with the `Msg` message.
 
-    # Example 
+    # Example
 
     Implementing a division function,which panics if the denominator is 0.
 
@@ -102,11 +101,11 @@ type_fn!{
     use type_level_values::fn_adaptors::*;
 
     struct attempted_to_divide_by_zero;
-    
+
     type PanicDiv=If<(GetRhs,IsZeroOp),(GetLhs,Panic<attempted_to_divide_by_zero>),DivOp>;
 
     fn main(){
-        // This causes a compile_time error 
+        // This causes a compile_time error
         //let _:AssertEq<TypeFn<PanicDiv,(U10,U0)>,U10>;
         let _:AssertEq<TypeFn<PanicDiv,(U10,U1)>,U10>;
         let _:AssertEq<TypeFn<PanicDiv,(U10,U2)>,U5>;
@@ -126,13 +125,13 @@ type_fn!{
 
     # use type_level_values::prelude::*;
     use type_level_values::ops::*;
-    
+
     # fn main(){
-    
+
     struct explicit_panic;
-    
+
     let _:TypeFn<Panic<explicit_panic>,()>;
-    
+
     # }
 
     */
@@ -141,59 +140,46 @@ type_fn!{
     { () }
 }
 
-
 #[doc(hidden)]
 pub struct Panicking<T>(T);
 #[doc(hidden)]
 pub struct IsPanicking;
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-#[cfg(all(test,feature="passed_tests"))]
+#[cfg(all(test, feature = "passed_tests"))]
 // #[cfg(test)]
 mod tests {
     use super::*;
 
-
-
     #[test]
-    fn if_(){
-        type Cond0=If<ConstGEOp,SubOp,(GetLhs,Add1Op)>;
-        let _:AssertPipedRet<(U5,U20),Cond0,U6>;
-        let _:AssertPipedRet<(U20,U5),Cond0,U15>;
+    fn if_() {
+        type Cond0 = If<ConstGEOp, SubOp, (GetLhs, Add1Op)>;
+        let _: AssertPipedRet<(U5, U20), Cond0, U6>;
+        let _: AssertPipedRet<(U20, U5), Cond0, U15>;
 
         struct Yep;
         struct Nope;
-        type Cond1=If<ConstEqOp,Const<Yep>,Const<Nope>>;
-        let _:AssertPipedRet<(U5,U5),Cond1,Yep>;
-        let _:AssertPipedRet<(U20,U5),Cond1,Nope>;
+        type Cond1 = If<ConstEqOp, Const<Yep>, Const<Nope>>;
+        let _: AssertPipedRet<(U5, U5), Cond1, Yep>;
+        let _: AssertPipedRet<(U20, U5), Cond1, Nope>;
     }
 
-
     #[test]
-    fn lazy(){
-        // This tests that the constraints of the function don't get 
+    fn lazy() {
+        // This tests that the constraints of the function don't get
         // evaluated when constructing Lazy.
-        let _:Lazy<AddOp,()>;
-        let _:Lazy<SubOp,()>;
-        let _:Lazy<ConstEqOp,()>;
+        let _: Lazy<AddOp, ()>;
+        let _: Lazy<SubOp, ()>;
+        let _: Lazy<ConstEqOp, ()>;
 
+        type Test<Func, Params> = (AssertEq<TypeFn<Func, Params>, TypeFn<Lazy<Func, Params>, ()>>,);
 
-
-        type Test<Func,Params>=(
-            AssertEq<
-                TypeFn<Func,Params>,
-                TypeFn<Lazy<Func,Params>,()>,
-            >,
-        );
-
-        let _:Test<AddOp,(U10,U5)>;
-        let _:Test<SubOp,(U10,U5)>;
-        let _:Test<ConstEqOp,((),())>;
-        let _:Test<ConstEqOp,(U0,U0)>;
-        let _:Test<ConstEqOp,(U10,U10)>;
-
+        let _: Test<AddOp, (U10, U5)>;
+        let _: Test<SubOp, (U10, U5)>;
+        let _: Test<ConstEqOp, ((), ())>;
+        let _: Test<ConstEqOp, (U0, U0)>;
+        let _: Test<ConstEqOp, (U10, U10)>;
     }
 
 }

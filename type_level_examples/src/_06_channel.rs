@@ -3,8 +3,6 @@
 //!
 //!
 
-
-
 // #[allow(unused_imports)]
 // use std::ops::*;
 use std::sync::mpsc::{self, Receiver as MPSCReceiver, RecvError, SendError, Sender as MPSCSender};
@@ -13,11 +11,10 @@ use std::sync::mpsc::{self, Receiver as MPSCReceiver, RecvError, SendError, Send
 
 use type_level_values::field_traits::*;
 use type_level_values::fn_adaptors::*;
-use type_level_values::std_ops::*;
 #[allow(unused_imports)]
 use type_level_values::ops::*;
 use type_level_values::prelude::*;
-
+use type_level_values::std_ops::*;
 
 use type_level_values::new_types::TList;
 // use type_level_values::new_types::TListType;
@@ -37,9 +34,7 @@ use self::type_level_State::{Closed, Open, OpenTrait};
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(MutConstValue)]
-#[mcv(
-    Type = "ChannelEnd", ConstValue = "S"
-)]
+#[mcv(Type = "ChannelEnd", ConstValue = "S")]
 pub struct __ChannelEnd<Chan, S> {
     channel: Chan,
     #[allow(dead_code)]
@@ -97,7 +92,7 @@ where
 type_fn!{
     pub fn NewOpen[v](v){ Open<v> }
 }
-pub type NewClosed=Const<Closed>;
+pub type NewClosed = Const<Closed>;
 
 mutator_fn!{
     type This[Chan,I]=(ChannelEnd<Chan,I>)
@@ -118,8 +113,7 @@ mutator_fn!{
     }
 }
 
-
-pub fn main_ () {
+pub fn main_() {
     let (tx, rx) = channel::<&'static str, U4>();
 
     #[allow(unused_variables)]

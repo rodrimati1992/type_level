@@ -11,10 +11,7 @@ it's necessary to `use` this declaration in any file needs it:
 */
 
 #[cfg(test)]
-pub(crate) use testing::{
-    AssEqTy,
-};
-
+pub(crate) use testing::AssEqTy;
 
 ////////////////////////////////////////////////////////////////////////////////////
 ////                        Values Prelude
@@ -29,63 +26,40 @@ pub use std_types::range_to::{ConstRangeTo, RangeToTrait};
 #[cfg(rust_1_26)]
 pub use std_types::range_to_inclusive::{ConstRangeToInclusive, RangeToInclusiveTrait};
 
-pub use std_types::option::{None_, OptionTrait, OptionType, Some_,NewSome,NewNone};
+pub use std_types::option::{NewNone, NewSome, None_, OptionTrait, OptionType, Some_};
 pub use std_types::phantomdata::{
-    PhantomDataTrait, PhantomDataType,NewPhantomData,NewVariantPhantom
+    NewPhantomData, NewVariantPhantom, PhantomDataTrait, PhantomDataType,
 };
-pub use std_types::result::{Err_, Ok_, ResultTrait, ResultType,NewOk,NewErr};
+pub use std_types::result::{Err_, NewErr, NewOk, Ok_, ResultTrait, ResultType};
 
 pub use core_extensions::type_level_bool::{Boolean, BooleanType, False, True};
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////
 ////                        Regular Prelude
 ////////////////////////////////////////////////////////////////////////////////////
 
-pub use user_traits::{
-    allowed_self_constructors,
-    AllowMutatorFn,
-    MCPBounds,
-    MutConstParam,
-};
+pub use user_traits::{allowed_self_constructors, AllowMutatorFn, MCPBounds, MutConstParam};
 
 #[cfg(rust_1_22)]
 pub use runtime_value::IntoConstant;
 
 pub use runtime_value::{
-    ConstTypeOf_,ConstTypeOf,ConstTypeOfOp,
-    ConstType,ConstValue, IntoConstType_,IntoRuntime,
+    ConstType, ConstTypeOf, ConstTypeOfOp, ConstTypeOf_, ConstValue, IntoConstType_, IntoRuntime,
 };
 
 pub use discriminant::GetDiscriminant;
 pub use field_traits::SetFields;
 pub use initialization::Construct;
 
-pub use crate_::type_fn::{
-    TypeFn_,
-    TypeFn,
-    Piped_,
-    Piped,
-};
+pub use crate_::type_fn::{Piped, Piped_, TypeFn, TypeFn_};
 
-pub use ops::{
-    ConstEq_, 
-    ConstOrd_, 
-};
+pub use ops::{ConstEq_, ConstOrd_};
 
 pub use const_wrapper::{
-    AsConstWrapper, ConstWrapper, ConstWrapperFromTrait, UnwrapConst,WrapperTrait,
-    NewConstWrapper,
+    AsConstWrapper, ConstWrapper, ConstWrapperFromTrait, NewConstWrapper, UnwrapConst, WrapperTrait,
 };
 
-pub use core_extensions::{
-    SelfOps,
-    MarkerType,
-    TypeIdentity,
-    TIdentity,
-    VariantPhantom,
-};
+pub use core_extensions::{MarkerType, SelfOps, TIdentity, TypeIdentity, VariantPhantom};
 
 pub use std_::marker::PhantomData;
 

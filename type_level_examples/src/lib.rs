@@ -11,7 +11,6 @@ To run the examples do `cargo run -- ` and then add one of the arguments from th
 
 #![recursion_limit = "160"]
 
-
 #[macro_use]
 extern crate type_level_values;
 
