@@ -1,3 +1,5 @@
+* This library is unmaintained,you may copy any of it (in a way that follows the Apache and or MIT licenses) *
+
 [![Build Status](https://travis-ci.org/rodrimati1992/type_level.svg?branch=master)](https://travis-ci.org/rodrimati1992/type_level)
 
 Package for declaring and using type level values and functions.
